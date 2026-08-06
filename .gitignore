@@ -6,3 +6,12 @@ dist/
 
 # npm lock은 OS마다 달라 충돌 유발 → 추적 제외
 package-lock.json
+
+# 원본 PNG는 커밋하지 않는다 — `npm run assets` 로 WebP 변환 후 원본은 삭제된다.
+# (보관해야 할 원본 아트는 art/ 에 둘 것. 배포 대상이 아니다.)
+public/brand/**/*.png
+
+# 로컬 환경변수 (.env.example 은 추적)
+.env
+.env.local
+.env.*.local

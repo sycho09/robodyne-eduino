@@ -102,8 +102,10 @@ function enterRoom(roomId) {
 }
 
 // 다음 장면 배경을 미리 받아두면(인트로 4초 동안) 전환 시 '남색 물방울' 플레이스홀더가 안 보인다.
+// ⚠️ public/brand 에 실존하는 파일만 넣을 것 — 없는 이름은 매 실행 404 를 낸다.
+//    (basics-bg 는 미제작이라 제거했다. 배경을 만들면 다시 넣으면 된다.)
 function preloadAssets() {
-  ['main-bg', 'login-bg', 'setup-bg', 'hub-bg', 'basics-bg', 'stage-led-bg', 'game-led-cover', 'wiring-led']
+  ['main-bg', 'login-bg', 'setup-bg', 'hub-bg', 'stage-led-bg', 'game-led-cover', 'wiring-led']
     .forEach((n) => { const im = new Image(); im.src = `/brand/${n}.webp`; });
 }
 
