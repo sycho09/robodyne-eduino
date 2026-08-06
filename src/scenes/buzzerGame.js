@@ -8,6 +8,7 @@ import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
 import { isTablet } from '../app/device.js';
+import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
 
 const PIN = 5, LANES = 4, KEYS = ['d', 'f', 'j', 'k'];
 const LEAD = 1600, W_PERFECT = 110, W_GOOD = 200, PASS_ACC = 0.85;
@@ -75,7 +76,7 @@ export function showBuzzerGame(root, { onExit } = {}) {
 
   root.querySelector('#bz-connect').onclick = async () => { try { await board.connect(); root.querySelector('#bz-connect').textContent = '🔌 연결됨 ✓'; } catch (e) { root.querySelector('#bz-connect').textContent = board.classify(e).note.slice(0, 18) + '…'; } };
   board.connectAuto().catch(() => {});
-  root.querySelector('#bz-start').onclick = () => { root.querySelector('#bz-prep').classList.add('hide'); skipBtn.hidden = false; startFlow(); };
+  root.querySelector('#bz-start').onclick = () => { root.querySelector('#bz-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); };
 
   // ── 플로우 ──
   const cleared = { easy: false, hard: false };

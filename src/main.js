@@ -13,6 +13,7 @@ import { showChapterSelect } from './scenes/chapterSelect.js';
 import { progress } from './app/progress.js';
 import { bgm } from './app/bgm.js';
 import { nav } from './app/nav.js';
+import { DEV_TOOLS } from './app/flags.js';
 
 // 게임 씬은 동적 import 로 분리한다 — 인트로~로그인 구간에 게임 코드를 받을 이유가 없다.
 // 허브 진입 시 유휴 시간에 미리 받아두므로(prefetchGames) 실제 전환 지연은 거의 없다.
@@ -107,6 +108,15 @@ function enterRoom(roomId) {
 function preloadAssets() {
   ['main-bg', 'login-bg', 'setup-bg', 'hub-bg', 'stage-led-bg', 'game-led-cover', 'wiring-led']
     .forEach((n) => { const im = new Image(); im.src = `/brand/${n}.webp`; });
+}
+
+// 개발용 디버그 훅. DEV_TOOLS 는 프로덕션에서 false 상수로 치환되므로
+// 아래 블록은 트리셰이킹으로 번들에서 통째로 사라진다(배포본엔 window.__dev 가 없다).
+//   __dev.progress.reset()      진척 초기화
+//   __dev.progress.mark('led')  특정 방 클리어 처리
+if (DEV_TOOLS) {
+  window.__dev = { progress, nav };
+  console.info('[dev] window.__dev 사용 가능 — progress.reset() / progress.mark(id)');
 }
 
 window.addEventListener('DOMContentLoaded', () => { bgm.armAutostart(); preloadAssets(); nav.start(scenePlatformIntro); });

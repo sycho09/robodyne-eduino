@@ -11,6 +11,7 @@ import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
+import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
 
 const PINS = { x: 5, y: 6, sw: 7 };
 const PR = 0.30;   // 플레이어 반지름(타일 단위)
@@ -144,7 +145,7 @@ export function showJoystickGame(root, { onExit } = {}) {
 
   root.querySelector('#jy-connect').onclick = async () => { const b = root.querySelector('#jy-connect'); try { await board.connect(); b.textContent = '🔌 연결됨 ✓'; startHw(); } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
   board.connectAuto().then(() => startHw()).catch(() => {});
-  root.querySelector('#jy-start').onclick = () => { root.querySelector('#jy-prep').classList.add('hide'); skipBtn.hidden = false; startFlow(); };
+  root.querySelector('#jy-start').onclick = () => { root.querySelector('#jy-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); };
 
   // ── 플로우 ──
   const cleared = { easy: false, hard: false };

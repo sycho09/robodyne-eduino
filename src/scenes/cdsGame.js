@@ -8,6 +8,7 @@ import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
+import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
 
 const ADC = 0, LEAD = 1700, PASS_ACC = 0.85;
 const GAMES = [
@@ -91,7 +92,7 @@ export function showCdsGame(root, { onExit } = {}) {
   function stopSense() { if (senseTimer) { clearInterval(senseTimer); senseTimer = null; } }
   root.querySelector('#cd-connect').onclick = async () => { const b = root.querySelector('#cd-connect'); try { await board.connect(); b.textContent = '🔌 연결됨 ✓'; startSense(); } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
   board.connectAuto().then(() => startSense()).catch(() => {});
-  root.querySelector('#cd-start').onclick = () => { root.querySelector('#cd-prep').classList.add('hide'); skipBtn.hidden = false; startFlow(); };
+  root.querySelector('#cd-start').onclick = () => { root.querySelector('#cd-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); };
 
   // ── 플로우 ──
   const cleared = { easy: false, hard: false };

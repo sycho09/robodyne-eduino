@@ -6,6 +6,7 @@ import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
+import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
 
 const ADC = 0, NEO = 6, HUE_MAX = 320, PASS = 0.8;   // 조도센서 A0(입력) · 네오픽셀 D6(출력)
 const ACTS = [
@@ -123,7 +124,7 @@ export function showLampGame(root, { onExit } = {}) {
   function stopNeo() { if (rgbTimer) { clearInterval(rgbTimer); rgbTimer = null; } if (board.connected) { board.neoFill(NEO, 0, 0, 0).catch(() => {}); } lastSent = ''; }
   root.querySelector('#lp-connect').onclick = async () => { const b = root.querySelector('#lp-connect'); try { await board.connect(); b.textContent = board.fwOutdated ? `⚠ 펌웨어 v${board.version}→업데이트 필요` : '🔌 연결됨 ✓'; startSense(); startNeo(); } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
   board.connectAuto().then(() => { startSense(); startNeo(); }).catch(() => {});
-  root.querySelector('#lp-start').onclick = () => { root.querySelector('#lp-prep').classList.add('hide'); skipBtn.hidden = false; startFlow(); };
+  root.querySelector('#lp-start').onclick = () => { root.querySelector('#lp-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); };
   // 결선 회로도 이미지(있으면 표시)
   const wireProbe = new Image(); wireProbe.onload = () => { const el = root.querySelector('#lp-wire'); if (el) { el.src = wireProbe.src; el.hidden = false; } }; wireProbe.src = '/brand/wiring-lamp.webp';
 

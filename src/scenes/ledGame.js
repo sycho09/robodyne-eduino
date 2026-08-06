@@ -9,6 +9,7 @@ import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
+import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
 
 const LEAD = 1450, W_PERFECT = 90, W_GOOD = 170;
 const LEDS = [
@@ -143,7 +144,7 @@ export function showLedGame(root, { onExit } = {}) {
     cleared[game.key] = true; state.ended = true; state.phase = 'result';
     bgm.setDuck(1); gi++; nextGame();
   };
-  function startFlow() { gi = 0; skipBtn.hidden = false; nextGame(); }
+  function startFlow() { gi = 0; skipBtn.hidden = !DEV_TOOLS; nextGame(); }
   function nextGame() {
     if (gi >= GAMES.length) { finishAll(); return; }
     game = GAMES[gi]; showIntro();

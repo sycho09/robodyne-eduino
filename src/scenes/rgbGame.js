@@ -7,6 +7,7 @@ import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
+import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
 
 const PINS = { r: 9, g: 10, b: 11 };
 const PASS_ACC = 0.85;
@@ -107,7 +108,7 @@ export function showRgbGame(root, { onExit } = {}) {
     catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; }
   };
   board.connectAuto().catch(() => {});
-  root.querySelector('#rg-start').onclick = () => { root.querySelector('#rg-prep').classList.add('hide'); skipBtn.hidden = false; startFlow(); };
+  root.querySelector('#rg-start').onclick = () => { root.querySelector('#rg-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); };
 
   // ── 플로우 ──
   const cleared = { easy: false, hard: false };

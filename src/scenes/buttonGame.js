@@ -8,6 +8,7 @@ import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
+import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
 
 const PINS = [4, 5];   // 구멍 0·1 ↔ 택트스위치 핀 D4·D5 (쉴드 포트 3·4)
 const HOLES = PINS.length;
@@ -134,7 +135,7 @@ export function showButtonGame(root, { onExit, onComplete } = {}) {
   const pstat = root.querySelector('#bt-pstat');
   root.querySelector('#bt-connect').onclick = async () => { const b = root.querySelector('#bt-connect'); try { await board.connect(); b.textContent = '🔌 연결됨 ✓'; startHw(); pstat.innerHTML = '버튼을 한 번씩 눌러 확인해봐! 연결 직후 <b>쉬는 값</b>을 기준으로 눌림을 알아채요 🔨'; } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
   board.connectAuto().then(() => startHw()).catch(() => {});
-  root.querySelector('#bt-start').onclick = () => { root.querySelector('#bt-prep').classList.add('hide'); skipBtn.hidden = false; startFlow(); };
+  root.querySelector('#bt-start').onclick = () => { root.querySelector('#bt-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); };
 
   // ── 플로우 ──
   const cleared = {};

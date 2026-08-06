@@ -8,6 +8,7 @@ import { celebrateRoom } from './celebrate.js';
 import { showFinale } from './finale.js';
 import { allDone } from '../content/curriculum.js';
 import { board } from '../app/board.js';
+import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
 
 const ADC = 0, NEO = 6, BUZZ = 5, BTN = 4, PASS = 0.8, HUE_MAX = 320;
 const NOTES = [['도', 262], ['레', 294], ['미', 330], ['파', 349], ['솔', 392], ['라', 440], ['시', 494]];
@@ -82,7 +83,7 @@ export function showFinaleShow(root, { onExit } = {}) {
 
   root.querySelector('#fs-connect').onclick = async () => { const b = root.querySelector('#fs-connect'); try { await board.connect(); b.textContent = '🔌 연결됨 ✓'; startSense(); } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
   board.connectAuto().then(() => startSense()).catch(() => {});
-  root.querySelector('#fs-start').onclick = () => { root.querySelector('#fs-prep').classList.add('hide'); skipBtn.hidden = false; nextAct(0); };
+  root.querySelector('#fs-start').onclick = () => { root.querySelector('#fs-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; nextAct(0); };
 
   // ── 플로우 ──
   const ACTS = [

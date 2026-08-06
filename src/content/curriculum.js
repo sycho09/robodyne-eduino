@@ -5,6 +5,7 @@
 // 진척은 progress(localStorage)를 읽어 무대/전체 집계를 계산한다.
 
 import { progress } from '../app/progress.js';
+import { UNLOCK_ALL } from '../app/flags.js';
 
 // scene: 셸이 실제로 띄울 씬 키 — main.js 의 enterRoom 스위치와 1:1 대응.
 //        'setup'|'basics'|'led'|'buzzer'|'rgb'|'cds'|'pot'|'button'|'lamp'|'bomb'|'final'|null(=준비중)
@@ -57,8 +58,8 @@ export const chapterTotal = (id) => getChapter(id)?.rooms.length || 0;
 export const chapterDone = (id) => chapterTotal(id) > 0 && chapterClearedCount(id) === chapterTotal(id);
 
 // 잠금 규칙: 첫 무대는 항상 개방, 이후 무대는 직전 무대를 모두 클리어해야 개방.
-// ⚠️ 테스트용: 전체 잠금 해제 (출시 시 false 로 변경)
-export const UNLOCK_ALL = true;
+// 개발 서버에선 전체 해제, 프로덕션 빌드에선 순차 잠금 — app/flags.js 가 결정한다.
+export { UNLOCK_ALL };
 export function chapterUnlocked(id) {
   if (UNLOCK_ALL) return true;
   const idx = CHAPTERS.findIndex((c) => c.id === id);

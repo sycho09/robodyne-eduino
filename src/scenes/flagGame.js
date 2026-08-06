@@ -9,6 +9,7 @@ import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
+import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
 
 const PINS = [4, 5];   // 0=청기(파랑·D4·포트3), 1=백기(흰·D5·포트4)
 const FLAGS = PINS.length;
@@ -136,8 +137,8 @@ export function showFlagGame(root, { onExit, onComplete, skipPrep } = {}) {
   const pstat = root.querySelector('#fl-pstat');
   root.querySelector('#fl-connect').onclick = async () => { const b = root.querySelector('#fl-connect'); try { await board.connect(); b.textContent = '🔌 연결됨 ✓'; startHw(); pstat.innerHTML = '버튼을 한 번씩 눌러봐! 깃발이 오르락내리락 하면 준비 끝 🚩'; } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
   board.connectAuto().then(() => startHw()).catch(() => {});
-  root.querySelector('#fl-start').onclick = () => { root.querySelector('#fl-prep').classList.add('hide'); skipBtn.hidden = false; startFlow(); };
-  if (skipPrep) setTimeout(() => { const p = root.querySelector('#fl-prep'); if (p) p.classList.add('hide'); skipBtn.hidden = false; startFlow(); }, 0);   // 순차 플레이: 결선 안내 건너뛰고 바로 시작
+  root.querySelector('#fl-start').onclick = () => { root.querySelector('#fl-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); };
+  if (skipPrep) setTimeout(() => { const p = root.querySelector('#fl-prep'); if (p) p.classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); }, 0);   // 순차 플레이: 결선 안내 건너뛰고 바로 시작
 
   // ── 상태 ──
   const cleared = {};

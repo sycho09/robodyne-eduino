@@ -158,7 +158,16 @@ Playino/
 ## 5. 전체 기능 진척도 (커리큘럼)
 
 **진행 규칙**: `progress.mark(id)`로 클리어 저장 → `curriculum.js`가 무대/전체 집계.
-**테스트 플래그**: `curriculum.js`의 `UNLOCK_ALL = true` (출시 시 `false`로 바꾸면 순차 잠금).
+
+**개발/출시 플래그**: `src/app/flags.js`가 빌드 모드로 자동 결정한다 — 코드를 고칠 필요가 없다.
+
+| | `npm run dev` | `npm run build` (Vercel 배포) |
+|---|---|---|
+| `UNLOCK_ALL` (무대 순차 잠금 해제) | ON | **OFF — 순차 잠금** |
+| `DEV_TOOLS` (`⏭ 건너뛰기(테스트)` 버튼 · `window.__dev`) | ON | **OFF — 번들에서 제거됨** |
+
+프로덕션 빌드에서는 Vite가 플래그를 `false` 상수로 접어 해당 코드를 통째로 제거하므로
+배포본에는 흔적조차 남지 않는다. 검수용으로 잠깐 켜야 하면 환경변수를 쓴다 → [`.env.example`](.env.example).
 
 | 무대(챕터) | 코드ID | 미니게임 | 방ID | 학습 개념 | 부품 | 상태 |
 |---|---|---|---|---|---|---|
