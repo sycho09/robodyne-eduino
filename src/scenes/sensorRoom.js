@@ -1,6 +1,7 @@
 // sensorRoom.js — 박물관형 센서 전시관(탑다운). EDDIE가 걸어다니며
-//   📖 이론관(자료 가로슬라이드 + 13번 핀 블록코딩 체험) / 🎮 체험관(미니게임) 입구로 입장.
+//   📖 이론관(자료 가로슬라이드 + 제어 대시보드) / 🎮 체험관(미니게임) 입구로 입장.
 //   밝은 카니발/박물관 톤. config 기반 확장형.
+//   ※ 이론관의 제어 탭은 board API 를 직접 호출한다(cfg.blockPin). Blockly 는 쓰지 않는다.
 import { createWorld } from '../engine/topdown.js';
 import { sfx } from '../app/sfx.js';
 import { progress } from '../app/progress.js';

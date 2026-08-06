@@ -226,10 +226,6 @@
 .code-status { font-size: 13px; color: var(--muted); }
 .code-status.ok { color: var(--ok); font-weight: 700; }
 
-/* [LEGACY] blockEditor 제거됨(legacy/editor/) — 되살릴 때 필요. 아니면 삭제 가능 */
-/* ---- 블록(Blockly) 호스트 ---- */
-.block-host { height: 300px; width: 100%; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #0e1726; }
-
 /* ---- 결선 안내 창 ---- */
 .wire-backdrop {
   position: fixed; inset: 0; z-index: 70; display: flex; align-items: center; justify-content: center;
@@ -300,7 +296,9 @@
 }
 .wire-photo-missing code { color: var(--accent-2); }
 
-/* [LEGACY] 아래 DHT 3블록 — dht11/dht11room/dhtCoding 제거됨(legacy/scenes/). 되살릴 때 필요 */
+/* [잔여] 아래 DHT 3블록 — dht11/dht11room/dhtCoding 씬은 제거됐다(커밋 436a8dd 참조).
+   .dht-* 는 죽었지만 같은 블록의 .g-label 등은 살아있는 씬이 쓴다. 지우려면 선택자별로
+   확인하고 화면을 눈으로 볼 것 — 통째로 지우면 깨진다. */
 /* ---- DHT11 미니게임 ---- */
 .dht { position: relative; width: 100vw; height: 100dvh; overflow: hidden;
   background: radial-gradient(900px 600px at 50% -10%, #1a2c52 0%, transparent 60%), #070c18; }
@@ -452,7 +450,8 @@
 .splash-loader-fill { height: 100%; width: 0%; border-radius: 999px;
   background: linear-gradient(90deg, #ffd11a, #ff6a5a); box-shadow: 0 0 12px rgba(255,209,26,.7); }
 
-/* [LEGACY] escapeRoom 제거됨(legacy/scenes/). 되살릴 때 필요 */
+/* [잔여] escapeRoom 씬은 제거됐지만 .escape-scene / .world-host 는 현행 게임 씬 10곳이
+   그대로 쓴다(sensorRoom·ledGame·bombGame …). 삭제 금지. */
 /* ===== Escape Room: 씬 레이아웃(헤더 + 월드) ===== */
 .escape-scene { display: flex; flex-direction: column; }
 .escape-scene .world-host { position: relative; inset: auto; flex: 1; min-height: 0; }

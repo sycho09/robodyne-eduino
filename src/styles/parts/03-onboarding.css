@@ -16,7 +16,8 @@
 .cover-sub .cv-dot { color: #ff9e3c; }
 .cover-eddie { margin: 16px auto 4px; filter: drop-shadow(0 8px 26px rgba(0,0,0,.55)); }
 
-/* [LEGACY] 아래 2블록 — escapeRoom + games/(buzzer·rgb·keypad·seg) 제거됨(legacy/). 되살릴 때 필요 */
+/* [잔여] 아래 2블록 — escapeRoom 과 부스형 games/ 는 제거됐다(커밋 436a8dd 참조).
+   .eg-* 계열 일부는 현행 씬이 쓰므로 통째로 지우지 말 것. */
 /* ===== 탈출 미니게임 모달(탑다운 방의 장치 작동 시) ===== */
 .gm-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center;
   background: rgba(2,4,10,.74); backdrop-filter: blur(3px); animation: scene-in .2s ease; }
@@ -465,7 +466,8 @@
 .brand-badge { transition: transform .15s, box-shadow .15s; }
 .brand-badge:hover { transform: translateY(-1px); box-shadow: 0 8px 26px rgba(0,0,0,.42); }
 
-/* [LEGACY] kits 씬 제거됨(legacy/scenes/kits.js). 되살릴 때 필요 */
+/* [잔여] 호환 키트 안내(kits) 씬은 제거됐다(커밋 436a8dd 참조).
+   .kit-* 는 죽었지만 .btn/.has-img 등 전역 클래스가 섞여 있어 블록 통삭제는 위험하다. */
 /* ===== 호환 키트 안내 페이지 ===== */
 .kits { position: relative; min-height: 100dvh; overflow: hidden; display: flex; align-items: center; justify-content: center; }
 .kits-bg { position: absolute; inset: 0; z-index: 0;
