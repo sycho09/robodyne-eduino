@@ -372,3 +372,22 @@ html, body {
 @keyframes eddie-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 #eddie { animation: eddie-bob 2.4s ease-in-out infinite; transform-origin: center; }
 
+/* ---- 씬 청크 로딩 (main.js mountLazy) --------------------------------
+   게임 씬은 동적 import 로 받는다. 대개 프리페치로 즉시 끝나므로 220ms 를
+   넘길 때만 나타난다. 배경색은 #app 과 맞춰 화면이 튀지 않게 한다. */
+.scene-loading {
+  position: fixed; inset: 0; z-index: 40;
+  display: grid; place-items: center;
+  background: #1c1016;
+}
+.scene-loading-dot {
+  width: 46px; height: 46px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.14);
+  border-top-color: var(--accent);
+  animation: scene-loading-spin .8s linear infinite;
+}
+@keyframes scene-loading-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .scene-loading-dot { animation: none; border-top-color: rgba(255,255,255,.14); }
+}
+

@@ -6,17 +6,22 @@ import { sfx } from '../app/sfx.js';
 import { progress } from '../app/progress.js';
 import { board } from '../app/board.js';
 import { mountEddieRig } from '../app/eddieRig.js';
-import { showLedGame } from './ledGame.js';
-import { showBuzzerGame } from './buzzerGame.js';
-import { showRgbGame } from './rgbGame.js';
-import { showCdsGame } from './cdsGame.js';
-import { showPotGame } from './potGame.js';
-import { showJoystickGame } from './joystickGame.js';
-import { showUltraGame } from './ultraGame.js';
-import { showButtonGame } from './buttonGame.js';
-import { showFlagGame } from './flagGame.js';
 import { celebrateRoom } from './celebrate.js';
 import { nav } from '../app/nav.js';
+
+// 미니게임은 동적 import 로 분리한다 — 전시관에 들어섰다고 9개 게임 코드를 다 받을 이유가 없다.
+// 전시관 마운트 시 해당 게임만 미리 받아두므로(showSensorRoom) 체험관 입장은 즉시 이뤄진다.
+const GAMES = {
+  led:      () => import('./ledGame.js').then((m) => m.showLedGame),
+  buzzer:   () => import('./buzzerGame.js').then((m) => m.showBuzzerGame),
+  rgb:      () => import('./rgbGame.js').then((m) => m.showRgbGame),
+  cds:      () => import('./cdsGame.js').then((m) => m.showCdsGame),
+  pot:      () => import('./potGame.js').then((m) => m.showPotGame),
+  joystick: () => import('./joystickGame.js').then((m) => m.showJoystickGame),
+  ultra:    () => import('./ultraGame.js').then((m) => m.showUltraGame),
+  button:   () => import('./buttonGame.js').then((m) => m.showButtonGame),
+  flag:     () => import('./flagGame.js').then((m) => m.showFlagGame),
+};
 
 const roomCache = {};
 function roomImgFor(name) { const key = name || 'room-bg'; if (!roomCache[key]) { const im = new Image(); let step = 0; im.onerror = () => { step++; if (step === 1) im.src = `/brand/${key}.png`; else if (step === 2 && key !== 'room-bg') im.src = '/brand/room-bg.webp'; }; im.src = `/brand/${key}.webp`; roomCache[key] = im; } return roomCache[key]; }
@@ -32,7 +37,7 @@ const ROOMS_CFG = {
       '디지털 출력 — 1(HIGH)이면 켜짐, 0(LOW)이면 꺼짐! 🔆',
       '색마다 빛 에너지(파장)가 달라요 — 초록·노랑·빨강! 🌈',
     ],
-    play: (root, opt) => showLedGame(root, opt),
+    play: async (root, opt) => (await GAMES.led())(root, opt),
   },
   buzzer: {
     name: '멜로디 연주단', sensor: '수동 부저 · Passive Buzzer', icon: '🔊', accent: '150,210,120',
@@ -44,7 +49,7 @@ const ROOMS_CFG = {
       '음 높이 = 주파수(Hz)! 빠르게 떨릴수록(높은 Hz) 높은 음 — 슬라이더로 바꿔 들어봐 🎵',
       '알람·초인종·멜로디… 부저는 소리로 우리에게 알려줘요 🔔',
     ],
-    play: (root, opt) => showBuzzerGame(root, opt),
+    play: async (root, opt) => (await GAMES.buzzer())(root, opt),
   },
   rgb: {
     name: '무지개 물감놀이', sensor: '네오픽셀(WS2812) 풀컬러', icon: '🌈', accent: '180,140,255',
@@ -57,7 +62,7 @@ const ROOMS_CFG = {
       'PWM으로 각 색의 밝기(0~255)를 조절 → 원하는 색을 자유자재로! 🎚️',
       '폰·TV·무드등 화면이 전부 이 RGB로 모든 색을 만들어요 📺',
     ],
-    play: (root, opt) => showRgbGame(root, opt),
+    play: async (root, opt) => (await GAMES.rgb())(root, opt),
   },
   cds: {
     name: '손그림자 마술', sensor: '조도센서(CDS) · 빛 감지', icon: '🔆', accent: '255,210,90',
@@ -69,7 +74,7 @@ const ROOMS_CFG = {
       '아날로그로 빛의 양을 0~1023 숫자로 읽어요 — 밝으면 큰 값, 어두우면 작은 값! 📈',
       '자동 가로등·화면 밝기 자동조절… 빛 센서가 똑똑하게 켜고 꺼줘요 💡',
     ],
-    play: (root, opt) => showCdsGame(root, opt),
+    play: async (root, opt) => (await GAMES.cds())(root, opt),
   },
   pot: {
     name: '볼륨 다이얼쇼', sensor: '가변저항(회전형) · 아날로그 입력', icon: '🎚️', accent: '180,150,255',
@@ -81,7 +86,7 @@ const ROOMS_CFG = {
       '버튼(0/1)과 달리 가운데 값도 다 있어요 — 살살 돌리면 값도 살살 변해요 📈',
       '볼륨·밝기·선풍기 세기… 다이얼로 "얼마나"를 정하는 게 아날로그예요 🔊',
     ],
-    play: (root, opt) => showPotGame(root, opt),
+    play: async (root, opt) => (await GAMES.pot())(root, opt),
   },
   // [보류] joystick·ultra — 커리큘럼(ROOMS)에 방이 없어 현재 진입 경로가 없다.
   //        BOM 부품 확장 시 방만 추가하면 바로 붙도록 설정·구현을 보존한다.
@@ -96,7 +101,7 @@ const ROOMS_CFG = {
       '안 움직이면 가운데(약 512), 끝까지 밀면 0 또는 1023 — 값의 변화가 곧 방향!',
       '스틱을 밀면 우주선이 그 방향으로 — 조종간이 되는 거예요 🚀',
     ],
-    play: (root, opt) => showJoystickGame(root, opt),
+    play: async (root, opt) => (await GAMES.joystick())(root, opt),
   },
   ultra: {
     name: '무궁화 꽃이 피었습니다', sensor: '초음파 센서 · HC-SR04', icon: '🌸', accent: '255,150,190',
@@ -109,7 +114,7 @@ const ROOMS_CFG = {
       '소리가 갔다 오는 시간 ÷ 2 로 거리를 계산! 가까우면 빨리, 멀면 늦게 돌아와요 ⏱️',
       '주차 센서·로봇 장애물 감지·자동문… 거리로 세상을 봐요 🤖',
     ],
-    play: (root, opt) => showUltraGame(root, opt),
+    play: async (root, opt) => (await GAMES.ultra())(root, opt),
   },
   button: {
     name: '두더지 & 청기백기', sensor: '택트스위치 2개 · 디지털 입력', icon: '🔨', accent: '255,170,90',
@@ -123,13 +128,17 @@ const ROOMS_CFG = {
       '두더지 잡기(반응)·청기백기(명령 따라) — 한 방에서 두 게임! 🎮',
     ],
     // 택트 2개로 두 게임 순차 플레이: 두더지 → 청기백기 → 메달
-    play: (root, opt) => showButtonGame(root, {
-      onExit: opt.onExit,
-      onComplete: () => showFlagGame(root, {
-        onExit: opt.onExit, skipPrep: true,
-        onComplete: () => { progress.mark('button'); celebrateRoom({ title: '택트스위치 마스터! 🔨🚩', message: '두더지 잡기와 청기백기를 모두 클리어 — 메달 획득!', exitLabel: '전시관으로 ▶', onExit: () => opt.onExit?.() }); },
-      }),
-    }),
+    // 두더지 클리어 직후 청기백기로 넘어가므로 두 청크를 함께 받아둔다.
+    play: async (root, opt) => {
+      const [showButtonGame, showFlagGame] = await Promise.all([GAMES.button(), GAMES.flag()]);
+      showButtonGame(root, {
+        onExit: opt.onExit,
+        onComplete: () => showFlagGame(root, {
+          onExit: opt.onExit, skipPrep: true,
+          onComplete: () => { progress.mark('button'); celebrateRoom({ title: '택트스위치 마스터! 🔨🚩', message: '두더지 잡기와 청기백기를 모두 클리어 — 메달 획득!', exitLabel: '전시관으로 ▶', onExit: () => opt.onExit?.() }); },
+        }),
+      });
+    },
   },
 };
 
@@ -146,6 +155,10 @@ function soonPlay(root, { onExit } = {}, name, bg) {
 
 export function showSensorRoom(root, { id, onExit } = {}) {
   const cfg = ROOMS_CFG[id]; if (!cfg) { onExit?.(); return; }
+
+  // 이 전시관의 게임만 미리 받아둔다 — EDDIE가 체험관 입구까지 걸어가는 동안 끝난다.
+  GAMES[id]?.().catch(() => {});                       // 실패해도 무시(입장 시 재시도)
+  if (id === 'button') GAMES.flag().catch(() => {});    // 두더지 뒤에 청기백기가 이어짐
   const VW = Math.max(900, window.innerWidth), VH = Math.max(440, window.innerHeight);
   const FLOOR_Y = VH * (cfg.floor || 0.74);        // EDDIE가 걷는 바닥 라인(좌우 전용, 방별 조정)
   // 화살표 푯말 — 각 문을 가리킴(왼쪽=이론관/오른쪽=체험관)
