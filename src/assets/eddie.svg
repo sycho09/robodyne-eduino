@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  EDDIE v2 — Playino · PlayHouse 주인공 (밸런스 개선 · 상단 바 제거 · 안테나 추가)
+  조작용 ID (부록 C):
+    #eddie         전체 그룹 (이동 / idle bob)
+    #eddie-screen  얼굴 스크린
+    #eddie-eyes    눈 그룹 (표정)
+    #eddie-mouth   입
+    #eddie-glow    성공 펄스 글로우
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 330" width="240" height="330" aria-label="EDDIE">
+  <defs>
+    <linearGradient id="ed-body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffdf66"/>
+      <stop offset="48%" stop-color="#fbb724"/>
+      <stop offset="100%" stop-color="#ef9a10"/>
+    </linearGradient>
+    <linearGradient id="ed-body-h" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="22%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="80%" stop-color="#a8650a" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#a8650a" stop-opacity="0.28"/>
+    </linearGradient>
+    <linearGradient id="ed-bezel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbfdff"/>
+      <stop offset="50%" stop-color="#d2dae3"/>
+      <stop offset="100%" stop-color="#8b97a4"/>
+    </linearGradient>
+    <radialGradient id="ed-screen" cx="50%" cy="38%" r="75%">
+      <stop offset="0%" stop-color="#1a3040"/>
+      <stop offset="65%" stop-color="#0b1620"/>
+      <stop offset="100%" stop-color="#05090f"/>
+    </radialGradient>
+    <radialGradient id="ed-joint" cx="35%" cy="28%" r="85%">
+      <stop offset="0%" stop-color="#646570"/>
+      <stop offset="40%" stop-color="#2d2e36"/>
+      <stop offset="100%" stop-color="#08080b"/>
+    </radialGradient>
+    <radialGradient id="ed-eye" cx="40%" cy="34%" r="62%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="26%" stop-color="#c2fff2"/>
+      <stop offset="60%" stop-color="#46e8ce"/>
+      <stop offset="100%" stop-color="#1fb89b"/>
+    </radialGradient>
+    <radialGradient id="eddie-glow-grad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffe680" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#ffcf3f" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#ffcf3f" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 성공 글로우 -->
+  <ellipse id="eddie-glow" cx="120" cy="150" rx="140" ry="150" fill="url(#eddie-glow-grad)" opacity="0"/>
+
+  <g id="eddie">
+    <!-- 바닥 그림자 -->
+    <ellipse cx="120" cy="318" rx="64" ry="9" fill="#5a3a06" opacity="0.18"/>
+
+    <!-- 다리 -->
+    <path d="M104 246 C98 266 96 276 96 286" fill="none" stroke="url(#ed-body)" stroke-width="26" stroke-linecap="round"/>
+    <path d="M136 246 C142 266 144 276 144 286" fill="none" stroke="url(#ed-body)" stroke-width="26" stroke-linecap="round"/>
+    <!-- 발 -->
+    <path d="M74 300 Q74 292 84 292 L104 293 Q112 293 112 302 L112 308 Q112 314 104 313 L82 312 Q74 312 74 305 Z" fill="url(#ed-body)"/>
+    <path d="M166 300 Q166 292 156 292 L136 293 Q128 293 128 302 L128 308 Q128 314 136 313 L158 312 Q166 312 166 305 Z" fill="url(#ed-body)"/>
+    <ellipse cx="93" cy="305" rx="13" ry="3" fill="#fff0bd" opacity="0.5"/>
+    <ellipse cx="147" cy="305" rx="13" ry="3" fill="#fff0bd" opacity="0.5"/>
+
+    <!-- 팔뚝 -->
+    <path d="M82 188 C66 206 62 222 70 240" fill="none" stroke="url(#ed-body)" stroke-width="22" stroke-linecap="round"/>
+    <path d="M158 188 C174 206 178 222 170 240" fill="none" stroke="url(#ed-body)" stroke-width="22" stroke-linecap="round"/>
+
+    <!-- 몸통 -->
+    <rect x="80" y="162" width="80" height="84" rx="24" fill="url(#ed-body)"/>
+    <rect x="80" y="162" width="80" height="84" rx="24" fill="url(#ed-body-h)"/>
+    <rect x="80" y="162" width="80" height="84" rx="24" fill="none" stroke="#d98a0c" stroke-width="1.5"/>
+    <!-- 가슴 패널 -->
+    <rect x="97" y="178" width="46" height="26" rx="7" fill="#0e1d2c"/>
+    <circle cx="110" cy="191" r="3.4" fill="#ffd11a"/>
+    <circle cx="122" cy="191" r="3.4" fill="#7fffd4"/>
+    <circle cx="134" cy="191" r="3.4" fill="#ff7a7a"/>
+
+    <!-- 관절 볼 -->
+    <circle cx="104" cy="244" r="14" fill="url(#ed-joint)"/>
+    <circle cx="136" cy="244" r="14" fill="url(#ed-joint)"/>
+    <circle cx="96" cy="288" r="19" fill="url(#ed-joint)"/>
+    <circle cx="144" cy="288" r="19" fill="url(#ed-joint)"/>
+    <circle cx="80" cy="186" r="16" fill="url(#ed-joint)"/>
+    <circle cx="160" cy="186" r="16" fill="url(#ed-joint)"/>
+    <circle cx="68" cy="242" r="14" fill="url(#ed-joint)"/>
+    <circle cx="172" cy="242" r="14" fill="url(#ed-joint)"/>
+
+    <!-- 목 -->
+    <rect x="108" y="150" width="24" height="16" rx="5" fill="#cf8f12"/>
+
+    <!-- 안테나 -->
+    <rect x="117.5" y="14" width="5" height="20" rx="2.5" fill="#cf8f12"/>
+    <circle cx="120" cy="11" r="6" fill="#ffd11a"/>
+    <circle cx="120" cy="11" r="6" fill="none" stroke="#e0a800" stroke-width="1"/>
+    <circle cx="118" cy="9" r="2" fill="#fff7d6"/>
+
+    <!-- 머리 -->
+    <rect x="50" y="32" width="140" height="120" rx="34" fill="url(#ed-body)"/>
+    <rect x="50" y="32" width="140" height="120" rx="34" fill="url(#ed-body-h)"/>
+    <rect x="50" y="32" width="140" height="120" rx="34" fill="none" stroke="#d98a0c" stroke-width="1.5"/>
+    <!-- 머리 상단 하이라이트 -->
+    <path d="M70 56 Q80 40 104 40 L104 50 Q84 52 76 66 Z" fill="#fff3c4" opacity="0.5"/>
+
+    <!-- 귀(볼트) -->
+    <circle cx="48" cy="96" r="13" fill="url(#ed-joint)"/>
+    <circle cx="192" cy="96" r="13" fill="url(#ed-joint)"/>
+    <circle cx="48" cy="96" r="4.5" fill="#6b6c78"/>
+    <circle cx="192" cy="96" r="4.5" fill="#6b6c78"/>
+
+    <!-- 얼굴 스크린 베젤 -->
+    <rect x="66" y="52" width="108" height="84" rx="24" fill="url(#ed-bezel)"/>
+    <rect x="66" y="52" width="108" height="84" rx="24" fill="none" stroke="#7f8a96" stroke-width="1.2"/>
+    <!-- 스크린 -->
+    <rect id="eddie-screen" x="76" y="62" width="88" height="64" rx="17" fill="url(#ed-screen)"/>
+    <!-- 스크린 글로스 -->
+    <path d="M82 68 L132 68 Q108 102 86 122 L82 122 Z" fill="#9fd6ff" opacity="0.07"/>
+
+    <!-- 눈 -->
+    <g id="eddie-eyes">
+      <circle cx="101" cy="90" r="19" fill="#46e8ce" opacity="0.20"/>
+      <circle cx="139" cy="90" r="19" fill="#46e8ce" opacity="0.20"/>
+      <circle cx="101" cy="90" r="13" fill="url(#ed-eye)"/>
+      <circle cx="139" cy="90" r="13" fill="url(#ed-eye)"/>
+      <circle cx="97" cy="85" r="4.2" fill="#ffffff"/>
+      <circle cx="135" cy="85" r="4.2" fill="#ffffff"/>
+    </g>
+
+    <!-- 입 -->
+    <path id="eddie-mouth" d="M100 112 Q120 126 140 112" fill="none" stroke="#46e8ce" stroke-width="5" stroke-linecap="round"/>
+  </g>
+</svg>

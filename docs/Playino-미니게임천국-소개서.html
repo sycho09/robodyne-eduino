@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>Playino : 미니게임천국 — 제품 소개서</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR","WenQuanYi Zen Hei",sans-serif;
+    color: #20242e; line-height: 1.55; font-size: 13px; margin: 0; padding: 24px; }
+  h1 { font-size: 27px; margin: 0; color: #1b2030; }
+  .tag { color: #5a6478; margin: 4px 0 0; font-size: 14px; }
+  .hero { border-bottom: 4px solid #ffb13c; padding-bottom: 14px; margin-bottom: 18px; }
+  .hero .brand { display: inline-block; background: #1b2030; color: #ffd24a; font-weight: 800;
+    padding: 3px 10px; border-radius: 7px; font-size: 12px; letter-spacing: 1px; margin-bottom: 8px; }
+  h2 { font-size: 16px; margin: 22px 0 8px; padding: 6px 12px; background: #f1f3f8; border-left: 5px solid #ff8a3c; border-radius: 4px; color: #1b2030; }
+  table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; }
+  th, td { border: 1px solid #d6dae4; padding: 6px 9px; text-align: left; vertical-align: top; }
+  th { background: #2b3142; color: #fff; font-weight: 700; }
+  tr:nth-child(even) td { background: #f7f8fb; }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+  .out { background: #fff0d6; color: #b5740a; } .in { background: #dcefff; color: #1f6fb0; }
+  .done { background: #dff7e6; color: #1f9d57; } .todo { background: #eee; color: #777; }
+  ul { margin: 4px 0 10px; padding-left: 20px; } li { margin: 3px 0; }
+  .note { color: #6a7387; font-size: 11px; margin-top: 4px; }
+  .foot { margin-top: 22px; border-top: 1px solid #d6dae4; padding-top: 8px; color: #8a90a0; font-size: 11px; }
+  .lead { background: #fff8ee; border: 1px solid #ffe2b8; border-radius: 8px; padding: 10px 14px; }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <span class="brand">EDUINO AI · STEAM KIT</span>
+    <h1>Playino : 미니게임천국</h1>
+    <p class="tag">센서를 <b>미니게임</b>으로 배우는 피지컬 코딩 키트</p>
+  </div>
+
+  <h2>1. 제품 소개</h2>
+  <p class="lead">마스코트 <b>EDDIE</b>와 함께 8개 센서를 미니게임으로 익히고, <b>응용·심화</b>로 나만의 작품까지 완성하는 STEAM 피지컬 코딩 키트입니다. 설치 없이 <b>웹 브라우저</b>로 학습하고, 실물 센서를 직접 제어합니다.</p>
+  <ul>
+    <li><b>핵심 컨셉</b> — 센서 1개 = 전용 미니게임 1개. 게임으로 동기부여하고, 이론관(원리) + 체험관(게임)으로 깊이 있게.</li>
+    <li><b>대상</b> — 초등 고학년 ~ 중등 (가정·방과후·학원·학교 교구)</li>
+    <li><b>학습 환경</b> — Chrome / Edge 브라우저 (PC · 노트북 · 크롬북), USB 연결. 설치 불필요, 접속 링크/코드로 입장.</li>
+    <li><b>구조</b> — 메달을 모아 진척 100% 달성 시 졸업.</li>
+  </ul>
+
+  <h2>2. 학습 구성 (3단계)</h2>
+  <table>
+    <tr><th style="width:18%">단계</th><th style="width:24%">성격</th><th>내용</th></tr>
+    <tr><td><b>1단계 개별학습</b></td><td>센서 원리·제어</td><td>센서별 미니게임 <b>8개</b> — 게임으로 각 센서를 체득</td></tr>
+    <tr><td><b>2단계 응용학습</b></td><td>감지 → 동작 (피지컬 컴퓨팅 핵심)</td><td>입력+출력 조합 작품 <b>4개</b> — "센서로 읽어 무언가를 움직인다"</td></tr>
+    <tr><td><b>3단계 심화학습</b></td><td>창작 (브랜드 클라이맥스)</td><td>나만의 미니 게임기 <b>1개</b> — 배운 센서로 직접 게임 제작 (졸업 작품)</td></tr>
+  </table>
+
+  <h2>3. 구성품 리스트</h2>
+  <p><b>공통</b> — Arduino Uno(호환) 보드 · Grove Base Shield · USB 케이블 · Grove 케이블 · 수납 박스 · 퀵스타트 가이드(QR)</p>
+  <p><b>센서 8종</b> (출력 4 · 입력 4)</p>
+  <table>
+    <tr><th style="width:8%">#</th><th style="width:24%">센서</th><th style="width:14%">입/출력</th><th>대표 게임</th></tr>
+    <tr><td>1</td><td>LED ×3 <span style="color:#888">(빨강·노랑·초록)</span></td><td><span class="pill out">출력</span></td><td>반짝반짝 라이트쇼</td></tr>
+    <tr><td>2</td><td>부저 (Passive)</td><td><span class="pill out">출력</span></td><td>멜로디 연주단</td></tr>
+    <tr><td>3</td><td>RGB LED</td><td><span class="pill out">출력</span></td><td>무지개 물감놀이</td></tr>
+    <tr><td>4</td><td>서보 모터 (SG-90)</td><td><span class="pill out">출력</span></td><td>행운의 룰렛</td></tr>
+    <tr><td>5</td><td>조도센서 (CDS)</td><td><span class="pill in">입력</span></td><td>손그림자 마술</td></tr>
+    <tr><td>6</td><td>버튼 (택트)</td><td><span class="pill in">입력</span></td><td>두더지 잡기</td></tr>
+    <tr><td>7</td><td>조이스틱</td><td><span class="pill in">입력</span></td><td>별★줍기 대모험</td></tr>
+    <tr><td>8</td><td>초음파 거리센서</td><td><span class="pill in">입력</span></td><td>손 거리 마법</td></tr>
+  </table>
+  <p class="note">※ Grove 시스템 기반(무납땜, 케이블 연결식)으로 초·중등도 쉬운 세팅. 무선(BLE) 모듈은 별매 액세서리로 추후 제공. 단가·모델·인증(KC)은 별도 확정.</p>
+
+  <h2>4. 커리큘럼 소개</h2>
+  <p><b>① 개별학습 — 센서별 미니게임 8</b></p>
+  <table>
+    <tr><th style="width:22%">센서</th><th style="width:30%">게임</th><th>장르 / 학습</th></tr>
+    <tr><td>LED</td><td>반짝반짝 라이트쇼</td><td>리듬 · 디지털 출력/타이밍</td></tr>
+    <tr><td>부저</td><td>멜로디 연주단</td><td>리듬 · tone/주파수</td></tr>
+    <tr><td>RGB LED</td><td>무지개 물감놀이</td><td>색 맞추기 · PWM 색 혼합</td></tr>
+    <tr><td>서보</td><td>행운의 룰렛</td><td>타이밍 · 각도 제어</td></tr>
+    <tr><td>조도(CDS)</td><td>손그림자 마술</td><td>반응+생존 · 아날로그 입력(빛)</td></tr>
+    <tr><td>버튼</td><td>두더지 잡기</td><td>연타/반응 · 디지털 입력</td></tr>
+    <tr><td>조이스틱</td><td>별★줍기 대모험</td><td>이동/수집 · 2축 아날로그 입력</td></tr>
+    <tr><td>초음파</td><td>손 거리 마법</td><td>거리 조절 · 비접촉 거리 측정</td></tr>
+  </table>
+
+  <p><b>② 응용학습 — 감지→동작 조합 4</b></p>
+  <table>
+    <tr><th style="width:30%">작품</th><th style="width:28%">센서 조합</th><th>배우는 핵심</th></tr>
+    <tr><td>스마트 홈 미니</td><td>조도 + 초음파 + 서보 + RGB + 부저</td><td>어두우면 조명 ON, 사람 다가오면 문 열림+알림</td></tr>
+    <tr><td>비접촉 테레민</td><td>초음파 + 부저</td><td>손 거리 → 음정 (아날로그 매핑)</td></tr>
+    <tr><td>우주 슈팅</td><td>조이스틱 + RGB/LED</td><td>이동·발사 (입력으로 출력 제어)</td></tr>
+    <tr><td>자동 관문</td><td>버튼/초음파 + 서보</td><td>감지 시 모터 작동 (조건→동작)</td></tr>
+  </table>
+
+  <p><b>③ 심화학습 — 졸업 작품 1</b></p>
+  <table>
+    <tr><th style="width:30%">작품</th><th style="width:28%">센서 조합</th><th>내용</th></tr>
+    <tr><td>🎮 나만의 미니 게임기</td><td>조이스틱 + 버튼 + RGB + 부저</td><td>아두이노가 게임 컨트롤러가 되어, 배운 센서로 직접 미니게임을 완성하는 졸업 작품</td></tr>
+  </table>
+
+  <h2>5. 한눈에 보기</h2>
+  <ul>
+    <li><b>개별 8 → 응용 4 → 심화 1</b> 의 단계적 전개 (응용·심화는 추가 부품 없이 가진 센서 조합)</li>
+    <li>입력 4 · 출력 4 균형 구성으로 "감지하고 반응하는" 피지컬 컴퓨팅을 자연스럽게 학습</li>
+    <li>웹 기반 · 마스코트 가이드 · 메달/진척 시스템으로 혼자서도 끝까지</li>
+  </ul>
+
+  <div class="foot">Eduino AI · Playino : 미니게임천국 — 제품 기획 소개서 (v1) · 본 문서의 구성·단가·인증은 사업/품질 검토로 최종 확정됩니다.</div>
+</body>
+</html>

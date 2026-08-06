@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.local
+.DS_Store
+.vite/
+
+# npm lock은 OS마다 달라 충돌 유발 → 추적 제외
+package-lock.json
