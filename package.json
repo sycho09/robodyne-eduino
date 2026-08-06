@@ -11,11 +11,5 @@
   "devDependencies": {
     "sharp": "^0.34.0",
     "vite": "^5.0.0"
-  },
-  "dependencies": {
-    "@codemirror/lang-cpp": "^6.0.0",
-    "@codemirror/theme-one-dark": "^6.0.0",
-    "blockly": "^11.2.2",
-    "codemirror": "^6.0.0"
   }
 }

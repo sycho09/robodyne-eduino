@@ -6,7 +6,8 @@
 
 import { progress } from '../app/progress.js';
 
-// scene: 셸이 실제로 띄울 씬 키 ('setup'|'house'|'dht11'|'relay'|'game'|null=준비중)
+// scene: 셸이 실제로 띄울 씬 키 — main.js 의 enterRoom 스위치와 1:1 대응.
+//        'setup'|'basics'|'led'|'buzzer'|'rgb'|'cds'|'pot'|'button'|'lamp'|'bomb'|'final'|null(=준비중)
 // status: 'ready'(구현됨) | 'soon'(준비중) — 준비중은 입장 시 안내만
 // concept=학습 개념 / mission=미니게임 한 줄 / reward=모으는 보상(메달·티켓·별)
 const R = (id, chapter, name, icon, concept, mission, reward, scene = null) =>

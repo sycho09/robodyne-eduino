@@ -83,6 +83,8 @@ const ROOMS_CFG = {
     ],
     play: (root, opt) => showPotGame(root, opt),
   },
+  // [보류] joystick·ultra — 커리큘럼(ROOMS)에 방이 없어 현재 진입 경로가 없다.
+  //        BOM 부품 확장 시 방만 추가하면 바로 붙도록 설정·구현을 보존한다.
   joystick: {
     name: '우주 조종 훈련소', sensor: '조이스틱 · X·Y·버튼', icon: '🕹️', accent: '150,120,255',
     room: 'room-joystick-bg', eddie: '/brand/eddie-pilot.webp', signL: '120,200,255', signR: '255,120,220',
