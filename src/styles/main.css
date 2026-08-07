@@ -17,3 +17,4 @@
 @import './parts/03-onboarding.css';    /* 제품 표지·플랫폼 인트로·상품 메인·로그인·사용환경 준비·전역 폴리시 */
 @import './parts/04-games.css';         /* basics·LED·sensorRoom·이론관·부저·RGB·CDS·EDDIE 리깅 */
 @import './parts/05-device-final.css';  /* 기기 모드·터치 조작·CDS 게임·ch4 인터랙티브 쇼 */
+@import './parts/06-legibility.css';    /* 이론관 시인성 패스(원거리 타이포·대비·아이콘) — 이 줄만 빼면 전부 원복 */

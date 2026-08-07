@@ -681,9 +681,9 @@ function ledTheory() {
     { // ① 원리: 전자(−)+정공(+) 만나 빛
       html: `<div class="ba la1">
         <div class="la-field">
-          <div class="la-p e">e⁻<em>전자</em></div>
+          <div class="la-p e"><span class="la-orb">e⁻</span><em>전자</em></div>
           <div class="la-center"><div class="la-flash"></div><div class="la-bulb on"></div></div>
-          <div class="la-p h">h⁺<em>정공</em></div>
+          <div class="la-p h"><span class="la-orb">h⁺</span><em>정공</em></div>
         </div>
         <div class="ba-flow">전자(−)와 정공(+)이 <b>만나면</b> → 빛이 ‘짠!’ 하고 나와요 ✨</div>
       </div>` },
