@@ -189,7 +189,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
       <div class="sr-top"><span class="sr-chip">${cfg.icon}</span> <b>${cfg.name}</b> <span class="sr-sensor">· ${cfg.sensor}</span></div>
       <button class="bx-exit" id="sr-exit">✕ 무대로</button>
       <button class="snd-toggle" id="snd-toggle">${sfx.muted ? '🔇' : '🔊'}</button>
-      <div class="hud-controls">⬅➡ 좌우 이동 · 문 끝까지 가면 입장 · ✕ 무대로</div>
+      <div class="hud-controls">⬅➡ 좌우 이동 · <b>사인을 클릭해도 이동</b> · 문 끝까지 가면 입장 · ✕ 무대로</div>
       <div class="sr-fade" id="sr-fade"></div>
       <div class="sr-theory-view" id="sr-tview" hidden></div>
     </div>`;
@@ -214,9 +214,32 @@ export function showSensorRoom(root, { id, onExit } = {}) {
     draw: (ctx, st) => drawRoom(ctx, st, stations, cfg, VW, VH, roomImgFor(cfg.room)),
   };
 
+  // ── 클릭으로도 갈 수 있게 ──
+  // 사인(또는 문)을 누르면 EDDIE가 그 문까지 걸어가고, 도착하면 위 triggers 가 평소처럼 발동한다.
+  // 입장 로직을 따로 만들지 않고 키보드와 완전히 같은 경로를 타므로 분기가 늘지 않는다.
+  const SIGN_HIT_W = 300, SIGN_HIT_H = 120;   // 이미지 사인(268폭)·폴백 카드(234×94)를 모두 덮는 판정
+  const DOOR_X = { theory: VW * 0.05, play: VW * 0.95 };   // 트리거 구역(≤13% / ≥87%) 안쪽 목표점
+  function hitStation(wx, wy) {
+    for (const s of stations) {
+      if (Math.abs(wx - s.cx) <= SIGN_HIT_W / 2 && Math.abs(wy - s.signY) <= SIGN_HIT_H / 2) return s.id;
+    }
+    if (wx <= VW * 0.13) return 'theory';     // 빛나는 문(양 끝) 자체도 클릭 대상
+    if (wx >= VW * 0.87) return 'play';
+    return null;
+  }
+  function walkToDoor(id) {
+    if (entering || !DOOR_X[id]) return;
+    sfx.hover();
+    world.walkTo(DOOR_X[id]);
+    guide(id === 'theory' ? '이론관으로 갈게! 📖' : '체험관으로 갈게! 🎮', 1500);
+  }
+
   const world = createWorld(host, map, {
     onAuto: enterDoor, onFrame: onFrame,
-    onEddieClick: () => guide('왼쪽=이론관 📖 · 오른쪽=체험관 🎮 — 문 끝까지 걸어가!', 2800),
+    onEddieClick: () => guide('왼쪽=이론관 📖 · 오른쪽=체험관 🎮 — 걸어가거나 사인을 눌러!', 2800),
+    hitTest: hitStation,
+    onHotspot: walkToDoor,
+    onHover: (id) => { for (const s of stations) s.hover = s.id === id; },   // 사인 글로우(=가까이 갔을 때와 동일 연출)
     onDrawOverlay: drawVignette,
   });
   setTimeout(() => guide(cfg.intro), 500);
@@ -979,7 +1002,8 @@ function drawRoom(ctx, st, stations, cfg, VW, VH, roomBg) {
   const px = st?.player ? st.player.x : VW / 2;
   doorGlow(ctx, VW * 0.05, VH, cfg.signL, 1 - Math.min(1, px / (VW * 0.32)));
   doorGlow(ctx, VW * 0.95, VH, cfg.signR, 1 - Math.min(1, (VW - px) / (VW * 0.32)));
-  for (const s of stations) drawSign(ctx, s, s.id === activeId, t);
+  // 마우스를 올린 사인도 '가까이 갔을 때'와 같은 글로우를 준다 — 캔버스라 커서 외엔 힌트가 없다.
+  for (const s of stations) drawSign(ctx, s, s.id === activeId || !!s.hover, t);
 }
 
 function doorGlow(ctx, x, VH, acc, k) {

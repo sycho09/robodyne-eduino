@@ -10,7 +10,16 @@
 //   triggers:[{id,x,y,w,h,auto?}],  // 접촉 영역 (auto=진입 시 자동 발동)
 //   draw(ctx, state),         // 환경 렌더 (월드 좌표)
 // }
-// handlers: { onInteract(id,tr), onAuto(id,tr), onFrame(state), onDrawOverlay(ctx,state,canvas) }
+// handlers: {
+//   onInteract(id,tr), onAuto(id,tr), onFrame(state), onDrawOverlay(ctx,state,canvas),
+//   onEddieClick(sx,sy),
+//   hitTest(wx,wy,state) -> id|null,   // 씬이 '클릭 가능한 곳'을 알려준다(월드 좌표). 기하는 씬 소유.
+//   onHover(id|null),                  // 커서 위 핫스팟이 바뀔 때(캔버스 밖으로 나가면 null)
+//   onHotspot(id),                     // 핫스팟 클릭
+// }
+//
+// 이동은 키보드/조이스틱 외에 walkTo(x,y) 자동 이동도 지원한다. 자동 이동 중 직접 조작이
+// 들어오면 즉시 취소된다(플레이어 조작이 항상 우선).
 
 import eddieSvg from '../assets/eddie.svg?raw';
 import { isTablet, setMode, onModeChange } from '../app/device.js';
@@ -30,6 +39,15 @@ function heroFor(src) { const key = src || DEFAULT_HERO; if (!heroCache[key]) { 
 
 const MOVE_KEYS = ['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'];
 
+const BASE_SPEED = 3.1;   // 직접 걷기 속도(60fps 1프레임당 월드 px)
+
+// walkTo 자동 이동 배속 — 클릭해놓고 오래 기다리긴 싫지만 뛰는 것처럼 보여도 안 된다.
+// '거리에 맞춰 시간을 고정'하는 방식은 화면이 넓을수록 EDDIE가 실제로 빨라져 급해 보이므로,
+// 보이는 걸음걸이가 항상 같도록 단순 배속으로 간다.
+//   1.0 = 직접 걷기와 동일(1920px 에서 문까지 3.8초) · 1.8 = 현재(2.1초) · 3.0 = 뛰는 느낌(1.3초)
+// 느리면 올리고 급하면 내리면 된다. 이 값 하나만 만지면 된다.
+const AUTO_SPEED = 1.8;
+
 export function createWorld(container, map, handlers = {}) {
   const canvas = document.createElement('canvas');
   canvas.className = 'world-canvas';
@@ -48,6 +66,8 @@ export function createWorld(container, map, handlers = {}) {
     cam: { x: 0, y: 0 },
     tint: null,
     raf: 0,
+    goto: null,        // walkTo 목표(월드 좌표, 플레이어 중심 기준). null=자동 이동 없음
+    gotoStall: 0,      // 벽에 막혀 제자리인 프레임 수 — 무한 시도 방지
   };
 
   function resize() {
@@ -72,18 +92,46 @@ export function createWorld(container, map, handlers = {}) {
   window.addEventListener('keydown', kd);
   window.addEventListener('keyup', ku);
 
-  // EDDIE 클릭 → 랜덤 대사 콜백
+  // 화면 좌표 → 월드 좌표(카메라 오프셋 보정)
+  function toWorld(e) {
+    const rect = canvas.getBoundingClientRect();
+    return { mx: e.clientX - rect.left + state.cam.x, my: e.clientY - rect.top + state.cam.y };
+  }
+  const hitEddie = (mx, my) => {
+    const p = state.player;
+    return mx >= p.x - 14 && mx <= p.x + p.w + 14 && my >= p.y - 46 && my <= p.y + p.h + 4;
+  };
+
+  // EDDIE 클릭 → 대사 / 그 외 핫스팟 클릭 → 씬에 위임
   const onPointer = (e) => {
     if (state.paused) return;
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left + state.cam.x;
-    const my = e.clientY - rect.top + state.cam.y;
-    const p = state.player;
-    if (mx >= p.x - 14 && mx <= p.x + p.w + 14 && my >= p.y - 46 && my <= p.y + p.h + 4) {
+    const { mx, my } = toWorld(e);
+    if (hitEddie(mx, my)) {
+      const p = state.player;
       handlers.onEddieClick?.(p.x + p.w / 2 - state.cam.x, p.y + p.h - 58 - state.cam.y);
+      return;
     }
+    const id = handlers.hitTest?.(mx, my, state);
+    if (id) handlers.onHotspot?.(id);
   };
   canvas.addEventListener('pointerdown', onPointer);
+
+  // 커서 피드백 — '눌러도 되는 곳'이라는 걸 알려준다(캔버스라 기본 커서가 아무 힌트도 안 준다).
+  let hoverId = null;
+  function setHover(id) {
+    if (id === hoverId) return;
+    hoverId = id;
+    canvas.style.cursor = id ? 'pointer' : '';
+    handlers.onHover?.(id);
+  }
+  const onHover = (e) => {
+    if (state.paused) { setHover(null); return; }
+    const { mx, my } = toWorld(e);
+    setHover(hitEddie(mx, my) ? '__eddie' : (handlers.hitTest?.(mx, my, state) || null));
+  };
+  const onLeave = () => setHover(null);
+  canvas.addEventListener('pointermove', onHover);
+  canvas.addEventListener('pointerleave', onLeave);
 
   // ── 터치 조작(태블릿 모드) — 아날로그 조이스틱 + 상호작용 버튼. CSS 가 data-mode 로 표시/숨김.
   const touch = document.createElement('div');
@@ -139,7 +187,7 @@ export function createWorld(container, map, handlers = {}) {
   function update(fs) {
     const p = state.player;
     if (!state.paused) {
-      const sp = 3.1 * fs;                      // 60fps 기준 속도 × 경과배율 → 어떤 주사율/FPS 에서도 동일 속도
+      const sp = BASE_SPEED * fs;               // 60fps 기준 속도 × 경과배율 → 어떤 주사율/FPS 에서도 동일 속도
       let dx = 0, dy = 0;
       const j = state.joy;
       if (Math.abs(j.x) > 0.14 || Math.abs(j.y) > 0.14) {   // 아날로그 조이스틱(태블릿)
@@ -153,11 +201,29 @@ export function createWorld(container, map, handlers = {}) {
         if (map.lockVertical) dy = 0;           // 좌우 전용 씬(전시관 복도 등)
         if (dx && dy) { dx *= 0.707; dy *= 0.707; }
       }
+
+      // 자동 이동(walkTo) — 직접 조작이 있으면 취소하고, 없을 때만 목표를 향해 걷는다.
+      if (dx || dy) state.goto = null;
+      else if (state.goto) {
+        const asp = sp * AUTO_SPEED;
+        const gx = state.goto.x - (p.x + p.w / 2);
+        const gy = map.lockVertical ? 0 : state.goto.y - (p.y + p.h / 2);
+        const d = Math.hypot(gx, gy);
+        if (d <= Math.max(2, asp)) state.goto = null;            // 도착
+        else { dx = (gx / d) * asp; dy = (gy / d) * asp; }
+      }
+
       p.moving = !!(dx || dy);
       if (dx < 0) p.face = -1; else if (dx > 0) p.face = 1;
       if (Math.abs(dy) > Math.abs(dx)) { if (dy) p.dir = dy > 0 ? 'down' : 'up'; }
       else if (dx) p.dir = dx > 0 ? 'right' : 'left';
+      const wasX = p.x, wasY = p.y;
       moveAxis(dx, dy);
+      // 벽에 막혀 제자리면 자동 이동을 놓아준다 — 안 그러면 영원히 벽을 민다.
+      if (state.goto) {
+        if (Math.hypot(p.x - wasX, p.y - wasY) < 0.05) { if (++state.gotoStall > 20) state.goto = null; }
+        else state.gotoStall = 0;
+      }
 
       const pc = { x: p.x, y: p.y, w: p.w, h: p.h };
       let active = null;
@@ -273,8 +339,14 @@ export function createWorld(container, map, handlers = {}) {
     state,
     get player() { return state.player; },
     get activeTrigger() { return state.activeTrigger; },
-    pause() { state.paused = true; state.keys.clear(); },
+    pause() { state.paused = true; state.keys.clear(); state.goto = null; },
     resume() { state.paused = false; },
+    // 클릭 자동 이동: 목표는 '플레이어 중심'이 도달할 월드 좌표. y 생략 시 현재 높이 유지.
+    walkTo(x, y) {
+      const p = state.player;
+      state.goto = { x, y: y == null ? p.y + p.h / 2 : y };
+      state.gotoStall = 0;
+    },
     setTint(c) { state.tint = c; },
     disableTrigger(id) { state.disabled.add(id); },
     enableTrigger(id) { state.disabled.delete(id); },
@@ -285,6 +357,8 @@ export function createWorld(container, map, handlers = {}) {
       window.removeEventListener('keydown', kd);
       window.removeEventListener('keyup', ku);
       canvas.removeEventListener('pointerdown', onPointer);
+      canvas.removeEventListener('pointermove', onHover);
+      canvas.removeEventListener('pointerleave', onLeave);
       unsubMode();
       touch.remove();
       canvas.remove();

@@ -132,6 +132,9 @@ body[data-canback="1"] .led-hud { left: 116px !important; }   /* 게임 HUD도 �
 
 /* ===== EDDIE 머리 위 따라다니는 말풍선(광장·무대 공용) ===== */
 .eddie-bubble {
+  /* 순수 장식(대사만 띄운다). pointer-events 를 열어두면 opacity:0 으로 숨은 상태에서도
+     히트테스트에 걸려, EDDIE 주변 캔버스 클릭(사인 클릭 등)을 조용히 삼킨다. */
+  pointer-events: none;
   position: absolute; z-index: 7; transform: translate(-50%, -100%);
   max-width: 300px; padding: 10px 15px; border-radius: 15px;
   background: #fff; color: #1c2333; font-weight: 700; font-size: 14px; line-height: 1.45;
