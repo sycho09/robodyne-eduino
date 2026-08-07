@@ -10,6 +10,7 @@ import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
 import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { icon } from '../app/icons.js';
 
 const PINS = [4, 5];   // 0=청기(파랑·D4·포트3), 1=백기(흰·D5·포트4)
 const FLAGS = PINS.length;
@@ -34,7 +35,7 @@ export function showFlagGame(root, { onExit, onComplete, skipPrep } = {}) {
     <div class="led scene-fade joygame flaggame">
       <div class="joy-stage-bg" id="fl-bg"></div>
       <div class="brand-badge"><span class="brand-dot"></span>Eduino&nbsp;<b>AI</b></div>
-      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? '🔇' : '🔊'}</button>
+      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? icon('volume-off', 18) : icon('speaker', 18)}</button>
       <button class="bx-exit" id="fl-exit">✕ 전시관으로</button>
       <button class="bx-exit led-skip" id="fl-skip" hidden>⏭ 건너뛰기(테스트)</button>
       <div class="world-host" id="fl-host"></div>
@@ -86,7 +87,7 @@ export function showFlagGame(root, { onExit, onComplete, skipPrep } = {}) {
   const host = root.querySelector('#fl-host');
   const canvas = document.createElement('canvas'); canvas.className = 'world-canvas'; host.appendChild(canvas);
   const ctx = canvas.getContext('2d');
-  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { const m = sfx.toggle(); snd.textContent = m ? '🔇' : '🔊'; };
+  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { const m = sfx.toggle(); snd.innerHTML = m ? icon('volume-off', 18) : icon('speaker', 18); };
   root.querySelector('#fl-exit').onclick = () => { cleanup(); onExit?.(); };
   const elScore = root.querySelector('#fl-score'), elTarget = root.querySelector('#fl-target'), elLeft = root.querySelector('#fl-left'), elStage = root.querySelector('#fl-stage'), elCombo = root.querySelector('#fl-combo');
   const hud = root.querySelector('#fl-hud'), pads = root.querySelector('#fl-pads'), skipBtn = root.querySelector('#fl-skip');
@@ -135,7 +136,7 @@ export function showFlagGame(root, { onExit, onComplete, skipPrep } = {}) {
   function stopHw() { if (hwTimer) { clearInterval(hwTimer); hwTimer = null; } for (let i = 0; i < FLAGS; i++) { rings[i].length = 0; rest[i] = null; pressed[i] = false; } }
 
   const pstat = root.querySelector('#fl-pstat');
-  root.querySelector('#fl-connect').onclick = async () => { const b = root.querySelector('#fl-connect'); try { await board.connect(); b.textContent = '🔌 연결됨 ✓'; startHw(); pstat.innerHTML = '버튼을 한 번씩 눌러봐! 깃발이 오르락내리락 하면 준비 끝 🚩'; } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
+  root.querySelector('#fl-connect').onclick = async () => { const b = root.querySelector('#fl-connect'); try { await board.connect(); b.innerHTML = icon('usb', 17) + ' 연결됨 ✓'; startHw(); pstat.innerHTML = '버튼을 한 번씩 눌러봐! 깃발이 오르락내리락 하면 준비 끝 🚩'; } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
   board.connectAuto().then(() => startHw()).catch(() => {});
   root.querySelector('#fl-start').onclick = () => { root.querySelector('#fl-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); };
   if (skipPrep) setTimeout(() => { const p = root.querySelector('#fl-prep'); if (p) p.classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); }, 0);   // 순차 플레이: 결선 안내 건너뛰고 바로 시작

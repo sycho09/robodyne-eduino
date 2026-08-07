@@ -4,6 +4,7 @@
 import { sfx } from '../app/sfx.js';
 import { mountCurriculumHeader } from '../app/curriculumHeader.js';
 import { getChapter, chapterRooms, isRoomCleared } from '../content/curriculum.js';
+import { icon } from '../app/icons.js';
 
 const PAL = ['255,170,60', '255,110,170', '90,170,255', '150,130,255', '90,210,150', '255,140,90'];
 
@@ -15,7 +16,7 @@ export function showChapterSelect(root, { chapter, onRoom, onExit, onChapter, sp
     <div class="chsel chsel--poster scene-fade">
       <div class="chsel-bg" id="cs-bg"></div>
       <div class="chsel-shade"></div>
-      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? '🔇' : '🔊'}</button>
+      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? icon('volume-off', 18) : icon('speaker', 18)}</button>
       <div class="chsel-body">
         <button class="chsel-arw chsel-prev" id="cs-prev" aria-label="이전">◀</button>
         <div class="chsel-viewport"><div class="chsel-track" id="cs-track">
@@ -55,7 +56,7 @@ export function showChapterSelect(root, { chapter, onRoom, onExit, onChapter, sp
   const dots = [...root.querySelectorAll('#cs-dots i')];
   const metaEl = root.querySelector('#cs-meta');
   const playBtn = root.querySelector('#cs-play');
-  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { snd.textContent = sfx.toggle() ? '🔇' : '🔊'; };
+  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { snd.innerHTML = sfx.toggle() ? icon('volume-off', 18) : icon('speaker', 18); };
 
   // 메달 현황(이 챕터에서 딴 메달 수) — 흰색 이탤릭 텍스트
   const medalTot = rooms.length, medalGot = rooms.filter((r) => isRoomCleared(r.id)).length;

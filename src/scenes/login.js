@@ -2,6 +2,7 @@
 // 데모: 아무 코드나(또는 빈칸) 입장 가능. 메인과 동일 완성도(배지·사운드·말풍선·인터랙션).
 import { mountEddieRig } from '../app/eddieRig.js';
 import { sfx } from '../app/sfx.js';
+import { icon } from '../app/icons.js';
 
 const LINES = ['구매 후 받은 6자리 접속 코드를 입력해줘!', '코드를 모르면 고객센터로 문의해줘 📞', '코드 입력하면 바로 출발! 🚀', '천국에서 만나자! 🎮'];
 
@@ -10,7 +11,7 @@ export function showLogin(root, { onDone } = {}) {
     <div class="lg scene-fade">
       <div class="pm-bg" id="lg-bg"></div>
       <div class="pm-blobs"><span></span><span></span><span></span><span></span></div>
-      <button class="snd-toggle" id="snd-toggle" title="소리 켜기/끄기">${sfx.muted ? '🔇' : '🔊'}</button>
+      <button class="snd-toggle" id="snd-toggle" title="소리 켜기/끄기">${sfx.muted ? icon('volume-off', 18) : icon('speaker', 18)}</button>
       <div class="brand-badge"><span class="brand-dot"></span>Eduino&nbsp;<b>AI</b></div>
       <div class="lg-inner">
         <div class="lg-card">
@@ -63,7 +64,7 @@ export function showLogin(root, { onDone } = {}) {
 
   // 사운드 토글
   const snd = root.querySelector('#snd-toggle');
-  snd.onclick = () => { const m = sfx.toggle(); snd.textContent = m ? '🔇' : '🔊'; if (!m) sfx.click(); };
+  snd.onclick = () => { const m = sfx.toggle(); snd.innerHTML = m ? icon('volume-off', 18) : icon('speaker', 18); if (!m) sfx.click(); };
 
   // 입장 (데모: 무조건 통과)
   const go = () => { sfx.start(); onDone?.(); };

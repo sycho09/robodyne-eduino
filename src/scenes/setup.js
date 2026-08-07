@@ -5,6 +5,7 @@ import { board } from '../app/board.js';
 import { mountMonitor } from '../app/monitor.js';
 import { mountEddieRig } from '../app/eddieRig.js';
 import { sfx } from '../app/sfx.js';
+import { icon } from '../app/icons.js';
 
 const BUILTIN_LED = 13;
 
@@ -24,7 +25,7 @@ export function showSetup(root, { onDone }) {
     <div class="setup2 scene-fade">
       <div class="pm-bg" id="su-bg"></div>
       <div class="pm-blobs"><span></span><span></span><span></span><span></span></div>
-      <button class="snd-toggle" id="snd-toggle" title="소리 켜기/끄기">${sfx.muted ? '🔇' : '🔊'}</button>
+      <button class="snd-toggle" id="snd-toggle" title="소리 켜기/끄기">${sfx.muted ? icon('volume-off', 18) : icon('speaker', 18)}</button>
       <div class="brand-badge"><span class="brand-dot"></span>Eduino&nbsp;<b>AI</b></div>
       <div class="su-wrap">
         <div class="su-stage">
@@ -61,7 +62,7 @@ export function showSetup(root, { onDone }) {
   goBtn.addEventListener('click', () => { sfx.start(); onDone?.(); });
   root.querySelector('#su-skip').addEventListener('click', () => { sfx.click(); onDone?.(); });
   const snd = root.querySelector('#snd-toggle');
-  snd.onclick = () => { const m = sfx.toggle(); snd.textContent = m ? '🔇' : '🔊'; if (!m) sfx.click(); };
+  snd.onclick = () => { const m = sfx.toggle(); snd.innerHTML = m ? icon('volume-off', 18) : icon('speaker', 18); if (!m) sfx.click(); };
 
   const speak = (t) => { speechEl.textContent = t; speechEl.classList.remove('pop'); void speechEl.offsetWidth; speechEl.classList.add('pop'); };
 

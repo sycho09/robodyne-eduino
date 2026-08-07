@@ -188,7 +188,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
       <div class="world-host" id="world-host"></div>
       <div class="sr-top"><span class="sr-chip">${cfg.icon}</span> <b>${cfg.name}</b> <span class="sr-sensor">· ${cfg.sensor}</span></div>
       <button class="bx-exit" id="sr-exit">✕ 무대로</button>
-      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? '🔇' : '🔊'}</button>
+      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? icon('volume-off', 18) : icon('speaker', 18)}</button>
       <div class="hud-controls">⬅➡ 좌우 이동 · <b>사인을 클릭해도 이동</b> · 문 끝까지 가면 입장 · ✕ 무대로</div>
       <div class="sr-fade" id="sr-fade"></div>
       <div class="sr-theory-view" id="sr-tview" hidden></div>
@@ -196,7 +196,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
 
   const host = root.querySelector('#world-host');
   const fade = root.querySelector('#sr-fade');
-  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { const m = sfx.toggle(); snd.textContent = m ? '🔇' : '🔊'; };
+  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { const m = sfx.toggle(); snd.innerHTML = m ? icon('volume-off', 18) : icon('speaker', 18); };
   root.querySelector('#sr-exit').onclick = () => { sfx.pop(); destroyAll(); onExit?.(); };
   const bubble = document.createElement('div'); bubble.className = 'eddie-bubble'; host.appendChild(bubble);
   let bubbleT = null;
@@ -344,7 +344,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
         <div class="kb">
           <p class="kb-info">🎹 계이름을 눌러 연주! 음이 <b>높을수록 주파수(Hz)</b>가 커져. <span class="kb-pin">🔊 테스트: 부저를 <b>D5</b>에 연결</span></p>
           <div class="kb-keys sq">${NOTES.map((n, i) => `<button class="kb-key" data-i="${i}"><b>${n[0]}</b><span>${n[1]}Hz</span></button>`).join('')}</div>
-          <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 부저)'}</button>
+          <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? icon('usb', 17) + ' 보드 연결됨 ✓' : icon('usb', 17) + ' 보드 연결(실물 부저)'}</button>
           <div class="dc-status" id="dc-status">${board.connected ? '누르면 실제 부저가 소리나! 🔊' : '연결하면 실제 부저음이 나요. (안 해도 화면 소리로 체험)'}</div>
         </div>`;
       const status = bodyEl.querySelector('#dc-status'), connBtn = bodyEl.querySelector('#dc-conn');
@@ -356,11 +356,11 @@ export function showSensorRoom(root, { id, onExit } = {}) {
       bodyEl.querySelectorAll('.kb-key').forEach((b) => b.addEventListener('pointerdown', (e) => { e.preventDefault(); play(b); }));
       connBtn.onclick = async () => {
         if (board.connected) return; status.textContent = '연결 중… 포트를 골라주세요 🔌';
-        try { await board.connect(); connBtn.textContent = '🔌 보드 연결됨 ✓'; status.textContent = '누르면 실제 부저가 소리나! 🔊'; }
+        try { await board.connect(); connBtn.innerHTML = icon('usb', 17) + ' 보드 연결됨 ✓'; status.textContent = '누르면 실제 부저가 소리나! 🔊'; }
         catch (e) { status.textContent = board.classify(e).note; }
       };
       if (stateUnsub) stateUnsub();
-      stateUnsub = board.onState(() => { const c = board.connected; connBtn.textContent = c ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 부저)'; if (!c) status.textContent = '보드 연결이 끊겼어요 — 다시 [보드 연결]을 눌러줘'; });
+      stateUnsub = board.onState(() => { const c = board.connected; connBtn.innerHTML = c ? icon('usb', 17) + ' 보드 연결됨 ✓' : icon('usb', 17) + ' 보드 연결(실물 부저)'; if (!c) status.textContent = '보드 연결이 끊겼어요 — 다시 [보드 연결]을 눌러줘'; });
     }
 
     // RGB 색 섞기 대시보드: R/G/B 슬라이더(0~255) → 실시간 색 미리보기 + 프리셋. 보드 연결 시 실제 RGB LED(PWM)
@@ -389,7 +389,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
               <div class="dc-h">${icon('palette', 20)} 프리셋 색</div>
               <div class="rgb-presets">${PRESETS.map((p, i) => `<button class="rgb-chip" data-i="${i}" style="background:rgb(${p[1]},${p[2]},${p[3]})" title="${p[0]}"></button>`).join('')}</div>
             </div>
-            <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 RGB LED)'}</button>
+            <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? icon('usb', 17) + ' 보드 연결됨 ✓' : icon('usb', 17) + ' 보드 연결(실물 RGB LED)'}</button>
             <div class="dc-status" id="dc-status">${board.connected ? '슬라이더로 실제 RGB LED 색을 바꿔봐! 🌈' : '연결하면 실제 RGB LED가 같은 색으로 빛나요. (안 해도 화면으로 체험)'}</div>
           </div>
         </div>`;
@@ -412,13 +412,13 @@ export function showSensorRoom(root, { id, onExit } = {}) {
       const connBtn = bodyEl.querySelector('#dc-conn');
       connBtn.onclick = async () => {
         if (board.connected) return; status.textContent = '연결 중… 포트를 골라주세요 🔌';
-        try { await board.connect(); connBtn.textContent = '🔌 보드 연결됨 ✓'; status.textContent = '슬라이더로 실제 RGB LED 색을 바꿔봐! 🌈'; paint(true); }
+        try { await board.connect(); connBtn.innerHTML = icon('usb', 17) + ' 보드 연결됨 ✓'; status.textContent = '슬라이더로 실제 RGB LED 색을 바꿔봐! 🌈'; paint(true); }
         catch (e) { status.textContent = board.classify(e).note; }
       };
       if (stateUnsub) stateUnsub();
       stateUnsub = board.onState(() => {
         const c = board.connected;
-        connBtn.textContent = c ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 RGB LED)';
+        connBtn.innerHTML = c ? icon('usb', 17) + ' 보드 연결됨 ✓' : icon('usb', 17) + ' 보드 연결(실물 RGB LED)';
         if (!c) status.textContent = '보드 연결이 끊겼어요 — 다시 [보드 연결]을 눌러줘';
       });
     }
@@ -444,7 +444,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
               <div class="dc-h">${icon('sun', 20)} 빛 시뮬 <span>연결 안 했을 때 체험</span></div>
               <input type="range" id="cds-sim" min="0" max="1023" value="760">
             </div>
-            <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 CDS)'}</button>
+            <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? icon('usb', 17) + ' 보드 연결됨 ✓' : icon('usb', 17) + ' 보드 연결(실물 CDS)'}</button>
             <div class="dc-status" id="dc-status">${board.connected ? '센서 위에서 손을 움직여봐! 🖐️' : '연결하면 실제 빛 값이 실시간으로 보여요. (안 해도 슬라이더로 체험)'}</div>
           </div>
         </div>`;
@@ -468,13 +468,13 @@ export function showSensorRoom(root, { id, onExit } = {}) {
       const connBtn = bodyEl.querySelector('#dc-conn');
       connBtn.onclick = async () => {
         if (board.connected) return; status.textContent = '연결 중… 포트를 골라주세요 🔌';
-        try { await board.connect(); connBtn.textContent = '🔌 보드 연결됨 ✓'; status.textContent = '센서 위에서 손을 움직여봐! 🖐️'; startPoll(); }
+        try { await board.connect(); connBtn.innerHTML = icon('usb', 17) + ' 보드 연결됨 ✓'; status.textContent = '센서 위에서 손을 움직여봐! 🖐️'; startPoll(); }
         catch (e) { status.textContent = board.classify(e).note; }
       };
       if (stateUnsub) stateUnsub();
       stateUnsub = board.onState(() => {
         const c = board.connected;
-        connBtn.textContent = c ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 CDS)';
+        connBtn.innerHTML = c ? icon('usb', 17) + ' 보드 연결됨 ✓' : icon('usb', 17) + ' 보드 연결(실물 CDS)';
         if (!c) { status.textContent = '보드 연결이 끊겼어요 — 슬라이더로 체험하거나 다시 연결!'; }
         startPoll();
       });
@@ -495,7 +495,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
               <div class="dc-h">${icon('chart', 20)} 조이스틱 값 <span>0~1023 · 중앙 512</span></div>
               <div class="joy-read"><span>X <b id="joy-x">512</b></span><span>Y <b id="joy-y">512</b></span><span class="joy-dir" id="joy-dir">● 중앙</span></div>
             </div>
-            <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 조이스틱)'}</button>
+            <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? icon('usb', 17) + ' 보드 연결됨 ✓' : icon('usb', 17) + ' 보드 연결(실물 조이스틱)'}</button>
             <div class="dc-status" id="dc-status">${board.connected ? '실물 조이스틱을 움직여봐! 🕹️' : '드래그로 체험하거나, 연결하면 실물 값이 보여요.'}</div>
           </div>
         </div>`;
@@ -532,9 +532,9 @@ export function showSensorRoom(root, { id, onExit } = {}) {
       }
       startPoll();
       const connBtn = bodyEl.querySelector('#dc-conn');
-      connBtn.onclick = async () => { if (board.connected) return; status.textContent = '연결 중… 포트를 골라주세요 🔌'; try { await board.connect(); connBtn.textContent = '🔌 보드 연결됨 ✓'; status.textContent = '실물 조이스틱을 움직여봐! 🕹️'; startPoll(); } catch (e) { status.textContent = board.classify(e).note; } };
+      connBtn.onclick = async () => { if (board.connected) return; status.textContent = '연결 중… 포트를 골라주세요 🔌'; try { await board.connect(); connBtn.innerHTML = icon('usb', 17) + ' 보드 연결됨 ✓'; status.textContent = '실물 조이스틱을 움직여봐! 🕹️'; startPoll(); } catch (e) { status.textContent = board.classify(e).note; } };
       if (stateUnsub) stateUnsub();
-      stateUnsub = board.onState(() => { const c = board.connected; connBtn.textContent = c ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 조이스틱)'; startPoll(); if (!c) show(0, 0); });
+      stateUnsub = board.onState(() => { const c = board.connected; connBtn.innerHTML = c ? icon('usb', 17) + ' 보드 연결됨 ✓' : icon('usb', 17) + ' 보드 연결(실물 조이스틱)'; startPoll(); if (!c) show(0, 0); });
     }
 
     // 초음파 거리 모니터: 손을 가까이/멀리 → 거리(cm) 실시간. 연결 전엔 마우스 상하로 체험.
@@ -552,7 +552,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
               <div class="dc-h">${icon('ruler', 20)} 거리 <span>가까울수록 작은 cm</span></div>
               <div class="joy-read"><span class="joy-dir" id="ult-cm">— cm</span></div>
             </div>
-            <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 센서)'}</button>
+            <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? icon('usb', 17) + ' 보드 연결됨 ✓' : icon('usb', 17) + ' 보드 연결(실물 센서)'}</button>
             <div class="dc-status" id="dc-status">${board.connected ? '센서 앞에 손을 움직여봐! 📡' : '마우스를 위/아래로 움직여 체험하거나, 연결하면 실제 거리가 보여요.'}</div>
           </div>
         </div>`;
@@ -581,9 +581,9 @@ export function showSensorRoom(root, { id, onExit } = {}) {
       function startPoll() { stopJoyPoll(); if (!board.connected) return; if (fwWarn()) return; joyTimer = setInterval(async () => { const cm = await board.readUltrasonic({ trig: P.trig, echo: P.echo }); if (cm != null && cm > 0) show(cm); }, 120); }
       startPoll();
       const connBtn = bodyEl.querySelector('#dc-conn');
-      connBtn.onclick = async () => { if (board.connected) return; status.textContent = '연결 중… 포트를 골라주세요 🔌'; try { await board.connect(); connBtn.textContent = '🔌 보드 연결됨 ✓'; status.textContent = '센서 앞에 손을 움직여봐! 📡'; startPoll(); } catch (e) { status.textContent = board.classify(e).note; } };
+      connBtn.onclick = async () => { if (board.connected) return; status.textContent = '연결 중… 포트를 골라주세요 🔌'; try { await board.connect(); connBtn.innerHTML = icon('usb', 17) + ' 보드 연결됨 ✓'; status.textContent = '센서 앞에 손을 움직여봐! 📡'; startPoll(); } catch (e) { status.textContent = board.classify(e).note; } };
       if (stateUnsub) stateUnsub();
-      stateUnsub = board.onState(() => { const c = board.connected; connBtn.textContent = c ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 센서)'; startPoll(); });
+      stateUnsub = board.onState(() => { const c = board.connected; connBtn.innerHTML = c ? icon('usb', 17) + ' 보드 연결됨 ✓' : icon('usb', 17) + ' 보드 연결(실물 센서)'; startPoll(); });
     }
 
     // 버튼 입력 모니터: 버튼을 누르면 램프 ON. 연결 전엔 화면 버튼을 눌러 체험.
@@ -599,7 +599,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
           <div class="dash-cards">
             <div class="dcard"><div class="dc-h">${icon('monitor', 20)} 입력 상태 <span>눌림 = 1(ON)</span></div>
               <div class="joy-read"><span>1 <b id="bs0">0</b></span><span>2 <b id="bs1">0</b></span></div></div>
-            <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 버튼)'}</button>
+            <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? icon('usb', 17) + ' 보드 연결됨 ✓' : icon('usb', 17) + ' 보드 연결(실물 버튼)'}</button>
             <div class="dc-status" id="dc-status">${board.connected ? '버튼을 눌러봐! 🔘' : '화면 버튼을 누르거나, 연결하면 실물 버튼이 켜져요.'}</div>
           </div>
         </div>`;
@@ -617,9 +617,9 @@ export function showSensorRoom(root, { id, onExit } = {}) {
       }
       startPoll();
       const connBtn = bodyEl.querySelector('#dc-conn');
-      connBtn.onclick = async () => { if (board.connected) return; status.textContent = '연결 중… 포트를 골라주세요 🔌'; try { await board.connect(); connBtn.textContent = '🔌 보드 연결됨 ✓'; status.textContent = '버튼을 눌러봐! 🔘'; startPoll(); } catch (e) { status.textContent = board.classify(e).note; } };
+      connBtn.onclick = async () => { if (board.connected) return; status.textContent = '연결 중… 포트를 골라주세요 🔌'; try { await board.connect(); connBtn.innerHTML = icon('usb', 17) + ' 보드 연결됨 ✓'; status.textContent = '버튼을 눌러봐! 🔘'; startPoll(); } catch (e) { status.textContent = board.classify(e).note; } };
       if (stateUnsub) stateUnsub();
-      stateUnsub = board.onState(() => { const c = board.connected; connBtn.textContent = c ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 버튼)'; startPoll(); });
+      stateUnsub = board.onState(() => { const c = board.connected; connBtn.innerHTML = c ? icon('usb', 17) + ' 보드 연결됨 ✓' : icon('usb', 17) + ' 보드 연결(실물 버튼)'; startPoll(); });
     }
 
     // 자료: 큰 슬라이드 + 흰 박스 밖(여백)의 EDDIE가 설명
@@ -667,7 +667,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
               <div class="dc-h">${icon('timer', 20)} 깜빡임 <span>속도 <b id="b-spd">0.4초</b></span></div>
               <div class="dc-row"><button class="dbtn ghost" id="b-toggle">▶ 깜빡이기</button><input type="range" id="b-range" min="120" max="1000" step="20" value="400"></div>
             </div>
-            <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 LED)'}</button>
+            <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? icon('usb', 17) + ' 보드 연결됨 ✓' : icon('usb', 17) + ' 보드 연결(실물 LED)'}</button>
             <div class="dc-status" id="dc-status">${board.connected ? '버튼으로 실제 13번 LED를 제어해봐!' : '연결하면 실제 LED도 제어돼요. (안 해도 화면으로 체험)'}</div>
           </div>
         </div>`;
@@ -695,14 +695,14 @@ export function showSensorRoom(root, { id, onExit } = {}) {
       const connBtn = bodyEl.querySelector('#dc-conn');
       connBtn.onclick = async () => {
         if (board.connected) return; status.textContent = '연결 중… 포트를 골라주세요 🔌';
-        try { await board.connect(); connBtn.textContent = '🔌 보드 연결됨 ✓'; status.textContent = '버튼으로 실제 13번 LED를 제어해봐!'; }
+        try { await board.connect(); connBtn.innerHTML = icon('usb', 17) + ' 보드 연결됨 ✓'; status.textContent = '버튼으로 실제 13번 LED를 제어해봐!'; }
         catch (e) { status.textContent = board.classify(e).note; }
       };
       // 보드 상태 실시간 반영(케이블 분리 등) — 통일된 board 상태 구독
       if (stateUnsub) stateUnsub();
       stateUnsub = board.onState(() => {
         const c = board.connected;
-        connBtn.textContent = c ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 LED)';
+        connBtn.innerHTML = c ? icon('usb', 17) + ' 보드 연결됨 ✓' : icon('usb', 17) + ' 보드 연결(실물 LED)';
         if (!c) { stopBlink(); setLed(false, false); status.textContent = '보드 연결이 끊겼어요 — 다시 [보드 연결]을 눌러줘'; }
       });
     }

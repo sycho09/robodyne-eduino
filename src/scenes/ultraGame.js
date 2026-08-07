@@ -10,6 +10,7 @@ import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
 import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { icon } from '../app/icons.js';
 
 const PINS = { trig: 4, echo: 3 };
 const GO_LO = 8, GO_HI = 35;     // GO존(cm): 이 안이면 걷기, 밖이면(너무 가깝거나 멀거나/없음) 멈춤
@@ -32,7 +33,7 @@ export function showUltraGame(root, { onExit } = {}) {
     <div class="led scene-fade joygame ultragame">
       <div class="joy-stage-bg" id="ug-bg"></div>
       <div class="brand-badge"><span class="brand-dot"></span>Eduino&nbsp;<b>AI</b></div>
-      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? '🔇' : '🔊'}</button>
+      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? icon('volume-off', 18) : icon('speaker', 18)}</button>
       <button class="bx-exit" id="ug-exit">✕ 전시관으로</button>
       <button class="bx-exit led-skip" id="ug-skip" hidden>⏭ 건너뛰기(테스트)</button>
       <div class="world-host" id="ug-host"></div>
@@ -80,7 +81,7 @@ export function showUltraGame(root, { onExit } = {}) {
   const host = root.querySelector('#ug-host');
   const canvas = document.createElement('canvas'); canvas.className = 'world-canvas'; host.appendChild(canvas);
   const ctx = canvas.getContext('2d');
-  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { const m = sfx.toggle(); snd.textContent = m ? '🔇' : '🔊'; };
+  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { const m = sfx.toggle(); snd.innerHTML = m ? icon('volume-off', 18) : icon('speaker', 18); };
   root.querySelector('#ug-exit').onclick = () => { cleanup(); onExit?.(); };
   const elHp = root.querySelector('#ug-hp'), elStage = root.querySelector('#ug-stage'), elDist = root.querySelector('#ug-dist'), elLight = root.querySelector('#ug-light');
   const hud = root.querySelector('#ug-hud'), skipBtn = root.querySelector('#ug-skip');
@@ -135,7 +136,7 @@ export function showUltraGame(root, { onExit } = {}) {
     };
     return true;
   }
-  root.querySelector('#ug-connect').onclick = async () => { const b = root.querySelector('#ug-connect'); try { await board.connect(); b.textContent = '🔌 연결됨 ✓'; startHw(); fwCheck(); } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
+  root.querySelector('#ug-connect').onclick = async () => { const b = root.querySelector('#ug-connect'); try { await board.connect(); b.innerHTML = icon('usb', 17) + ' 연결됨 ✓'; startHw(); fwCheck(); } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
   board.connectAuto().then(() => { startHw(); fwCheck(); }).catch(() => {});
   root.querySelector('#ug-start').onclick = () => { root.querySelector('#ug-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); };
 

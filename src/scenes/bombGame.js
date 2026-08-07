@@ -7,6 +7,7 @@ import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
 import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { icon } from '../app/icons.js';
 
 const ADC = 0, LED = 13, PASS_ACC = 0.8;   // 가변저항 A0(입력) · LED D13(출력)
 const ACTS = [
@@ -37,7 +38,7 @@ export function showBombGame(root, { onExit, onComplete } = {}) {
     <div class="led scene-fade bombgame">
       <div class="pot-stage-bg" id="bm-bg" style="position:absolute;inset:0;z-index:0;background:#1a0e0e center/cover no-repeat;"></div>
       <div class="brand-badge"><span class="brand-dot"></span>Eduino&nbsp;<b>AI</b></div>
-      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? '🔇' : '🔊'}</button>
+      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? icon('volume-off', 18) : icon('speaker', 18)}</button>
       <button class="bx-exit" id="bm-exit">✕ 전시관으로</button>
       <button class="bx-exit led-skip" id="bm-skip" hidden>⏭ 건너뛰기(테스트)</button>
       <div class="world-host" id="bm-host"></div>
@@ -78,7 +79,7 @@ export function showBombGame(root, { onExit, onComplete } = {}) {
   const host = root.querySelector('#bm-host');
   const canvas = document.createElement('canvas'); canvas.className = 'world-canvas'; host.appendChild(canvas);
   const ctx = canvas.getContext('2d');
-  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { snd.textContent = sfx.toggle() ? '🔇' : '🔊'; };
+  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { snd.innerHTML = sfx.toggle() ? icon('volume-off', 18) : icon('speaker', 18); };
   root.querySelector('#bm-exit').onclick = () => { cleanup(); onExit?.(); };
   const elHit = root.querySelector('#bm-hit'), elTot = root.querySelector('#bm-tot'), elCombo = root.querySelector('#bm-combo'), elScore = root.querySelector('#bm-score'), elAct = root.querySelector('#bm-act'), elHlbl = root.querySelector('#bm-hlbl');
   const hud = root.querySelector('#bm-hud'), fader = root.querySelector('#bm-fader'), faderLbl = root.querySelector('#bm-faderlbl'), faderHint = root.querySelector('#bm-faderhint'), range = root.querySelector('#bm-range'), skipBtn = root.querySelector('#bm-skip');
@@ -117,7 +118,7 @@ export function showBombGame(root, { onExit, onComplete } = {}) {
   function sendLed(o) { if (o === lastLedSent) return; lastLedSent = o; if (board.connected) board.digital(LED, o).catch(() => {}); }
   function ledOff() { lastLedSent = null; if (board.connected) board.digital(LED, false).catch(() => {}); }
 
-  root.querySelector('#bm-connect').onclick = async () => { const b = root.querySelector('#bm-connect'); try { await board.connect(); b.textContent = '🔌 연결됨 ✓'; startSense(); } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
+  root.querySelector('#bm-connect').onclick = async () => { const b = root.querySelector('#bm-connect'); try { await board.connect(); b.innerHTML = icon('usb', 17) + ' 연결됨 ✓'; startSense(); } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
   board.connectAuto().then(() => startSense()).catch(() => {});
   root.querySelector('#bm-start').onclick = () => { root.querySelector('#bm-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); };
 

@@ -9,6 +9,7 @@ import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
 import { isTablet } from '../app/device.js';
 import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { icon } from '../app/icons.js';
 
 const PIN = 5, LANES = 4, KEYS = ['d', 'f', 'j', 'k'];
 const LEAD = 1600, W_PERFECT = 110, W_GOOD = 200, PASS_ACC = 0.85;
@@ -35,7 +36,7 @@ export function showBuzzerGame(root, { onExit } = {}) {
   root.innerHTML = `
     <div class="led scene-fade">
       <div class="brand-badge"><span class="brand-dot"></span>Eduino&nbsp;<b>AI</b></div>
-      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? '🔇' : '🔊'}</button>
+      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? icon('volume-off', 18) : icon('speaker', 18)}</button>
       <button class="bx-exit" id="bz-exit">✕ 전시관으로</button>
       <button class="bx-exit led-skip" id="bz-skip" hidden>⏭ 건너뛰기(테스트)</button>
       <div class="world-host" id="bz-host"></div>
@@ -65,7 +66,7 @@ export function showBuzzerGame(root, { onExit } = {}) {
   const host = root.querySelector('#bz-host');
   const canvas = document.createElement('canvas'); canvas.className = 'world-canvas'; host.appendChild(canvas);
   const ctx = canvas.getContext('2d');
-  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { const m = sfx.toggle(); snd.textContent = m ? '🔇' : '🔊'; };
+  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { const m = sfx.toggle(); snd.innerHTML = m ? icon('volume-off', 18) : icon('speaker', 18); };
   root.querySelector('#bz-exit').onclick = () => { cleanup(); onExit?.(); };
   const elHit = root.querySelector('#bz-hit'), elTot = root.querySelector('#bz-tot'), elCombo = root.querySelector('#bz-combo'), elScore = root.querySelector('#bz-score'), elStage = root.querySelector('#bz-stage');
   const skipBtn = root.querySelector('#bz-skip');

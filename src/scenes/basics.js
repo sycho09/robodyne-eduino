@@ -87,7 +87,7 @@ export function showBasics(root, { onExit, onComplete } = {}) {
     <div class="bx scene-fade">
       <div class="pm-bg" id="bx-bg"></div>
       <div class="pm-blobs"><span></span><span></span><span></span><span></span></div>
-      <button class="snd-toggle" id="snd-toggle" title="소리 켜기/끄기">${sfx.muted ? '🔇' : '🔊'}</button>
+      <button class="snd-toggle" id="snd-toggle" title="소리 켜기/끄기">${sfx.muted ? icon('volume-off', 18) : icon('speaker', 18)}</button>
       <div class="brand-badge"><span class="brand-dot"></span>Eduino&nbsp;<b>AI</b></div>
       <button class="bx-exit" id="bx-exit">✕ 나가기</button>
 
@@ -116,7 +116,7 @@ export function showBasics(root, { onExit, onComplete } = {}) {
   const stepEls = [...root.querySelectorAll('.bx-step')];
 
   const snd = root.querySelector('#snd-toggle');
-  snd.onclick = () => { const m = sfx.toggle(); snd.textContent = m ? '🔇' : '🔊'; };
+  snd.onclick = () => { const m = sfx.toggle(); snd.innerHTML = m ? icon('volume-off', 18) : icon('speaker', 18); };
   root.querySelector('#bx-exit').onclick = () => onExit?.();
 
   function say(t) { speech.innerHTML = t; speech.classList.remove('pop'); void speech.offsetWidth; speech.classList.add('pop'); }

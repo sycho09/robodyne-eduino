@@ -9,6 +9,7 @@ import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
 import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { icon } from '../app/icons.js';
 
 const PINS = [4, 5];   // 구멍 0·1 ↔ 택트스위치 핀 D4·D5 (쉴드 포트 3·4)
 const HOLES = PINS.length;
@@ -31,7 +32,7 @@ export function showButtonGame(root, { onExit, onComplete } = {}) {
     <div class="led scene-fade joygame buttongame">
       <div class="joy-stage-bg" id="bt-bg"></div>
       <div class="brand-badge"><span class="brand-dot"></span>Eduino&nbsp;<b>AI</b></div>
-      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? '🔇' : '🔊'}</button>
+      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? icon('volume-off', 18) : icon('speaker', 18)}</button>
       <button class="bx-exit" id="bt-exit">✕ 전시관으로</button>
       <button class="bx-exit led-skip" id="bt-skip" hidden>⏭ 건너뛰기(테스트)</button>
       <div class="world-host" id="bt-host"></div>
@@ -78,7 +79,7 @@ export function showButtonGame(root, { onExit, onComplete } = {}) {
   const host = root.querySelector('#bt-host');
   const canvas = document.createElement('canvas'); canvas.className = 'world-canvas'; host.appendChild(canvas);
   const ctx = canvas.getContext('2d');
-  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { const m = sfx.toggle(); snd.textContent = m ? '🔇' : '🔊'; };
+  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { const m = sfx.toggle(); snd.innerHTML = m ? icon('volume-off', 18) : icon('speaker', 18); };
   root.querySelector('#bt-exit').onclick = () => { cleanup(); onExit?.(); };
   const elScore = root.querySelector('#bt-score'), elTarget = root.querySelector('#bt-target'), elTime = root.querySelector('#bt-time'), elStage = root.querySelector('#bt-stage'), elCombo = root.querySelector('#bt-combo');
   const hud = root.querySelector('#bt-hud'), skipBtn = root.querySelector('#bt-skip');
@@ -133,7 +134,7 @@ export function showButtonGame(root, { onExit, onComplete } = {}) {
   function stopHw() { if (hwTimer) { clearInterval(hwTimer); hwTimer = null; } for (let i = 0; i < HOLES; i++) { rings[i].length = 0; rest[i] = null; pressed[i] = false; } }
 
   const pstat = root.querySelector('#bt-pstat');
-  root.querySelector('#bt-connect').onclick = async () => { const b = root.querySelector('#bt-connect'); try { await board.connect(); b.textContent = '🔌 연결됨 ✓'; startHw(); pstat.innerHTML = '버튼을 한 번씩 눌러 확인해봐! 연결 직후 <b>쉬는 값</b>을 기준으로 눌림을 알아채요 🔨'; } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
+  root.querySelector('#bt-connect').onclick = async () => { const b = root.querySelector('#bt-connect'); try { await board.connect(); b.innerHTML = icon('usb', 17) + ' 연결됨 ✓'; startHw(); pstat.innerHTML = '버튼을 한 번씩 눌러 확인해봐! 연결 직후 <b>쉬는 값</b>을 기준으로 눌림을 알아채요 🔨'; } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
   board.connectAuto().then(() => startHw()).catch(() => {});
   root.querySelector('#bt-start').onclick = () => { root.querySelector('#bt-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); };
 

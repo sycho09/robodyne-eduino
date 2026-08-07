@@ -9,6 +9,7 @@ import { showFinale } from './finale.js';
 import { allDone } from '../content/curriculum.js';
 import { board } from '../app/board.js';
 import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { icon } from '../app/icons.js';
 
 const ADC = 0, NEO = 6, BUZZ = 5, BTN = 4, PASS = 0.8, HUE_MAX = 320;
 const NOTES = [['도', 262], ['레', 294], ['미', 330], ['파', 349], ['솔', 392], ['라', 440], ['시', 494]];
@@ -31,7 +32,7 @@ export function showFinaleShow(root, { onExit } = {}) {
       <div class="fs-scrim"></div>
       <img class="fs-eddie" id="fs-eddie" alt="" hidden />
       <div class="brand-badge"><span class="brand-dot"></span>Eduino&nbsp;<b>AI</b></div>
-      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? '🔇' : '🔊'}</button>
+      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? icon('volume-off', 18) : icon('speaker', 18)}</button>
       <button class="bx-exit" id="fs-exit">✕ 전시관으로</button>
       <button class="bx-exit led-skip" id="fs-skip" hidden>⏭ 건너뛰기(테스트)</button>
       <div class="led-hud" id="fs-hud" hidden>
@@ -65,7 +66,7 @@ export function showFinaleShow(root, { onExit } = {}) {
   const playEl = root.querySelector('#fs-play');
   const hud = root.querySelector('#fs-hud'), skipBtn = root.querySelector('#fs-skip');
   const elHit = root.querySelector('#fs-hit'), elTot = root.querySelector('#fs-tot'), elScore = root.querySelector('#fs-score'), elAct = root.querySelector('#fs-act'), elHlbl = root.querySelector('#fs-hlbl');
-  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { snd.textContent = sfx.toggle() ? '🔇' : '🔊'; };
+  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { snd.innerHTML = sfx.toggle() ? icon('volume-off', 18) : icon('speaker', 18); };
   root.querySelector('#fs-exit').onclick = () => { cleanup(); onExit?.(); };
 
   // 무대 배경 이미지(있으면 풀블리드) + 디렉터 에디(있으면 모서리 히어로) — 없으면 CSS 폴백
@@ -81,7 +82,7 @@ export function showFinaleShow(root, { onExit } = {}) {
   function neoOff() { lastNeo = ''; if (board.connected) board.neoFill(NEO, 0, 0, 0).catch(() => {}); }
   function tone(freq) { sfx.note(freq, 260); if (board.connected) board.tone(BUZZ, freq, 260).catch(() => {}); }
 
-  root.querySelector('#fs-connect').onclick = async () => { const b = root.querySelector('#fs-connect'); try { await board.connect(); b.textContent = '🔌 연결됨 ✓'; startSense(); } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
+  root.querySelector('#fs-connect').onclick = async () => { const b = root.querySelector('#fs-connect'); try { await board.connect(); b.innerHTML = icon('usb', 17) + ' 연결됨 ✓'; startSense(); } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
   board.connectAuto().then(() => startSense()).catch(() => {});
   root.querySelector('#fs-start').onclick = () => { root.querySelector('#fs-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; nextAct(0); };
 

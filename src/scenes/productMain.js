@@ -2,6 +2,7 @@
 // 완성도 패스: 요소 stagger 등장 · CTA 인터랙션 · EDDIE 말풍선/클릭 반응 · 미세 패럴랙스 · 사운드 토글.
 import { mountEddieRig } from '../app/eddieRig.js';
 import { sfx } from '../app/sfx.js';
+import { icon } from '../app/icons.js';
 
 const EDDIE_LINES = [
   '같이 미니게임천국으로 가자! 🎮',
@@ -17,7 +18,7 @@ export function showProductMain(root, { onDone } = {}) {
       <div class="pm-blobs"><span></span><span></span><span></span><span></span></div>
       <div class="pm-scrim"></div>
       <div class="pm-vig"></div>
-      <button class="snd-toggle" id="snd-toggle" title="소리 켜기/끄기">${sfx.muted ? '🔇' : '🔊'}</button>
+      <button class="snd-toggle" id="snd-toggle" title="소리 켜기/끄기">${sfx.muted ? icon('volume-off', 18) : icon('speaker', 18)}</button>
       <div class="brand-badge"><span class="brand-dot"></span>Eduino&nbsp;<b>AI</b></div>
       <div class="pm-inner">
         <div class="pm-copy">
@@ -56,7 +57,7 @@ export function showProductMain(root, { onDone } = {}) {
 
   // 사운드 토글
   const snd = root.querySelector('#snd-toggle');
-  snd.addEventListener('click', () => { const m = sfx.toggle(); snd.textContent = m ? '🔇' : '🔊'; if (!m) sfx.click(); });
+  snd.addEventListener('click', () => { const m = sfx.toggle(); snd.innerHTML = m ? icon('volume-off', 18) : icon('speaker', 18); if (!m) sfx.click(); });
 
   // 미세 패럴랙스(마우스 따라 살짝) — 모션 최소화 설정 존중
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;

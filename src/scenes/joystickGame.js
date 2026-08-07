@@ -12,6 +12,7 @@ import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
 import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { icon } from '../app/icons.js';
 
 const PINS = { x: 5, y: 6, sw: 7 };
 const PR = 0.30;   // 플레이어 반지름(타일 단위)
@@ -51,7 +52,7 @@ export function showJoystickGame(root, { onExit } = {}) {
     <div class="led scene-fade joygame">
       <div class="joy-stage-bg" id="jy-bg"></div>
       <div class="brand-badge"><span class="brand-dot"></span>Eduino&nbsp;<b>AI</b></div>
-      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? '🔇' : '🔊'}</button>
+      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? icon('volume-off', 18) : icon('speaker', 18)}</button>
       <button class="bx-exit" id="jy-exit">✕ 전시관으로</button>
       <button class="bx-exit led-skip" id="jy-skip" hidden>⏭ 건너뛰기(테스트)</button>
       <div class="world-host" id="jy-host"></div>
@@ -99,7 +100,7 @@ export function showJoystickGame(root, { onExit } = {}) {
   const host = root.querySelector('#jy-host');
   const canvas = document.createElement('canvas'); canvas.className = 'world-canvas'; host.appendChild(canvas);
   const ctx = canvas.getContext('2d');
-  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { const m = sfx.toggle(); snd.textContent = m ? '🔇' : '🔊'; };
+  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { const m = sfx.toggle(); snd.innerHTML = m ? icon('volume-off', 18) : icon('speaker', 18); };
   root.querySelector('#jy-exit').onclick = () => { cleanup(); onExit?.(); };
   const elStar = root.querySelector('#jy-star'), elTot = root.querySelector('#jy-tot'), elTime = root.querySelector('#jy-time'), elStage = root.querySelector('#jy-stage');
   const hud = root.querySelector('#jy-hud'), pad = root.querySelector('#jy-pad'), skipBtn = root.querySelector('#jy-skip');
@@ -143,7 +144,7 @@ export function showJoystickGame(root, { onExit } = {}) {
   }
   const dashing = () => swDown || hwDir.x !== 0 || hwDir.y !== 0;   // 버튼 OR 스틱 꺾음 = ⚡대시
 
-  root.querySelector('#jy-connect').onclick = async () => { const b = root.querySelector('#jy-connect'); try { await board.connect(); b.textContent = '🔌 연결됨 ✓'; startHw(); } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
+  root.querySelector('#jy-connect').onclick = async () => { const b = root.querySelector('#jy-connect'); try { await board.connect(); b.innerHTML = icon('usb', 17) + ' 연결됨 ✓'; startHw(); } catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; } };
   board.connectAuto().then(() => startHw()).catch(() => {});
   root.querySelector('#jy-start').onclick = () => { root.querySelector('#jy-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); };
 

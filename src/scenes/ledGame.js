@@ -10,6 +10,7 @@ import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
 import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { icon } from '../app/icons.js';
 
 const LEAD = 1450, W_PERFECT = 90, W_GOOD = 170;
 const LEDS = [
@@ -62,7 +63,7 @@ export function showLedGame(root, { onExit } = {}) {
   root.innerHTML = `
     <div class="led scene-fade">
       <div class="brand-badge"><span class="brand-dot"></span>Eduino&nbsp;<b>AI</b></div>
-      <button class="snd-toggle" id="snd-toggle" title="소리 켜기/끄기">${sfx.muted ? '🔇' : '🔊'}</button>
+      <button class="snd-toggle" id="snd-toggle" title="소리 켜기/끄기">${sfx.muted ? icon('volume-off', 18) : icon('speaker', 18)}</button>
       <button class="bx-exit" id="led-exit">✕ 나가기</button>
       <button class="bx-exit led-skip" id="led-skip" hidden>⏭ 건너뛰기(테스트)</button>
       <div class="world-host" id="led-host"></div>
@@ -105,7 +106,7 @@ export function showLedGame(root, { onExit } = {}) {
   const canvas = document.createElement('canvas'); canvas.className = 'world-canvas'; host.appendChild(canvas);
   const ctx = canvas.getContext('2d');
   const snd = root.querySelector('#snd-toggle');
-  snd.onclick = () => { const m = sfx.toggle(); snd.textContent = m ? '🔇' : '🔊'; };
+  snd.onclick = () => { const m = sfx.toggle(); snd.innerHTML = m ? icon('volume-off', 18) : icon('speaker', 18); };
   root.querySelector('#led-exit').onclick = () => { cleanup(); onExit?.(); };
   const elScore = root.querySelector('#lh-score'), elCombo = root.querySelector('#lh-combo'), elHit = root.querySelector('#lh-hit'), elTot = root.querySelector('#lh-tot'), elStage = root.querySelector('#lh-stage');
 
@@ -128,7 +129,7 @@ export function showLedGame(root, { onExit } = {}) {
     setStatus('연결 중… 포트를 골라주세요 🔌'); sfx.click();
     try { await board.connect(); onConnected(); } catch (e) { setStatus(board.classify(e).note, 'warn'); }
   };
-  function onConnected() { setStatus('보드 연결 완료! ✅ LED 테스트로 결선을 확인하거나 바로 시작하세요', 'ok'); bTest.disabled = false; bStart.disabled = false; bConnect.textContent = '🔌 연결됨 ✓'; }
+  function onConnected() { setStatus('보드 연결 완료! ✅ LED 테스트로 결선을 확인하거나 바로 시작하세요', 'ok'); bTest.disabled = false; bStart.disabled = false; bConnect.innerHTML = icon('usb', 17) + ' 연결됨 ✓'; }
   bTest.onclick = async () => { setStatus('초록·노랑·빨강 순서로 깜빡여 볼게요! 💡'); sfx.ok(); try { for (const l of LEDS) await board.blink(l.pin, 2, 200); } catch (e) { setStatus('테스트 실패 — 결선을 다시 확인해주세요', 'warn'); } };
   bStart.onclick = () => { root.querySelector('#led-prep').classList.add('hide'); startFlow(); };
   root.querySelector('#p-skip').onclick = () => { root.querySelector('#led-prep').classList.add('hide'); startFlow(); };

@@ -7,6 +7,7 @@ import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
 import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { icon } from '../app/icons.js';
 
 const ADC = 0, NEO = 6, HUE_MAX = 320, PASS = 0.8;   // 조도센서 A0(입력) · 네오픽셀 D6(출력)
 const ACTS = [
@@ -41,7 +42,7 @@ export function showLampGame(root, { onExit } = {}) {
     <div class="led scene-fade lampgame">
       <div class="pot-stage-bg" id="lp-bg" style="position:absolute;inset:0;z-index:0;background:#150d28 center/cover no-repeat;"></div>
       <div class="brand-badge"><span class="brand-dot"></span>Eduino&nbsp;<b>AI</b></div>
-      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? '🔇' : '🔊'}</button>
+      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? icon('volume-off', 18) : icon('speaker', 18)}</button>
       <button class="bx-exit" id="lp-exit">✕ 전시관으로</button>
       <button class="bx-exit led-skip" id="lp-skip" hidden>⏭ 건너뛰기(테스트)</button>
       <div class="world-host" id="lp-host"></div>
@@ -83,7 +84,7 @@ export function showLampGame(root, { onExit } = {}) {
   const host = root.querySelector('#lp-host');
   const canvas = document.createElement('canvas'); canvas.className = 'world-canvas'; host.appendChild(canvas);
   const ctx = canvas.getContext('2d');
-  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { snd.textContent = sfx.toggle() ? '🔇' : '🔊'; };
+  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { snd.innerHTML = sfx.toggle() ? icon('volume-off', 18) : icon('speaker', 18); };
   root.querySelector('#lp-exit').onclick = () => { cleanup(); onExit?.(); };
   const elHit = root.querySelector('#lp-hit'), elTot = root.querySelector('#lp-tot'), elCombo = root.querySelector('#lp-combo'), elScore = root.querySelector('#lp-score'), elAct = root.querySelector('#lp-act'), elHlbl = root.querySelector('#lp-hlbl');
   const hud = root.querySelector('#lp-hud'), fader = root.querySelector('#lp-fader'), faderLbl = root.querySelector('#lp-faderlbl'), faderHint = root.querySelector('#lp-faderhint'), range = root.querySelector('#pt-range'), skipBtn = root.querySelector('#lp-skip');

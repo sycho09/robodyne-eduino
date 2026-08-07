@@ -8,6 +8,7 @@ import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
 import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { icon } from '../app/icons.js';
 
 const PINS = { r: 9, g: 10, b: 11 };
 const PASS_ACC = 0.85;
@@ -32,7 +33,7 @@ export function showRgbGame(root, { onExit } = {}) {
     <div class="led scene-fade rgbgame">
       <div class="rgbg-bg" id="rg-bg"></div>
       <div class="brand-badge"><span class="brand-dot"></span>Eduino&nbsp;<b>AI</b></div>
-      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? '🔇' : '🔊'}</button>
+      <button class="snd-toggle" id="snd-toggle">${sfx.muted ? icon('volume-off', 18) : icon('speaker', 18)}</button>
       <button class="bx-exit" id="rg-exit">✕ 전시관으로</button>
       <button class="bx-exit led-skip" id="rg-skip" hidden>⏭ 건너뛰기(테스트)</button>
       <div class="led-hud" id="rg-hud" hidden>
@@ -81,7 +82,7 @@ export function showRgbGame(root, { onExit } = {}) {
   const bg = root.querySelector('#rg-bg');
   bgImg.onload = () => { bg.style.backgroundImage = `url(${bgImg.src})`; bg.classList.add('has-img'); };
   if (bgImg.complete && bgImg.naturalWidth) bgImg.onload();
-  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { const m = sfx.toggle(); snd.textContent = m ? '🔇' : '🔊'; };
+  const snd = root.querySelector('#snd-toggle'); snd.onclick = () => { const m = sfx.toggle(); snd.innerHTML = m ? icon('volume-off', 18) : icon('speaker', 18); };
   root.querySelector('#rg-exit').onclick = () => { cleanup(); onExit?.(); };
 
   const play = root.querySelector('#rg-play'), hud = root.querySelector('#rg-hud');
@@ -104,7 +105,7 @@ export function showRgbGame(root, { onExit } = {}) {
 
   root.querySelector('#rg-connect').onclick = async () => {
     const b = root.querySelector('#rg-connect');
-    try { await board.connect(); b.textContent = '🔌 연결됨 ✓'; paintMine(); }
+    try { await board.connect(); b.innerHTML = icon('usb', 17) + ' 연결됨 ✓'; paintMine(); }
     catch (e) { b.textContent = board.classify(e).note.slice(0, 16) + '…'; }
   };
   board.connectAuto().catch(() => {});
