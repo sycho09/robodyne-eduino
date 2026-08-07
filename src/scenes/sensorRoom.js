@@ -9,6 +9,21 @@ import { board } from '../app/board.js';
 import { mountEddieRig } from '../app/eddieRig.js';
 import { celebrateRoom } from './celebrate.js';
 import { nav } from '../app/nav.js';
+import { icon } from '../app/icons.js';
+
+// 이론관 실습 탭의 라벨 — control 종류별 아이콘 + 이름.
+const CONTROL_TAB = {
+  keys:     ['notes', '연주판'],
+  rgb:      ['palette', '색 섞기'],
+  cds:      ['sun', '빛 측정'],
+  joystick: ['joystick', '조종 모니터'],
+  ultra:    ['sonar', '거리 측정'],
+  button:   ['press', '버튼 입력'],
+};
+const controlTabLabel = (control) => {
+  const [ic, name] = CONTROL_TAB[control] || ['sliders', 'LED 제어'];
+  return `${icon(ic, 22)} ${name}`;
+};
 
 // 미니게임은 동적 import 로 분리한다 — 전시관에 들어섰다고 9개 게임 코드를 다 받을 이유가 없다.
 // 전시관 마운트 시 해당 게임만 미리 받아두므로(showSensorRoom) 체험관 입장은 즉시 이뤄진다.
@@ -239,8 +254,8 @@ export function showSensorRoom(root, { id, onExit } = {}) {
     v.innerHTML = `
       <div class="prep-card tv-card">
         <div class="tv-tabs">
-          <button class="tv-tab on" data-t="info">📚 자료</button>
-          <button class="tv-tab" data-t="code">${cfg.control === 'keys' ? '🎹 연주판' : cfg.control === 'rgb' ? '🎨 색 섞기' : cfg.control === 'cds' ? '🔆 빛 측정' : cfg.control === 'joystick' ? '🕹️ 조종 모니터' : cfg.control === 'ultra' ? '📡 거리 측정' : cfg.control === 'button' ? '🔘 버튼 입력' : '🎛️ LED 제어'}</button>
+          <button class="tv-tab on" data-t="info">${icon('book-open', 22)} 자료</button>
+          <button class="tv-tab" data-t="code">${controlTabLabel(cfg.control)}</button>
           <button class="tv-x" id="tv-x">✕ 나가기</button>
         </div>
         <div class="tv-body" id="tv-body"></div>
@@ -282,7 +297,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
         if (ANIM[ci].init) ANIM[ci].init(stage, (id) => { theoryRaf = id; });
         bodyEl.querySelectorAll('.tv-dots i').forEach((d, i) => d.classList.toggle('on', i === ci));
         const cap = (cfg.captions || [])[ci] || '';
-        bub.innerHTML = `🤖 ${cap}`; bub.classList.remove('pop'); void bub.offsetWidth; bub.classList.add('pop');
+        bub.innerHTML = cap; bub.classList.remove('pop'); void bub.offsetWidth; bub.classList.add('pop');
       };
       show();
       const go = (d) => {
@@ -296,7 +311,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
     }
 
     // 화면 어느 탭이든 EDDIE가 설명
-    function showEddie(text) { ew.hidden = false; bub.innerHTML = `🤖 ${text}`; bub.classList.remove('pop'); void bub.offsetWidth; bub.classList.add('pop'); }
+    function showEddie(text) { ew.hidden = false; bub.innerHTML = text; bub.classList.remove('pop'); void bub.offsetWidth; bub.classList.add('pop'); }
 
     // 부저 연주판: 계이름 버튼(음 재생) — 3×3 정사각 패드. 보드 연결 시 실제 부저음(tone)
     function renderKeys() {
@@ -340,7 +355,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
           </div>
           <div class="dash-cards">
             <div class="dcard">
-              <div class="dc-h">🎚️ PWM 색 혼합 <span>각 채널 0~255</span></div>
+              <div class="dc-h">${icon('sliders', 20)} PWM 색 혼합 <span>각 채널 0~255</span></div>
               <div class="rt-sliders">
                 <label class="rs r">R <input type="range" id="cr" min="0" max="255" value="255"><b id="cvr">255</b></label>
                 <label class="rs g">G <input type="range" id="cg" min="0" max="255" value="255"><b id="cvg">255</b></label>
@@ -348,7 +363,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
               </div>
             </div>
             <div class="dcard">
-              <div class="dc-h">🎨 프리셋 색</div>
+              <div class="dc-h">${icon('palette', 20)} 프리셋 색</div>
               <div class="rgb-presets">${PRESETS.map((p, i) => `<button class="rgb-chip" data-i="${i}" style="background:rgb(${p[1]},${p[2]},${p[3]})" title="${p[0]}"></button>`).join('')}</div>
             </div>
             <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 RGB LED)'}</button>
@@ -397,13 +412,13 @@ export function showSensorRoom(root, { id, onExit } = {}) {
           </div>
           <div class="dash-cards">
             <div class="dcard">
-              <div class="dc-h">📈 빛 센서 값 <span>아날로그 0~1023</span></div>
+              <div class="dc-h">${icon('chart', 20)} 빛 센서 값 <span>아날로그 0~1023</span></div>
               <div class="cds-readout"><b id="cds-num">—</b><span class="cds-state" id="cds-state">연결 대기</span></div>
               <div class="cds-bar"><div class="cds-bar-fill" id="cds-bar"></div></div>
               <p class="cds-tip">손으로 센서를 가리면 값이 <b>뚝</b> 떨어져요! 🖐️</p>
             </div>
             <div class="dcard" id="cds-sim-card">
-              <div class="dc-h">🔦 빛 시뮬 <span>연결 안 했을 때 체험</span></div>
+              <div class="dc-h">${icon('sun', 20)} 빛 시뮬 <span>연결 안 했을 때 체험</span></div>
               <input type="range" id="cds-sim" min="0" max="1023" value="760">
             </div>
             <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 CDS)'}</button>
@@ -454,7 +469,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
           </div>
           <div class="dash-cards">
             <div class="dcard">
-              <div class="dc-h">📈 조이스틱 값 <span>0~1023 · 중앙 512</span></div>
+              <div class="dc-h">${icon('chart', 20)} 조이스틱 값 <span>0~1023 · 중앙 512</span></div>
               <div class="joy-read"><span>X <b id="joy-x">512</b></span><span>Y <b id="joy-y">512</b></span><span class="joy-dir" id="joy-dir">● 중앙</span></div>
             </div>
             <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 조이스틱)'}</button>
@@ -511,7 +526,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
           </div>
           <div class="dash-cards">
             <div class="dcard">
-              <div class="dc-h">📏 거리 <span>가까울수록 작은 cm</span></div>
+              <div class="dc-h">${icon('ruler', 20)} 거리 <span>가까울수록 작은 cm</span></div>
               <div class="joy-read"><span class="joy-dir" id="ult-cm">— cm</span></div>
             </div>
             <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 센서)'}</button>
@@ -559,7 +574,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
             <div class="dl-pin">🔘 버튼을 누르면 그 핀이 <b>0 ↔ 1</b>로 바뀌어요<br><span>(버튼1=D4·포트3 · 버튼2=D5·포트4, 디지털 입력)</span></div>
           </div>
           <div class="dash-cards">
-            <div class="dcard"><div class="dc-h">📟 입력 상태 <span>눌림 = 1(ON)</span></div>
+            <div class="dcard"><div class="dc-h">${icon('monitor', 20)} 입력 상태 <span>눌림 = 1(ON)</span></div>
               <div class="joy-read"><span>1 <b id="bs0">0</b></span><span>2 <b id="bs1">0</b></span></div></div>
             <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 버튼)'}</button>
             <div class="dc-status" id="dc-status">${board.connected ? '버튼을 눌러봐! 🔘' : '화면 버튼을 누르거나, 연결하면 실물 버튼이 켜져요.'}</div>
@@ -601,7 +616,7 @@ export function showSensorRoom(root, { id, onExit } = {}) {
       const show = () => {
         stage.style.backgroundImage = `url(${INFO[ci]})`;
         bodyEl.querySelectorAll('.tv-dots i').forEach((d, i) => d.classList.toggle('on', i === ci));
-        bub.innerHTML = `🤖 ${CAPS[ci] || '좌우로 넘겨봐!'}`; bub.classList.remove('pop'); void bub.offsetWidth; bub.classList.add('pop');
+        bub.innerHTML = CAPS[ci] || '좌우로 넘겨봐!'; bub.classList.remove('pop'); void bub.offsetWidth; bub.classList.add('pop');
       };
       show();
       const go = (d) => { sfx.hover(); ci = (ci + d + INFO.length) % INFO.length; show(); };
@@ -622,11 +637,11 @@ export function showSensorRoom(root, { id, onExit } = {}) {
           </div>
           <div class="dash-cards">
             <div class="dcard">
-              <div class="dc-h">🔌 디지털 제어 <span>HIGH / LOW</span></div>
+              <div class="dc-h">${icon('power', 20)} 디지털 제어 <span>HIGH / LOW</span></div>
               <div class="dc-btns"><button class="dbtn on" id="d-on">켜기 ON</button><button class="dbtn off" id="d-off">끄기 OFF</button></div>
             </div>
             <div class="dcard">
-              <div class="dc-h">⏱️ 깜빡임 <span>속도 <b id="b-spd">0.4초</b></span></div>
+              <div class="dc-h">${icon('timer', 20)} 깜빡임 <span>속도 <b id="b-spd">0.4초</b></span></div>
               <div class="dc-row"><button class="dbtn ghost" id="b-toggle">▶ 깜빡이기</button><input type="range" id="b-range" min="120" max="1000" step="20" value="400"></div>
             </div>
             <button class="dbtn ghost dc-conn" id="dc-conn">${board.connected ? '🔌 보드 연결됨 ✓' : '🔌 보드 연결(실물 LED)'}</button>

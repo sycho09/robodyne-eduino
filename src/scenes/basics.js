@@ -5,40 +5,47 @@ import { mountEddieRig } from '../app/eddieRig.js';
 import { sfx } from '../app/sfx.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
+import { icon, iconOrb } from '../app/icons.js';
 
 const THEORY = [
   {
-    icon: '📘', title: '피지컬 컴퓨팅이란?',
+    icon: 'book', title: '피지컬 컴퓨팅이란?',
     body: '현실 세계를 <b>프로그래밍으로 다루는 것</b>이야. 센서로 주변을 <b>읽고</b>, 부품을 <b>움직여</b> 현실과 소통해! 게임 속 미니게임도 전부 이 원리야.',
     viz: `<div class="bx-viz">
-      <span class="viz-node beat" style="animation-delay:0s"><span class="ic">👀</span>읽기</span>
+      <span class="viz-node beat" style="animation-delay:0s">${iconOrb('eye', 'read')}읽기</span>
       <span class="viz-arrow" style="animation-delay:.2s">➜</span>
-      <span class="viz-node beat" style="animation-delay:.6s"><span class="ic">🤖</span>생각</span>
+      <span class="viz-node beat" style="animation-delay:.6s">${iconOrb('robot', 'think')}생각</span>
       <span class="viz-arrow" style="animation-delay:.8s">➜</span>
-      <span class="viz-node beat" style="animation-delay:1.2s"><span class="ic">💡</span>동작</span>
+      <span class="viz-node beat" style="animation-delay:1.2s">${iconOrb('bulb', 'act')}동작</span>
     </div>`,
   },
   {
-    icon: '🧠', title: '아두이노 = 작은 두뇌',
+    icon: 'brain', title: '아두이노 = 작은 두뇌',
     body: '아두이노 보드가 우리의 <b>두뇌</b>야. <b>입력</b>을 받아 → <b>생각(처리)</b>하고 → <b>출력</b>으로 행동해. 모든 작품이 이 3단계로 움직여.',
     viz: `<div class="bx-viz viz-wire">
-      <span class="viz-node"><span class="ic">🔘</span>입력</span>
+      <span class="viz-node">${iconOrb('press', 'in', 36)}입력</span>
       <span class="viz-track"><i class="viz-dot"></i></span>
-      <span class="viz-node"><span class="ic">🧠</span>보드</span>
+      <span class="viz-node">${iconOrb('board', 'think', 36)}보드</span>
       <span class="viz-track"><i class="viz-dot" style="animation-delay:.9s"></i></span>
-      <span class="viz-node"><span class="ic">💡</span>출력</span>
+      <span class="viz-node">${iconOrb('bulb', 'act', 36)}출력</span>
     </div>`,
   },
   {
-    icon: '🔁', title: '입력 ⬇️ vs 출력 ⬆️',
+    icon: 'wave', title: '입력 vs 출력',
     body: '<b>입력(센서)</b>은 정보를 <b>받아</b> — 버튼·온도·빛. <b>출력(액추에이터)</b>은 동작을 <b>만들어</b> — LED·부저·모터. 둘을 구분하는 게 기초의 핵심!',
     viz: `<div class="bx-viz viz-io">
-      <div class="io-col in"><div class="io-h">입력 ⬇️</div><span>🔘</span><span>🌡️</span><span>🔆</span></div>
-      <div class="io-col out"><div class="io-h">출력 ⬆️</div><span>💡</span><span>🔊</span><span>⚙️</span></div>
+      <div class="io-col in">
+        <div class="io-h">${icon('arrow-in', 21)}입력</div>
+        <div class="io-row"><span>${icon('press', 36)}</span><span>${icon('thermometer', 36)}</span><span>${icon('sun', 36)}</span></div>
+      </div>
+      <div class="io-col out">
+        <div class="io-h">${icon('arrow-out', 21)}출력</div>
+        <div class="io-row"><span>${icon('bulb', 36)}</span><span>${icon('speaker', 36)}</span><span>${icon('motor', 36)}</span></div>
+      </div>
     </div>`,
   },
   {
-    icon: '🔢', title: '디지털 vs 아날로그',
+    icon: 'digital', title: '디지털 vs 아날로그',
     body: '<b>디지털</b>은 0/1 두 값(켜짐·꺼짐) — 계단처럼 딱딱. <b>아날로그</b>는 0~1023처럼 <b>연속된 값</b>(밝기·소리 크기) — 물결처럼 부드러워.',
     viz: `<div class="bx-viz"><svg viewBox="0 0 240 80" width="240" height="80">
       <path class="viz-line dig" d="M5,60 H40 V20 H80 V60 H120 V20 H160 V60 H200 V20 H235"/>
@@ -46,29 +53,33 @@ const THEORY = [
     </svg></div>`,
   },
   {
-    icon: '🔌', title: '핀(Pin)으로 연결해',
+    icon: 'pin', title: '핀(Pin)으로 연결해',
     body: '부품은 아두이노의 <b>핀</b>에 꽂아 연결해. <b>디지털 핀(D)</b>은 0/1 신호, <b>아날로그 핀(A)</b>은 연속 값을 읽어. 그리고 <b>전원(VCC)·접지(GND)</b>는 꼭 맞게!',
     viz: `<div class="bx-viz viz-pins">
       ${['D13', 'D9', 'A0', 'GND', '5V'].map((p, i) => `<span class="pin" style="animation-delay:${i * 0.25}s">${p}</span>`).join('')}
     </div>`,
   },
   {
-    icon: '⌨️', title: '코드 한 줄의 힘',
+    icon: 'code', title: '코드 한 줄의 힘',
     body: '코드 <b>한 줄</b>이 부품을 움직여! 예를 들어 <b>digitalWrite(13, HIGH)</b> 한 줄이면 13번 핀의 LED가 <b>반짝</b> 켜져. 이제 직접 해보자!',
-    viz: `<div class="bx-viz viz-code"><code>digitalWrite(13, <b>HIGH</b>);<span class="cur">▍</span></code><span class="viz-led">💡</span></div>`,
+    viz: `<div class="bx-viz viz-code"><code>digitalWrite(13, <b>HIGH</b>);<span class="cur">▍</span></code><span class="viz-led">${icon('bulb', 44)}</span></div>`,
   },
 ];
 
+// 입력/출력 선택지 — 퀴즈와 미션이 같은 라벨을 쓰므로 한 곳에서 만든다.
+const OPT_IN = `${icon('arrow-in', 20)}입력`;
+const OPT_OUT = `${icon('arrow-out', 20)}출력`;
+
 const QUIZ = [
-  { q: '온도 센서로 온도를 "읽는" 것은?', opts: ['입력 ⬇️', '출력 ⬆️'], answer: 0, ex: '센서로 정보를 받으니 입력이야!' },
+  { q: '온도 센서로 온도를 "읽는" 것은?', opts: [OPT_IN, OPT_OUT], answer: 0, ex: '센서로 정보를 받으니 입력이야!' },
   { q: '버튼처럼 눌림/안눌림 두 값만 있는 신호는?', opts: ['디지털', '아날로그'], answer: 0, ex: '두 값(0/1)뿐이라 디지털!' },
-  { q: 'LED를 켜서 빛을 "내는" 것은?', opts: ['입력 ⬇️', '출력 ⬆️'], answer: 1, ex: '동작을 만들어내니 출력이야!' },
+  { q: 'LED를 켜서 빛을 "내는" 것은?', opts: [OPT_IN, OPT_OUT], answer: 1, ex: '동작을 만들어내니 출력이야!' },
   { q: '아두이노가 일하는 순서로 맞는 것은?', opts: ['입력 → 처리 → 출력', '출력 → 입력 → 처리'], answer: 0, ex: '받고(입력) → 생각하고(처리) → 행동해(출력).' },
 ];
 
 const PARTS = [
-  { icon: '🔘', name: '버튼', cat: 'in' }, { icon: '🌡️', name: '온도 센서', cat: 'in' }, { icon: '🔆', name: '조도 센서', cat: 'in' },
-  { icon: '💡', name: 'LED', cat: 'out' }, { icon: '🔊', name: '부저', cat: 'out' }, { icon: '⚙️', name: '모터', cat: 'out' },
+  { icon: 'press', name: '버튼', cat: 'in' }, { icon: 'thermometer', name: '온도 센서', cat: 'in' }, { icon: 'sun', name: '조도 센서', cat: 'in' },
+  { icon: 'bulb', name: 'LED', cat: 'out' }, { icon: 'speaker', name: '부저', cat: 'out' }, { icon: 'motor', name: '모터', cat: 'out' },
 ];
 
 export function showBasics(root, { onExit, onComplete } = {}) {
@@ -84,9 +95,9 @@ export function showBasics(root, { onExit, onComplete } = {}) {
         <div class="bx-hero" id="bx-hero"><div class="bx-speech" id="bx-speech"></div></div>
         <div class="bx-card">
           <div class="bx-steps" id="bx-steps">
-            <span class="bx-step" data-s="theory">📘 이론</span>
-            <span class="bx-step" data-s="quiz">❓ 퀴즈</span>
-            <span class="bx-step" data-s="mission">🎯 미션</span>
+            <span class="bx-step" data-s="theory">${icon('book', 21)} 이론</span>
+            <span class="bx-step" data-s="quiz">${icon('question', 21)} 퀴즈</span>
+            <span class="bx-step" data-s="mission">${icon('flag', 21)} 미션</span>
           </div>
           <div class="bx-body" id="bx-body"></div>
           <div class="bx-foot" id="bx-foot"></div>
@@ -128,7 +139,7 @@ export function showBasics(root, { onExit, onComplete } = {}) {
     say(`<b>${c.title}</b> 알려줄게!`);
     bodyEl.innerHTML = `
       <div class="bx-theory">
-        <h3><span class="bx-ic-sm">${c.icon}</span> ${c.title}</h3>
+        <h3><span class="bx-ic-sm">${icon(c.icon, 29)}</span> ${c.title}</h3>
         ${c.viz || ''}
         <p>${c.body}</p>
         <div class="bx-dots">${THEORY.map((_, i) => `<i class="${i === st.ti ? 'on' : ''}"></i>`).join('')}</div>
@@ -167,7 +178,7 @@ export function showBasics(root, { onExit, onComplete } = {}) {
         if (!ok) bodyEl.querySelector(`.bx-opt[data-i="${q.answer}"]`).classList.add('right');
         if (ok) { sfx.start(); st.quizDone++; say('정답이야! 🎉'); }
         else { sfx.pop(); say('아쉬워! 정답을 같이 보자 👀'); }
-        fb.innerHTML = `<span class="${ok ? 'good' : 'bad'}">${ok ? '⭕ 정답' : '❌ 오답'}</span> · ${q.ex}`;
+        fb.innerHTML = `<span class="${ok ? 'good' : 'bad'}">${icon(ok ? 'check' : 'x-mark', 20)} ${ok ? '정답' : '오답'}</span> · ${q.ex}`;
         const last = st.qi === QUIZ.length - 1;
         footEl.innerHTML = `<span class="bx-prog">맞힌 문제 ${st.quizDone} / ${QUIZ.length}</span>
           <button class="btn primary bx-next" id="bx-qnext">${last ? '미션 도전 ▶' : '다음 문제 ▶'}</button>`;
@@ -190,10 +201,10 @@ export function showBasics(root, { onExit, onComplete } = {}) {
         <div class="bx-rows">
           ${PARTS.map((p, i) => `
             <div class="bx-row" data-i="${i}">
-              <span class="bx-part">${p.icon} ${p.name}</span>
+              <span class="bx-part">${icon(p.icon, 26)} ${p.name}</span>
               <span class="bx-choice">
-                <button class="bx-pick" data-i="${i}" data-c="in">입력 ⬇️</button>
-                <button class="bx-pick" data-i="${i}" data-c="out">출력 ⬆️</button>
+                <button class="bx-pick" data-i="${i}" data-c="in">${OPT_IN}</button>
+                <button class="bx-pick" data-i="${i}" data-c="out">${OPT_OUT}</button>
               </span>
             </div>`).join('')}
         </div>
