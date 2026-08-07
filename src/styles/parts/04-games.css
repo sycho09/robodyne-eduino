@@ -18,10 +18,19 @@ body[data-canback="1"] .nav-back { display: inline-flex; }
 body[data-canback="1"] .brand-badge { left: 116px; }   /* 게임/인트로: 좌상단 뱃지를 우측으로 비켜줌 */
 body[data-canback="1"] .led-hud { left: 116px !important; }   /* 게임 HUD도 뒤로 버튼과 안 겹치게 */
 .led:has(.led-hud:not([hidden])) .brand-badge { display: none; }   /* 게임 중엔 로고 숨김(HUD와 겹침 방지) */
-/* 상단 헤더 바(허브·챕터·미니게임)에선 로고와 겹치지 않게 버튼을 한 칸 아래로 */
-body:has(.curr-header) .nav-back,
-body:has(.hud-top) .nav-back,
-body:has(.app-header) .nav-back { top: 62px; left: 18px; }
+/* 뒤로 버튼은 '모든 화면에서 같은 자리'가 원칙이라 위 top:16px 하나로 통일한다.
+ *
+ * 예전엔 상단 헤더 바를 피하려고 아래 규칙으로 62px 까지 내렸는데, 셋 다 지금은 안 맞는다:
+ *   · .app-header / .hud-top — CSS 에만 남아 있고 JS·HTML 어디서도 렌더되지 않는다(죽은 셀렉터)
+ *   · .curr-header — 허브·챕터 씬에 마운트되지만 화면에 안 보인다. position 이 없어 static 이라
+ *     z-index:6 이 무시되고, 형제인 .chsel-bg(absolute·z-index:0)·.chsel-shade(z-index:1)가
+ *     positioned 라 그 위에 덮여 그려지기 때문이다.
+ * 결과적으로 '보이지도 않는 헤더'를 피하느라 그 두 화면에서만 버튼이 혼자 내려가 있었다.
+ *
+ * 나중에 커리큘럼 헤더를 실제로 보이게 되살린다면(.curr-header 에 position/z-index 부여),
+ * 그때 이 오프셋도 같이 되살려야 한다:
+ *   body:has(.curr-header) .nav-back { top: 62px; }
+ */
 
 /* HTML 브랜드 인트로(첫 화면) */
 .video-intro { position: fixed; inset: 0; z-index: 80; background: #faf9f5; opacity: 1; }
