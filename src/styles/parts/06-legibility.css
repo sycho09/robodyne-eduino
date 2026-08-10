@@ -138,9 +138,51 @@
 .bx-part { font-size: 19px; display: inline-flex; align-items: center; gap: 9px; }
 .bx-pick { font-size: 17px; display: inline-flex; align-items: center; gap: 7px; }
 
+/* ══════════ ② 스타트 이론 본문 — '한 줄 = 한 생각' ══════════ */
+/* 폰트만 키우면 긴 문장은 '큰 글자 덩어리'가 될 뿐이다. 원거리에서 문단은 글자보다 형태가
+   먼저 읽히므로, 형태가 곧 내용이 되도록 세 가지를 맞춘다.
+     ① 줄바꿈을 의미 단위로 — 줄 배열은 basics.js 의 THEORY[].body 가 들고 있다.
+     ② 줄 시작점을 세로로 정렬 — 가운데 정렬은 매 줄 시작 x 가 달라서, 끊어도 대비가
+        형태로 뭉치지 않는다. 블록 자체는 fit-content 로 가운데 놓아 카드의 중앙 구도는 지킨다.
+     ③ 키워드 색 = 바로 위 viz 색면의 색. 지금까지 문장 속 '입력'은 분홍인데 그림 속 입력 판은
+        파랑이었다 — 제일 빠른 판독 채널(색)이 그림과 반대로 가리키고 있었다.
+   줄 수는 늘지 않는다. 어차피 접혀서 3줄이던 것이 '의미 있는 3줄'이 될 뿐이다. */
+.bx-lines { width: fit-content; max-width: 660px; margin: 0 auto; text-align: left; }
+.bx-theory .bx-line { margin: 0; max-width: none; text-wrap: balance; }
+
+/* 기본 강조색 — #e85a8a 는 흰 카드에서 3.35:1 로, 이 카드에 남아 있던 마지막 AA 미달 텍스트다. */
+.bx-theory .bx-line b, .bx-mtitle b { color: #d13a72; }   /* 4.6:1 */
+
+/* 대비쌍 — 두 줄이 같은 x 에서 시작하고 색으로 갈린다. 색은 이 둘만 쓴다(늘수록 판독이 느려진다). */
+.bx-line.k-in b, .bx-line.k-ana b { color: #1f6aad; }     /* 5.9:1 — viz 입력 판과 같은 파랑 */
+.bx-line.k-out b, .bx-line.k-dig b { color: #c22f66; }    /* 5.7:1 — viz 출력 판과 같은 분홍 */
+
+/* 마무리 한 줄 — 대비쌍과 섞이지 않게 얇은 선으로 끊는다. */
+.bx-line.k-key { margin-top: 9px; padding-top: 9px; border-top: 1px solid #e3e7f0; }
+
+/* 디지털/아날로그 파형 — 4px 스트로크가 #ff7ab8(2.6:1) · #5ac9ff(2.0:1) 이라 비텍스트 기준(3:1)
+   미달이었다. 문장 키워드와 같은 값으로 맞춰, 선과 글자가 같은 것을 가리키게 한다. */
+.viz-line.dig { stroke: #c22f66; }
+.viz-line.ana { stroke: #1f6aad; }
+
+/* ══════════ ① 이론관 자료 캡션 — 정렬 고정 · 키워드 대비 ══════════ */
+/* .ba 가 align-items:center 라 캡션 박스는 fit-content 다. 그래서 한 줄에 들어가는 캡션은
+   가운데에 앉고, 넘치는 캡션은 무대 폭(≈872px)을 꽉 채워 왼쪽 정렬로 바뀐다 — 28px 기준
+   한 줄이 31자인데 캡션 22개 중 절반이 넘치므로, ◀▶ 로 넘길 때마다 캡션이 가운데↔왼쪽으로 튄다.
+   text-align 으로 정렬을 한쪽에 못 박고, balance 로 '…우리 눈엔 하나의 / 색으로 보여요!' 같은
+   짧은 꼬리를 두 줄 균형으로 편다. 측정폭은 좁히지 않는다 — 좁히면 한 줄짜리까지 접힌다. */
+.ba-flow { text-align: center; text-wrap: balance; }
+
+/* 강조 키워드 — #2ec27e 는 흰 배경에서 2.30:1 로, 28px 볼드에 걸리는 AA-large(3:1) 조차 못 넘긴다.
+   캡션에서 제일 중요한 단어가 제일 안 보이던 자리다. 색상 계열은 그대로 두고 명도만 내린다. */
+.ba-flow b, .ba-freqrow b { color: #0f7a45; }   /* 5.4:1 — was #2ec27e, 2.30:1 */
+.ba-note { background: #0f7a45; }               /* 흰 글씨 5.4:1 */
+
 /* ══════════ 좁은 화면 보호 ══════════ */
 /* 원거리 티어를 그대로 두면 세로가 짧은 노트북에서 카드가 넘친다. 여기서만 되돌린다. */
 @media (max-height: 760px) {
+  .bx-lines { max-width: 560px; }
+  .bx-line.k-key { margin-top: 6px; padding-top: 6px; }
   .ic-orb { width: 64px; height: 64px; }
   .bx-viz { height: 116px; }
   .bx-theory p { font-size: 19px; }

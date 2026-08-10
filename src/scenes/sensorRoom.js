@@ -792,14 +792,15 @@ function cdsTheory() {
           <div class="ct-cds"><span class="ct-cell"></span><em>CDS</em></div>
           <div class="ct-hand">🖐️</div>
         </div>
-        <div class="ba-flow">빛이 많으면 <b>저항↓</b> (전기 쑥쑥) · 손으로 가리면 <b>저항↑</b> (전기 막힘)</div>
+        <!-- 대비쌍은 줄로 나눈다 — 두 줄이 같은 골격(조건 → 저항 → 결과)이라야 멀리서 대비로 읽힌다. -->
+        <div class="ba-flow">빛이 많으면 <b>저항↓</b> — 전기 쑥쑥<br>손으로 가리면 <b>저항↑</b> — 전기 막힘</div>
       </div>` },
     { // ② 아날로그 0~1023 (인터랙티브)
       html: `<div class="ba ct2">
         <div class="ct-meter"><div class="ct-meter-fill" id="ctf"></div></div>
         <div class="ct-read"><b id="ctv">760</b> <span id="cts">밝음 ☀️</span></div>
         <div class="ct-slider"><span>🌑</span><input type="range" id="ctl" min="0" max="1023" value="760"><span>☀️</span></div>
-        <div class="ba-flow">빛의 양을 <b>0~1023</b> 숫자로 읽어요 — 밝으면 큰 값, 어두우면 작은 값! 📈</div>
+        <div class="ba-flow">빛의 양을 <b>0~1023</b> 숫자로 읽어요 📈<br>밝으면 <b>큰 값</b>, 어두우면 <b>작은 값</b>!</div>
       </div>`,
       init: (stage) => {
         const l = stage.querySelector('#ctl'), f = stage.querySelector('#ctf'), v = stage.querySelector('#ctv'), s = stage.querySelector('#cts');
@@ -822,14 +823,16 @@ function potTheory() {
     { // ① 원리: 돌린 만큼 저항이 변함
       html: `<div class="ba">
         <div style="font-size:46px;letter-spacing:8px;margin:8px 0 4px">🎚️ ⟳ 〜 📈</div>
-        <div class="ba-flow">가변저항은 다이얼을 <b>돌린 만큼 저항</b>이 바뀌어요 — 그래서 값이 <b>조금씩</b> 변해요. 버튼(0/1)과 달리 <b>중간 값</b>도 다 있어요! 🎚️</div>
+        <!-- 캡션 중 유일한 3문장 런온(≈58em)이었다. '조금씩 변한다'와 '중간 값이 있다'는 같은 말이라
+             한 줄로 합쳐 2줄로 만든다 — 내용은 그대로 두고 문장 수만 줄인다. -->
+        <div class="ba-flow">가변저항은 다이얼을 <b>돌린 만큼 저항</b>이 바뀌어요<br>버튼(0/1)과 달리 값이 <b>조금씩</b> — <b>중간 값</b>도 다 있어요! 🎚️</div>
       </div>` },
     { // ② 아날로그 0~1023 (인터랙티브 볼륨)
       html: `<div class="ba">
         <div class="ct-meter"><div class="ct-meter-fill" id="ptf"></div></div>
         <div class="ct-read">볼륨 <b id="ptv">500</b> <span id="pts">🔉 보통</span></div>
         <div class="ct-slider"><span>🔈 0</span><input type="range" id="ptl" min="0" max="1023" value="500"><span>1023 🔊</span></div>
-        <div class="ba-flow">다이얼을 돌리면 <b>0~1023</b> 숫자가 부드럽게 변해요 — 작게 돌리면 작은 값, 끝까지 돌리면 큰 값! 📈</div>
+        <div class="ba-flow">다이얼을 돌리면 <b>0~1023</b> 숫자가 부드럽게 변해요 📈<br>작게 돌리면 <b>작은 값</b>, 끝까지 돌리면 <b>큰 값</b>!</div>
       </div>`,
       init: (stage) => {
         const l = stage.querySelector('#ptl'), f = stage.querySelector('#ptf'), v = stage.querySelector('#ptv'), s = stage.querySelector('#pts');
@@ -857,7 +860,7 @@ function joystickTheory() {
     { // ② 중심 512
       html: `<div class="ba jt2">
         <div class="jt-bar"><b class="jt-t0">0</b><b class="jt-tm">512</b><b class="jt-t1">1023</b><span class="jt-marker"></span></div>
-        <div class="ba-flow">가만히 두면 <b>가운데(≈512)</b>, 밀면 <b>0 또는 1023</b> — 값의 변화가 곧 <b>방향</b>!</div>
+        <div class="ba-flow">가만히 두면 <b>가운데(≈512)</b> · 밀면 <b>0 또는 1023</b><br>값의 변화가 곧 <b>방향</b>!</div>
       </div>` },
     { // ③ 활용
       html: `<div class="ba jt3"><div class="rt-uses">
@@ -882,7 +885,7 @@ function ultraTheory() {
         <div class="ct-meter"><div class="ct-meter-fill" id="utf"></div></div>
         <div class="ct-read">거리 <b id="utv">20</b> cm</div>
         <div class="ct-slider"><span>가까이 🖐️</span><input type="range" id="utl" min="3" max="40" value="20"><span>멀리</span></div>
-        <div class="ba-flow">소리가 <b>갔다 오는 시간 ÷ 2</b> 로 거리 계산! 가까우면 메아리가 <b>빨리</b>, 멀면 <b>늦게</b> 돌아와요 ⏱️</div>
+        <div class="ba-flow">소리가 <b>갔다 오는 시간 ÷ 2</b> 로 거리 계산! ⏱️<br>가까우면 메아리가 <b>빨리</b>, 멀면 <b>늦게</b> 돌아와요</div>
       </div>`,
       init: (stage) => {
         const l = stage.querySelector('#utl'), f = stage.querySelector('#utf'), v = stage.querySelector('#utv');
@@ -905,7 +908,7 @@ function buttonTheory() {
     { // ① 0/1 디지털
       html: `<div class="ba">
         <div style="font-size:44px;letter-spacing:6px;margin:6px 0">🔘 → <b style="color:#7fd6a0">1</b> / <b style="color:#ff9a9a">0</b></div>
-        <div class="ba-flow">버튼은 <b>누름(1)</b> · <b>안 누름(0)</b> 두 값만 있는 <b>디지털 입력</b>이에요 — 켜짐/꺼짐! 🔘</div>
+        <div class="ba-flow">버튼은 <b>누름(1)</b> · <b>안 누름(0)</b> 두 값뿐이에요 🔘<br><b>디지털 입력</b> — 켜짐 아니면 꺼짐!</div>
       </div>` },
     { // ② 눌러보기(인터랙티브)
       html: `<div class="ba">
