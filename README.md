@@ -7,6 +7,7 @@
 
 - 📘 **전체 인계 문서: [`HANDOFF.md`](HANDOFF.md)** — 커리큘럼·씬 구성·시스템 요약은 여기가 기준
 - 🔧 배선/하드웨어: [`docs/HARDWARE.md`](docs/HARDWARE.md)
+- 👁 이론관 시인성 패스: [`docs/THEORY-LEGIBILITY-PASS.md`](docs/THEORY-LEGIBILITY-PASS.md) — 원거리 타이포 2티어·SVG 아이콘·대비 기준
 - 📉 최적화 작업 기록: [`docs/OPTIMIZE-REPORT.md`](docs/OPTIMIZE-REPORT.md)
 
 ## 실행 방법
