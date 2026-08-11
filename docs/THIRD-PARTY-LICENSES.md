@@ -1,12 +1,29 @@
 # 서드파티 라이선스
 
+> **배포용 사본은 [`public/THIRD-PARTY-LICENSES.txt`](../public/THIRD-PARTY-LICENSES.txt) 다.**
+> ISC·MIT 의 조건은 "사본에 고지 포함"인데 `docs/` 는 배포 대상이 아니다.
+> `public/` 은 `dist/` 로 그대로 복사되므로 배포 사이트의 `/THIRD-PARTY-LICENSES.txt` 로 접근된다.
+> **두 파일을 같이 고칠 것.**
+
 ## Lucide Icons
 
-`src/app/icons.js` 의 표준 도형 30종은 Lucide 아이콘의 SVG 경로를 복사한 것이다.
+`src/app/icons.js` 의 표준 도형 41종은 Lucide 아이콘의 SVG 경로를 복사한 것이다.
 런타임 의존성은 없다 — 경로 문자열만 소스에 들어가 있다.
 
 - 출처: https://lucide.dev (lucide-static v1.29.0)
 - 이 제품 고유 개념 6종(robot·board·brain·press·motor·digital)은 직접 그린 것이라 해당 없음
+
+## 웹폰트 — Space Grotesk · Orbitron
+
+SIL Open Font License 1.1. `index.html` 에서 Google Fonts CDN 링크로 불러온다.
+**폰트 파일을 재배포하지 않으므로 동봉 의무는 없다.** 셀프호스팅으로 바꾸면 각 폰트의 `OFL.txt` 를 함께 배포해야 한다.
+
+## 그 외
+
+- 이미지·3D 렌더(`public/brand/`) · 펌웨어 · 애플리케이션 코드 — 자체 제작
+- 이모지 — 사용자 OS 폰트로 렌더. 재배포 아님
+- `sharp` · `vite` — 빌드 도구. 배포물에 포함되지 않는다
+- **런타임 npm 의존성 0개**
 
 ```
 ISC License
