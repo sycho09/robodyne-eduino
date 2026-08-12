@@ -1,13 +1,10 @@
-// records.js — 기록실 (내 기록 보관함)
-// 플레이 기록 열람용 UI (실시간 갱신).
+// records.js — 기록실 (내 기록 보관함, 실시간 갱신 UI)
 
 import { CHAPTERS, ROOMS } from '../content/curriculum.js';
 import { results } from '../app/results.js';
 import { progress } from '../app/progress.js';
 import { saveAsPdf, saveAsPng } from '../app/reportCard.js';
 import { nav } from '../app/nav.js';
-
-const GRADE_LABEL = { S: '완벽해요', A: '통과', B: '거의 다 왔어요', C: '조금만 더', D: '다시 도전' };
 
 // 등급 대신 '수료'로 표시하는 방 (이론 과정)
 const NO_GRADE = new Set(['basics']);
@@ -50,17 +47,11 @@ export function showRecords(host, { onPlay } = {}) {
 
 // ── 마크업 ───────────────────────────────────────────────────────────────────
 function template(tab) {
-  const stats = collect();
   return `
     <div class="chsel-shade" style="position: fixed; pointer-events: none; z-index: 0;"></div>
     <header class="records-head">
       <div class="records-headline">
         <h1 class="records-title">🏆 내 성취도 기록실</h1>
-        <!-- 나중에 필요하면 주석 해제하세요
-        <p class="records-sub">
-          ${stats.total}개 콘텐츠 중 <strong>${stats.cleared}개</strong> 클리어
-        </p>
-        -->
       </div>
       <div class="records-save">
         <button type="button" class="records-save-btn" id="btn-save-png">
@@ -69,17 +60,6 @@ function template(tab) {
         </button>
       </div>
     </header>
-
-    <!-- 나중에 필요하면 주석 해제하세요
-    <div class="records-bar-wrap">
-      <div class="records-bar" role="img" aria-label="콘텐츠 클리어 ${stats.pct}퍼센트">
-        <span style="width:${stats.pct}%"></span>
-      </div>
-      <span class="records-pct-text">${stats.pct}%</span>
-    </div>
-    -->
-
-
 
     <div class="records-tabs" role="tablist">
       <button type="button" role="tab" class="r-tab ${tab === 'gallery' ? 'is-active' : ''}" data-tab="gallery">결과 보기</button>
@@ -102,11 +82,11 @@ function sectionHtml(ch, tab) {
         <span class="records-stage-icon" aria-hidden="true">${ch.icon}</span>
         <span class="records-stage-name">${esc(ch.short || ch.name)}</span>
       </h2>
-      <ul class="records-grid">${rooms.map(r => cardHtml(r, tab)).join('')}</ul>
+      <ul class="records-grid">${rooms.map(r => cardHtml(r, tab, ch.id)).join('')}</ul>
     </section>`;
 }
 
-function cardHtml(room, tab) {
+function cardHtml(room, tab, chId) {
   const rec = results.get(room.id);
   const best = rec?.best;
 
@@ -117,8 +97,17 @@ function cardHtml(room, tab) {
   const playBtn = isPlay ? `<button type="button" class="rc-play" data-play="${room.id}">${best ? '다시 도전 ▶' : '플레이하기 ▶'}</button>` : '';
   const cardClickProps = isPlay ? `data-play="${room.id}" role="button" tabindex="0"` : '';
 
+  const themeMap = {
+    ch1: { border: 'rgba(234, 179, 8, 0.5)', glow: 'rgba(234, 179, 8, 0.25)', hoverGlow: 'rgba(234, 179, 8, 0.5)', btn: '#eab308' },
+    ch2: { border: 'rgba(236, 72, 153, 0.5)', glow: 'rgba(236, 72, 153, 0.25)', hoverGlow: 'rgba(236, 72, 153, 0.5)', btn: '#ec4899' },
+    ch3: { border: 'rgba(59, 130, 246, 0.5)', glow: 'rgba(59, 130, 246, 0.25)', hoverGlow: 'rgba(59, 130, 246, 0.5)', btn: '#3b82f6' },
+    ch4: { border: 'rgba(168, 85, 247, 0.5)', glow: 'rgba(168, 85, 247, 0.25)', hoverGlow: 'rgba(168, 85, 247, 0.5)', btn: '#a855f7' }
+  };
+  const theme = themeMap[chId] || themeMap.ch1;
+  const styleVars = `--rc-bdr: ${theme.border}; --rc-glow: ${theme.glow}; --rc-hg: ${theme.hoverGlow}; --rc-btn: ${theme.btn};`;
+
   if (!best) {
-    return `<li class="rc" ${cardClickProps}>
+    return `<li class="rc" ${cardClickProps} style="${styleVars}">
       <div class="rc-content">
         <span class="rc-icon" aria-hidden="true">${room.icon}</span>
         <div class="rc-info">
@@ -134,8 +123,9 @@ function cardHtml(room, tab) {
     </li>`;
   }
 
-  const scoreText = (best.metrics && best.metrics.length)
-    ? best.metrics.map((m) => `<div class="rc-metrics-item">${esc(m.label)}: <b>${esc(m.value)}</b></div>`).join('')
+  const displayMetrics = (best.metrics || []).filter(m => m.label !== '최고 콤보');
+  const scoreText = (displayMetrics.length)
+    ? displayMetrics.map((m) => `<div class="rc-metrics-item">${esc(m.label)}: <b>${esc(m.value)}</b></div>`).join('')
     : `<div class="rc-metrics-item">결과: <b>${esc(best.summary || '기록됨')}</b></div>`;
   
   const isNoGrade = NO_GRADE.has(room.id);
@@ -143,7 +133,7 @@ function cardHtml(room, tab) {
   const finalColor = isNoGrade ? '#34d399' : gColor;
   const sealStyle = `color: ${finalColor}; ${isNoGrade ? 'font-size: 24px;' : ''}`;
 
-  return `<li class="rc" ${cardClickProps}>
+  return `<li class="rc" ${cardClickProps} style="${styleVars}">
     <div class="rc-content">
       <span class="rc-icon" aria-hidden="true">${room.icon}</span>
       <div class="rc-info">
@@ -218,27 +208,11 @@ export const recordsEntry = {
   hide() { if (entryBtn) entryBtn.hidden = true; },
 };
 
-// ── 집계 ─────────────────────────────────────────────────────────────────────
-// 집계 대상은 등급이 있는 미니게임 9개 — basics 는 점수 없는 수료 과정이라 분모에 넣지 않는다.
-// 평균 등급은 내지 않는다: 게임마다 등급 컷(85%/80%)과 정확도 산출 방식(적중률·색거리·점수비)이
-// 달라서 한 숫자로 평균 내면 뜻이 흐려진다.
+// ── 집계 (내 기록실 버튼 용도) ──
 function collect() {
   const ids = CHAPTERS.flatMap((c) => c.rooms).filter((id) => !NO_GRADE.has(id));
   const cleared = ids.filter((id) => progress.isCleared(id)).length;
-  return {
-    total: ids.length,
-    played: ids.filter((id) => results.has(id)).length,
-    cleared,
-    pct: ids.length ? Math.round((cleared / ids.length) * 100) : 0,
-  };
-}
-
-function relDate(ts) {
-  const d = Math.floor((Date.now() - ts) / 86_400_000);
-  if (d <= 0) return '오늘';
-  if (d === 1) return '어제';
-  if (d < 7) return `${d}일 전`;
-  return new Date(ts).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' });
+  return { total: ids.length, cleared, pct: ids.length ? Math.round((cleared / ids.length) * 100) : 0 };
 }
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -261,8 +235,6 @@ function ensureStyles() {
 .records-head { text-align: center; margin-bottom: 0; position: relative; }
 .records-headline { display: flex; flex-direction: column; align-items: center; }
 .records-title { margin: 0 0 40px; font-size: clamp(28px, 4vw, 36px); font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-.records-sub { margin: 0 0 6px; line-height: 1; font-size: 16px; color: rgba(255,255,255,0.7); }
-.records-sub strong { color: rgba(255,255,255,0.9); font-weight: 600; }
 
 .records-save { position: fixed; right: 24px; top: 16px; z-index: 70; }
 .records-save-btn {
@@ -275,10 +247,6 @@ function ensureStyles() {
 .records-save-btn:hover { background: rgba(30,24,50,.72); border-color: rgba(255,255,255,.32); transform: scale(1.02); }
 
 
-.records-bar-wrap { display: flex; align-items: center; justify-content: center; max-width: 360px; margin: 0 auto 40px; gap: 6px; }
-.records-bar { flex: 1; height: 8px; border-radius: 99px; background: rgba(0,0,0,0.4); overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
-.records-bar span { display: block; height: 100%; border-radius: 99px; background: #fb7185; transition: width .5s ease; box-shadow: 0 0 10px rgba(251,113,133,0.8); }
-.records-pct-text { font-size: 14px; color: rgba(255,255,255,0.6); font-weight: 600; font-variant-numeric: tabular-nums; }
 
 .records-tabs { 
   position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
@@ -307,11 +275,22 @@ function ensureStyles() {
 
 .rc {
   position: relative; padding: 20px; border-radius: 16px;
-  background: rgba(20, 15, 30, 0.85); border: 1px solid rgba(255,255,255,0.15);
-  backdrop-filter: blur(16px); box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-  display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s, border-color 0.2s, background 0.2s;
+  background: 
+    radial-gradient(ellipse 35% 60% at 50% 0%, var(--rc-glow) 0%, transparent 100%),
+    linear-gradient(135deg, rgba(26, 22, 42, 0.8), rgba(16, 14, 26, 0.7)); 
+  border: 1px solid var(--rc-bdr, rgba(255,255,255,0.15));
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 6px var(--rc-glow), inset 0 0 6px var(--rc-glow);
+  display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
 }
-.rc:hover, .rc:focus-visible { transform: translateY(-4px); border-color: rgba(255,255,255,0.4); background: rgba(30, 20, 40, 0.9); outline: none; }
+.rc:hover, .rc:focus-visible { 
+  transform: translateY(-4px); 
+  background: 
+    radial-gradient(ellipse 35% 60% at 50% 0%, var(--rc-glow) 0%, transparent 100%),
+    linear-gradient(135deg, rgba(36, 30, 56, 0.85), rgba(24, 20, 38, 0.75));
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 6px var(--rc-glow), inset 0 0 6px var(--rc-glow); 
+  outline: none; 
+}
 
 .rc-content { display: flex; align-items: center; width: 100%; }
 .rc-icon { font-size: 40px; margin-right: 16px; }
@@ -333,7 +312,7 @@ function ensureStyles() {
   background: rgba(255,255,255,.05); color: #fff; font-size: 13px; font-weight: 700;
   transition: background .15s, border-color .15s;
 }
-.rc-play:hover { background: rgba(255,87,125,.2); border-color: rgba(255,87,125,.5); }
+.rc-play:hover { background: var(--rc-glow); border-color: var(--rc-bdr); }
 
 .records-entry {
   position: fixed; right: 20px; top: 18px; z-index: 40; cursor: pointer;

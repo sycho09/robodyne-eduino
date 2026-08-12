@@ -75,8 +75,9 @@ function rowHtml({ chapter, room, rec, best }) {
       <td class="c-try">–</td>
     </tr>`;
   }
-  const detail = best.metrics.length
-    ? best.metrics.map((m) => `${esc(m.label)} ${esc(m.value)}`).join(' · ')
+  const displayMetrics = best.metrics.filter(m => m.label !== '최고 콤보');
+  const detail = displayMetrics.length
+    ? displayMetrics.map((m) => `${esc(m.label)} ${esc(m.value)}`).join(' · ')
     : esc(best.summary || '기록 없음');
   const grade = NO_GRADE.has(room.id)
     ? `<span class="g g-done">수료</span>`
