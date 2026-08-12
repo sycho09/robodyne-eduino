@@ -52,12 +52,15 @@ export function showRecords(host, { onPlay } = {}) {
 function template(tab) {
   const stats = collect();
   return `
+    <div class="chsel-shade" style="position: fixed; pointer-events: none; z-index: 0;"></div>
     <header class="records-head">
       <div class="records-headline">
         <h1 class="records-title">🏆 내 성취도 기록실</h1>
+        <!-- 나중에 필요하면 주석 해제하세요
         <p class="records-sub">
           ${stats.total}개 콘텐츠 중 <strong>${stats.cleared}개</strong> 클리어
         </p>
+        -->
       </div>
       <div class="records-save">
         <button type="button" class="records-save-btn" id="btn-save-png">
@@ -67,12 +70,16 @@ function template(tab) {
       </div>
     </header>
 
+    <!-- 나중에 필요하면 주석 해제하세요
     <div class="records-bar-wrap">
       <div class="records-bar" role="img" aria-label="콘텐츠 클리어 ${stats.pct}퍼센트">
         <span style="width:${stats.pct}%"></span>
       </div>
       <span class="records-pct-text">${stats.pct}%</span>
     </div>
+    -->
+
+
 
     <div class="records-tabs" role="tablist">
       <button type="button" role="tab" class="r-tab ${tab === 'gallery' ? 'is-active' : ''}" data-tab="gallery">결과 보기</button>
@@ -249,10 +256,6 @@ function ensureStyles() {
   background: url('/brand/hub-bg.webp') center/cover no-repeat, #2b213e;
   padding: 40px 24px 120px; color: var(--ink);
 }
-.records::before {
-  content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: rgba(0, 0, 0, 0.2); /* Brighten the background by reducing overlay darkness */
-}
 .records > * { position: relative; z-index: 1; }
 
 .records-head { text-align: center; margin-bottom: 0; position: relative; }
@@ -296,8 +299,8 @@ function ensureStyles() {
 
 .records-content { max-width: 1024px; margin: 0 auto; }
 .records-stage { margin-bottom: 40px; }
-.records-stage-head { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; font-size: 18px; font-weight: 800; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,0.6); }
-.records-stage-icon { font-size: 20px; }
+.records-stage-head { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; font-size: 22px; font-weight: 800; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,0.6); }
+.records-stage-icon { font-size: 26px; }
 
 .records-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
@@ -313,7 +316,7 @@ function ensureStyles() {
 .rc-content { display: flex; align-items: center; width: 100%; }
 .rc-icon { font-size: 40px; margin-right: 16px; }
 .rc-info { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-.rc-name { font-size: 16px; font-weight: 700; margin: 0; color: #fff; }
+.rc-name { font-size: 16px; font-weight: 700; margin: 0; color: #fff; white-space: nowrap; }
 .rc-seal { 
   display: flex; align-items: center; justify-content: center; align-self: stretch;
   font-size: 44px; font-weight: 900; line-height: 1; text-shadow: 0 2px 8px rgba(0,0,0,0.3);
