@@ -5,6 +5,7 @@ import { CHAPTERS, ROOMS } from '../content/curriculum.js';
 import { results } from '../app/results.js';
 import { progress } from '../app/progress.js';
 import { saveAsPdf, saveAsPng } from '../app/reportCard.js';
+import { nav } from '../app/nav.js';
 
 const GRADE_LABEL = { S: '완벽해요', A: '통과', B: '거의 다 왔어요', C: '조금만 더', D: '다시 도전' };
 
@@ -20,145 +21,166 @@ export function showRecords(host, { onPlay } = {}) {
   host.appendChild(root);
 
   let unsubscribe = null;
+  let currentTab = 'gallery';
+
   const draw = () => {
-    root.innerHTML = template();
-    wire(root, onPlay);
+    root.innerHTML = template(currentTab);
+    wire(root, onPlay, (newTab) => { currentTab = newTab; draw(); });
   };
   draw();
   unsubscribe = results.subscribe(draw);
 
-  // 씬이 교체되면(#app 이 비워지면) 구독을 끊는다.
   const obs = new MutationObserver(() => {
-    if (!host.contains(root)) { unsubscribe?.(); obs.disconnect(); }
+    if (!host.contains(root)) { 
+      unsubscribe?.(); 
+      obs.disconnect(); 
+      delete document.body.dataset.inRecords;
+    }
   });
   obs.observe(host, { childList: true });
 
-  return () => { unsubscribe?.(); obs.disconnect(); };
+  document.body.dataset.inRecords = '1';
+
+  return () => { 
+    unsubscribe?.(); 
+    obs.disconnect(); 
+    delete document.body.dataset.inRecords;
+  };
 }
 
 // ── 마크업 ───────────────────────────────────────────────────────────────────
-function template() {
+function template(tab) {
   const stats = collect();
   return `
     <header class="records-head">
       <div class="records-headline">
-        <p class="records-eyebrow">내 기록실</p>
-        <h1 class="records-title">지금까지의 무대</h1>
+        <h1 class="records-title">🏆 내 성취도 기록실</h1>
         <p class="records-sub">
-          미니게임 ${stats.total}개 중 <strong>${stats.cleared}개</strong> 클리어
-          ${stats.played ? ` · <strong>${stats.played}개</strong> 플레이` : ''}
+          ${stats.total}개 콘텐츠 중 <strong>${stats.cleared}개</strong> 클리어
         </p>
       </div>
       <div class="records-save">
-        <button type="button" class="records-save-btn" data-menu aria-haspopup="true" aria-expanded="false">
-          결과 저장 <span class="records-caret">▾</span>
+        <button type="button" class="records-save-btn" id="btn-save-png">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.8; margin-top:-2px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          이미지로 저장
         </button>
-        <div class="records-menu" hidden>
-          <button type="button" data-save="pdf">PDF로 저장 <small>인쇄·제출용</small></button>
-          <button type="button" data-save="png">이미지로 저장 <small>공유용 PNG</small></button>
-        </div>
       </div>
     </header>
 
-    <div class="records-bar" role="img" aria-label="미니게임 클리어 ${stats.pct}퍼센트">
-      <span style="width:${stats.pct}%"></span>
+    <div class="records-bar-wrap">
+      <div class="records-bar" role="img" aria-label="콘텐츠 클리어 ${stats.pct}퍼센트">
+        <span style="width:${stats.pct}%"></span>
+      </div>
+      <span class="records-pct-text">${stats.pct}%</span>
     </div>
 
-    ${CHAPTERS.map(sectionHtml).join('')}
+    <div class="records-tabs" role="tablist">
+      <button type="button" role="tab" class="r-tab ${tab === 'gallery' ? 'is-active' : ''}" data-tab="gallery">결과 보기</button>
+      <button type="button" role="tab" class="r-tab ${tab === 'play' ? 'is-active' : ''}" data-tab="play">바로 플레이</button>
+    </div>
 
-
+    <div class="records-content">
+      ${CHAPTERS.map(ch => sectionHtml(ch, tab)).join('')}
+    </div>
   `;
 }
 
-function sectionHtml(ch) {
+
+
+function sectionHtml(ch, tab) {
   const rooms = ch.rooms.map((id) => ROOMS[id]).filter(Boolean);
-  const done = rooms.filter((r) => progress.isCleared(r.id)).length;
   return `
     <section class="records-stage">
       <h2 class="records-stage-head">
         <span class="records-stage-icon" aria-hidden="true">${ch.icon}</span>
-        <span class="records-stage-name">${esc(ch.short)}</span>
-        <span class="records-stage-count">${done}/${rooms.length}</span>
+        <span class="records-stage-name">${esc(ch.short || ch.name)}</span>
       </h2>
-      <ul class="records-grid">${rooms.map(cardHtml).join('')}</ul>
+      <ul class="records-grid">${rooms.map(r => cardHtml(r, tab)).join('')}</ul>
     </section>`;
 }
 
-// 카드에는 통과/미통과 표시를 두지 않는다 — 클리어 집계는 위 진행바가 맡고,
-// 카드는 '어떻게 했는지'(등급·지표·도전 횟수)만 보여준다.
-function cardHtml(room) {
+function cardHtml(room, tab) {
   const rec = results.get(room.id);
   const best = rec?.best;
-  const play = `<button type="button" class="rc-play" data-play="${room.id}">${best ? '다시 도전 ▶' : '플레이하기 ▶'}</button>`;
+
+  const gradeColors = { S: '#a855f7', A: '#fb7185', B: '#60a5fa', C: '#fb923c', D: '#94a3b8' };
+  const gColor = best ? gradeColors[best.grade] || '#fff' : '#475569';
+
+  const isPlay = tab === 'play';
+  const playBtn = isPlay ? `<button type="button" class="rc-play" data-play="${room.id}">${best ? '다시 도전 ▶' : '플레이하기 ▶'}</button>` : '';
+  const cardClickProps = isPlay ? `data-play="${room.id}" role="button" tabindex="0"` : '';
 
   if (!best) {
-    return `<li class="rc rc-empty">
-      <span class="rc-icon" aria-hidden="true">${room.icon}</span>
-      <h3 class="rc-name">${esc(room.name)}</h3>
-      <p class="rc-empty-msg">아직 기록이 없어요</p>
-      <p class="rc-mission">${esc(room.mission)}</p>
-      ${play}
+    return `<li class="rc" ${cardClickProps}>
+      <div class="rc-content">
+        <span class="rc-icon" aria-hidden="true">${room.icon}</span>
+        <div class="rc-info">
+          <h3 class="rc-name">${esc(room.name)}</h3>
+          <div class="rc-body">
+            <div class="rc-metrics-item">미클리어</div>
+            <div class="rc-metrics-item">도전 대기 중!</div>
+          </div>
+        </div>
+        <span class="rc-seal" style="color: #475569;">-</span>
+      </div>
+      ${playBtn}
     </li>`;
   }
 
-  const chips = best.metrics.length
-    ? best.metrics.map((m) => `<li><span>${esc(m.label)}</span><b>${esc(m.value)}</b></li>`).join('')
-    : `<li><span>결과</span><b>${esc(best.summary || '기록됨')}</b></li>`;
+  const scoreText = (best.metrics && best.metrics.length)
+    ? best.metrics.map((m) => `<div class="rc-metrics-item">${esc(m.label)}: <b>${esc(m.value)}</b></div>`).join('')
+    : `<div class="rc-metrics-item">결과: <b>${esc(best.summary || '기록됨')}</b></div>`;
+  
+  const isNoGrade = NO_GRADE.has(room.id);
+  const gradeText = isNoGrade ? '수료' : best.grade;
+  const finalColor = isNoGrade ? '#34d399' : gColor;
+  const sealStyle = `color: ${finalColor}; ${isNoGrade ? 'font-size: 24px;' : ''}`;
 
-  const seal = NO_GRADE.has(room.id)
-    ? `<span class="rc-seal g-done" title="수료"><b>✓</b><small>수료</small></span>`
-    : `<span class="rc-seal g-${best.grade}" title="${GRADE_LABEL[best.grade] || ''}">
-      <b>${best.grade}</b><small>등급</small>
-    </span>`;
-
-  return `<li class="rc">
-    <span class="rc-icon" aria-hidden="true">${room.icon}</span>
-    ${seal}
-    <h3 class="rc-name">${esc(room.name)}</h3>
-    <p class="rc-concept">${esc(room.concept)}</p>
-    <ul class="rc-metrics">${chips}</ul>
-    <footer class="rc-foot">
-      <span>${rec.attempts}번 도전</span>
-      <span>${relDate(rec.lastPlayedAt || best.at)}</span>
-    </footer>
-    ${play}
+  return `<li class="rc" ${cardClickProps}>
+    <div class="rc-content">
+      <span class="rc-icon" aria-hidden="true">${room.icon}</span>
+      <div class="rc-info">
+        <h3 class="rc-name">${esc(room.name)}</h3>
+        <div class="rc-body">
+          ${scoreText}
+        </div>
+      </div>
+      <span class="rc-seal" style="${sealStyle}">${gradeText}</span>
+    </div>
+    ${playBtn}
   </li>`;
 }
 
 // ── 동작 ─────────────────────────────────────────────────────────────────────
-function wire(root, onPlay) {
-  // 카드에서 바로 그 방으로 — 최고 기록을 갱신하러 가는 가장 짧은 길.
-  root.querySelectorAll('[data-play]').forEach((b) => {
-    b.addEventListener('click', () => onPlay?.(b.dataset.play));
+function wire(root, onPlay, setTab) {
+  // 탭 전환
+  root.querySelectorAll('.r-tab').forEach((t) => {
+    t.addEventListener('click', () => setTab(t.dataset.tab));
   });
 
-  const btn = root.querySelector('[data-menu]');
-  const menu = root.querySelector('.records-menu');
+  // 카드에서 바로 그 방으로 — 최고 기록을 갱신하러 가는 가장 짧은 길.
+  root.querySelectorAll('[data-play]').forEach((b) => {
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onPlay?.(b.dataset.play);
+    });
+  });
 
-  const close = () => { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
-  const open = () => { menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); };
-
-  btn.addEventListener('click', (e) => { e.stopPropagation(); menu.hidden ? open() : close(); });
-  document.addEventListener('click', close, { once: true });
-  root.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !menu.hidden) { close(); btn.focus(); } });
-
-  menu.querySelectorAll('[data-save]').forEach((b) => {
-    b.addEventListener('click', async () => {
-      close();
-      const kind = b.dataset.save;
-      const label = b.textContent;
-      b.disabled = true;
+  const saveBtn = root.querySelector('#btn-save-png');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', async () => {
+      const origHtml = saveBtn.innerHTML;
+      saveBtn.disabled = true;
       try {
-        if (kind === 'pdf') await saveAsPdf();
-        else await saveAsPng();
+        await saveAsPng();
       } catch (err) {
         toast(err.message || '저장하지 못했어요. 잠시 후 다시 시도해 주세요.');
       } finally {
-        b.disabled = false;
-        b.firstChild && (b.firstChild.textContent = label);
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = origHtml;
       }
     });
-  });
+  }
 }
 
 function toast(msg) {
@@ -222,91 +244,93 @@ function ensureStyles() {
   const el = document.createElement('style');
   el.textContent = `
 .records {
-  --ink: #f5f3ff; --dim: #a5a0c0; --line: rgba(255,255,255,.09);
-  --card: rgba(255,255,255,.045);
-  max-width: 1120px; margin: 0 auto; padding: 84px 24px 72px; color: var(--ink);
+  --ink: #f5f3ff; --dim: #a5a0c0; --line: rgba(255,255,255,.2);
+  position: absolute; inset: 0; overflow-y: auto; z-index: 50;
+  background: url('/brand/hub-bg.webp') center/cover no-repeat, #2b213e;
+  padding: 40px 24px 120px; color: var(--ink);
 }
-.records-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
-.records-eyebrow { margin: 0; font-size: 12px; letter-spacing: .2em; color: #fbbf24; font-weight: 700; }
-.records-title { margin: 6px 0 8px; font-size: clamp(28px, 4vw, 40px); font-weight: 800; letter-spacing: -.02em; }
-.records-sub { margin: 0; color: var(--dim); font-size: 15px; }
-.records-sub strong { color: var(--ink); }
+.records::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: rgba(0, 0, 0, 0.2); /* Brighten the background by reducing overlay darkness */
+}
+.records > * { position: relative; z-index: 1; }
 
-.records-save { position: relative; }
+.records-head { text-align: center; margin-bottom: 0; position: relative; }
+.records-headline { display: flex; flex-direction: column; align-items: center; }
+.records-title { margin: 0 0 40px; font-size: clamp(28px, 4vw, 36px); font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+.records-sub { margin: 0 0 6px; line-height: 1; font-size: 16px; color: rgba(255,255,255,0.7); }
+.records-sub strong { color: rgba(255,255,255,0.9); font-weight: 600; }
+
+.records-save { position: fixed; right: 24px; top: 16px; z-index: 70; }
 .records-save-btn {
-  border: 0; cursor: pointer; border-radius: 999px; padding: 12px 22px; font-size: 15px; font-weight: 700;
-  color: #2a1608; background: linear-gradient(100deg, #fbbf24, #fb7185);
-  box-shadow: 0 8px 24px rgba(251,113,133,.28);
+  height: 44px; padding: 0 20px 0 16px; border-radius: 999px; cursor: pointer;
+  background: rgba(18,14,30,.5); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,.16); color: #eef0ff; font-weight: 700; font-size: 14px; letter-spacing: -.01em;
+  box-shadow: 0 8px 26px rgba(0,0,0,.4); transition: background .16s, border-color .16s, transform .12s;
+  display: flex; align-items: center; gap: 6px;
 }
-.records-save-btn:hover { filter: brightness(1.06); }
-.records-caret { margin-left: 4px; font-size: 12px; }
-.records-menu {
-  position: absolute; right: 0; top: calc(100% + 10px); z-index: 20; min-width: 232px;
-  background: #221c3a; border: 1px solid var(--line); border-radius: 16px; padding: 6px;
-  box-shadow: 0 22px 48px rgba(0,0,0,.5);
+.records-save-btn:hover { background: rgba(30,24,50,.72); border-color: rgba(255,255,255,.32); transform: scale(1.02); }
+
+
+.records-bar-wrap { display: flex; align-items: center; justify-content: center; max-width: 360px; margin: 0 auto 40px; gap: 6px; }
+.records-bar { flex: 1; height: 8px; border-radius: 99px; background: rgba(0,0,0,0.4); overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
+.records-bar span { display: block; height: 100%; border-radius: 99px; background: #fb7185; transition: width .5s ease; box-shadow: 0 0 10px rgba(251,113,133,0.8); }
+.records-pct-text { font-size: 14px; color: rgba(255,255,255,0.6); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.records-tabs { 
+  position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 4px;
+  background: rgba(18, 14, 30, 0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 999px; padding: 5px;
+  z-index: 100; box-shadow: 0 16px 40px rgba(0,0,0,0.5);
 }
-.records-menu button {
-  display: block; width: 100%; text-align: left; border: 0; background: none; cursor: pointer;
-  color: var(--ink); font-size: 14px; font-weight: 600; padding: 12px 14px; border-radius: 11px;
+.r-tab {
+  background: transparent; border: none;
+  color: rgba(255,255,255,0.5); padding: 10px 32px; border-radius: 999px;
+  font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s;
 }
-.records-menu button:hover { background: rgba(255,255,255,.07); }
-.records-menu button:disabled { opacity: .5; cursor: progress; }
-.records-menu small { display: block; margin-top: 2px; font-weight: 500; color: var(--dim); font-size: 12px; }
+.r-tab:hover { color: #fff; }
+.r-tab.is-active {
+  background: rgba(255,255,255,0.15); color: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
 
-.records-bar { height: 6px; border-radius: 99px; background: rgba(255,255,255,.08); margin: 26px 0 40px; overflow: hidden; }
-.records-bar span { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #fbbf24, #fb7185); transition: width .5s ease; }
+.records-content { max-width: 1024px; margin: 0 auto; }
+.records-stage { margin-bottom: 40px; }
+.records-stage-head { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; font-size: 18px; font-weight: 800; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,0.6); }
+.records-stage-icon { font-size: 20px; }
 
-.records-stage { margin-bottom: 38px; }
-.records-stage-head { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; font-size: 15px; font-weight: 700; }
-.records-stage-icon { font-size: 19px; }
-.records-stage-count { margin-left: auto; color: var(--dim); font-weight: 600; font-variant-numeric: tabular-nums; }
+.records-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
 
-.records-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px;
-  grid-template-columns: repeat(auto-fill, minmax(258px, 1fr)); }
-
-/* 카드 = 아케이드 티켓 조각. 왼쪽의 점선 절취선이 이 화면의 서명 요소다. */
 .rc {
-  position: relative; padding: 20px 20px 16px 30px; border-radius: 16px;
-  background: var(--card); border: 1px solid var(--line); overflow: hidden;
+  position: relative; padding: 20px; border-radius: 16px;
+  background: rgba(20, 15, 30, 0.85); border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(16px); box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s, border-color 0.2s, background 0.2s;
 }
-.rc::before {
-  content: ''; position: absolute; left: 14px; top: 14px; bottom: 14px; width: 0;
-  border-left: 2px dashed rgba(255,255,255,.16);
-}
-.rc-icon { font-size: 22px; }
-.rc-name { margin: 8px 0 3px; font-size: 16px; font-weight: 700; }
-.rc-concept { margin: 0 0 14px; font-size: 12.5px; color: var(--dim); }
-.rc-seal {
-  position: absolute; right: 16px; top: 16px; width: 46px; height: 46px; border-radius: 13px;
-  display: grid; place-content: center; text-align: center; line-height: 1; color: #fff;
-}
-.rc-seal b { font-size: 20px; font-weight: 800; }
-.rc-seal small { display: block; font-size: 9px; opacity: .85; margin-top: 2px; }
-.g-S { background: #7c3aed; } .g-A { background: #059669; } .g-B { background: #0284c7; }
-.g-C { background: #f59e0b; color: #2a1608; } .g-D { background: #6b7280; }
-.g-done { background: #0f766e; }
+.rc:hover, .rc:focus-visible { transform: translateY(-4px); border-color: rgba(255,255,255,0.4); background: rgba(30, 20, 40, 0.9); outline: none; }
 
-.rc-metrics { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-.rc-metrics li { display: flex; gap: 5px; align-items: baseline; padding: 5px 10px; border-radius: 8px;
-  background: rgba(0,0,0,.25); font-size: 12px; }
-.rc-metrics span { color: var(--dim); }
-.rc-metrics b { font-weight: 700; font-variant-numeric: tabular-nums; }
-.rc-foot { display: flex; justify-content: space-between; margin-top: 14px; font-size: 11.5px; color: var(--dim); }
+.rc-content { display: flex; align-items: center; width: 100%; }
+.rc-icon { font-size: 40px; margin-right: 16px; }
+.rc-info { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.rc-name { font-size: 16px; font-weight: 700; margin: 0; color: #fff; }
+.rc-seal { 
+  display: flex; align-items: center; justify-content: center; align-self: stretch;
+  font-size: 44px; font-weight: 900; line-height: 1; text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  border-left: 1px solid rgba(255,255,255,0.15); padding-left: 16px; margin-left: 12px; width: 60px; text-align: center;
+}
+
+.rc-body { display: flex; flex-direction: column; gap: 2px; }
+.rc-metrics-item { font-size: 13px; color: rgba(255,255,255,0.6); display: flex; align-items: center; }
+.rc-metrics-item b { color: rgba(255,255,255,0.9); margin-left: 4px; font-weight: 600; }
 
 .rc-play {
-  display: block; width: 100%; margin-top: 12px; cursor: pointer;
-  border: 1px solid rgba(255,255,255,.16); border-radius: 10px; padding: 9px 12px;
-  background: rgba(255,255,255,.05); color: var(--ink); font-size: 13px; font-weight: 700;
+  display: block; width: 100%; margin-top: 14px; cursor: pointer;
+  border: 1px solid rgba(255,255,255,.16); border-radius: 10px; padding: 10px 12px;
+  background: rgba(255,255,255,.05); color: #fff; font-size: 13px; font-weight: 700;
   transition: background .15s, border-color .15s;
 }
-.rc-play:hover { background: rgba(251,191,36,.14); border-color: rgba(251,191,36,.4); }
-
-.rc-empty { opacity: .62; }
-.rc-empty:hover { opacity: 1; }
-.rc-empty-msg { margin: 0 0 6px; font-size: 13px; color: var(--dim); }
-.rc-mission { margin: 0 0 2px; font-size: 12px; color: var(--dim); }
-
-.records-note { margin: 8px 0 0; font-size: 12.5px; color: var(--dim); }
+.rc-play:hover { background: rgba(255,87,125,.2); border-color: rgba(255,87,125,.5); }
 
 .records-entry {
   position: fixed; right: 20px; top: 18px; z-index: 40; cursor: pointer;
@@ -329,12 +353,14 @@ function ensureStyles() {
 .records :focus-visible, .records-entry:focus-visible { outline: 2px solid #fbbf24; outline-offset: 3px; }
 
 @media (max-width: 640px) {
-  .records { padding: 76px 16px 60px; }
-  .records-head { flex-direction: column; align-items: stretch; }
-  .records-save-btn { width: 100%; }
-  .records-menu { left: 0; right: 0; }
-  .records-entry { right: 12px; top: 12px; padding: 9px 14px; font-size: 13px; }
+  .records { padding: 84px 16px 110px; }
+  .records-head { text-align: left; margin-top: 20px; }
+  .records-headline { align-items: flex-start; }
+  .records-save { position: absolute; top: 16px; right: 16px; }
+  .records-save-btn { height: 38px; padding: 0 16px 0 12px; font-size: 13px; }
+  .records-tabs { bottom: 24px; }
+  .r-tab { padding: 10px 24px; font-size: 14px; }
 }
-@media (prefers-reduced-motion: reduce) { .records-bar span { transition: none; } }`;
+@media (prefers-reduced-motion: reduce) { .records-bar span, .rc { transition: none; } }`;
   document.head.appendChild(el);
 }
