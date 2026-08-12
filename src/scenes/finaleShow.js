@@ -1,6 +1,5 @@
-// finaleShow.js — ch4 종합(챔피언 홀): '나만의 인터랙티브 쇼'.
-//   배운 4부품을 한 무대에서: 🌈 컬러(다이얼 A0→네오픽셀 D6) · 🎵 멜로디(부저 D5) · 🔘 피날레 큐(버튼 D4).
-//   3막 모두 통과 → 👑 천국의 왕관(졸업). 보드 없이도 화면으로 전부 플레이 가능.
+// finaleShow.js — 나만의 인터랙티브 쇼 (챔피언 홀 종합)
+// 4개 부품(가변저항, 네오픽셀, 부저, 버튼) 통합 플레이. B등급(80%) 이상 통과.
 import { sfx } from '../app/sfx.js';
 import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
@@ -8,14 +7,14 @@ import { celebrateRoom } from './celebrate.js';
 import { showFinale } from './finale.js';
 import { allDone } from '../content/curriculum.js';
 import { board } from '../app/board.js';
-import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { DEV_TOOLS } from '../app/flags.js';
 import { icon } from '../app/icons.js';
+import { results } from '../app/results.js';
+import { gradeOf as utilGrade, clamp, lerp } from '../engine/utils.js';
 
 const ADC = 0, NEO = 6, BUZZ = 5, BTN = 4, PASS = 0.8, HUE_MAX = 320;
 const NOTES = [['도', 262], ['레', 294], ['미', 330], ['파', 349], ['솔', 392], ['라', 440], ['시', 494]];
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const lerp = (a, b, t) => a + (b - a) * t;
-const gradeOf = (a) => a >= 0.95 ? 'S' : a >= 0.85 ? 'A' : a >= 0.8 ? 'B' : a >= 0.6 ? 'C' : 'D';
+const gradeOf = (a) => utilGrade(a, 'strict');
 const hueDiff = (a, b) => { const d = Math.abs(((a - b) % 360 + 360) % 360); return Math.min(d, 360 - d); };
 function hsv2rgb(h, s, v) {
   h = (((h % 360) + 360) % 360) / 60; const c = v * s, x = c * (1 - Math.abs(h % 2 - 1)), m = v - c; let r, g, b;
@@ -115,11 +114,23 @@ export function showFinaleShow(root, { onExit } = {}) {
   function actDone(key, hits, total) {
     stopActCleanup(); playEl.innerHTML = ''; hud.hidden = true; bgm.setDuck(1); neoOff();
     const acc = total ? hits / total : 0, pass = acc >= PASS, grade = gradeOf(acc), last = ai === ACTS.length - 1;
+    const pct = Math.round(acc * 100);
+    results.record('final', {
+      accuracy: pct, grade, passed: pass, summary: ACTS[ai].name,
+      metrics: [
+        { label: '성공', value: `${hits}/${total}` },
+        { label: '정확도', value: `${pct}%` },
+      ],
+    });
     const el = panel(`<div class="lp-grade lp-${grade}">${grade}<span>등급</span></div><h2>${pass ? '멋진 무대! 🎉' : '조금만 더!'}</h2>
-      <p class="prep-sub">${ACTS[ai].name} · ${hits}/${total} (${Math.round(acc * 100)}%)</p>
-      <p class="lp-cond">${pass ? (last ? '쇼 완성! 왕관을 받자 👑' : '다음 무대로 ▶') : '80% 이상 성공해야 통과! 다시!'}</p>
-      <button class="cel-go" id="lp-next">${pass ? (last ? '왕관 받기 👑' : '다음 무대 ▶') : '다시 도전 ▶'}</button>`);
-    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) { cleared[key] = true; nextAct(ai + 1); } else nextAct(ai); };
+      <p class="prep-sub">${ACTS[ai].name} · ${hits}/${total} (${pct}%)</p>
+      <p class="lp-cond">${pass ? (last ? '쇼 완성! 왕관을 받자 👑' : '다음 무대로 ▶') : '80% 이상 성공하면 왕관! 다시 도전해도 되고, 다음으로 넘어가도 돼요.'}</p>
+      <div class="lp-actions">
+        <button class="cel-go ghost" id="lp-retry">다시 도전 ↻</button>
+        <button class="cel-go" id="lp-next">${last ? (pass ? '왕관 받기 👑' : '마치기 ▶') : '다음 무대 ▶'}</button>
+      </div>`);
+    el.querySelector('#lp-retry').onclick = () => { el.remove(); nextAct(ai); };
+    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) cleared[key] = true; nextAct(ai + 1); };
   }
   skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); cleared[ACTS[ai].key] = true; stopActCleanup(); neoOff(); nextAct(ai + 1); };
 

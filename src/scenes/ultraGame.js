@@ -1,16 +1,13 @@
-// ultraGame.js — 무궁화 꽃이 피었습니다 (초음파 거리 센서 · GO존 방식)
-// 손을 센서 앞 'GO존'(약 8~35cm)에 두면 EDDIE가 걷고, 손을 치우면(멀리/없음) 멈춘다.
-//  · 🟢 초록불: GO존에 손을 두고 다가가기
-//  · 🔴 빨간불: 손을 치워 '멈춰!' — 빨간불에 걷고 있으면(GO존) 술래에게 딱 걸린다 😱
-// 거리를 '구간 안/밖(임계값+히스테리시스)'으로만 보므로 값이 튀어도 게임이 안정적이다.
-// 보드/펌웨어가 없으면 마우스/스페이스/↑ '꾹 누르면 걷기'로 체험.
+// ultraGame.js — 무궁화 꽃이 피었습니다 (초음파 거리 센서)
+// GO존(8~35cm)에 손을 두면 이동, 치우면 정지. 빨간불에 움직이면 실패. A등급(85%) 이상 통과.
 import { sfx } from '../app/sfx.js';
 import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
-import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { DEV_TOOLS } from '../app/flags.js';
 import { icon } from '../app/icons.js';
+import { gradeOf, ready, clamp, rand } from '../engine/utils.js';
 
 const PINS = { trig: 4, echo: 3 };
 const GO_LO = 8, GO_HI = 35;     // GO존(cm): 이 안이면 걷기, 밖이면(너무 가깝거나 멀거나/없음) 멈춤
@@ -23,10 +20,6 @@ const GAMES = [
 const bgImg = new Image(); bgImg.onerror = () => { if (!bgImg._p) { bgImg._p = 1; bgImg.src = '/brand/stage-ultra-bg.png'; } }; bgImg.src = '/brand/stage-ultra-bg.webp';
 const heroImg = new Image(); heroImg.src = '/brand/eddie/eddie-hero.webp';
 [bgImg, heroImg].forEach((im) => { im.decode && im.addEventListener('load', () => im.decode().catch(() => {})); });
-const ready = (im) => im.complete && im.naturalWidth > 0;
-const gradeOf = (a) => a >= 0.95 ? 'S' : a >= 0.85 ? 'A' : a >= 0.7 ? 'B' : a >= 0.5 ? 'C' : 'D';
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const rand = (a, b) => a + Math.random() * (b - a);
 
 export function showUltraGame(root, { onExit } = {}) {
   root.innerHTML = `

@@ -1,15 +1,15 @@
-// potGame.js — 볼륨 다이얼쇼 (가변저항 · 아날로그 입력 게임 2종)
-// 공통 조작: 화면 슬라이더 드래그 / ← → (또는 ↑ ↓) 로 볼륨 다이얼 돌리기. 실물 가변저항(A0) 돌리면 그대로 반영.
-//   1단계 'match' — 목표 볼륨 존에 바늘을 맞추고 잠깐 유지(정밀 조준)
-//   2단계 'track' — 위아래로 움직이는 목표를 다이얼로 계속 따라가기(추적)
-// 각 단계 80%↑ 통과 + 둘 다 통과 → 🎚️ 다이얼 메달.
+// potGame.js — 볼륨 다이얼쇼 (가변저항 게임)
+// 1단계(맞추기) → 2단계(따라가기). B등급(80%) 이상 통과.
+// 드래그/방향키 또는 실물 가변저항(A0) 조작.
 import { sfx } from '../app/sfx.js';
 import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
-import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { DEV_TOOLS } from '../app/flags.js';
 import { icon } from '../app/icons.js';
+import { results } from '../app/results.js';
+import { gradeOf as utilGrade, ready, clamp, lerp } from '../engine/utils.js';
 
 const ADC = 0, PASS_ACC = 0.8;
 const GAMES = [
@@ -19,10 +19,7 @@ const GAMES = [
 
 const bgImg = new Image(); bgImg.onerror = () => { if (!bgImg._p) { bgImg._p = 1; bgImg.src = '/brand/stage-pot-bg.png'; } }; bgImg.src = '/brand/stage-pot-bg.webp';
 const djImg = new Image(); djImg.src = '/brand/eddie/eddie-hero.webp';   // 메인 캐릭터(에디)로 통일
-const ready = (im) => im.complete && im.naturalWidth > 0;
-const gradeOf = (a) => a >= 0.95 ? 'S' : a >= 0.85 ? 'A' : a >= 0.8 ? 'B' : a >= 0.6 ? 'C' : 'D';
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const lerp = (a, b, t) => a + (b - a) * t;
+const gradeOf = (a) => utilGrade(a, 'strict');
 
 export function showPotGame(root, { onExit, onComplete } = {}) {
   root.innerHTML = `
@@ -144,11 +141,23 @@ export function showPotGame(root, { onExit, onComplete } = {}) {
   }
   function showResult(grade, pass) {
     bgm.setDuck(1); fader.hidden = true; const acc = Math.round((state.hits / state.total) * 100); const last = gi === GAMES.length - 1;
+    results.record('pot', {
+      accuracy: acc, grade, passed: pass, summary: game.name,
+      metrics: [
+        { label: '적중', value: `${state.hits}/${state.total}` },
+        { label: '정확도', value: `${acc}%` },
+        { label: '최고 콤보', value: `${state.maxCombo}` },
+      ],
+    });
     const el = panel(`<div class="lp-grade lp-${grade}">${grade}<span>등급</span></div><h2>${pass ? '통과! 🎉' : '조금만 더!'}</h2>
       <p class="prep-sub">${game.name} · ${state.hits}/${state.total} (${acc}%) · 최고 콤보 ${state.maxCombo}</p>
-      <p class="lp-cond">${pass ? (last ? '두 미션 완성! 메달을 받자 🏅' : '다음 미션으로 ▶') : '80% 이상 적중해야 통과! 다시 도전!'}</p>
-      <button class="cel-go" id="lp-next">${pass ? (last ? '메달 받기 🏅' : '다음 미션 ▶') : '다시 도전 ▶'}</button>`);
-    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) { cleared[game.key] = true; gi++; nextGame(); } else beginPlay(); };
+      <p class="lp-cond">${pass ? (last ? '두 미션 완성! 메달을 받자 🏅' : '다음 미션으로 ▶') : '80% 이상 적중하면 메달! 다시 도전해도 되고, 다음으로 넘어가도 돼요.'}</p>
+      <div class="lp-actions">
+        <button class="cel-go ghost" id="lp-retry">다시 도전 ↻</button>
+        <button class="cel-go" id="lp-next">${last ? (pass ? '메달 받기 🏅' : '마치기 ▶') : '다음 미션 ▶'}</button>
+      </div>`);
+    el.querySelector('#lp-retry').onclick = () => { el.remove(); beginPlay(); };
+    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) cleared[game.key] = true; gi++; nextGame(); };
   }
   function finishAll() {
     cleanup();

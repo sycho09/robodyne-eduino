@@ -1,13 +1,14 @@
-// lampGame.js — 빛 마법 램프 (STAGE 3 · 응용): 조도센서(입력) + RGB LED(출력) 상호작용 · 3막 스토리.
-//   손그림자(CDS) → 색조(Hue) → 화면 램프 + 실물 RGB LED 실시간 발광 → 목표 색 맞추기.
-//   1막 색 깨우기(정밀 매칭) · 2막 흐르는 빛(추적) · 3막 대마법 램프(색 주문 시퀀스) → 🪔 램프 스타.
+// lampGame.js — 빛 마법 램프 (조도센서 + RGB LED 응용)
+// 조도센서로 목표 색상 맞추기. 1막(맞추기) → 2막(따라가기) → 3막(시퀀스). B등급(80%) 이상 통과.
 import { sfx } from '../app/sfx.js';
 import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
-import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { DEV_TOOLS } from '../app/flags.js';
 import { icon } from '../app/icons.js';
+import { results } from '../app/results.js';
+import { gradeOf as utilGrade, ready, clamp, lerp } from '../engine/utils.js';
 
 const ADC = 0, NEO = 6, HUE_MAX = 320, PASS = 0.8;   // 조도센서 A0(입력) · 네오픽셀 D6(출력)
 const ACTS = [
@@ -25,10 +26,7 @@ const ACTS = [
 const eddieImg = new Image(); eddieImg.onerror = () => { if (!eddieImg._p) { eddieImg._p = 1; eddieImg.src = '/brand/eddie/eddie-hero.webp'; } }; eddieImg.src = '/brand/eddie-mage.webp';
 const bgImg = new Image(); bgImg.onerror = () => { if (!bgImg._p) { bgImg._p = 1; bgImg.src = '/brand/stage-lamp-bg.png'; } }; bgImg.src = '/brand/stage-lamp-bg.webp';
 const monImg = new Image(); monImg.src = '/brand/monster-dark.webp';   // 몬스터 1장(보스는 같은 이미지를 크게)
-const ready = (im) => im.complete && im.naturalWidth > 0;
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const lerp = (a, b, t) => a + (b - a) * t;
-const gradeOf = (a) => a >= 0.95 ? 'S' : a >= 0.85 ? 'A' : a >= 0.8 ? 'B' : a >= 0.6 ? 'C' : 'D';
+const gradeOf = (a) => utilGrade(a, 'strict');
 function hueDiff(a, b) { const d = Math.abs(((a - b) % 360 + 360) % 360); return Math.min(d, 360 - d); }
 function hsv2rgb(h, s, v) {
   h = (((h % 360) + 360) % 360) / 60; const c = v * s, x = c * (1 - Math.abs(h % 2 - 1)), m = v - c; let r, g, b;
@@ -161,11 +159,23 @@ export function showLampGame(root, { onExit } = {}) {
   }
   function showResult(grade, pass) {
     bgm.setDuck(1); fader.hidden = true; const acc = Math.round((state.hits / state.total) * 100); const last = ai === ACTS.length - 1;
+    results.record('lamp', {
+      accuracy: acc, grade, passed: pass, summary: act.name,
+      metrics: [
+        { label: '적중', value: `${state.hits}/${state.total}` },
+        { label: '정확도', value: `${acc}%` },
+        { label: '최고 콤보', value: `${state.maxCombo}` },
+      ],
+    });
     const el = panel(`<div class="lp-grade lp-${grade}">${grade}<span>등급</span></div><h2>${pass ? '주문 성공! 🎉' : '조금만 더!'}</h2>
       <p class="prep-sub">${act.name} · ${state.hits}/${state.total} (${acc}%) · 최고 콤보 ${state.maxCombo}</p>
-      <p class="lp-cond">${pass ? (last ? '천국에 무지개가 돌아왔어요! 메달을 받자 🏅' : '다음 막으로 ▶') : '80% 이상 성공해야 통과! 다시 도전!'}</p>
-      <button class="cel-go" id="lp-next">${pass ? (last ? '메달 받기 🏅' : '다음 막 ▶') : '다시 도전 ▶'}</button>`);
-    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) { cleared[act.key] = true; ai++; nextAct(); } else beginPlay(); };
+      <p class="lp-cond">${pass ? (last ? '천국에 무지개가 돌아왔어요! 메달을 받자 🏅' : '다음 막으로 ▶') : '80% 이상 성공하면 메달! 다시 도전해도 되고, 다음으로 넘어가도 돼요.'}</p>
+      <div class="lp-actions">
+        <button class="cel-go ghost" id="lp-retry">다시 도전 ↻</button>
+        <button class="cel-go" id="lp-next">${last ? (pass ? '메달 받기 🏅' : '마치기 ▶') : '다음 막 ▶'}</button>
+      </div>`);
+    el.querySelector('#lp-retry').onclick = () => { el.remove(); beginPlay(); };
+    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) cleared[act.key] = true; ai++; nextAct(); };
   }
   function finishAll() {
     cleanup();

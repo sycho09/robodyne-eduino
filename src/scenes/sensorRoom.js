@@ -1,7 +1,5 @@
-// sensorRoom.js — 박물관형 센서 전시관(탑다운). EDDIE가 걸어다니며
-//   📖 이론관(자료 가로슬라이드 + 제어 대시보드) / 🎮 체험관(미니게임) 입구로 입장.
-//   밝은 카니발/박물관 톤. config 기반 확장형.
-//   ※ 이론관의 제어 탭은 board API 를 직접 호출한다(cfg.blockPin). Blockly 는 쓰지 않는다.
+// sensorRoom.js — 박물관형 센서 전시관 (탑다운)
+// 이론관(학습+제어) / 체험관(미니게임) 통합. config 기반.
 import { createWorld } from '../engine/topdown.js';
 import { sfx } from '../app/sfx.js';
 import { progress } from '../app/progress.js';
@@ -11,7 +9,7 @@ import { celebrateRoom } from './celebrate.js';
 import { nav } from '../app/nav.js';
 import { icon } from '../app/icons.js';
 
-// 이론관 실습 탭의 라벨 — control 종류별 아이콘 + 이름.
+// 실습 탭 라벨 (아이콘+이름)
 const CONTROL_TAB = {
   keys:     ['notes', '연주판'],
   rgb:      ['palette', '색 섞기'],
@@ -25,8 +23,7 @@ const controlTabLabel = (control) => {
   return `${icon(ic, 22)} ${name}`;
 };
 
-// 미니게임은 동적 import 로 분리한다 — 전시관에 들어섰다고 9개 게임 코드를 다 받을 이유가 없다.
-// 전시관 마운트 시 해당 게임만 미리 받아두므로(showSensorRoom) 체험관 입장은 즉시 이뤄진다.
+// 미니게임 동적 import 분리
 const GAMES = {
   led:      () => import('./ledGame.js').then((m) => m.showLedGame),
   buzzer:   () => import('./buzzerGame.js').then((m) => m.showBuzzerGame),
@@ -144,14 +141,19 @@ const ROOMS_CFG = {
       '두더지 잡기(반응)·청기백기(명령 따라) — 한 방에서 두 게임! 🎮',
     ],
     // 택트 2개로 두 게임 순차 플레이: 두더지 → 청기백기 → 메달
-    // 두더지 클리어 직후 청기백기로 넘어가므로 두 청크를 함께 받아둔다.
+    // 두더지를 통과 못 해도 청기백기로 넘어간다(막으면 포기한다). 대신 메달은 둘 다 통과해야 준다.
+    // 두 게임 다 'button' 방 기록으로 쌓이도록 roomId 를 넘긴다.
     play: async (root, opt) => {
       const [showButtonGame, showFlagGame] = await Promise.all([GAMES.button(), GAMES.flag()]);
       showButtonGame(root, {
         onExit: opt.onExit,
-        onComplete: () => showFlagGame(root, {
-          onExit: opt.onExit, skipPrep: true,
-          onComplete: () => { progress.mark('button'); celebrateRoom({ title: '택트스위치 마스터! 🔨🚩', message: '두더지 잡기와 청기백기를 모두 클리어 — 메달 획득!', exitLabel: '전시관으로 ▶', onExit: () => opt.onExit?.() }); },
+        onComplete: (moleCleared) => showFlagGame(root, {
+          onExit: opt.onExit, skipPrep: true, roomId: 'button',
+          onComplete: (flagCleared) => {
+            if (!(moleCleared && flagCleared)) { opt.onExit?.(); return; }
+            progress.mark('button');
+            celebrateRoom({ title: '택트스위치 마스터! 🔨🚩', message: '두더지 잡기와 청기백기를 모두 클리어 — 메달 획득!', exitLabel: '전시관으로 ▶', onExit: () => opt.onExit?.() });
+          },
         }),
       });
     },

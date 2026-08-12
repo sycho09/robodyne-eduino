@@ -1,16 +1,14 @@
 // flagGame.js — 청기백기 (택트스위치 2개 · 디지털 입력)
-// 진행자(EDDIE)의 명령에 맞춰 청기(파랑·버튼1/D4)·백기(흰·버튼2/D5)를 올리고 내린다.
-// 명령: "청기 올려/내려", "백기 올려/내려" — 이미 그 상태면 '함정'(누르면 실수!).
-// 입력: 실물 택트스위치 2개(D4·D5 / 쉴드 포트 3·4) 에지 감지 / 화면 버튼 / 키보드(1·2 또는 ←·→).
-// 판정: 명령 시간 안에 '지목된 깃발 = 목표 상태' + '다른 깃발 = 그대로'면 정답.
-// 1차 느긋 · 2차 빠름. 두 판 통과 → 🚩 깃발 메달.
+// 진행자 명령에 맞춰 청기(D4)/백기(D5)를 올리고 내린다. A등급(85%) 이상 통과.
 import { sfx } from '../app/sfx.js';
 import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
-import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { DEV_TOOLS } from '../app/flags.js';
 import { icon } from '../app/icons.js';
+import { results } from '../app/results.js';
+import { gradeOf, ready, clamp } from '../engine/utils.js';
 
 const PINS = [4, 5];   // 0=청기(파랑·D4·포트3), 1=백기(흰·D5·포트4)
 const FLAGS = PINS.length;
@@ -26,11 +24,10 @@ const callerImg = new Image(); callerImg.onerror = () => { if (!callerImg._p) { 
 const flagImg = [new Image(), new Image()];
 flagImg[0].onerror = () => { if (!flagImg[0]._p) { flagImg[0]._p = 1; flagImg[0].src = '/brand/flag-blue.png'; } }; flagImg[0].src = '/brand/flag-blue.webp';
 flagImg[1].onerror = () => { if (!flagImg[1]._p) { flagImg[1]._p = 1; flagImg[1].src = '/brand/flag-white.png'; } }; flagImg[1].src = '/brand/flag-white.webp';
-const ready = (im) => im.complete && im.naturalWidth > 0;
-const gradeOf = (a) => a >= 0.95 ? 'S' : a >= 0.85 ? 'A' : a >= 0.7 ? 'B' : a >= 0.5 ? 'C' : 'D';
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
-export function showFlagGame(root, { onExit, onComplete, skipPrep } = {}) {
+// roomId — 청기백기는 'button' 방의 2번째 게임이면서 자체 방으로도 쓸 수 있다.
+//   두더지 뒤에 이어질 때는 'button' 을 받아 같은 방 기록으로 쌓인다.
+export function showFlagGame(root, { onExit, onComplete, skipPrep, roomId = 'flag' } = {}) {
   root.innerHTML = `
     <div class="led scene-fade joygame flaggame">
       <div class="joy-stage-bg" id="fl-bg"></div>
@@ -196,16 +193,32 @@ export function showFlagGame(root, { onExit, onComplete, skipPrep } = {}) {
   }
   function showResult(grade, pass) {
     bgm.setDuck(1); pads.hidden = true; const last = gi === GAMES.length - 1;
+    // 등급을 뽑은 식과 같은 값을 기록해 화면과 기록이 어긋나지 않게 한다.
+    const acc = Math.round(clamp(state.score / game.count, 0, 1) * 100);
+    results.record(roomId, {
+      accuracy: acc, grade, passed: pass, summary: game.name,
+      metrics: [
+        { label: '점수', value: `${state.score}점` },
+        { label: '목표', value: `${state.target}점` },
+        { label: '최고 콤보', value: `${state.bestCombo}` },
+      ],
+    });
     const el = panel(`<div class="lp-grade lp-${grade}">${grade}<span>등급</span></div><h2>${pass ? '명령 완벽 수행! 🎉' : '조금 아쉬워요! 🚩'}</h2>
       <p class="prep-sub">${game.name} · 🚩 ${state.score}점 (목표 ${state.target}) · 최고 콤보 ${state.bestCombo}</p>
-      <p class="lp-cond">${pass ? '청기백기 통과! 메달을 받자 🏅' : `목표 ${state.target}점에 살짝 모자라요 — 다시!`}</p>
-      <button class="cel-go" id="lp-next">${pass ? '메달 받기 🏅' : '다시 도전 ▶'}</button>`);
-    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) { cleared[game.key] = true; gi++; nextGame(); } else beginPlay(); };
+      <p class="lp-cond">${pass ? '청기백기 통과! 메달을 받자 🏅' : `목표 ${state.target}점을 넘기면 메달! 다시 도전해도 되고, 다음으로 넘어가도 돼요.`}</p>
+      <div class="lp-actions">
+        <button class="cel-go ghost" id="lp-retry">다시 도전 ↻</button>
+        <button class="cel-go" id="lp-next">${last ? (pass ? '메달 받기 🏅' : '마치기 ▶') : '다음 ▶'}</button>
+      </div>`);
+    el.querySelector('#lp-retry').onclick = () => { el.remove(); beginPlay(); };
+    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) cleared[game.key] = true; gi++; nextGame(); };
   }
   function finishAll() {
     cleanup();
-    if (GAMES.every((g) => cleared[g.key])) {
-      if (onComplete) { onComplete(); return; }   // 순차 플레이: 최종 메달은 호출측에서
+    const allCleared = GAMES.every((g) => cleared[g.key]);
+    // 순차 플레이: 통과 못 했어도 호출측으로 돌려보내고, 방 메달 판정은 거기서 한다.
+    if (onComplete) { onComplete(allCleared); return; }
+    if (allCleared) {
       progress.mark('flag'); celebrateRoom({ title: '청기백기 챔피언! 🚩', message: '명령(디지털 입력)을 잘 듣고 청기·백기를 척척 — 🚩 깃발 메달 획득!', exitLabel: '전시관으로 ▶', onExit: () => onExit?.() });
     }
     else onExit?.();

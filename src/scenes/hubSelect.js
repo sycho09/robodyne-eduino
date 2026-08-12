@@ -59,7 +59,7 @@ export function showHubSelect(root, { onEnter, spawnAt } = {}) {
     metaEl.innerHTML = `<span class="cs-ico">${c.icon}</span>
       <span class="cs-concept">${c.act}</span>
       <span class="cs-status ${done ? 'done' : locked ? 'soon' : 'go'}">${done ? '🏆 완료' : locked ? '🔒 잠김' : `${cc}/${tt} 클리어`}</span>`;
-    playBtn.textContent = locked ? '이전 스테이지를 먼저 🔒' : '▶ 입장하기';
+    playBtn.textContent = locked ? '이전 스테이지를 모두 플레이하면 열려요 🔒' : '▶ 입장하기';
     playBtn.classList.toggle('soon', locked);
   }
   function go(i) { const n = Math.max(0, Math.min(CHAPTERS.length - 1, i)); if (n === focus) return; focus = n; sfx.pop(); layout(); }

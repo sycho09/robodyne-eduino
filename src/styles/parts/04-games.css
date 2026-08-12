@@ -194,6 +194,12 @@ body[data-canback="1"] .led-hud { left: 116px !important; }   /* 게임 HUD도 �
   margin-top: 12px; border: none; border-radius: 14px; cursor: pointer; font-weight: 800; font-size: 16px; color: #2a1200;
   background: linear-gradient(92deg,#ff9e3c,#ff5a8a); box-shadow: 0 12px 28px rgba(255,90,120,.35); }
 .cel-go:hover { filter: brightness(1.05); }
+/* 결과 모달의 두 갈래 — [다시 도전]과 [다음]. 통과 못 해도 다음으로 갈 수 있어야 하므로
+   버튼을 둘로 나눈다. 재도전은 보조(ghost), 진행이 기본(primary) 무게를 갖는다. */
+.lp-actions { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.cel-go.ghost { background: none; box-shadow: none; color: #3a4256;
+  border: 2px solid rgba(58,66,86,.28); padding: 0 26px; }
+.cel-go.ghost:hover { background: rgba(58,66,86,.07); border-color: rgba(58,66,86,.45); filter: none; }
 
 /* ===== 무대 메달 현황(보관함) ===== */
 .medal-shelf { position: absolute; top: 104px; right: 18px; z-index: 6;

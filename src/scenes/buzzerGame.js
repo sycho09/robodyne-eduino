@@ -1,15 +1,16 @@
 // buzzerGame.js — 멜로디 연주단 (수동 부저 · 리듬게임)
-// 밤 숲 콘서트 무대 위, 4레인으로 떨어지는 음표를 키(D·F·J·K)나 클릭으로 연주 → 멜로디 완성.
-// 1차 쉬운 곡(작은별) · 2차 어려운 곡(환희의 송가). 각 단계 A등급(85%↑) 이상 + 둘 다 통과해야 메달.
-// 누르면 화면 음(sfx.note) + 보드 연결 시 실제 부저음(tone, D5).
+// 1단계(쉬운 곡) → 2단계(어려운 곡). A등급(85%) 이상 통과.
+// 키(D/F/J/K)나 클릭으로 연주. 보드 연결 시 실제 부저음 출력.
 import { sfx } from '../app/sfx.js';
 import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
 import { isTablet } from '../app/device.js';
-import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { DEV_TOOLS } from '../app/flags.js';
 import { icon } from '../app/icons.js';
+import { results } from '../app/results.js';
+import { gradeOf, ready } from '../engine/utils.js';
 
 const PIN = 5, LANES = 4, KEYS = ['d', 'f', 'j', 'k'];
 const LEAD = 1600, W_PERFECT = 110, W_GOOD = 200, PASS_ACC = 0.85;
@@ -27,9 +28,6 @@ const bgImg = new Image(); bgImg.src = '/brand/stage-buzzer-bg.webp';
 const noteImg = new Image(); noteImg.src = '/brand/note-leaf.webp';
 const eddieImg = new Image(); eddieImg.src = '/brand/eddie-buzzer.webp';
 const singImg = new Image(); singImg.src = '/brand/eddie-buzzer-sing.webp';
-const ready = (im) => im.complete && im.naturalWidth > 0;
-
-function gradeOf(a) { return a >= 0.95 ? 'S' : a >= 0.85 ? 'A' : a >= 0.7 ? 'B' : a >= 0.5 ? 'C' : 'D'; }
 function laneOf(freq) { const lo = C4, hi = C5; return Math.max(0, Math.min(LANES - 1, Math.floor(((freq - lo) / (hi - lo)) * LANES))); }
 
 export function showBuzzerGame(root, { onExit } = {}) {
@@ -104,11 +102,23 @@ export function showBuzzerGame(root, { onExit } = {}) {
   }
   function showResult(grade, pass) {
     bgm.setDuck(1); const acc = Math.round((state.hits / beats.length) * 100); const last = gi === GAMES.length - 1;
+    results.record('buzzer', {
+      accuracy: acc, grade, passed: pass, summary: game.name,
+      metrics: [
+        { label: '적중', value: `${state.hits}/${beats.length}` },
+        { label: '정확도', value: `${acc}%` },
+        { label: '최고 콤보', value: `${state.maxCombo}` },
+      ],
+    });
     const el = panel(`<div class="lp-grade lp-${grade}">${grade}<span>등급</span></div><h2>${pass ? '통과! 🎉' : '조금만 더!'}</h2>
       <p class="prep-sub">${game.name} · 적중 ${state.hits}/${beats.length} (${acc}%) · 최고 콤보 ${state.maxCombo}</p>
-      <p class="lp-cond">${pass ? (last ? '두 곡 완주! 메달을 받자 🏅' : '다음 곡으로 ▶') : 'A등급(85%↑) 이상이어야 통과! 다시 도전!'}</p>
-      <button class="cel-go" id="lp-next">${pass ? (last ? '메달 받기 🏅' : '다음 곡 ▶') : '다시 도전 ▶'}</button>`);
-    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) { cleared[game.key] = true; gi++; nextGame(); } else beginPlay(); };
+      <p class="lp-cond">${pass ? (last ? '두 곡 완주! 메달을 받자 🏅' : '다음 곡으로 ▶') : 'A등급(85%↑)이면 메달! 다시 도전해도 되고, 다음으로 넘어가도 돼요.'}</p>
+      <div class="lp-actions">
+        <button class="cel-go ghost" id="lp-retry">다시 도전 ↻</button>
+        <button class="cel-go" id="lp-next">${last ? (pass ? '메달 받기 🏅' : '마치기 ▶') : '다음 곡 ▶'}</button>
+      </div>`);
+    el.querySelector('#lp-retry').onclick = () => { el.remove(); beginPlay(); };
+    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) cleared[game.key] = true; gi++; nextGame(); };
   }
   function finishAll() {
     cleanup();

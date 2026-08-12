@@ -1,16 +1,12 @@
-// curriculum.js — Eduino AI : 미니게임천국 커리큘럼 단일 공급원(4무대 · 10 미니게임 부스).
-// 학습 라벨(기초/응용 등)을 메인으로, '미니게임천국' 서사(무대 퍼포먼스)를 스토리 레이어로 얹는다.
-// 스토리: EDDIE가 4개 무대를 돌며 미니게임을 성공시켜 메달·티켓·별을 모으고,
-//         모두 모으면 👑 '천국의 왕관' = 학습 100% 완료(졸업).
-// 진척은 progress(localStorage)를 읽어 무대/전체 집계를 계산한다.
+// curriculum.js — 커리큘럼 단일 공급원 (4무대 · 10 미니게임)
+// 학습 라벨(기초/응용) + 게임 서사(메달/왕관 수집). progress(localStorage) 연동.
 
 import { progress } from '../app/progress.js';
+import { results } from '../app/results.js';
 import { UNLOCK_ALL } from '../app/flags.js';
 
-// scene: 셸이 실제로 띄울 씬 키 — main.js 의 enterRoom 스위치와 1:1 대응.
-//        'setup'|'basics'|'led'|'buzzer'|'rgb'|'cds'|'pot'|'button'|'lamp'|'bomb'|'final'|null(=준비중)
-// status: 'ready'(구현됨) | 'soon'(준비중) — 준비중은 입장 시 안내만
-// concept=학습 개념 / mission=미니게임 한 줄 / reward=모으는 보상(메달·티켓·별)
+// scene: 씬 식별자 (main.js enterRoom 매핑)
+// status: 'ready' | 'soon'
 const R = (id, chapter, name, icon, concept, mission, reward, scene = null) =>
   ({ id, chapter, name, icon, concept, mission, reward, scene, status: scene ? 'ready' : 'soon' });
 
@@ -52,19 +48,28 @@ export const getChapter = (id) => CHAPTERS.find((c) => c.id === id);
 export const getRoom = (id) => ROOMS[id] || null;
 export const chapterRooms = (id) => (getChapter(id)?.rooms || []).map((rid) => ROOMS[rid]);
 
+// 클리어(메달) — 방마다 '전 단계 통과' 같은 고유 조건을 만족해야 progress 에 찍힌다.
 export const isRoomCleared = (id) => progress.isCleared(id);
 export const chapterClearedCount = (id) => (getChapter(id)?.rooms || []).filter((rid) => progress.isCleared(rid)).length;
 export const chapterTotal = (id) => getChapter(id)?.rooms.length || 0;
 export const chapterDone = (id) => chapterTotal(id) > 0 && chapterClearedCount(id) === chapterTotal(id);
 
-// 잠금 규칙: 첫 무대는 항상 개방, 이후 무대는 직전 무대를 모두 클리어해야 개방.
+// 플레이 — 결과 화면이 뜨면 등급과 무관하게 results 에 기록되므로, 기록 유무가 곧 '해봤는가'다.
+// 별도 저장소를 두지 않는 이유가 이것이다(D등급으로 끝내도 플레이로 집계된다).
+export const isRoomPlayed = (id) => results.has(id);
+export const chapterPlayedCount = (id) => (getChapter(id)?.rooms || []).filter((rid) => results.has(rid)).length;
+export const chapterPlayed = (id) => chapterTotal(id) > 0 && chapterPlayedCount(id) === chapterTotal(id);
+
+// 잠금 규칙: 첫 무대는 항상 개방, 이후 무대는 직전 무대를 모두 '플레이'하면 개방.
+// 통과가 아니라 플레이 기준인 이유 — 한 판 못 넘겼다고 뒤가 다 막히면 학습자가 포기한다.
+// 메달은 여전히 통과해야 주므로, 잠금을 풀어도 난이도 목표 자체는 남는다.
 // 개발 서버에선 전체 해제, 프로덕션 빌드에선 순차 잠금 — app/flags.js 가 결정한다.
 export { UNLOCK_ALL };
 export function chapterUnlocked(id) {
   if (UNLOCK_ALL) return true;
   const idx = CHAPTERS.findIndex((c) => c.id === id);
   if (idx <= 0) return true;
-  return chapterDone(CHAPTERS[idx - 1].id);
+  return chapterPlayed(CHAPTERS[idx - 1].id);
 }
 
 export const allRoomIds = () => CHAPTERS.flatMap((c) => c.rooms);

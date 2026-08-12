@@ -1,18 +1,14 @@
-// joystickGame.js — 우주 미로 탈출 (조이스틱 방 · 미로형)
-// 우주선(EDDIE)으로 미로를 누벼 별을 모두 모으면 출구가 열린다. 제한시간 안에 탈출하면 통과.
-// 입력: 방향(키보드 방향키/WASD · 화면 조이스틱) + ⚡대시(실물 조이스틱 꺾기/버튼).
-//  └ 디지털 포트 키트 한계: X·Y(아날로그 전압)를 ADC 없는 디지털 핀(D5/D6)에 꽂아
-//    0~1023 측정 불가 → 핀당 ON/OFF 1비트뿐. 그래서 부드러운 방향은 화면/키보드가 맡고,
-//    실물 조이스틱은 '꺾음/버튼' 신호를 ⚡대시로 사용(중앙은 보드별로 굳어 읽혀 연결 직후 보정).
-//    (아날로그 핀 A0·A1이면 진짜 2축 가능하나 이 키트는 디지털 전용.)
-// 1차 별빛 미로 · 2차 운석 미로(움직이는 운석). 두 미로 탈출 → 🚀 조종 메달.
+// joystickGame.js — 우주 미로 탈출 (조이스틱 미로)
+// 키보드/터치로 부드러운 이동, 조이스틱(D5/D6/D7)으로 대시. 별을 다 모으면 탈출.
+// 1단계(일반) → 2단계(운석). A등급(85%) 이상 통과.
 import { sfx } from '../app/sfx.js';
 import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
-import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { DEV_TOOLS } from '../app/flags.js';
 import { icon } from '../app/icons.js';
+import { gradeOf, ready } from '../engine/utils.js';
 
 const PINS = { x: 5, y: 6, sw: 7 };
 const PR = 0.30;   // 플레이어 반지름(타일 단위)
@@ -24,8 +20,6 @@ const GAMES = [
 const bgImg = new Image(); bgImg.src = '/brand/stage-joystick-bg.webp';
 const headImg = new Image(); headImg.src = '/brand/eddie-pilot.webp';
 const heroImg = new Image(); heroImg.src = '/brand/eddie/eddie-hero.webp';
-const ready = (im) => im.complete && im.naturalWidth > 0;
-const gradeOf = (a) => a >= 0.95 ? 'S' : a >= 0.85 ? 'A' : a >= 0.7 ? 'B' : a >= 0.5 ? 'C' : 'D';
 
 // 재귀 백트래킹 미로 생성 → 벽 그리드 g[j][i] (1=벽, 0=길)
 function genMaze(cols, rows) {

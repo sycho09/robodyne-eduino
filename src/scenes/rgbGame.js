@@ -1,14 +1,15 @@
-// rgbGame.js — 무지개 물감놀이 (RGB LED · 색 맞추기 퍼즐)
-// 목표 색을 보고 R·G·B 슬라이더(0~255)를 섞어 똑같이 맞춘다. 색 거리로 정확도 채점.
-// 1차 쉬운 색(단순) · 2차 어려운 색(3채널 혼합). 각 단계 평균 A등급(85%↑) + 둘 다 통과해야 메달.
-// 슬라이더를 움직이면 화면 미리보기 + 보드 연결 시 실제 RGB LED(PWM, R9/G10/B11)가 같은 색.
+// rgbGame.js — 무지개 물감놀이 (RGB LED 색 맞추기 퍼즐)
+// 1단계(쉬운 색) → 2단계(어려운 색). 평균 A등급(85%) 이상 통과.
+// R·G·B 슬라이더 조절 시 보드 연결 실제 RGB LED 연동.
 import { sfx } from '../app/sfx.js';
 import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
-import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { DEV_TOOLS } from '../app/flags.js';
 import { icon } from '../app/icons.js';
+import { results } from '../app/results.js';
+import { gradeOf } from '../engine/utils.js';
 
 const PINS = { r: 9, g: 10, b: 11 };
 const PASS_ACC = 0.85;
@@ -25,7 +26,6 @@ const STAGES = [
 
 const bgImg = new Image(); bgImg.src = '/brand/stage-rgb-bg.webp';
 const hex2 = (n) => Math.round(n).toString(16).padStart(2, '0').toUpperCase();
-const gradeOf = (a) => a >= 0.95 ? 'S' : a >= 0.85 ? 'A' : a >= 0.7 ? 'B' : a >= 0.5 ? 'C' : 'D';
 const accOf = (t, m) => { const d = Math.hypot(t[0] - m[0], t[1] - m[1], t[2] - m[2]); return Math.max(0, 1 - d / MAXD); };
 
 export function showRgbGame(root, { onExit } = {}) {
@@ -152,11 +152,23 @@ export function showRgbGame(root, { onExit } = {}) {
   function stageResult() {
     bgm.setDuck(1); play.hidden = true;
     const avg = accs.reduce((a, b) => a + b, 0) / accs.length, grade = gradeOf(avg), pass = avg >= PASS_ACC, last = gi === STAGES.length - 1;
+    const pct = Math.round(avg * 100);
+    results.record('rgb', {
+      accuracy: pct, grade, passed: pass, summary: stage.name,
+      metrics: [
+        { label: '평균 정확도', value: `${pct}%` },
+        { label: '맞춘 색', value: `${accs.length}개` },
+      ],
+    });
     const el = panel(`<div class="lp-grade lp-${grade}">${grade}<span>등급</span></div><h2>${pass ? '통과! 🎉' : '조금만 더!'}</h2>
-      <p class="prep-sub">${stage.name} · 평균 정확도 ${Math.round(avg * 100)}%</p>
-      <p class="lp-cond">${pass ? (last ? '두 단계 완성! 메달을 받자 🏅' : '다음 단계로 ▶') : '평균 A등급(85%↑)이어야 통과! 다시 도전!'}</p>
-      <button class="cel-go" id="lp-next">${pass ? (last ? '메달 받기 🏅' : '다음 단계 ▶') : '다시 도전 ▶'}</button>`);
-    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) { cleared[stage.key] = true; gi++; nextStage(); } else beginPlay(); };
+      <p class="prep-sub">${stage.name} · 평균 정확도 ${pct}%</p>
+      <p class="lp-cond">${pass ? (last ? '두 단계 완성! 메달을 받자 🏅' : '다음 단계로 ▶') : '평균 A등급(85%↑)이면 메달! 다시 도전해도 되고, 다음으로 넘어가도 돼요.'}</p>
+      <div class="lp-actions">
+        <button class="cel-go ghost" id="lp-retry">다시 도전 ↻</button>
+        <button class="cel-go" id="lp-next">${last ? (pass ? '메달 받기 🏅' : '마치기 ▶') : '다음 단계 ▶'}</button>
+      </div>`);
+    el.querySelector('#lp-retry').onclick = () => { el.remove(); beginPlay(); };
+    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) cleared[stage.key] = true; gi++; nextStage(); };
   }
   function finishAll() {
     cleanup();

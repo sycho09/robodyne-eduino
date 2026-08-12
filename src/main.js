@@ -1,8 +1,5 @@
 // main.js — Eduino AI : 미니게임천국
-// 플로우: 플랫폼 인트로 → 기기 모드 → 상품 메인 → 로그인 → 사용환경 준비(보드 연결)
-//   → 미니게임 광장(HUB) → 무대(챕터) 선택 → 미니게임 부스 → 복귀.
-
-// 온보딩~허브까지(첫 화면에 필요한 경로)는 즉시 로드한다.
+// 플로우: 인트로 → 모드선택 → 메인 → 로그인 → 보드연결 → 허브 → 스테이지 → 미니게임.
 import { showPlatformIntro } from './scenes/platformIntro.js';
 import { showModeSelect } from './scenes/modeSelect.js';
 import { showProductMain } from './scenes/productMain.js';
@@ -10,13 +7,13 @@ import { showLogin } from './scenes/login.js';
 import { showSetup } from './scenes/setup.js';
 import { showHubSelect } from './scenes/hubSelect.js';
 import { showChapterSelect } from './scenes/chapterSelect.js';
+import { showRecords, recordsEntry } from './scenes/records.js';
 import { progress } from './app/progress.js';
 import { bgm } from './app/bgm.js';
 import { nav } from './app/nav.js';
 import { DEV_TOOLS } from './app/flags.js';
 
-// 게임 씬은 동적 import 로 분리한다 — 인트로~로그인 구간에 게임 코드를 받을 이유가 없다.
-// 허브 진입 시 유휴 시간에 미리 받아두므로(prefetchGames) 실제 전환 지연은 거의 없다.
+// 게임 씬 동적 import (허브 진입 시 프리패치)
 const GAME_SCENES = {
   basics:     () => import('./scenes/basics.js').then((m) => m.showBasics),
   sensorRoom: () => import('./scenes/sensorRoom.js').then((m) => m.showSensorRoom),
@@ -69,25 +66,37 @@ function scenePlatformIntro() { showPlatformIntro(app(), { onDone: () => nav.pus
 function sceneModeSelect() { showModeSelect(app(), { onDone: () => nav.push(sceneProductMain) }); }   // ①-b 기기 모드 선택
 function sceneProductMain() { showProductMain(app(), { onDone: () => nav.push(sceneLogin) }); }                // ② 상품 메인페이지 → 바로 입장
 function sceneLogin() { showLogin(app(), { onDone: () => nav.push(sceneSetup) }); }                            // (호환 키트 안내 페이지는 전용 신제품 출시로 제외)
-function sceneSetup() { showSetup(app(), { onDone: () => { progress.mark('setup'); nav.push(sceneHub); } }); }   // CH1 클리어
+function sceneSetup() { recordsEntry.hide(); showSetup(app(), { onDone: () => { progress.mark('setup'); nav.push(sceneHub, { name: 'hub' }); } }); }   // CH1 클리어
+
+// 기록실 — 지금까지의 등급·세부기록 보관함. 카드의 '다시 도전'은 그 방으로 바로 들어간다.
+function sceneRecords() {
+  recordsEntry.hide();
+  showRecords(app(), { onPlay: (roomId) => pushRoom(roomId) });
+}
 
 function sceneHub() {
   prefetchGames();
-  showHubSelect(app(), { onEnter: (chId) => nav.push(() => enterChapter(chId)), spawnAt: lastChapter });
+  recordsEntry.show({ onOpen: () => nav.push(sceneRecords, { name: 'records' }) });   // 기록실 입구는 허브에서만
+  showHubSelect(app(), { onEnter: (chId) => pushChapter(chId), spawnAt: lastChapter });
 }
 
+const pushChapter = (id) => nav.push(() => enterChapter(id), { name: 'chapter', params: { id } });
+const pushRoom = (id) => nav.push(() => enterRoom(id), { name: 'room', params: { id } });
+
 function enterChapter(chId) {
+  recordsEntry.show({ onOpen: () => nav.push(sceneRecords, { name: 'records' }) });
   lastChapter = chId;
   showChapterSelect(app(), {
     chapter: chId,
-    onRoom: (roomId) => nav.push(() => enterRoom(roomId)),
+    onRoom: (roomId) => pushRoom(roomId),
     onExit: () => nav.back(),
-    onChapter: (id) => nav.push(() => enterChapter(id)),
+    onChapter: (id) => pushChapter(id),
     spawnAt: lastRoom,
   });
 }
 
 function enterRoom(roomId) {
+  recordsEntry.hide();
   lastRoom = roomId;
   const back = () => nav.back();
   switch (roomId) {
@@ -102,21 +111,55 @@ function enterRoom(roomId) {
   }
 }
 
-// 다음 장면 배경을 미리 받아두면(인트로 4초 동안) 전환 시 '남색 물방울' 플레이스홀더가 안 보인다.
-// ⚠️ public/brand 에 실존하는 파일만 넣을 것 — 없는 이름은 매 실행 404 를 낸다.
-//    (basics-bg 는 미제작이라 제거했다. 배경을 만들면 다시 넣으면 된다.)
+// 배경 이미지 사전 로드 (404 방지)
 function preloadAssets() {
   ['main-bg', 'login-bg', 'setup-bg', 'hub-bg', 'stage-led-bg', 'game-led-cover', 'wiring-led']
     .forEach((n) => { const im = new Image(); im.src = `/brand/${n}.webp`; });
 }
 
-// 개발용 디버그 훅. DEV_TOOLS 는 프로덕션에서 false 상수로 치환되므로
-// 아래 블록은 트리셰이킹으로 번들에서 통째로 사라진다(배포본엔 window.__dev 가 없다).
-//   __dev.progress.reset()      진척 초기화
-//   __dev.progress.mark('led')  특정 방 클리어 처리
+// 개발용 디버그 훅 (production에서 트리셰이킹)
 if (DEV_TOOLS) {
   window.__dev = { progress, nav };
   console.info('[dev] window.__dev 사용 가능 — progress.reset() / progress.mark(id)');
 }
 
-window.addEventListener('DOMContentLoaded', () => { bgm.armAutostart(); preloadAssets(); nav.start(scenePlatformIntro); });
+// ── 새로고침 복원 ────────────────────────────────────────────────────────────
+// nav 스택은 메모리에만 있어서, 예전엔 어느 화면에서 새로고침해도 인트로로 튕겼다.
+// 화면 함수는 클로저라 저장할 수 없으므로 '이름 + 인자'만 남기고 여기서 다시 만든다.
+// 탭을 닫으면 잊는 게 맞아서 sessionStorage 를 쓴다(다음에 열면 처음부터).
+const ROUTE_KEY = 'eduino.route.v1';
+const ROUTES = {
+  hub: () => sceneHub(),
+  records: () => sceneRecords(),
+  chapter: (p) => enterChapter(p.id),
+  room: (p) => enterRoom(p.id),
+};
+
+nav.onChange((trail) => {
+  try { sessionStorage.setItem(ROUTE_KEY, JSON.stringify(trail)); } catch (_) {}
+});
+
+function readTrail() {
+  try {
+    const v = JSON.parse(sessionStorage.getItem(ROUTE_KEY) || '[]');
+    return Array.isArray(v) && v[0]?.name === 'hub' ? v : [];   // 허브에서 시작한 기록만 되살린다
+  } catch { return []; }
+}
+
+function boot() {
+  // 온보딩(인트로~보드 연결)을 아직 안 끝냈으면 복원하지 않는다 — 순서를 건너뛰면 안 되는 구간이다.
+  const trail = progress.isCleared('setup') ? readTrail() : [];
+  if (!trail.length) { nav.start(scenePlatformIntro); return; }
+
+  nav.start(sceneHub, trail[0]);
+  for (const r of trail.slice(1)) {
+    const make = ROUTES[r.name];
+    if (!make) break;                       // 모르는 이름(옛 버전 등)이 나오면 거기까지만
+    nav.push(() => make(r.params || {}), r);
+  }
+  // 카루셀이 마지막에 보던 칸을 다시 잡도록 — 복원 직후엔 이 값이 비어 있다.
+  lastChapter = trail.find((r) => r.name === 'chapter')?.params?.id ?? null;
+  lastRoom = trail.find((r) => r.name === 'room')?.params?.id ?? null;
+}
+
+window.addEventListener('DOMContentLoaded', () => { bgm.armAutostart(); preloadAssets(); boot(); });

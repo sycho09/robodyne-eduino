@@ -1,15 +1,15 @@
-// cdsGame.js — 손그림자 마술 (조도센서 · 빛 조절 게임 2종)
-// 공통 조작: '가리기' 패드 꾹(또는 Space)=어둠 / 떼면=밝음. 실물 CDS(A0) 가려도 어둠 인정.
-//   1단계 'react' — 떨어지는 ☀️비춰/🌑가려 신호를 판정선에서 빛 상태로 맞추기(반응)
-//   2단계 'fly'   — 빛 받으면 떠오르고 가리면 가라앉는 반딧불이로 장애물 통과(생존/회피)
-// 각 단계 A등급(85%↑) + 둘 다 통과 → 🔆 햇살 메달.
+// cdsGame.js — 손그림자 마술 (조도센서 · 빛 조절 게임)
+// 1단계(반응) → 2단계(회피). A등급(85%) 이상 통과.
+// 센서를 가리거나 떼어서 빛 조절.
 import { sfx } from '../app/sfx.js';
 import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
-import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { DEV_TOOLS } from '../app/flags.js';
 import { icon } from '../app/icons.js';
+import { results } from '../app/results.js';
+import { gradeOf, ready } from '../engine/utils.js';
 
 const ADC = 0, LEAD = 1700, PASS_ACC = 0.85;
 const GAMES = [
@@ -19,8 +19,6 @@ const GAMES = [
 
 const bgImg = new Image(); bgImg.src = '/brand/stage-cds-bg.webp';
 const eddieImg = new Image(); eddieImg.src = '/brand/eddie/eddie-hero.webp';
-const ready = (im) => im.complete && im.naturalWidth > 0;
-const gradeOf = (a) => a >= 0.95 ? 'S' : a >= 0.85 ? 'A' : a >= 0.7 ? 'B' : a >= 0.5 ? 'C' : 'D';
 const lerp = (a, b, t) => a + (b - a) * t;
 
 export function showCdsGame(root, { onExit } = {}) {
@@ -127,11 +125,23 @@ export function showCdsGame(root, { onExit } = {}) {
   }
   function showResult(grade, pass) {
     bgm.setDuck(1); pad.hidden = true; const acc = Math.round((state.hits / state.total) * 100); const last = gi === GAMES.length - 1;
+    results.record('cds', {
+      accuracy: acc, grade, passed: pass, summary: game.name,
+      metrics: [
+        { label: '적중', value: `${state.hits}/${state.total}` },
+        { label: '정확도', value: `${acc}%` },
+        { label: '최고 콤보', value: `${state.maxCombo}` },
+      ],
+    });
     const el = panel(`<div class="lp-grade lp-${grade}">${grade}<span>등급</span></div><h2>${pass ? '통과! 🎉' : '조금만 더!'}</h2>
       <p class="prep-sub">${game.name} · ${state.hits}/${state.total} (${acc}%) · 최고 콤보 ${state.maxCombo}</p>
-      <p class="lp-cond">${pass ? (last ? '두 미션 완성! 메달을 받자 🏅' : '다음 미션으로 ▶') : 'A등급(85%↑) 이상이어야 통과! 다시 도전!'}</p>
-      <button class="cel-go" id="lp-next">${pass ? (last ? '메달 받기 🏅' : '다음 미션 ▶') : '다시 도전 ▶'}</button>`);
-    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) { cleared[game.key] = true; gi++; nextGame(); } else beginPlay(); };
+      <p class="lp-cond">${pass ? (last ? '두 미션 완성! 메달을 받자 🏅' : '다음 미션으로 ▶') : 'A등급(85%↑)이면 메달! 다시 도전해도 되고, 다음으로 넘어가도 돼요.'}</p>
+      <div class="lp-actions">
+        <button class="cel-go ghost" id="lp-retry">다시 도전 ↻</button>
+        <button class="cel-go" id="lp-next">${last ? (pass ? '메달 받기 🏅' : '마치기 ▶') : '다음 미션 ▶'}</button>
+      </div>`);
+    el.querySelector('#lp-retry').onclick = () => { el.remove(); beginPlay(); };
+    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) cleared[game.key] = true; gi++; nextGame(); };
   }
   function finishAll() {
     cleanup();

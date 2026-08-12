@@ -1,13 +1,14 @@
-// bombGame.js — 폭탄 해체반 (STAGE 3 · 응용): 가변저항(입력) + LED(출력) 정밀 제어 · 3막 스토리.
-//   다이얼(A0)을 돌려 '해체 주파수'를 맞춘다. 정답에 가까울수록 폭탄 LED(D13)가 빠르게 깜빡(삐삐삐)!
-//   1막 신관 잠금해제(정밀 매칭) · 2막 회로 보정(초정밀) · 3막 라이브 해체(움직이는 목표 추적) → 💣 해체 스타.
+// bombGame.js — 폭탄 해체반 (가변저항 + LED 응용)
+// 다이얼로 해체 주파수 맞추기. 정답 근접 시 LED 점멸. B등급(80%) 이상 통과.
 import { sfx } from '../app/sfx.js';
 import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { board } from '../app/board.js';
-import { DEV_TOOLS } from '../app/flags.js';   // 프로덕션에선 건너뛰기 버튼을 숨긴다
+import { DEV_TOOLS } from '../app/flags.js';
 import { icon } from '../app/icons.js';
+import { results } from '../app/results.js';
+import { gradeOf as utilGrade, ready, clamp, lerp } from '../engine/utils.js';
 
 const ADC = 0, LED = 13, PASS_ACC = 0.8;   // 가변저항 A0(입력) · LED D13(출력)
 const ACTS = [
@@ -24,10 +25,7 @@ const ACTS = [
 
 const eddieImg = new Image(); eddieImg.onerror = () => { if (!eddieImg._p) { eddieImg._p = 1; eddieImg.src = '/brand/eddie/eddie-hero.webp'; } }; eddieImg.src = '/brand/eddie-eod.webp';
 const bgImg = new Image(); bgImg.onerror = () => { if (!bgImg._p) { bgImg._p = 1; bgImg.src = '/brand/stage-bomb-bg.png'; } }; bgImg.src = '/brand/stage-bomb-bg.webp';
-const ready = (im) => im.complete && im.naturalWidth > 0;
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const lerp = (a, b, t) => a + (b - a) * t;
-const gradeOf = (a) => a >= 0.95 ? 'S' : a >= 0.85 ? 'A' : a >= 0.8 ? 'B' : a >= 0.6 ? 'C' : 'D';
+const gradeOf = (a) => utilGrade(a, 'strict');
 
 // 다이얼 게이지: 135°에서 시작해 270° 스윕(시계방향). knob 0..1 → 각도(rad).
 const A_START = Math.PI * 0.75, A_SWEEP = Math.PI * 1.5;
@@ -159,11 +157,23 @@ export function showBombGame(root, { onExit, onComplete } = {}) {
   }
   function showResult(grade, pass) {
     bgm.setDuck(1); fader.hidden = true; ledOff(); const acc = Math.round((state.hits / state.total) * 100); const last = ai === ACTS.length - 1;
+    results.record('bomb', {
+      accuracy: acc, grade, passed: pass, summary: act.name,
+      metrics: [
+        { label: '해체', value: `${state.hits}/${state.total}` },
+        { label: '정확도', value: `${acc}%` },
+        { label: '최고 콤보', value: `${state.maxCombo}` },
+      ],
+    });
     const el = panel(`<div class="lp-grade lp-${grade}">${grade}<span>등급</span></div><h2>${pass ? '해체 성공! 🎉' : '실패…'}</h2>
       <p class="prep-sub">${act.name} · ${state.hits}/${state.total} (${acc}%) · 최고 콤보 ${state.maxCombo}</p>
-      <p class="lp-cond">${pass ? (last ? '폭탄 완전 해체! 메달을 받자 🏅' : '다음 단계로 ▶') : '80% 이상 해체해야 통과! 다시 도전!'}</p>
-      <button class="cel-go" id="lp-next">${pass ? (last ? '메달 받기 🏅' : '다음 단계 ▶') : '다시 도전 ▶'}</button>`);
-    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) { cleared[act.key] = true; ai++; nextAct(); } else beginPlay(); };
+      <p class="lp-cond">${pass ? (last ? '폭탄 완전 해체! 메달을 받자 🏅' : '다음 단계로 ▶') : '80% 이상 해체하면 메달! 다시 도전해도 되고, 다음으로 넘어가도 돼요.'}</p>
+      <div class="lp-actions">
+        <button class="cel-go ghost" id="lp-retry">다시 도전 ↻</button>
+        <button class="cel-go" id="lp-next">${last ? (pass ? '메달 받기 🏅' : '마치기 ▶') : '다음 단계 ▶'}</button>
+      </div>`);
+    el.querySelector('#lp-retry').onclick = () => { el.remove(); beginPlay(); };
+    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) cleared[act.key] = true; ai++; nextAct(); };
   }
   function finishAll() {
     cleanup();

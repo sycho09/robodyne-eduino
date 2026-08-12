@@ -6,6 +6,7 @@ import { sfx } from '../app/sfx.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { icon, iconOrb } from '../app/icons.js';
+import { results } from '../app/results.js';
 
 // body 는 '한 줄 = 한 생각' 단위로 끊는다.
 // 원거리(빔프로젝터 3~5m)에서는 문단이 글자가 아니라 '모양'으로 먼저 읽힌다. 줄바꿈이 의미와
@@ -274,6 +275,15 @@ export function showBasics(root, { onExit, onComplete } = {}) {
 
   function finish() {
     progress.mark('basics');
+    // 이론 과정이라 등급을 매기지 않는다 — 마쳤다는 것 자체가 통과다.
+    // 퀴즈 성적은 기록으로만 남겨 어디가 약했는지 나중에 돌아볼 수 있게 한다.
+    results.record('basics', {
+      accuracy: 100, passed: true, summary: '피지컬 코딩 기초',
+      metrics: [
+        { label: '퀴즈', value: `${st.quizDone}/${QUIZ.length}` },
+        { label: '부품 분류', value: '완료' },
+      ],
+    });
     say('완벽해! 기초 졸업 🎓');
     setTimeout(() => celebrateRoom({
       title: '기초 수료! 🎓',
