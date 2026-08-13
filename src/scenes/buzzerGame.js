@@ -2,6 +2,7 @@
 // 1단계(쉬운 곡) → 2단계(어려운 곡). A등급(85%) 이상 통과.
 // 키(D/F/J/K)나 클릭으로 연주. 보드 연결 시 실제 부저음 출력.
 import { sfx } from '../app/sfx.js';
+import { roomCleared } from '../content/curriculum.js';
 import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
@@ -122,12 +123,13 @@ export function showBuzzerGame(root, { onExit } = {}) {
   }
   function finishAll() {
     cleanup();
-    if (cleared.easy && cleared.hard) {
+    if (roomCleared('buzzer')) {
       progress.mark('buzzer');
       celebrateRoom({ title: '두 곡 완주! 🎉', message: '쉬운 곡 + 어려운 곡 모두 A등급↑ — 🎵 리듬 메달 획득! 숲이 노래로 가득 찼어요.', exitLabel: '전시관으로 ▶', onExit: () => onExit?.() });
     } else onExit?.();
   }
-  skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); cleared[game.key] = true; state.ended = true; state.phase = 'result'; bgm.setDuck(1); gi++; nextGame(); };
+  skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); results.record('buzzer', { accuracy: 85, grade: 'A', passed: true, summary: game.name, metrics: [] });   // 스킵도 통과 기록을 남긴다 — 메달 조건이 results 기준이라 이게 없으면 스킵으로 메달이 안 나온다
+    cleared[game.key] = true; state.ended = true; state.phase = 'result'; bgm.setDuck(1); gi++; nextGame(); };
 
   // ── 입력/판정 ──
   function hitLane(lane) {

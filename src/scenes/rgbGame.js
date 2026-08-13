@@ -2,6 +2,7 @@
 // 1단계(쉬운 색) → 2단계(어려운 색). 평균 A등급(85%) 이상 통과.
 // R·G·B 슬라이더 조절 시 보드 연결 실제 RGB LED 연동.
 import { sfx } from '../app/sfx.js';
+import { roomCleared } from '../content/curriculum.js';
 import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
@@ -172,12 +173,13 @@ export function showRgbGame(root, { onExit } = {}) {
   }
   function finishAll() {
     cleanup();
-    if (cleared.easy && cleared.hard) {
+    if (roomCleared('rgb')) {
       progress.mark('rgb');
       celebrateRoom({ title: '색의 마법사! 🌈', message: '빛의 삼원색을 자유자재로 — 🌈 무지개 메달 획득! RGB로 세상의 모든 색을 만들 수 있어요.', exitLabel: '전시관으로 ▶', onExit: () => onExit?.() });
     } else onExit?.();
   }
-  skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); cleared[stage.key] = true; gi++; bgm.setDuck(1); nextStage(); };
+  skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); results.record('rgb', { accuracy: 85, grade: 'A', passed: true, summary: stage.name, metrics: [] });   // 스킵도 통과 기록을 남긴다 — 메달 조건이 results 기준이라 이게 없으면 스킵으로 메달이 안 나온다
+    cleared[stage.key] = true; gi++; bgm.setDuck(1); nextStage(); };
 
   function cleanup() { bgm.setDuck(1); if (board.connected) sendRGB(0, 0, 0); window.removeEventListener('resize', onResize); }
   const onResize = () => {};

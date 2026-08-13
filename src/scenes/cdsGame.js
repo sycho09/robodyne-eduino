@@ -2,6 +2,7 @@
 // 1단계(반응) → 2단계(회피). A등급(85%) 이상 통과.
 // 센서를 가리거나 떼어서 빛 조절.
 import { sfx } from '../app/sfx.js';
+import { roomCleared } from '../content/curriculum.js';
 import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
@@ -145,10 +146,11 @@ export function showCdsGame(root, { onExit } = {}) {
   }
   function finishAll() {
     cleanup();
-    if (cleared.easy && cleared.hard) { progress.mark('cds'); celebrateRoom({ title: '빛의 마술사! 🔆', message: '신호 맞추기와 반딧불이 비행까지 — 🔆 햇살 메달 획득! 빛도 어둠도 네 손안에 있어요.', exitLabel: '전시관으로 ▶', onExit: () => onExit?.() }); }
+    if (roomCleared('cds')) { progress.mark('cds'); celebrateRoom({ title: '빛의 마술사! 🔆', message: '신호 맞추기와 반딧불이 비행까지 — 🔆 햇살 메달 획득! 빛도 어둠도 네 손안에 있어요.', exitLabel: '전시관으로 ▶', onExit: () => onExit?.() }); }
     else onExit?.();
   }
-  skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); cleared[game.key] = true; state.ended = true; state.phase = 'result'; bgm.setDuck(1); gi++; nextGame(); };
+  skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); results.record('cds', { accuracy: 85, grade: 'A', passed: true, summary: game.name, metrics: [] });   // 스킵도 통과 기록을 남긴다 — 메달 조건이 results 기준이라 이게 없으면 스킵으로 메달이 안 나온다
+    cleared[game.key] = true; state.ended = true; state.phase = 'result'; bgm.setDuck(1); gi++; nextGame(); };
 
   function sync() { elHit.textContent = state.hits; elCombo.textContent = state.combo; elScore.textContent = state.score; }
   function burst(x, y, color) { for (let i = 0; i < 14; i++) { const a = Math.random() * 6.283, s = 1.5 + Math.random() * 4; parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1, life: 36, color }); } }

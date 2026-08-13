@@ -3,9 +3,8 @@
 // '성적표'가 아니라 '기록증'이다 — 점수를 매겨 평가하는 문서가 아니라
 // 무엇을 얼마나 해냈는지 남겨 주는 문서다. 파일명·제목 문구도 여기에 맞춘다.
 
-import { CHAPTERS, ROOMS } from '../content/curriculum.js';
-import { results } from './results.js';
-import { progress } from './progress.js';
+import { CHAPTERS, ROOMS, roomStages, isRoomCleared } from '../content/curriculum.js';
+import { results, PASS_GRADE } from './results.js';
 
 const A4 = { w: 794, h: 1123 };
 
@@ -30,12 +29,10 @@ export function buildReport({ playerName = '' } = {}) {
     for (const rid of ch.rooms) {
       const room = ROOMS[rid];
       if (!room) continue;
-      const rec = results.get(rid);
-      const best = rec?.best || null;
       total += 1;
-      if (progress.isCleared(rid)) cleared += 1;
-      if (rec) played += 1;
-      rows.push({ chapter: ch, room, rec, best });
+      if (isRoomCleared(rid)) cleared += 1;
+      if (results.has(rid)) played += 1;
+      rows.push({ chapter: ch, room });
     }
   }
 
@@ -52,7 +49,7 @@ export function buildReport({ playerName = '' } = {}) {
 
     <table class="report-table">
       <thead>
-        <tr><th class="c-stage">무대</th><th class="c-name">미니게임</th><th class="c-grade">등급</th><th class="c-detail">세부 기록</th></tr>
+        <tr><th class="c-stage">무대</th><th class="c-name">미니게임</th><th class="c-steps">단계별 등급</th><th class="c-medal">메달</th></tr>
       </thead>
       <tbody>
         ${rows.map(rowHtml).join('')}
@@ -60,38 +57,51 @@ export function buildReport({ playerName = '' } = {}) {
     </table>
 
     <footer class="report-foot">
-      <span>등급 기준 · S 95%↑ / A 85%↑ / B 70%↑ / C 50%↑ / D</span>
+      <span>등급 기준 · S 95%↑ / A 85%↑ / B 70%↑ / C 50%↑ / D &nbsp;·&nbsp;
+        <span class="g g-medal g-mini">✓</span> 메달은 모든 단계 ${PASS_GRADE}등급↑</span>
       <span class="report-seal">천국의 왕관까지 ${Math.max(0, total - cleared)}개</span>
     </footer>
   `;
   return root;
 }
 
-// 시도 횟수는 적지 않는다 — 등급이 '최고 기록' 기준이라 나란히 놓으면
-// '이 등급까지 N번 걸렸다'는 대비가 생기고, 기록증이 아이들끼리 비교되는 물건이 된다.
-// results 에는 attempts 가 계속 쌓이므로 필요해지면 언제든 되살릴 수 있다.
-function rowHtml({ chapter, room, rec, best }) {
-  if (!rec || !best) {
-    return `<tr class="is-empty">
-      <td>${esc(chapter.short)}</td>
-      <td>${esc(room.name)}</td>
-      <td class="c-grade"><span class="g g-none">–</span></td>
-      <td class="c-detail">아직 플레이하지 않았어요</td>
-    </tr>`;
-  }
-  const displayMetrics = best.metrics.filter(m => m.label !== '최고 콤보');
-  const detail = displayMetrics.length
-    ? displayMetrics.map((m) => `${esc(m.label)} ${esc(m.value)}`).join(' · ')
-    : esc(best.summary || '기록 없음');
-  const grade = NO_GRADE.has(room.id)
-    ? `<span class="g g-done">수료</span>`
-    : `<span class="g g-${best.grade}">${best.grade}</span>`;
-  return `<tr>
+// 화면(기록실)과 같은 구조로 적는다: 단계별 등급이 '과정', 메달이 '결과'.
+// 예전에는 등급 한 글자와 세부 지표(적중 40/41 …)를 적었는데 둘 다 문제가 있었다 —
+// 등급 한 글자는 여러 단계 중 하나만 대표해서 '1단계 S 인데 왜 D 지?' 가 됐고,
+// 지표는 게임마다 이름도 개수도 달라 줄마다 다른 말이 적혔다.
+// 시도 횟수도 적지 않는다 — 등급과 나란히 놓으면 '이 등급까지 N번 걸렸다' 는 대비가 생겨
+// 기록증이 아이들끼리 비교되는 물건이 된다(results 의 attempts 는 그대로 쌓이니 언제든 되살린다).
+function rowHtml({ chapter, room }) {
+  const played = results.has(room.id);
+  return `<tr class="${played ? '' : 'is-empty'}">
     <td>${esc(chapter.short)}</td>
     <td>${esc(room.name)}</td>
-    <td class="c-grade">${grade}</td>
-    <td class="c-detail">${detail}</td>
+    <td class="c-steps">${stepCells(room)}</td>
+    <td class="c-medal">${medalCell(room)}</td>
   </tr>`;
+}
+
+// 메달 칸은 화면(기록실)의 🏅 대신 등급 알과 같은 모양의 금색 알로 적는다. 이모지를 쓰면
+// OS 이모지 폰트로 그려지는데(폰트 스택에 이모지 지정이 없다) html2canvas 가 그걸 그대로 구워서
+// 같은 기록증이 기기마다 다른 그림으로 저장된다 — Windows 는 리본이 파랗다.
+// 이 문서는 이미 납작한 단색 알로 말하고 있어서, 광택 있는 일러스트 하나만 다른 언어로 끼어들기도 했다.
+// 흑백 인쇄에서도 알 모양은 남지만 이모지는 회색 덩어리가 된다.
+function medalCell(room) {
+  return isRoomCleared(room.id)
+    ? `<span class="g g-medal" title="${esc(room.reward || '')}">✓</span>`
+    : '–';
+}
+
+// 단계마다 알 하나 — 안 해 본 단계도 '–' 로 자리를 잡아, 몇 단계짜리 방인지가 같이 읽힌다.
+// 이론관은 등급을 안 매기므로 번호 없이 '수료' 한 알로 끝낸다.
+function stepCells(room) {
+  if (NO_GRADE.has(room.id)) {
+    const done = results.has(room.id);
+    return `<span class="st"><span class="g ${done ? 'g-done' : 'g-none'}">${done ? '수료' : '–'}</span></span>`;
+  }
+  return roomStages(room.id).map((s, i) => `<span class="st">
+    <i>${i + 1}</i><span class="g ${s ? `g-${esc(s.grade)}` : 'g-none'}">${s ? esc(s.grade) : '–'}</span>
+  </span>`).join('');
 }
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -104,24 +114,6 @@ function mountOffscreen(node) {
   holder.appendChild(node);
   document.body.appendChild(holder);
   return () => holder.remove();
-}
-
-export async function saveAsPdf(opts) {
-  ensureStyles();
-  const node = buildReport(opts);
-  const unmount = mountOffscreen(node);
-  document.body.classList.add('is-printing-report');
-  const done = () => {
-    document.body.classList.remove('is-printing-report');
-    unmount();
-    window.removeEventListener('afterprint', done);
-  };
-  window.addEventListener('afterprint', done);
-  // 폰트·이미지가 자리를 잡은 뒤 인쇄해야 첫 줄이 밀리지 않는다.
-  try { await document.fonts?.ready; } catch {}
-  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-  window.print();
-  setTimeout(done, 60_000); // afterprint 를 안 주는 브라우저 대비
 }
 
 export async function saveAsPng(opts) {
@@ -176,26 +168,29 @@ function ensureStyles() {
 .report-table td { padding: 13px 10px; border-bottom: 1px solid #f0efed; vertical-align: middle; }
 .report-table .c-stage { color: #78716c; width: 108px; }
 .report-table .c-name { font-weight: 700; width: 158px; }
-.report-table .c-grade { width: 56px; text-align: center; }
-.report-table .c-detail { color: #44403c; }
+.report-table .c-steps { color: #44403c; }
+.report-table .c-medal { width: 56px; text-align: center; }
+/* 안 해 본 방은 글자를 눌러 두지만 메달 칸의 '–' 까지 지우진 않는다 — 자리가 비면
+   '몇 개 중 몇 개' 라는 이 표의 성격이 흐려진다. */
 .report-table tr.is-empty td { color: #a8a29e; }
 
-.g { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;
-  border-radius: 9px; font-weight: 800; font-size: 15px; color: #fff; }
+/* 단계 알 — 번호 + 등급. 안 해 본 단계도 '–' 알로 자리를 잡아 몇 단계짜리인지가 같이 읽힌다. */
+.report-table .st { display: inline-flex; align-items: center; gap: 4px; margin-right: 10px; }
+.report-table .st i { font-style: normal; font-size: 10px; color: #a8a29e; }
+.g { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px;
+  border-radius: 8px; font-weight: 800; font-size: 13px; color: #fff; }
 .g-S { background: #7c3aed; } .g-A { background: #059669; } .g-B { background: #0284c7; }
 .g-C { background: #f59e0b; } .g-D { background: #a8a29e; }
 .g-done { background: #0f766e; width: auto; padding: 0 8px; font-size: 12px; }
-.g-none { background: none; color: #d6d3d1; }
+.g-none { background: #f5f5f4; color: #d6d3d1; }
+/* 메달 — 등급 알과 같은 모양·크기의 금색 알. 등급색(보라·초록·파랑·주황·회색) 어디와도
+   안 겹쳐서, 같은 줄에 놓여도 '등급이 하나 더 있는' 것으로 안 읽힌다. */
+.g-medal { background: #d4a017; }
+/* 바닥글 범례용 — 표의 알과 같은 기호여야 '이게 그 표시구나' 로 이어진다. 11px 글줄에 맞춰 줄인다. */
+.g-mini { width: 16px; height: 16px; border-radius: 5px; font-size: 10px; vertical-align: -3px; }
 
 .report-foot { margin-top: auto; padding-top: 18px; border-top: 1px solid #d6d3d1;
   display: flex; justify-content: space-between; font-size: 11px; color: #78716c; }
-.report-seal { font-weight: 700; color: #f59e0b; }
-
-@media print {
-  @page { size: A4; margin: 0; }
-  body.is-printing-report > *:not(#report-stage) { display: none !important; }
-  body.is-printing-report #report-stage { position: static; left: auto; }
-  body.is-printing-report .report-a4 { box-shadow: none; }
-}`;
+.report-seal { font-weight: 700; color: #f59e0b; }`;
   document.head.appendChild(el);
 }

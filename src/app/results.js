@@ -67,6 +67,22 @@ function isBetter(next, prev) {
   return gradeRank(next.grade) < gradeRank(prev.grade);   // S > A > B > C > D
 }
 
+// 단계별 최고 기록 — 방 하나가 여러 단계로 되어 있는데(라이트쇼 = 타이밍 쇼 + 라이트 연주),
+// best 는 그중 제일 잘한 판 한 건이라 '어느 단계가 남았나' 에 답하지 못한다. 클리어 조건은
+// '전 단계 통과' 라서, 등급이 S 인데도 메달이 없는 일이 생기고 그 이유를 짚을 근거가 없었다.
+// 게임들이 이미 매판 단계 이름을 summary 로 보내고 있으므로(각 씬의 game.name/act.name)
+// 그걸 키로 모은다 — 게임 씬 쪽은 하나도 안 고친다.
+// 갱신 기준은 방 단위와 같은 isBetter 다: 한 단계를 여러 번 하면 제일 잘한 판만 남는다.
+// 예전에 저장된 기록에는 이 칸이 없다(저장한 적이 없으니 되살릴 수도 없다) — 읽는 쪽은
+// 없을 수 있다고 보고 다뤄야 하고, 그 방을 다시 플레이하면 그때부터 채워진다.
+// 판을 통째로 담는다 — 등급뿐 아니라 그 단계의 지표(적중·정확도 값)까지 화면이 쓴다.
+function mergeStages(prev, entry) {
+  if (!entry.summary) return prev;             // 이름이 없으면 단계를 가를 수 없다
+  const out = { ...(prev || {}) };
+  if (isBetter(entry, out[entry.summary])) out[entry.summary] = entry;
+  return out;
+}
+
 export const results = {
   // 게임 1판이 끝날 때마다 부른다(통과 여부와 무관하게 매판 기록한다).
   // 도전 횟수는 항상 오르고, 기록실에 보이는 등급은 더 높은 등급이 나왔을 때만 바뀐다.
@@ -86,9 +102,23 @@ export const results = {
       lastPlayedAt: entry.at,
       last: entry,
       best: improved ? entry : prev.best,
+      stages: mergeStages(prev?.stages, entry),
     };
     save();
     return { entry, best: store[roomId].best, improved };
+  },
+
+  // 방을 한 줄로 대표하는 기록 — 단계 중 '가장 낮은' 판이다. best(최고 기록)를 쓰면 안 된다:
+  // 여러 방이 단계를 easy/hard 로 나눠 놔서, 정확도가 제일 높은 판은 거의 늘 쉬운 단계다.
+  // 클리어가 '모든 단계 A등급↑' 이므로 발목을 잡는 단계가 곧 그 방의 성적이고,
+  // 그래야 랭크 A↑ 와 메달이 늘 같이 움직인다(랭크는 S 인데 메달이 없는 일이 안 생긴다).
+  // 단계 정보가 없는 예전 기록은 best 로 떨어진다 — 다시 플레이하면 제자리를 찾는다.
+  roomRecord(roomId) {
+    const rec = store[roomId];
+    if (!rec) return null;
+    const list = Object.values(rec.stages || {});
+    if (!list.length) return rec.best || null;
+    return list.reduce((low, s) => (s.accuracy < low.accuracy ? s : low));
   },
 
   get: (roomId) => store[roomId] || null,
@@ -106,4 +136,3 @@ export const results = {
   },
 };
 
-export const RESULTS_EVENT = EVT;

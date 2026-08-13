@@ -3,6 +3,7 @@
 import { createWorld } from '../engine/topdown.js';
 import { sfx } from '../app/sfx.js';
 import { progress } from '../app/progress.js';
+import { roomCleared } from '../content/curriculum.js';
 import { board } from '../app/board.js';
 import { mountEddieRig } from '../app/eddieRig.js';
 import { celebrateRoom } from './celebrate.js';
@@ -147,10 +148,12 @@ const ROOMS_CFG = {
       const [showButtonGame, showFlagGame] = await Promise.all([GAMES.button(), GAMES.flag()]);
       showButtonGame(root, {
         onExit: opt.onExit,
-        onComplete: (moleCleared) => showFlagGame(root, {
+        onComplete: () => showFlagGame(root, {
           onExit: opt.onExit, skipPrep: true, roomId: 'button',
-          onComplete: (flagCleared) => {
-            if (!(moleCleared && flagCleared)) { opt.onExit?.(); return; }
+          onComplete: () => {
+            // 두 게임(두더지·청기백기)이 'button' 방의 두 단계다. 이번 판의 통과 여부가 아니라
+            // 누적 기록으로 판정한다 — 오늘 두더지, 다음에 청기백기를 넘겨도 메달이 나와야 한다.
+            if (!roomCleared('button')) { opt.onExit?.(); return; }
             progress.mark('button');
             celebrateRoom({ title: '택트스위치 마스터! 🔨🚩', message: '두더지 잡기와 청기백기를 모두 클리어 — 메달 획득!', exitLabel: '전시관으로 ▶', onExit: () => opt.onExit?.() });
           },

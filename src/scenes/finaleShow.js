@@ -5,7 +5,7 @@ import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
 import { showFinale } from './finale.js';
-import { allDone } from '../content/curriculum.js';
+import { allDone, roomCleared } from '../content/curriculum.js';
 import { board } from '../app/board.js';
 import { DEV_TOOLS } from '../app/flags.js';
 import { icon } from '../app/icons.js';
@@ -132,11 +132,12 @@ export function showFinaleShow(root, { onExit } = {}) {
     el.querySelector('#lp-retry').onclick = () => { el.remove(); nextAct(ai); };
     el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) cleared[key] = true; nextAct(ai + 1); };
   }
-  skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); cleared[ACTS[ai].key] = true; stopActCleanup(); neoOff(); nextAct(ai + 1); };
+  skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); results.record('final', { accuracy: 85, grade: 'A', passed: true, summary: ACTS[ai].name, metrics: [] });   // 스킵도 통과 기록을 남긴다 — 메달 조건이 results 기준이라 이게 없으면 스킵으로 메달이 안 나온다
+    cleared[ACTS[ai].key] = true; stopActCleanup(); neoOff(); nextAct(ai + 1); };
 
   function finishAll() {
     cleanup();
-    if (cleared.color && cleared.melody && cleared.finale) {
+    if (roomCleared('final')) {
       progress.mark('final');
       celebrateRoom({ title: '천국의 왕관! 👑', message: '다이얼·RGB·부저·버튼을 모두 모아 완벽한 인터랙티브 쇼를 완성했어요 — 👑 천국의 왕관 획득! 진짜 메이커가 됐어요. 🎉', exitLabel: '전시관으로 ▶', onExit: () => { if (allDone()) showFinale({ onClose: () => onExit?.() }); else onExit?.(); } });
     } else onExit?.();

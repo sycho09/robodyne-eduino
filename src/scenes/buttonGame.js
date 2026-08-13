@@ -8,6 +8,7 @@ import { board } from '../app/board.js';
 import { DEV_TOOLS } from '../app/flags.js';
 import { icon } from '../app/icons.js';
 import { results } from '../app/results.js';
+import { roomCleared } from '../content/curriculum.js';
 import { gradeOf, ready, rand, clamp } from '../engine/utils.js';
 
 const PINS = [4, 5];   // 구멍 0·1 ↔ 택트스위치 핀 D4·D5 (쉴드 포트 3·4)
@@ -184,16 +185,18 @@ export function showButtonGame(root, { onExit, onComplete } = {}) {
   }
   function finishAll() {
     cleanup();
-    const allCleared = GAMES.every((g) => cleared[g.key]);
     // 순차 플레이(두더지→청기백기): 통과 못 했어도 다음 게임으로 넘긴다.
-    // 방 메달은 두 게임 결과를 다 본 호출측(sensorRoom)이 판정한다.
-    if (onComplete) { onComplete(allCleared); return; }
-    if (allCleared) {
+    // 방 메달은 두 게임 결과를 다 본 호출측(sensorRoom)이 누적 기록으로 판정한다.
+    if (onComplete) { onComplete(); return; }
+    // 단독 진입 경로 — 지금 앱에서는 'button' 방이 늘 sensorRoom 을 거치므로 닿지 않는다.
+    // 닿더라도 두더지 한 판만으로 메달이 나가지 않게, 여기서도 방 전체를 누적으로 본다.
+    if (roomCleared('button')) {
       progress.mark('button'); celebrateRoom({ title: '두더지 마스터! 🔨', message: '버튼(디지털 입력)으로 두더지를 재빨리 잡았어요 — 🔨 두더지 메달 획득!', exitLabel: '전시관으로 ▶', onExit: () => onExit?.() });
     }
     else onExit?.();
   }
-  skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); cleared[game.key] = true; state.ended = true; state.phase = 'result'; bgm.setDuck(1); gi++; nextGame(); };
+  skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); results.record('button', { accuracy: 85, grade: 'A', passed: true, summary: game.name, metrics: [] });   // 스킵도 통과 기록을 남긴다 — 메달 조건이 results 기준이라 이게 없으면 스킵으로 메달이 안 나온다
+    cleared[game.key] = true; state.ended = true; state.phase = 'result'; bgm.setDuck(1); gi++; nextGame(); };
   function sync() { elScore.textContent = state.score; elCombo.textContent = `콤보 ${state.combo}`; }
   function burst(x, y, c, n = 12) { for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, s = 1 + Math.random() * 4; parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1.5, life: 32, color: c }); } }
   function endPlay(win) { if (state.ended) return; state.ended = true; state.phase = 'result'; showResult(win ? gradeOf(clamp(state.score / (game.target * 1.5), 0, 1)) : 'D', win); }

@@ -1,6 +1,7 @@
 // ledGame.js — 반짝반짝 라이트쇼 (LED 출력)
 // 결선(D2초록/D3노랑/D4빨강) → 1단계(타이밍) → 2단계(연주). A등급(85%) 이상 통과.
 import { sfx } from '../app/sfx.js';
+import { roomCleared } from '../content/curriculum.js';
 import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
@@ -138,6 +139,7 @@ export function showLedGame(root, { onExit } = {}) {
   const skipBtn = root.querySelector('#led-skip');
   skipBtn.onclick = () => {                       // 테스트용: 현재 단계 통과 처리하고 다음으로
     document.querySelectorAll('.led-panel').forEach((e) => e.remove());
+    results.record('led', { accuracy: 85, grade: 'A', passed: true, summary: game.name, metrics: [] });   // 스킵도 통과 기록을 남긴다 — 메달 조건이 results 기준이라 이게 없으면 스킵으로 메달이 안 나온다
     cleared[game.key] = true; state.ended = true; state.phase = 'result';
     bgm.setDuck(1); gi++; nextGame();
   };
@@ -193,7 +195,7 @@ export function showLedGame(root, { onExit } = {}) {
   }
   function finishAll() {
     cleanup();
-    if (cleared.timing && cleared.play) {
+    if (roomCleared('led')) {
       progress.mark('led');
       celebrateRoom({ title: '두 단계 클리어! 🎉', message: '타이밍 쇼 + 라이트 연주 모두 A등급↑ — 💡 조명 메달 획득! 무대가 환하게 빛났어요.', exitLabel: '무대로 ▶', onExit: () => onExit?.() });
     } else onExit?.();

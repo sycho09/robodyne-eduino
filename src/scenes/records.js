@@ -1,8 +1,11 @@
 // records.js — 기록실 (내 기록 보관함, 실시간 갱신 UI)
 
-import { CHAPTERS, ROOMS, overallCleared, overallTotal, overallPercent } from '../content/curriculum.js';
-import { results } from '../app/results.js';
-import { saveAsPdf, saveAsPng } from '../app/reportCard.js';
+import {
+  CHAPTERS, ROOMS, overallCleared, overallTotal, overallPercent,
+  roomStages, allRoomIds, isRoomCleared,
+} from '../content/curriculum.js';
+import { results, PASS_GRADE } from '../app/results.js';
+import { saveAsPng } from '../app/reportCard.js';
 import { nav } from '../app/nav.js';
 
 // 등급 대신 '수료'로 표시하는 방 (이론 과정)
@@ -18,16 +21,12 @@ export function showRecords(host, { onPlay } = {}) {
 
   let unsubscribe = null;
 
-  // [임시] 배경 2종 × 카드 2종 × 배치 2종을 화면에서 갈아 끼우며 고르기 위한 상태.
-  //   bg     : 'photo'(허브 사진 · 원본) | 'gradient'(이론관 톤 그라데이션)
-  //   card   : 'base'(원본 다크 글래스) | 'dark'(테두리·글로우 강화)
-  //   layout : 'grid'(카드 1단) | 'split'(카드 2단 · 스크롤 없이 네 무대) | 'table'(무대별 표 2단)
-  // 'photo' + 'base' + 'grid' 조합이 손대기 전 화면 그대로다. 판은 둘 다 어두운 톤이다(흰 판은 뺐다).
-  // 조합을 정하고 나면 이 상태와 좌하단 패널, 안 고른 .records[data-bg=…]/[data-card=…] 를 지운다.
-  const view = { tab: 'gallery', bg: 'gradient', card: 'dark', layout: 'grid' };
+  // [임시] 좌하단 패널로 갈아 끼우는 A/B 상태. 배치 넷은 두 쌍이고, 쌍 안에서는 마크업이 같고
+  // 판 색만 다르다(1 = 다크 판 + 챕터색, 2 = 흰 기 도는 평평한 판).
+  // 조합을 정하면 이 상태와 abPanel(), 안 고른 [data-card=…]/[data-layout=…] 규칙을 지운다.
+  const view = { card: 'dark', layout: 'split' };
 
   const draw = () => {
-    root.dataset.bg = view.bg;
     root.dataset.card = view.card;
     root.dataset.layout = view.layout;
     root.innerHTML = template(view);
@@ -55,16 +54,11 @@ export function showRecords(host, { onPlay } = {}) {
 }
 
 // ── 마크업 ───────────────────────────────────────────────────────────────────
-// 표 판을 쓰는 배치 — 마크업은 한 벌(mockHtml)이고 색만 CSS 에서 갈린다.
-// 'mock' 은 평평한 회보라 판, 'table' 은 같은 판에 무대 챕터색(노랑·핑크·파랑·보라)을 입힌 것.
-// 둘 다 액션 열을 늘 보여 준다 — '결과 보기 / 바로 플레이' 탭은 카드 배치(1단·2단)용이다.
+// 표 판을 쓰는 배치 — 마크업 한 벌(mockHtml)을 나눠 쓰고 색만 CSS 에서 갈린다.
 const DECK_LAYOUTS = new Set(['mock', 'table']);
 
 function template(view) {
-  const { tab } = view;
   return `
-    <div class="records-shade" aria-hidden="true"></div>
-
     <header class="records-head">
       <div class="records-headline">
         <h1 class="records-title">🏆 내 성취도 기록실</h1>
@@ -79,29 +73,27 @@ function template(view) {
 
     <div class="records-dock">
       ${abPanel(view)}
-      <div class="records-tabs" role="tablist">
-        <button type="button" role="tab" class="r-tab ${tab === 'gallery' ? 'is-active' : ''}" data-tab="gallery">결과 보기</button>
-        <button type="button" role="tab" class="r-tab ${tab === 'play' ? 'is-active' : ''}" data-tab="play">바로 플레이</button>
-      </div>
     </div>
 
     <div class="records-content">
       ${DECK_LAYOUTS.has(view.layout)
         ? mockHtml()
-        : CHAPTERS.map(ch => sectionHtml(ch, view)).join('') + summaryHtml()}
+        : CHAPTERS.map(sectionHtml).join('') + summaryHtml()}
     </div>
   `;
 }
 
 // ── 전체 진척 요약 ────────────────────────────────────────────────────────────
-// 무대 목록 끝에 흘려 둔다. 2단에서는 방이 적은 오른쪽 열 밑에 붙고, 1단에서는 맨 아래에 온다.
-// 수치는 curriculum.js 의 전체 집계를 그대로 쓴다 — 인트로의 '학습 진척 N / 10',
-// 커리큘럼 헤더의 '전체 진척'과 같은 함수라 앱 안 어디서 봐도 숫자가 같다.
-// 스타트 게이트(이론관)도 하나의 무대로 센다. 화면에 무대 카드로 떠 있는데
-// 집계에서만 빠지면 '왜 얘는 안 세지?' 가 된다.
+// 수치는 curriculum.js 의 전체 집계를 그대로 쓴다 — 인트로·커리큘럼 헤더와 같은 함수라
+// 앱 어디서 봐도 숫자가 같다.
+
+// 진척 판의 테두리·글로우 색(--rc-rgb). 챕터색 넷(노랑·분홍·파랑·보라)과 겹치면 '무대 하나' 로
+// 읽히므로 그 밖에서 고른다 — 전에 쓰던 금색은 스타트 게이트의 노랑과 너무 가까웠다.
+const SUMMARY_RGB = '52, 211, 153';
+
 function summaryHtml() {
   return `
-    <section class="records-stage" style="--rc-rgb: 251, 191, 36;">
+    <section class="records-stage" style="--rc-rgb: ${SUMMARY_RGB};">
       <h2 class="records-stage-head">
         <span class="records-stage-icon" aria-hidden="true">🏅</span>
         <span class="records-stage-name">나의 진척</span>
@@ -115,22 +107,10 @@ function summaryPanel() {
   const total = overallTotal();
   const cleared = overallCleared();
   const pct = overallPercent();
-  const dist = gradeSpread();
-  // 아래 등급 칸의 합계 — '클리어' 와 다른 수다. results 는 통과 못 한 판도 기록해서 등급을 남기고
-  // (results.js), 클리어는 방마다 '두 단계 다 통과' 같은 고유 조건을 넘겨야 찍힌다(각 게임 finishAll).
-  // 그래서 등급은 있는데 클리어가 아닌 방이 생긴다 — 두 수를 나란히 적어야 등급 칸 합계가
-  // 어디서 온 숫자인지 읽힌다(안 그러면 '수료 1 + S 1 인데 왜 1개 클리어지?' 가 된다).
-  // 말은 기록증(reportCard.js)의 '· N개 플레이' 와 맞춘다.
-  const played = GRADE_ORDER.reduce((n, g) => n + dist[g], 0);
+  // 기록이 하나라도 있는 방 수. 클리어와 다른 수다 — results 는 통과 못 한 판도 기록하지만,
+  // 클리어는 방마다 '모든 단계 통과' 조건을 넘겨야 찍힌다. 말은 기록증(reportCard.js)과 맞춘다.
+  const played = allRoomIds().filter((id) => results.has(id)).length;
   const left = Math.max(0, total - cleared);
-
-  // is-got 은 '딴 칸' 에 붙는다 — 안 딴 칸을 누르는 게 아니라 딴 칸을 켜는 방향이다.
-  // (안 딴 걸 흐리게 하면 '아직 안 함' 이 아니라 '못 하는 것' 으로 읽힌다.)
-  const grades = GRADE_ORDER
-    .map((g) => `<li data-cell="${g}" class="${dist[g] ? 'is-got' : ''}">
-      <span class="rs-g" data-grade="${g}">${GRADE_LABEL[g]}</span><b>${dist[g] || '-'}</b>
-    </li>`)
-    .join('');
 
   return `
     <div class="rs">
@@ -141,9 +121,11 @@ function summaryPanel() {
         <span class="rs-pct">${pct}%</span>
       </p>
 
-      ${played
-        ? `<ul class="rs-grades">${grades}</ul>`
-        : `<p class="rs-empty">아직 기록이 없어요 — 첫 도전을 기다리고 있어요!</p>`}
+      ${left
+        ? `<p class="rs-rule">🏅 메달은 무대의 <b>모든 단계</b>를 <b>${PASS_GRADE}등급 이상</b>으로 통과해야 받아요</p>`
+        : ''}
+
+      <ul class="rs-rooms">${roomCells()}</ul>
 
       <p class="rs-goal">${left
         ? `👑 천국의 왕관까지 <b>${left}개</b>`
@@ -151,21 +133,24 @@ function summaryPanel() {
     </div>`;
 }
 
-// 이론관은 등급이 없어 '수료' 한 칸을 따로 둔다 — 이게 없으면 막대는 10 기준인데
-// 아래 등급 합계는 최대 9라 숫자가 안 맞아 보인다. 맨 앞에 두되 S~D 와 다른 종류로 보이게 한다.
-const GRADE_ORDER = ['done', 'S', 'A', 'B', 'C', 'D'];
-const GRADE_LABEL = { done: '수료', S: 'S', A: 'A', B: 'B', C: 'C', D: 'D' };
-
-// 최고 기록의 등급만 센다(도전 횟수가 아니라 '지금 가진 등급'의 분포).
-function gradeSpread() {
-  const out = { done: 0, S: 0, A: 0, B: 0, C: 0, D: 0 };
-  for (const [id, rec] of Object.entries(results.all())) {
-    if (!rec?.best) continue;
-    const g = NO_GRADE.has(id) ? 'done' : rec.best.grade;
-    if (Object.hasOwn(out, g)) out[g] += 1;
-  }
-  return out;
+// 메달 진열장 — 무대 하나에 칸 하나(10칸)라 진행바 분모와 눈금이 맞는다. 등급은 여기서 말하지
+// 않는다: 알파벳을 같이 넣으면 '1단계는 S인데 왜 A지?' 가 생기고, 등급은 표가 단계별로 맡는다.
+// 안 딴 메달은 흑백으로 — 투명도로 누르면 '못 하는 것' 이 되지만 흑백은 '아직 안 모은 것' 이다.
+function roomCells() {
+  return allRoomIds().map((id) => {
+    const room = ROOMS[id];
+    if (!room) return '';
+    const got = isRoomCleared(id);
+    return `<li class="${got ? 'is-got' : ''}" title="${esc(room.name)} · ${esc(room.reward || '')}">
+      <span class="rs-medal">${firstEmoji(room.reward)}</span>
+    </li>`;
+  }).join('');
 }
+
+// reward 에서 그림 하나만 떼어 낸다('🔨🚩 버튼 메달' 처럼 둘 붙은 방이 있다).
+// 변이 선택자(🎚️)와 ZWJ 조합은 한 글자로 붙잡고, 새로 시작하는 별개 이모지에서 끊는다.
+const firstEmoji = (s) =>
+  (String(s || '').match(/^\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*/u) || ['🏅'])[0];
 
 // [임시] 배경·카드 조합 고르기 패널 — 좌하단. 정하고 나면 이 함수와 호출부, .records-ab CSS 를 지운다.
 function abPanel(view) {
@@ -174,17 +159,13 @@ function abPanel(view) {
     .join('');
   return `
     <div class="records-ab">
-      <div class="records-seg" role="group" aria-label="배경">
-        <span class="records-seg-label">배경</span>
-        ${seg('bg', [['photo', '사진'], ['gradient', '그라데이션']])}
-      </div>
       <div class="records-seg" role="group" aria-label="카드">
         <span class="records-seg-label">카드</span>
         ${seg('card', [['base', '원본'], ['dark', '강화']])}
       </div>
       <div class="records-seg" role="group" aria-label="배치">
         <span class="records-seg-label">배치</span>
-        ${seg('layout', [['grid', '1단'], ['split', '2단'], ['table', '표'], ['mock', '시안']])}
+        ${seg('layout', [['split', '카드1'], ['split2', '카드2'], ['table', '표1'], ['mock', '표2']])}
       </div>
     </div>`;
 }
@@ -196,12 +177,11 @@ const chVars = (chId) => `--rc-rgb: ${CH_RGB[chId] || CH_RGB.ch1};`;
 
 // 지표는 게임마다 개수도 이름도 다르다(results.js 가 [{label,value}] 로만 받는 이유).
 // 그래서 표에서도 지표마다 열을 만들 수 없고, 한 칸에 모아 적는다.
-const metricsOf = (best) => (best?.metrics || []).filter((m) => m.label !== '최고 콤보');
 
-// 카드 배치(1단·2단) 전용 — 표 판을 쓰는 배치는 mockHtml() 로 빠진다.
-function sectionHtml(ch, view) {
+// 카드 배치 전용 — 표 판을 쓰는 배치는 mockHtml() 로 빠진다.
+function sectionHtml(ch) {
   const rooms = ch.rooms.map((id) => ROOMS[id]).filter(Boolean);
-  const body = `<ul class="records-grid">${rooms.map(r => cardHtml(r, view.tab, ch.id)).join('')}</ul>`;
+  const body = `<ul class="records-grid">${rooms.map((r) => cardHtml(r, ch.id)).join('')}</ul>`;
   return `
     <section class="records-stage" style="${chVars(ch.id)}">
       <h2 class="records-stage-head">
@@ -212,17 +192,11 @@ function sectionHtml(ch, view) {
     </section>`;
 }
 
-// ── 배치 · 시안 그대로 ────────────────────────────────────────────────────────
-// [비교용] 보내주신 시안을 옮긴 판. 나머지 배치와 디자인 언어를 일부러 공유하지 않는다:
-// 챕터색 테두리·글로우 없이 흰 기 도는 반투명 판, 액션 버튼이 탭과 무관하게 늘 보이고,
-// 지표가 한 칸에 모이지 않고 열로 갈린다. 진척 요약도 시안에 없으므로 빼 둔다.
-// 열 분배만 '표' 배치와 같게 맞췄다(무대 순서가 열 안에서 이어지도록).
+// ── 표 판 배치(표1·표2 공용) ──────────────────────────────────────────────────
 const MOCK_SUFFIX = { ch4: '명예의 전당' };   // 나머지 무대는 '성취도'
 
 function mockHtml() {
-  // '표' 배치와 같은 순서로 나눈다 — 앞 절반이 왼쪽, 뒤 절반이 오른쪽.
-  // (스타트 → 비기너 → 마스터 → 챔피언 순서가 열 안에서 그대로 이어진다.)
-  // 진척 요약은 방이 적은 오른쪽 열 밑에 붙인다 — 다른 배치와 자리가 같다.
+  // 앞 절반이 왼쪽, 뒤 절반이 오른쪽. 진척 요약은 방이 적은 오른쪽 열 밑에 붙는다.
   const mid = Math.ceil(CHAPTERS.length / 2);
   const col = (list, tail = '') => `<div class="mk-col">${list.map(mockSection).join('')}${tail}</div>`;
   return `<div class="mk-cols">
@@ -231,10 +205,10 @@ function mockHtml() {
   </div>`;
 }
 
-// 요약도 시안 껍데기를 입는다 — 제목은 .mk-head(19px), 판은 흰 기 도는 반투명.
+// 요약도 같은 껍데기를 입는다 — 제목은 .mk-head(19px).
 function mockSummary() {
   return `
-    <section class="mk-stage" style="--rc-rgb: 251, 191, 36;">
+    <section class="mk-stage" style="--rc-rgb: ${SUMMARY_RGB};">
       <h2 class="mk-head">
         <span class="mk-head-icon" aria-hidden="true">🏅</span>
         나의 진척
@@ -243,16 +217,13 @@ function mockSummary() {
     </section>`;
 }
 
+// 적중·정확도 같은 세부 지표 대신 단계별 등급을 한 열씩 놓는다 — 지표는 게임마다 이름도 개수도
+// 달라, 한 무대의 첫 방 이름을 열 머리로 빌려 쓰고 다른 방 값을 자리로만 끼워 넣고 있었다.
 function mockSection(ch) {
   const rooms = ch.rooms.map((id) => ROOMS[id]).filter(Boolean);
 
-  // 열 머리는 이 무대에서 기록이 있는 첫 방의 지표 이름을 그대로 쓴다.
-  // 값은 라벨이 아니라 '몇 번째 지표인가'로 채운다 — 시안이 그렇게 생겼다
-  // (무지개의 첫 지표 74% 가 라이트쇼 기준으로 붙은 열 아래에 들어가 있다).
-  const sample = rooms.map((r) => metricsOf(results.get(r.id)?.best)).find((m) => m.length) || [];
-  const h1 = sample[0]?.label || '기록';
-  const h2 = sample[1]?.label || null;
-  const rankHead = ch.id === 'ch4' ? '랭킹' : '랭크';
+  // 한 무대 안에서는 단계 수가 같지만, 최댓값으로 잡아야 한 방만 늘어도 열이 안 모자란다.
+  const cols = Math.max(1, ...rooms.map((r) => roomStages(r.id).length));
 
   // 챕터색은 '표' 배치에서만 쓴다(시안은 평평한 판이라 이 값을 안 읽는다) — 두 배치가
   // 마크업 한 벌을 나눠 쓰므로, 색을 쓰는 쪽에 맞춰 변수만 늘 실어 둔다.
@@ -267,100 +238,106 @@ function mockSection(ch) {
           <thead>
             <tr>
               <th>타이틀</th>
-              <th>${esc(h1)}</th>
-              ${h2 ? `<th>${esc(h2)}</th>` : ''}
-              <th>${rankHead}</th>
+              ${Array.from({ length: cols }, (_, i) => `<th>${i + 1}단계</th>`).join('')}
+              <th class="mk-medal">메달</th>
               <th>액션</th>
             </tr>
           </thead>
-          <tbody>${rooms.map((r) => mockRow(r, !!h2)).join('')}</tbody>
+          <tbody>${rooms.map((r) => mockRow(r, cols)).join('')}</tbody>
         </table>
       </div>
     </section>`;
 }
 
-function mockRow(room, hasSecond) {
-  const best = results.get(room.id)?.best;
-  const m = metricsOf(best);
-  const isNoGrade = NO_GRADE.has(room.id);
-  const rank = best ? (isNoGrade ? '수료' : best.grade) : '-';
-  const rankAttr = best ? (isNoGrade ? 'done' : best.grade) : 'none';
-
+function mockRow(room, cols) {
+  const played = results.has(room.id);
   return `<tr>
     <td class="mk-name"><span class="mk-icon" aria-hidden="true">${room.icon}</span>${esc(room.name)}</td>
-    <td>${m[0] ? esc(m[0].value) : '-'}</td>
-    ${hasSecond ? `<td>${m[1] ? esc(m[1].value) : '-'}</td>` : ''}
-    <td class="mk-rank"><span data-grade="${rankAttr}">${rank}</span></td>
+    ${stageCells(room, cols)}
+    ${medalCell(room)}
     <td class="mk-act">
-      <button type="button" class="mk-btn ${best ? 'is-again' : ''}" data-play="${room.id}">
-        ${best ? '다시 도전 ▶' : '플레이하기 ▶'}
+      <button type="button" class="mk-btn ${played ? 'is-again' : ''}" data-play="${room.id}">
+        ${played ? '다시 도전 ▶' : '플레이하기 ▶'}
       </button>
     </td>
   </tr>`;
 }
 
-function cardHtml(room, tab, chId) {
-  const rec = results.get(room.id);
-  const best = rec?.best;
+// 방마다 다른 reward 이모지가 아니라 공통 🏅 로 간다 — 타이틀 칸에 이미 그 방 아이콘이 있어
+// 같은 그림이 한 줄에 두 번 나오고(10방 중 7방), 열마다 모양이 달라 줄도 안 맞아 보인다.
+// 고유 아이콘은 진열장(roomCells)에 몰아 준다. 무슨 메달인지는 title 로 단다.
+function medalCell(room) {
+  if (!isRoomCleared(room.id)) return '<td class="mk-medal"><span class="mk-medal-none">-</span></td>';
+  return `<td class="mk-medal" title="${esc(room.reward || '')}"><span class="mk-medal-got">🏅</span></td>`;
+}
 
-  const isPlay = tab === 'play';
-  const playBtn = isPlay ? `<button type="button" class="rc-play" data-play="${room.id}">${best ? '다시 도전 ▶' : '플레이하기 ▶'}</button>` : '';
-  const cardClickProps = isPlay ? `data-play="${room.id}" role="button" tabindex="0"` : '';
-  const styleVars = chVars(chId);
-
-  // 등급색은 CSS 에 맡긴다(흰 판에서는 한 단계 조인 값이어야 대비가 선다).
-  if (!best) {
-    return `<li class="rc" ${cardClickProps} style="${styleVars}">
-      <div class="rc-content">
-        <span class="rc-icon" aria-hidden="true">${room.icon}</span>
-        <div class="rc-info">
-          <h3 class="rc-name">${esc(room.name)}</h3>
-          <div class="rc-body">
-            <div class="rc-metrics-item">미클리어</div>
-            <div class="rc-metrics-item">도전 대기 중!</div>
-          </div>
-        </div>
-        <span class="rc-seal" data-grade="none">-</span>
-      </div>
-      ${playBtn}
-    </li>`;
-  }
-
-  const displayMetrics = metricsOf(best);
-  const scoreText = (displayMetrics.length)
-    ? displayMetrics.map((m) => `<div class="rc-metrics-item">${esc(m.label)}: <b>${esc(m.value)}</b></div>`).join('')
-    : `<div class="rc-metrics-item">결과: <b>${esc(best.summary || '기록됨')}</b></div>`;
-  
+// 단계마다 한 칸씩. 안 해 본 단계는 '-' 로 자리만 남아 몇 단계짜리인지가 같이 읽힌다.
+// 이름은 열 머리(1단계·2단계)가 대신하고, 해 본 단계만 title 로 달아 둔다.
+function stageCells(room, cols) {
+  const stages = roomStages(room.id);
   const isNoGrade = NO_GRADE.has(room.id);
-  const gradeText = isNoGrade ? '수료' : best.grade;
-  const gradeAttr = isNoGrade ? 'done' : best.grade;
 
-  return `<li class="rc" ${cardClickProps} style="${styleVars}">
+  return Array.from({ length: cols }, (_, i) => {
+    const s = stages[i];
+    // 이론관은 등급을 안 매긴다 — 마쳤다는 것 자체가 통과라 '수료' 한 칸으로 끝낸다.
+    if (isNoGrade) {
+      return `<td class="mk-gr"><span data-grade="${s ? 'done' : 'none'}">${s ? '수료' : '-'}</span></td>`;
+    }
+    if (!s) return `<td class="mk-gr"><span data-grade="none">-</span></td>`;
+    return `<td class="mk-gr" title="${esc(s.name)}"><span data-grade="${esc(s.grade)}">${esc(s.grade)}</span></td>`;
+  }).join('');
+}
+
+// 표와 같은 구조로 읽힌다: [타이틀] · [단계별 등급 = 과정] · [메달 = 결과].
+// 큰 알파벳 하나(방 대표 등급)를 뺀 이유는 표와 같다 — 1단계 S · 2단계 D 인 방에 D 만 크게
+// 박히면 '내 S 어디 갔어?' 가 된다. 액션 버튼도 없다: 카드 전체가 버튼이라 아래가 안 무겁다.
+function cardHtml(room, chId) {
+  return `<li class="rc" data-play="${room.id}" role="button" tabindex="0" style="${chVars(chId)}">
     <div class="rc-content">
       <span class="rc-icon" aria-hidden="true">${room.icon}</span>
       <div class="rc-info">
         <h3 class="rc-name">${esc(room.name)}</h3>
-        <div class="rc-body">
-          ${scoreText}
-        </div>
+        <div class="rc-body">${cardBadges(room)}</div>
       </div>
-      <span class="rc-seal" data-grade="${gradeAttr}">${gradeText}</span>
+      ${cardMedal(room)}
     </div>
-    ${playBtn}
   </li>`;
+}
+
+// 카드엔 열 머리가 없으니 배지에 단계 번호를 같이 넣는다.
+const STAGE_NO = ['①', '②', '③', '④', '⑤'];
+
+// 카드가 보여 줄 단계 목록 — 배지든 줄글이든 같은 데이터를 쓴다.
+// 이론관은 등급을 안 매기고 단계도 하나라, 번호 없이 '수료' 한 칸으로 끝낸다.
+function cardStages(room) {
+  if (NO_GRADE.has(room.id)) {
+    const done = results.has(room.id);
+    return [{ no: null, name: '', grade: done ? '수료' : '-', attr: done ? 'done' : 'none' }];
+  }
+  return roomStages(room.id).map((s, i) => ({
+    no: i + 1,
+    name: s?.name || '',
+    grade: s ? s.grade : '-',
+    attr: s ? s.grade : 'none',
+  }));
+}
+
+function cardBadges(room) {
+  const chips = cardStages(room).map((s) =>
+    `<span class="rc-sb" title="${esc(s.name)}">${s.no ? `<i>${STAGE_NO[s.no - 1] || s.no}</i>` : ''}<b data-grade="${esc(s.attr)}">${esc(s.grade)}</b></span>`).join('');
+  return `<div class="rc-badges">${chips}</div>`;
+}
+
+// 표의 메달 칸과 같은 규칙 — 공통 🏅. 카드 왼쪽에 이미 그 방 아이콘이 크게 있다.
+function cardMedal(room) {
+  return isRoomCleared(room.id)
+    ? `<span class="rc-seal is-got" title="${esc(room.reward || '')}">🏅</span>`
+    : '<span class="rc-seal">-</span>';
 }
 
 // ── 동작 ─────────────────────────────────────────────────────────────────────
 function wire(root, onPlay, update) {
-  // 탭 전환
-  root.querySelectorAll('.r-tab').forEach((t) => {
-    t.addEventListener('click', () => update({ tab: t.dataset.tab }));
-  });
-
   // [임시] 배경·카드 조합 토글 — 카드 목록의 [data-play] 와 섞이지 않게 패널 안에서만 찾는다.
-  root.querySelectorAll('.records-ab [data-bg]').forEach((b) => {
-    b.addEventListener('click', () => update({ bg: b.dataset.bg }));
-  });
   root.querySelectorAll('.records-ab [data-card]').forEach((b) => {
     b.addEventListener('click', () => update({ card: b.dataset.card }));
   });
@@ -439,9 +416,8 @@ function ensureStyles() {
   --deck-w: 1180px; --deck-gap: 32px;
   position: absolute; inset: 0; overflow-y: auto; z-index: 50;
   padding: 40px 24px 120px; color: var(--ink);
-  background-color: #2b213e;   /* 배경 이미지·그라데이션이 뜨기 전 바탕 */
+  background-color: #2b213e;   /* 그라데이션이 뜨기 전 바탕 */
 }
-.records > * { position: relative; z-index: 1; }
 
 /* 판 바탕의 다크톤 — 카드(.rc)·진척 요약(.rs)·표 판(.mk-panel)이 한 값을 나눠 쓴다.
    판마다 알파를 따로 잡아 두면(전에는 카드 .88/.84, 판 .86/.82) 나란히 놓였을 때
@@ -450,20 +426,11 @@ function ensureStyles() {
 .records[data-card="base"] { --deck-fill: linear-gradient(135deg, rgba(26, 22, 42, .8), rgba(16, 14, 26, .7)); }
 .records[data-card="dark"] { --deck-fill: linear-gradient(135deg, rgba(22, 18, 36, .88), rgba(12, 10, 22, .84)); }
 
-/* ── [배경 1] 허브 사진 — 원본 ────────────────────────────────────────────────
-   사진은 밝고 무늬가 있어서 글자·카드가 묻힌다. .records-shade 가 그걸 눌러 준다. */
-.records[data-bg="photo"] { background-image: url('/brand/hub-bg.webp'); background-size: cover;
-  background-position: center; background-repeat: no-repeat; }
-.records-shade {
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background: linear-gradient(180deg, rgba(20,14,32,.12) 0%, rgba(20,14,32,.2) 55%, rgba(20,14,32,.5) 100%);
-}
-/* 그라데이션 배경은 이미 어두워서 한 겹 더 덮으면 색만 죽는다. */
-.records[data-bg="gradient"] .records-shade { display: none; }
-
-/* ── [배경 2] 이론관(basics) 그라데이션 — 03-onboarding.css 의 .pm-bg 와 같은 값 ──
-   스크롤 컨테이너의 배경은 내용과 함께 밀리지 않으므로(attachment: scroll) 화면에 고정돼 보인다. */
-.records[data-bg="gradient"] {
+/* ── 배경 — 이론관(basics) 그라데이션. 03-onboarding.css 의 .pm-bg 와 같은 값 ──────
+   스크롤 컨테이너의 배경은 내용과 함께 밀리지 않으므로(attachment: scroll) 화면에 고정돼 보인다.
+   허브 사진 배경도 있었는데 뺐다 — 사진은 밝고 무늬가 있어 글자·카드가 묻혀서, 그걸 누르는
+   어두운 막(.records-shade)을 한 겹 더 깔아야 했다. 그라데이션은 이미 어두워 막이 필요 없다. */
+.records {
   background-image:
     radial-gradient(900px 600px at 14% 12%, rgba(255,210,90,.30), transparent 60%),
     radial-gradient(820px 620px at 88% 18%, rgba(255,122,184,.28), transparent 60%),
@@ -510,46 +477,30 @@ function ensureStyles() {
 
 
 
-/* 위 [배경]·[카드] 칩과 같은 치수 — 같은 열에 세로로 쌓이므로 크기가 다르면 층이 어긋나 보인다.
-   (임시 패널을 지운 뒤에도 이 값 그대로 남으면 된다. .records-seg 와 값을 맞춰 둔 것뿐이다.) */
-.records-tabs {
-  display: flex; gap: 4px; padding: 4px; border-radius: 999px;
-  background: rgba(18,14,30,.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,.15); box-shadow: 0 16px 40px rgba(0,0,0,.5);
-}
-.r-tab {
-  height: 30px; padding: 0 12px; border: none; border-radius: 999px; cursor: pointer;
-  background: transparent; color: rgba(255,255,255,.55); font-size: 12px; font-weight: 700; transition: all .16s;
-}
-.r-tab:hover { color: #fff; }
-.r-tab.is-active { background: rgba(255,255,255,.16); color: #fff; }
-
 .records-content { max-width: 1024px; margin: 0 auto; }
 .records-stage { margin-bottom: 40px; }
 .records-stage-head { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; font-size: 22px; font-weight: 800; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,0.6); }
 .records-stage-icon { font-size: 26px; }
 
+/* 한 단이 카드 2장을 제대로 품을 만큼 넓어야 한다 — .rc-name 이 nowrap 이라(줄바꿈 금지)
+   카드가 320px 아래로 좁아지면 제목이 메달 칸을 밀어낸다. 그래서 최소 카드 폭을 320 으로 잡아,
+   어중간하게 좁은 2장 대신 넉넉한 1장으로 떨어지게 한다.
+   auto-fill 이라 폭이 줄면 한 줄 카드 수가 알아서 줄어든다(미디어 쿼리가 따로 필요 없다). */
 .records-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
 
-/* ── 카드 2단 배치 ───────────────────────────────────────────────────────────
+/* ── 카드 배치 ───────────────────────────────────────────────────────────────
    네 무대를 스크롤 없이 한 화면에 담기 위해 무대 단위로 2단에 흘린다.
    좌/우를 고정 분할하지 않는 이유: 무대별 방 수가 1·6·2·1 로 크게 기울어 있어서
    반씩 자르면 한쪽만 길어진다. 단 흘림(column)은 높이가 알아서 맞물리고,
    나중에 방이 늘거나 줄어도 분할 지점을 다시 잡을 필요가 없다.
-   (표 배치는 이 규칙을 안 쓴다 — 시안과 같은 .mk-cols 격자로 나눈다.) */
-.records[data-layout="split"] .records-content { column-count: 2; column-gap: 24px; }
-.records[data-layout="split"] .records-stage {
+   column-count 를 기본값이 아니라 배치 스코프에 두는 이유: 표·시안 배치도 .records-content 를
+   쓰는데, 거기는 안쪽이 .mk-cols 격자라 단 흘림이 걸리면 격자가 단에 잘려 깨진다. */
+.records[data-layout^="split"] .records-content { max-width: 1380px; column-count: 2; column-gap: 24px; }
+.records[data-layout^="split"] .records-stage {
   /* inline-block + width:100% 는 단 안에서 break-inside 가 확실히 먹게 하는 조합이다. */
   display: inline-block; width: 100%; break-inside: avoid; margin-bottom: 24px;
 }
-
-/* 카드 2단은 한 단이 카드 2장을 제대로 품을 만큼 넓어야 한다.
-   .rc-name 이 nowrap 이라(줄바꿈 금지) 카드가 320px 아래로 좁아지면 제목이 도장을 밀어낸다.
-   그래서 폭을 1380px 까지 열고, 최소 카드 폭도 280 → 320 으로 올려
-   어중간하게 좁은 2장 대신 넉넉한 1장으로 떨어지게 한다. */
-.records[data-layout="split"] .records-content { max-width: 1380px; }
-.records[data-layout="split"] .records-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
 
 /* ── [배치] 시안 · 표 공통 판 ─────────────────────────────────────────────────
    시안(mock)과 표(table)는 여기 있는 .mk* 한 벌을 그대로 나눠 쓴다 — 구조·치수·열 분배·
@@ -570,23 +521,31 @@ function ensureStyles() {
 
 /* 판은 어두운 색을 깐 게 아니라 '흰 기가 도는 반투명 막'이다 — 시안의 패널이 배경보다
    밝고 회보라빛인 게 그래서고, 패널마다 톤이 미세하게 다른 것도 뒤가 비쳐서다.
-   어두운 색으로 채우면 배경보다 어두워져 시안과 정반대가 된다. */
+   어두운 색으로 채우면 배경보다 어두워져 시안과 정반대가 된다.
+   막의 알파가 곧 불투명도다: .085 는 배경이 91.5% 그대로 올라와 판이 배경색에 물들었다.
+   .16 이면 배경이 84% 비쳐 유리 느낌은 남기면서 판의 경계가 선다. 더/덜은 이 값 하나만 만지면 된다. */
 .mk-panel {
   border-radius: 10px; overflow: hidden;
-  background: rgba(236, 232, 245, .085);
+  background: rgba(236, 232, 245, .16);
   backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,.09);
+  border: 1px solid rgba(255,255,255,.13);
 }
 .mk { width: 100%; border-collapse: collapse; font-size: 13px; }
-/* 머리 행은 판 위에 한 겹 더 얹히므로, 판(.085)과 눈에 띄게 갈리려면 이만큼 필요하다. */
-.mk thead tr { background: rgba(255,255,255,.14); }
+/* 머리 행은 판 위에 한 겹 더 얹히므로, 판(.16)에 더해진 값이 이 행의 밝기다.
+   배경보다는 밝아야 머리 행으로 읽히고(어둡게 깔면 배경에 잠겨 띠가 아니라 구멍처럼 보인다),
+   그렇다고 예전 .14(겹치면 약 .28)까지 올리면 그 위의 밝은 글자가 묻힌다.
+   .09 면 겹쳐서 약 .24 — 판보다 한 단 밝아 띠로 갈리면서 글자는 살아 있다. */
+.mk thead tr { background: rgba(255,255,255,.09); }
 .mk th {
-  /* 바탕이 밝아진 만큼 글자도 올린다 — #9b93a8 은 이 바탕에서 2.3:1 까지 떨어진다. */
+  /* 바탕이 눌린 만큼 글자는 그대로 둔다 — #9b93a8 은 이 바탕에서 2.3:1 까지 떨어진다. */
   padding: 12px 14px; text-align: center; font-size: 11.5px; font-weight: 600; color: #c8c1d4;
 }
 .mk th:first-child { text-align: left; }
 .mk td { padding: 11px 14px; text-align: center; color: #b8b0c4; border-top: 1px solid rgba(255,255,255,.05); }
 .mk tbody tr:first-child td { border-top: 0; }
+/* 한 행에 마우스를 올리면 그 줄만 밝아진다 — 방이 여섯인 무대가 있어 눈이 가로로 미끄러진다.
+   시안 판은 흰 막이라 표(.04)보다 조금 더 올려야 같은 만큼 눈에 띈다. */
+.mk tbody tr:hover { background: rgba(255,255,255,.07); }
 
 /* td 선택자(.mk td)가 가운데 정렬을 걸어 두므로, 이름 칸은 같은 무게(td.mk-name)로 받아야
    왼쪽 정렬이 먹는다. .mk-name 만으로는 구체성이 한 단 낮아 가운데로 끌려간다. */
@@ -594,17 +553,21 @@ function ensureStyles() {
 /* 표가 내용보다 넓으면 auto 레이아웃은 남는 폭을 열 크기에 비례해 나눠 준다 — 타이틀 열이
    제일 넓으니 남는 폭도 제일 많이 먹고, 그게 통째로 이름 뒤 빈칸이 되어 옆 열을 밀어낸다.
    width:1% 로 '이 열은 최소만' 이라 못 박는다. nowrap 이라 최소폭이 곧 이름 길이라
-   글자가 잘릴 일은 없고, 남는 폭은 지표·랭크·액션이 고르게 나눠 가진다. */
+   글자가 잘릴 일은 없고, 남는 폭은 단계 열이 가져간다. */
 .mk th:first-child, .mk td.mk-name { width: 1%; }
 .mk-icon { font-size: 17px; margin-right: 10px; vertical-align: -.15em; }
-/* 등급색은 .records [data-grade=…] 한 벌을 그대로 받는다 — 시안의 S 보라·D 회색과 같은 값이다. */
-.mk-rank span { font-weight: 800; font-size: 15px; }
-.mk-rank span[data-grade="done"] { font-size: 12px; }
-/* 아직 도전 안 한 방의 '-' 만 예외로 뺀다. 공용 [data-grade="none"] 은 #475569 라 판 위에서
-   거의 안 보이는데, 그러면 '안 한 방' 이 아니라 '못 누르는 방' 으로 읽힌다(실제로는 바로 플레이된다).
-   같은 행 다른 칸의 '-' 와 같은 밝기여야 하므로 색을 새로 정하지 않고 칸에서 물려받는다 —
-   시안은 #b8b0c4, 표는 rgba(255,255,255,.6) 으로 각 배치의 값이 알아서 따라온다. */
-.mk-rank span[data-grade="none"] { color: inherit; }
+
+/* 단계 칸 — 등급색은 .records [data-grade=…] 한 벌을 그대로 받는다(S 보라·D 회색). */
+.mk-gr span { font-weight: 800; font-size: 15px; }
+.mk-gr span[data-grade="done"] { font-size: 12px; }   /* '수료' 는 두 글자라 줄인다 */
+/* 아직 안 한 단계의 '-' 는 공용 [data-grade="none"](#475569)을 쓰면 판 위에서 거의 안 보이고,
+   그러면 '안 한 단계' 가 아니라 '못 하는 단계' 로 읽힌다. 칸 색을 그대로 물려받게 둔다. */
+.mk-gr span[data-grade="none"] { color: inherit; opacity: .5; }
+
+/* 메달 칸 — 단계 열이 '과정', 이 칸이 '결과' 다. 한 줄에서 둘이 같이 읽힌다. */
+.mk-medal { width: 62px; }
+.mk-medal-got { font-size: 19px; }
+.mk-medal-none { opacity: .5; }
 
 .mk-act { width: 132px; }
 .mk-btn {
@@ -620,15 +583,17 @@ function ensureStyles() {
 
 /* 진척 요약도 표와 같은 판으로 — .mk-stage 를 끼워 [data-card] 쪽 .rs 규칙(챕터색 글로우)보다
    구체성을 한 단 높인다. 그 규칙이 이 아래에 있어 순서로는 못 이긴다. */
+/* 값은 위 .mk-panel 과 같아야 한다 — 나란히 놓이는 두 판이라 한쪽만 투명하면 그것만 묽어 보인다.
+   (판 불투명도를 .085 → .16 으로 올릴 때 표 판만 올리고 여기를 빠뜨려 실제로 그렇게 됐었다.) */
 .records[data-layout="mock"] .mk-stage .rs {
   border-radius: 10px;
-  background: rgba(236, 232, 245, .085);
+  background: rgba(236, 232, 245, .16);
   backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,.09);
+  border: 1px solid rgba(255,255,255,.13);
   box-shadow: none;
 }
 
-/* 진척 요약 판 — 카드 배치(1단·2단)가 쓰는 톤. 무대 카드 묶음과 바로 나란히 놓이므로
+/* 진척 요약 판 — 카드 배치가 쓰는 톤. 무대 카드 묶음과 바로 나란히 놓이므로
    바탕은 카드와 같은 --deck-fill 을 받는다(챕터색 글로우만 카드 쪽에 더 있다). */
 .rs {
   border-radius: 14px; overflow: hidden;
@@ -668,7 +633,7 @@ function ensureStyles() {
 .records[data-layout="table"] .mk td.mk-name { color: #fff; }
 .records[data-layout="table"] .mk tbody tr:hover { background: rgba(255,255,255,.04); }
 
-/* 버튼은 평소엔 지표 값(적중·정확도)과 같은 톤으로 눌러 둔다 — 기록 유무로도 안 가른다.
+/* 버튼은 평소엔 표 글자와 같은 톤으로 눌러 둔다 — 기록 유무로도 안 가른다.
    행마다 색이 다른 버튼이 세로로 늘어서면 눈이 거기부터 읽어서 정작 기록이 안 보인다.
    무대 챕터색은 마우스를 올린 한 행에서만 올라온다 — '지금 누르는 건 이 무대' 라는 신호로만 쓴다. */
 .records[data-layout="table"] .mk-btn,
@@ -698,32 +663,42 @@ function ensureStyles() {
 .rc {
   position: relative; padding: 20px; border-radius: 16px;
   border: 1px solid transparent;
-  display: flex; flex-direction: column; cursor: pointer;
+  display: flex; flex-direction: column;
   transition: transform .2s, box-shadow .2s, background .2s, border-color .2s;
 }
-.rc:hover, .rc:focus-visible { transform: translateY(-4px); outline: none; }
+/* '바로 플레이' 탭에서는 카드가 통째로 버튼이다 — 그때만 손 모양과 뜨는 반응을 준다.
+   [data-play] 는 누를 수 있을 때만 붙는다(cardHtml). '결과 보기' 탭에서 손 모양이 뜨면
+   눌러도 아무 일이 없어 거짓말이 된다. */
+.rc[data-play] { cursor: pointer; }
+.rc[data-play]:hover, .rc[data-play]:focus-visible { transform: translateY(-4px); outline: none; }
 
 .rc-content { display: flex; align-items: center; width: 100%; }
 .rc-icon { font-size: 40px; margin-right: 16px; }
 .rc-info { flex: 1; display: flex; flex-direction: column; gap: 6px; }
 .rc-name { font-size: 16px; font-weight: 700; margin: 0; white-space: nowrap; color: #fff; }
+/* 카드 오른쪽 = 결과 칸. 큰 알파벳 하나를 박던 자리인데 이제 공통 메달이 온다.
+   못 딴 방은 '-' 로 자리만 남긴다 — 칸이 비면 카드마다 폭이 달라져 격자가 어긋난다. */
 .rc-seal {
   display: flex; align-items: center; justify-content: center; align-self: stretch;
-  font-size: 44px; font-weight: 900; line-height: 1; text-shadow: 0 2px 8px rgba(0,0,0,.3);
+  font-size: 20px; line-height: 1; color: rgba(255,255,255,.35);
   border-left: 1px solid rgba(255,255,255,.15); padding-left: 16px; margin-left: 12px; width: 60px; text-align: center;
 }
-.rc-seal[data-grade="done"] { font-size: 24px; }
+.rc-seal.is-got { font-size: 34px; color: inherit; text-shadow: 0 2px 10px rgba(251,191,36,.35); }
 
-.rc-body { display: flex; flex-direction: column; gap: 2px; }
-.rc-metrics-item { font-size: 13px; display: flex; align-items: center; color: rgba(255,255,255,.62); }
-.rc-metrics-item b { margin-left: 4px; font-weight: 600; color: rgba(255,255,255,.92); }
-
-.rc-play {
-  display: block; width: 100%; margin-top: 14px; cursor: pointer;
-  border: 1px solid rgba(255,255,255,.16); border-radius: 10px; padding: 10px 12px;
-  background: rgba(255,255,255,.06); color: #fff;
-  font-size: 13px; font-weight: 700; transition: background .15s, border-color .15s, color .15s;
+/* 단계 배지 — 가로로 늘어놓는다. 알 하나가 한 단계라 경계가 분명하다. */
+.rc-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.rc-sb {
+  display: inline-flex; align-items: baseline; gap: 4px; padding: 1px 8px;
+  border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
 }
+.rc-sb i { font-style: normal; font-size: 10px; opacity: .55; }   /* 단계 번호 */
+.rc-sb b { font-weight: 800; font-size: 13px; }
+.rc-sb b[data-grade="done"] { font-size: 11px; }                   /* '수료' 는 두 글자라 줄인다 */
+/* 안 한 단계의 '-' 는 공용 [data-grade="none"](#475569)이면 카드 위에서 거의 안 보인다.
+   '못 하는 단계' 가 아니라 '아직 안 한 단계' 로 읽히도록 카드 글자색을 물려받게 둔다. */
+.rc-sb b[data-grade="none"] { color: rgba(255,255,255,.5); }
+
+
 
 /* ── [카드 1] 원본 다크 글래스 ────────────────────────────────────────────────
    밝은 사진 배경 위에서 잡은 값이다. 판이 반투명(.8/.7)해서 배경이 비쳐 보이고,
@@ -742,7 +717,6 @@ function ensureStyles() {
     linear-gradient(135deg, rgba(36, 30, 56, .85), rgba(24, 20, 38, .75));
   box-shadow: 0 12px 40px rgba(0,0,0,.4), 0 0 6px rgba(var(--rc-rgb), .25), inset 0 0 6px rgba(var(--rc-rgb), .25);
 }
-.records[data-card="base"] .rc-play:hover { background: rgba(var(--rc-rgb), .25); border-color: rgba(var(--rc-rgb), .5); }
 
 /* ── [카드 2] 다크 글래스 강화 ────────────────────────────────────────────────
    배경이 사진에서 어두운 그라데이션으로 바뀌면서 카드와 배경의 명도가 붙었다.
@@ -759,7 +733,38 @@ function ensureStyles() {
   border-color: rgb(var(--rc-rgb));
   box-shadow: 0 16px 44px rgba(0,0,0,.55), 0 0 30px rgba(var(--rc-rgb), .42), inset 0 1px 0 rgba(255,255,255,.1);
 }
-.records[data-card="dark"] .rc-play:hover { background: rgba(var(--rc-rgb), .3); border-color: rgba(var(--rc-rgb), .9); }
+
+/* ── [배치] 카드2 — 표2 와 같은 평평한 판 ────────────────────────────────────
+   구조·치수·반응형은 카드1 과 한 벌을 쓰고([data-layout^="split"]) 여기서는 판 색만 갈아 끼운다.
+   값은 표2 의 .mk-panel 과 같다 — 두 배치가 같은 '흰 기 도는 막' 이어야 나란히 놓고 고를 수 있다.
+   li.rc 로 잡는 이유: 위 [data-card] 규칙과 클래스 수가 같아 순서에 기대게 되는데,
+   요소 하나(li)를 더해 두면 규칙이 어디로 옮겨가도 이 값이 이긴다. */
+.records[data-layout="split2"] li.rc {
+  background: rgba(236, 232, 245, .16);
+  border-color: rgba(255,255,255,.13);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  box-shadow: none;
+}
+/* 평평한 판이라 글로우로 뜨게 할 수 없다 — 막을 한 겹 더 얹고 테두리만 세운다. */
+.records[data-layout="split2"] li.rc:hover,
+.records[data-layout="split2"] li.rc:focus-visible {
+  background: rgba(236, 232, 245, .22);
+  border-color: rgba(255,255,255,.28);
+}
+/* 진척 판과 진열장도 같이 평평하게 — 카드와 나란히 놓이는 판이라 톤이 달라지면 그것만 뜬다.
+   빈 칸은 반대로 어둡게: 흰 막 위에 흰 칸을 얹으면 경계가 녹는다(표2 에서 겪은 것과 같다).
+   div.rs 로 잡는 이유는 li.rc 와 같다 — 아래 .records[data-card="dark"] .rs 와 클래스 수가 같아
+   순서로만 이기게 되는데, 그 규칙이 이 아래에 있어서 실제로 졌다(카드2 에서 '강화' 를 누르면
+   진척 판만 초록 테두리·글로우가 새어 나왔다). 요소 하나를 더해 순서와 무관하게 이기게 한다. */
+.records[data-layout="split2"] div.rs {
+  background: rgba(236, 232, 245, .16);
+  border-color: rgba(255,255,255,.13);
+  box-shadow: none;
+}
+.records[data-layout="split2"] .rs-rooms li:not(.is-got) {
+  background: rgba(28, 22, 44, .16);
+  border-color: rgba(255,255,255,.14);
+}
 
 /* 요약 패널도 '강화'에서는 카드와 같은 만큼 테두리·글로우를 올린다(원본과 차이가 보이게).
    표 배치의 판은 위 [배치] 표 블록에서 따로 올린다 — 거기가 구체성이 한 단 높다. */
@@ -784,38 +789,39 @@ function ensureStyles() {
 .rs-count b { color: #fff; font-weight: 700; }
 .rs-pct { margin-left: auto; font-size: 18px; font-weight: 800; color: #fbbf24; font-variant-numeric: tabular-nums; }
 
-.rs-grades {
-  list-style: none; margin: 11px 0 0; padding: 0;
-  display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
-}
-.rs-grades li {
-  display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0;
-  border-radius: 9px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
-}
-/* 0 개인 등급도 눌러 두지 않는다 — 개수 자리의 '-' 가 이미 '아직 없음' 을 말하는데
-   칸까지 흐려 두면 '못 따는 등급' 처럼 읽힌다. 표의 미도전 행과 같은 판단.
-   대신 반대 방향으로 간다: 딴 칸에 그 등급색을 켠다. 기본 칸은 위 값 그대로 또렷하고,
-   성취에만 강조가 얹히므로 '비활성' 로 읽힐 여지가 없다.
-   색은 카드(--rc-rgb)와 같이 RGB 세 값만 넘긴다 — 테두리 .45 / 바탕 .1 처럼 자리마다
-   필요한 불투명도가 달라서, 완성된 #hex 를 쓰면 한 자리에 맞춘 값이 다른 자리에서 어긋난다.
-   값은 아래 .records [data-grade=…] 글자색을 그대로 옮긴 것이라 글자와 칸의 색이 같다. */
-.rs-grades li { --g-rgb: 255, 255, 255; }
-.rs-grades li[data-cell="S"]    { --g-rgb: 168, 85, 247; }
-.rs-grades li[data-cell="A"]    { --g-rgb: 251, 113, 133; }
-.rs-grades li[data-cell="B"]    { --g-rgb: 96, 165, 250; }
-.rs-grades li[data-cell="C"]    { --g-rgb: 251, 146, 60; }
-.rs-grades li[data-cell="D"]    { --g-rgb: 148, 163, 184; }
-.rs-grades li[data-cell="done"] { --g-rgb: 52, 211, 153; }
-/* 수료 칸의 초록도 여기에 태운다 — 전에는 개수와 무관하게 늘 켜져 있어서, 다른 칸이 같은
-   밝기가 된 뒤로는 '수료만 땄다' 로 읽혔다. '다른 종류' 라는 단서는 글자가 이미 하고 있다
-   (여섯 중 유일하게 글자가 아닌 단어 + 초록 + 12px). */
-.rs-grades li.is-got { border-color: rgba(var(--g-rgb), .45); background: rgba(var(--g-rgb), .1); }
-.rs-g { font-size: 16px; font-weight: 900; line-height: 1; }
-/* '수료'는 두 글자라 16px 이면 칸을 넘친다. 카드 도장(.rc-seal)에서 쓴 것과 같은 처리. */
-.rs-g[data-grade="done"] { font-size: 12px; }
-.rs-grades b { font-size: 13px; font-weight: 700; color: rgba(255,255,255,.9); font-variant-numeric: tabular-nums; }
+/* 아직 딸 메달이 남았을 때 나오는 규칙 한 줄 — 표에 메달 열을 따로 두지 않는 대신,
+   '단계 등급이 다 A 이상이면 메달' 이라는 규칙을 여기서 한 번 말한다.
+   어느 방의 어느 단계가 모자란지는 표의 단계 열이 그대로 보여 준다. */
+.rs-rule { margin: 7px 0 0; font-size: 12px; line-height: 1.5; color: rgba(255,255,255,.5); }
+.rs-rule b { font-weight: 700; color: rgba(255,255,255,.78); }
 
-.rs-empty { margin: 11px 0 0; font-size: 13px; color: rgba(255,255,255,.5); }
+/* 메달 진열장 — 무대 하나에 칸 하나(10칸)라 진행바 분모와 눈금이 맞는다.
+   글자를 안 넣는다: 알파벳을 같이 두면 '1단계는 S인데 왜 A지?' 가 다시 생긴다.
+   여기는 '몇 개 모았나' 만 답하고, 등급은 표의 단계 열이 맡는다. */
+.rs-rooms {
+  list-style: none; margin: 11px 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px;
+}
+.rs-rooms li {
+  display: flex; align-items: center; justify-content: center; padding: 7px 0;
+  border-radius: 10px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
+}
+/* 시안 판은 흰 막(rgba(236,232,245,.16))이라 배경보다 밝다. 그 위에 흰색 바탕(.04)과 흰색
+   테두리(.07)를 얹으면 흰 위에 흰을 더하는 꼴이라 칸 경계가 사라진다 — 표(어두운 판)에서는
+   같은 값이 잘 보이는 이유가 이것이다. 그래서 시안에서만 반대로 간다:
+   바탕을 살짝 어둡게 깔아 판보다 한 단 내려앉히고, 테두리는 유리처럼 얇은 반투명 흰 선만 남긴다.
+   :not(.is-got) 로 빈 칸만 잡는다 — 딴 칸까지 걸면 이 규칙이 구체성에서 이겨 금색을 덮어쓴다.
+   딴 칸은 아래 공용 .rs-rooms li.is-got 값 그대로 간다(배치와 무관하게 같은 금색). */
+.records[data-layout="mock"] .rs-rooms li:not(.is-got) {
+  background: rgba(28, 22, 44, .16);
+  border-color: rgba(255,255,255,.14);
+}
+/* 안 딴 메달은 흑백 — 투명도로 누르면 '못 하는 것' 이 되지만, 흑백은 수집판의 관용 표현이라
+   '아직 안 모은 것' 으로 읽힌다. 무엇을 모으는 중인지는 시작할 때부터 보여야 한다. */
+.rs-medal { font-size: 20px; line-height: 1.1; filter: grayscale(1); opacity: .5; }
+/* 딴 칸은 색이 돌아오고 금색으로 켜진다 — 진행바·왕관 문구와 같은 금색이라 한 덩어리로 읽힌다. */
+.rs-rooms li.is-got { border-color: rgba(251,191,36,.45); background: rgba(251,191,36,.1); }
+.rs-rooms li.is-got .rs-medal { filter: none; opacity: 1; }
 
 .rs-goal {
   margin: 10px 0 0; padding-top: 9px; border-top: 1px solid rgba(255,255,255,.08);
@@ -847,7 +853,7 @@ function ensureStyles() {
 
 /* 2단은 좁아지면 글자가 먼저 깨진다 — 단부터 접는다. */
 @media (max-width: 900px) {
-  .records[data-layout="split"] .records-content { column-count: 1; }
+  .records[data-layout^="split"] .records-content { column-count: 1; }
 }
 /* 시안·표 배치는 표가 5열이라 더 일찍 접힌다. */
 @media (max-width: 1100px) {
@@ -860,8 +866,8 @@ function ensureStyles() {
   .records-save { position: absolute; top: 16px; right: 16px; }
   .records-save-btn { height: 38px; padding: 0 16px 0 12px; font-size: 13px; }
   .records-dock { left: 16px; right: 16px; bottom: 20px; gap: 6px; }
-  .records-seg button, .r-tab { height: 28px; padding: 0 10px; font-size: 11px; }
+  .records-seg button { height: 28px; padding: 0 10px; font-size: 11px; }
 }
-@media (prefers-reduced-motion: reduce) { .records-bar span, .rc { transition: none; } }`;
+@media (prefers-reduced-motion: reduce) { .rs-bar span, .rc { transition: none; } }`;
   document.head.appendChild(el);
 }

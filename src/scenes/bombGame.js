@@ -1,6 +1,7 @@
 // bombGame.js — 폭탄 해체반 (가변저항 + LED 응용)
 // 다이얼로 해체 주파수 맞추기. 정답 근접 시 LED 점멸. B등급(80%) 이상 통과.
 import { sfx } from '../app/sfx.js';
+import { roomCleared } from '../content/curriculum.js';
 import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
@@ -177,12 +178,13 @@ export function showBombGame(root, { onExit, onComplete } = {}) {
   }
   function finishAll() {
     cleanup();
-    if (cleared.arm && cleared.tune && cleared.live) {
+    if (roomCleared('bomb')) {
       if (onComplete) { onComplete(); return; }
       progress.mark('bomb'); celebrateRoom({ title: '해체 스타! 💣', message: '다이얼을 정밀하게 돌려 세 단계의 폭탄을 모두 해체했어요 — 💣 해체 스타 획득! 가변저항(입력)으로 LED(출력)를 자유자재로 제어했어요.', exitLabel: '전시관으로 ▶', onExit: () => onExit?.() });
     } else onExit?.();
   }
-  skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); cleared[act.key] = true; state.ended = true; state.phase = 'result'; bgm.setDuck(1); ledOff(); ai++; nextAct(); };
+  skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); results.record('bomb', { accuracy: 85, grade: 'A', passed: true, summary: act.name, metrics: [] });   // 스킵도 통과 기록을 남긴다 — 메달 조건이 results 기준이라 이게 없으면 스킵으로 메달이 안 나온다
+    cleared[act.key] = true; state.ended = true; state.phase = 'result'; bgm.setDuck(1); ledOff(); ai++; nextAct(); };
 
   function sync() { elHit.textContent = state.hits; elCombo.textContent = state.combo; elScore.textContent = state.score; }
   function burst(x, y, color) { for (let i = 0; i < 16; i++) { const a = Math.random() * 6.283, s = 1.5 + Math.random() * 4.5; parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1, life: 38, color }); } }

@@ -1,6 +1,7 @@
 // lampGame.js — 빛 마법 램프 (조도센서 + RGB LED 응용)
 // 조도센서로 목표 색상 맞추기. 1막(맞추기) → 2막(따라가기) → 3막(시퀀스). B등급(80%) 이상 통과.
 import { sfx } from '../app/sfx.js';
+import { roomCleared } from '../content/curriculum.js';
 import { bgm } from '../app/bgm.js';
 import { progress } from '../app/progress.js';
 import { celebrateRoom } from './celebrate.js';
@@ -179,10 +180,11 @@ export function showLampGame(root, { onExit } = {}) {
   }
   function finishAll() {
     cleanup();
-    if (cleared.wake && cleared.river && cleared.grand) { progress.mark('lamp'); celebrateRoom({ title: '빛의 마법사! 🪔', message: '손그림자로 빛을 다뤄 잃어버린 색을 모두 되살렸어요 — 🪔 램프 스타 획득! 조도센서(입력)와 RGB(출력)를 자유자재로 다뤘어요.', exitLabel: '전시관으로 ▶', onExit: () => onExit?.() }); }
+    if (roomCleared('lamp')) { progress.mark('lamp'); celebrateRoom({ title: '빛의 마법사! 🪔', message: '손그림자로 빛을 다뤄 잃어버린 색을 모두 되살렸어요 — 🪔 램프 스타 획득! 조도센서(입력)와 RGB(출력)를 자유자재로 다뤘어요.', exitLabel: '전시관으로 ▶', onExit: () => onExit?.() }); }
     else onExit?.();
   }
-  skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); cleared[act.key] = true; state.ended = true; state.phase = 'result'; bgm.setDuck(1); ai++; nextAct(); };
+  skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); results.record('lamp', { accuracy: 85, grade: 'A', passed: true, summary: act.name, metrics: [] });   // 스킵도 통과 기록을 남긴다 — 메달 조건이 results 기준이라 이게 없으면 스킵으로 메달이 안 나온다
+    cleared[act.key] = true; state.ended = true; state.phase = 'result'; bgm.setDuck(1); ai++; nextAct(); };
 
   function sync() { elHit.textContent = state.hits; elCombo.textContent = state.combo; elScore.textContent = state.score; }
   function burst(x, y, rgb, n = 16) { for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, s = 1.5 + Math.random() * 4.5; parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1, life: 40, rgb }); } }
