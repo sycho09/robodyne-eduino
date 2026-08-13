@@ -34,6 +34,20 @@ function render() {
 export const nav = {
   start(fn, route) { stack = [{ fn, route }]; try { history.replaceState({ d: 1 }, ''); } catch (_) {} render(); },
   push(fn, route) { stack.push({ fn, route }); try { history.pushState({ d: stack.length }, ''); } catch (_) {} render(); },
+
+  // 새로고침 복원 전용 — 스택을 통째로 세우고 맨 위 화면만 그린다.
+  // start+push 를 반복하면 중간 화면들이 실제로 렌더된다(보드 연결이 잠깐 뜨고, 허브·챕터가
+  // 순서대로 마운트됐다 버려진다). 스택에 있다는 것과 화면에 그린다는 건 다른 일이라 갈라 둔다.
+  // 히스토리 모양은 start+push 를 반복한 것과 같게 맞춘다 — 기기 뒤로가 그대로 동작해야 한다.
+  restore(entries) {
+    if (!entries.length) return;
+    stack = entries.map(({ fn, route }) => ({ fn, route }));
+    try {
+      history.replaceState({ d: 1 }, '');
+      for (let d = 2; d <= stack.length; d++) history.pushState({ d }, '');
+    } catch (_) {}
+    render();
+  },
   back(n = 1) {
     const steps = Math.min(n, stack.length - 1);
     if (steps <= 0) return;

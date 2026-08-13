@@ -151,15 +151,22 @@ function boot() {
   const trail = progress.isCleared('setup') ? readTrail() : [];
   if (!trail.length) { nav.start(scenePlatformIntro); return; }
 
-  nav.start(sceneHub, trail[0]);
-  for (const r of trail.slice(1)) {
-    const make = ROUTES[r.name];
-    if (!make) break;                       // 모르는 이름(옛 버전 등)이 나오면 거기까지만
-    nav.push(() => make(r.params || {}), r);
-  }
-  // 카루셀이 마지막에 보던 칸을 다시 잡도록 — 복원 직후엔 이 값이 비어 있다.
+  // 카루셀이 마지막에 보던 칸을 잡도록, 복원 렌더보다 먼저 채운다.
   lastChapter = trail.find((r) => r.name === 'chapter')?.params?.id ?? null;
   lastRoom = trail.find((r) => r.name === 'room')?.params?.id ?? null;
+
+  // 스택 맨 밑에 '보드 연결'을 깔아 둔다. 새로고침 전 허브의 스택은 [온보딩…, 허브]라
+  // 뒤로 버튼이 있었는데, 허브를 루트로 세우면 그 버튼만 사라진다 —
+  // 새로고침은 보던 자리를 되살리는 일이지 화면 구성을 바꾸는 일이 아니다.
+  // 온보딩 전체가 아니라 한 칸만 까는 이유: 뒤로 한 번에 직전 단계로 가면 충분하고,
+  // 인트로·로그인까지 쌓으면 빠져나오는 데 다섯 번을 눌러야 한다.
+  const entries = [{ fn: sceneSetup }];     // route 없음 = 복원 대상 아님(nav.trail 이 걸러낸다)
+  for (const r of trail) {
+    const make = ROUTES[r.name];
+    if (!make) break;                       // 모르는 이름(옛 버전 등)이 나오면 거기까지만
+    entries.push({ fn: () => make(r.params || {}), route: r });
+  }
+  nav.restore(entries);
 }
 
 window.addEventListener('DOMContentLoaded', () => { bgm.armAutostart(); preloadAssets(); boot(); });
