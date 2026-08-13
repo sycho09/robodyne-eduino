@@ -1,5 +1,7 @@
 // reportCard.js — 결과 저장 (PDF/PNG)
-// 기록실 화면 대신 A4 비율의 밝은 성적표를 생성해 저장.
+// 기록실 화면 대신 A4 비율의 밝은 기록증을 생성해 저장.
+// '성적표'가 아니라 '기록증'이다 — 점수를 매겨 평가하는 문서가 아니라
+// 무엇을 얼마나 해냈는지 남겨 주는 문서다. 파일명·제목 문구도 여기에 맞춘다.
 
 import { CHAPTERS, ROOMS } from '../content/curriculum.js';
 import { results } from './results.js';
@@ -12,11 +14,13 @@ const NO_GRADE = new Set(['basics']);
 
 const fmtDate = (ts) => new Date(ts).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
 
-// ── 성적표 DOM ────────────────────────────────────────────────────────────────
+// ── 기록증 DOM ────────────────────────────────────────────────────────────────
 export function buildReport({ playerName = '' } = {}) {
   const root = document.createElement('div');
   root.className = 'report-a4';
 
+  // 집계는 스타트 게이트(이론관)까지 포함한 무대 전체 기준 — 화면(기록실 진척 게이지),
+  // 인트로의 '학습 진척 N / 10' 과 같은 숫자여야 한다. NO_GRADE 는 등급 표기에만 쓴다.
   const rows = [];
   let cleared = 0;
   let played = 0;
@@ -28,11 +32,9 @@ export function buildReport({ playerName = '' } = {}) {
       if (!room) continue;
       const rec = results.get(rid);
       const best = rec?.best || null;
-      if (!NO_GRADE.has(rid)) {
-        total += 1;
-        if (progress.isCleared(rid)) cleared += 1;
-        if (rec) played += 1;
-      }
+      total += 1;
+      if (progress.isCleared(rid)) cleared += 1;
+      if (rec) played += 1;
       rows.push({ chapter: ch, room, rec, best });
     }
   }
@@ -40,17 +42,17 @@ export function buildReport({ playerName = '' } = {}) {
   root.innerHTML = `
     <header class="report-head">
       <div class="report-brand">Eduino AI · 미니게임천국</div>
-      <h1 class="report-title">플레이 성적표</h1>
+      <h1 class="report-title">성취도 기록증</h1>
       <dl class="report-meta">
         <div><dt>이름</dt><dd>${playerName ? esc(playerName) : '<span class="report-blank"></span>'}</dd></div>
         <div><dt>발급일</dt><dd>${fmtDate(Date.now())}</dd></div>
-        <div><dt>진행</dt><dd>미니게임 ${total}개 중 <strong>${cleared}개</strong> 클리어 · ${played}개 플레이</dd></div>
+        <div><dt>진행</dt><dd>무대 ${total}개 중 <strong>${cleared}개</strong> 클리어 · ${played}개 플레이</dd></div>
       </dl>
     </header>
 
     <table class="report-table">
       <thead>
-        <tr><th class="c-stage">무대</th><th class="c-name">미니게임</th><th class="c-grade">등급</th><th class="c-detail">세부 기록</th><th class="c-try">시도</th></tr>
+        <tr><th class="c-stage">무대</th><th class="c-name">미니게임</th><th class="c-grade">등급</th><th class="c-detail">세부 기록</th></tr>
       </thead>
       <tbody>
         ${rows.map(rowHtml).join('')}
@@ -65,6 +67,9 @@ export function buildReport({ playerName = '' } = {}) {
   return root;
 }
 
+// 시도 횟수는 적지 않는다 — 등급이 '최고 기록' 기준이라 나란히 놓으면
+// '이 등급까지 N번 걸렸다'는 대비가 생기고, 기록증이 아이들끼리 비교되는 물건이 된다.
+// results 에는 attempts 가 계속 쌓이므로 필요해지면 언제든 되살릴 수 있다.
 function rowHtml({ chapter, room, rec, best }) {
   if (!rec || !best) {
     return `<tr class="is-empty">
@@ -72,7 +77,6 @@ function rowHtml({ chapter, room, rec, best }) {
       <td>${esc(room.name)}</td>
       <td class="c-grade"><span class="g g-none">–</span></td>
       <td class="c-detail">아직 플레이하지 않았어요</td>
-      <td class="c-try">–</td>
     </tr>`;
   }
   const displayMetrics = best.metrics.filter(m => m.label !== '최고 콤보');
@@ -87,7 +91,6 @@ function rowHtml({ chapter, room, rec, best }) {
     <td>${esc(room.name)}</td>
     <td class="c-grade">${grade}</td>
     <td class="c-detail">${detail}</td>
-    <td class="c-try">${rec.attempts}회</td>
   </tr>`;
 }
 
@@ -137,14 +140,14 @@ export async function saveAsPng(opts) {
     const url = canvas.toDataURL('image/png');
     const a = document.createElement('a');
     a.href = url;
-    a.download = `미니게임천국_성적표_${new Date().toISOString().slice(0, 10)}.png`;
+    a.download = `미니게임천국_성취도기록증_${new Date().toISOString().slice(0, 10)}.png`;
     a.click();
   } finally {
     unmount();
   }
 }
 
-// ── 스타일 (성적표 전용 · 앱 화면과 분리) ──────────────────────────────────────
+// ── 스타일 (기록증 전용 · 앱 화면과 분리) ──────────────────────────────────────
 let styled = false;
 function ensureStyles() {
   if (styled) return;
@@ -174,7 +177,6 @@ function ensureStyles() {
 .report-table .c-stage { color: #78716c; width: 108px; }
 .report-table .c-name { font-weight: 700; width: 158px; }
 .report-table .c-grade { width: 56px; text-align: center; }
-.report-table .c-try { width: 54px; text-align: right; color: #78716c; }
 .report-table .c-detail { color: #44403c; }
 .report-table tr.is-empty td { color: #a8a29e; }
 

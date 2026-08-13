@@ -29,7 +29,7 @@ function save() {
   try { window.dispatchEvent(new CustomEvent(EVT)); } catch {}
 }
 
-// 지표는 [{ label, value }] 형태로만 받는다 — 기록실과 성적표가 게임 종류를 몰라도 그릴 수 있게.
+// 지표는 [{ label, value }] 형태로만 받는다 — 기록실과 기록증이 게임 종류를 몰라도 그릴 수 있게.
 function normalizeMetrics(list) {
   if (!Array.isArray(list)) return [];
   return list

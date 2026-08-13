@@ -42,10 +42,12 @@ export function showPlatformIntro(root, { onDone } = {}) {
 
   const el = root.querySelector('#pintro');
 
-  // 로고와 함께 학습 진척 표시(돌아온 사용자)
+  // 로고와 함께 진척 표시(돌아온 사용자)
+  // '클리어'라는 말은 허브 버튼·기록실·기록증과 같은 값을 가리킨다 — 같은 숫자를 네 군데서
+  // 다른 말로 부르면 보는 쪽이 매번 같은 건지 판단해야 한다.
   const oc = overallCleared(), ot = overallTotal(), op = overallPercent();
   if (oc > 0) el.querySelector('#pi-prog').innerHTML =
-    `<div class="pi-prog-bar"><i style="width:${op}%"></i></div><span>학습 진척 ${oc} / ${ot} · ${op}%</span>`;
+    `<div class="pi-prog-bar"><i style="width:${op}%"></i></div><span>클리어 ${oc} / ${ot} · ${op}%</span>`;
 
   // (카드 없을 때) 추상 배경 이미지가 있으면 적용
   const bgProbe = new Image();
