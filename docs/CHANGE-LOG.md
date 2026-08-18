@@ -10,6 +10,7 @@
 src/
 ├─ app/
 │   ├─ results.js       [신규]  결과 저장 (등급 · 정확도 · 단계별 최고 기록 · 도전 횟수)
+│   ├─ achievement.js   [신규]  단계·메달 표기 규칙 (기록실·기록증이 공유)
 │   ├─ reportCard.js    [신규]  기록증 이미지(A4 PNG) 생성
 │   ├─ icons.js         [신규]  SVG 아이콘 36종 (Lucide 30 + 자체 6)
 │   ├─ progress.js              방별 메달 도장

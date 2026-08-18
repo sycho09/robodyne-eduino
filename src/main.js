@@ -27,8 +27,7 @@ const app = () => document.getElementById('app');
 let lastChapter = null;   // HUB 복귀 시 들어갔던 게이트 앞
 let lastRoom = null;      // 챕터 복귀 시 나온 방 앞
 
-// 청크를 받는 동안 화면이 비어 보이지 않게 한다. 대개 즉시 끝나므로(캐시·프리페치)
-// 220ms 넘게 걸릴 때만 표시해 깜빡임을 만들지 않는다.
+// 220ms 넘게 걸릴 때만 인디케이터를 띄운다 — 대개 캐시·프리페치라 즉시 끝나서 깜빡임만 남는다.
 async function mountLazy(key, opts) {
   const host = app();
   let spinner = null;
@@ -124,9 +123,7 @@ if (DEV_TOOLS) {
 }
 
 // ── 새로고침 복원 ────────────────────────────────────────────────────────────
-// nav 스택은 메모리에만 있어서, 예전엔 어느 화면에서 새로고침해도 인트로로 튕겼다.
-// 화면 함수는 클로저라 저장할 수 없으므로 '이름 + 인자'만 남기고 여기서 다시 만든다.
-// 탭을 닫으면 잊는 게 맞아서 sessionStorage 를 쓴다(다음에 열면 처음부터).
+// 화면 함수는 클로저라 저장할 수 없어 '이름 + 인자' 만 남기고 여기서 다시 만든다(sessionStorage).
 const ROUTE_KEY = 'eduino.route.v1';
 const ROUTES = {
   hub: () => sceneHub(),
@@ -155,11 +152,7 @@ function boot() {
   lastChapter = trail.find((r) => r.name === 'chapter')?.params?.id ?? null;
   lastRoom = trail.find((r) => r.name === 'room')?.params?.id ?? null;
 
-  // 스택 맨 밑에 '보드 연결'을 깔아 둔다. 새로고침 전 허브의 스택은 [온보딩…, 허브]라
-  // 뒤로 버튼이 있었는데, 허브를 루트로 세우면 그 버튼만 사라진다 —
-  // 새로고침은 보던 자리를 되살리는 일이지 화면 구성을 바꾸는 일이 아니다.
-  // 온보딩 전체가 아니라 한 칸만 까는 이유: 뒤로 한 번에 직전 단계로 가면 충분하고,
-  // 인트로·로그인까지 쌓으면 빠져나오는 데 다섯 번을 눌러야 한다.
+  // 스택 맨 밑에 '보드 연결' 한 칸만 깐다 — 허브를 루트로 세우면 뒤로 버튼만 사라진다.
   const entries = [{ fn: sceneSetup }];     // route 없음 = 복원 대상 아님(nav.trail 이 걸러낸다)
   for (const r of trail) {
     const make = ROUTES[r.name];

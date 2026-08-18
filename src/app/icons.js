@@ -1,43 +1,11 @@
-// icons.js — 이론관·서비스 크롬 UI 아이콘 세트(인라인 SVG).
-//
-// 왜 이모지를 안 쓰나:
-//   1) 이모지는 OS·브라우저마다 다른 글립으로 그려진다. Windows(Segoe)에서 보고 만든 화면이
-//      학교 크롬북·맥·태블릿에서는 다른 그림이 된다 — 배포물 품질이 기기마다 흔들린다.
-//   2) 디테일이 많아 원거리(빔프로젝터 3~5m)에서 뭉개진다. 시인성의 무기는
-//      '굵은 스트로크 + 단순한 실루엣'인데 이모지는 그걸 통제할 수 없다.
-//
-// 어디까지 바꾸나 — 역할로 자른다:
-//   · UI 크롬(탭·버튼·토글·카드 헤더)은 아이콘. 화면마다 반복 등장하므로 기기별 편차가 그대로 품질로 보인다.
-//   · 문장 속 장식 이모지(✨ 🎶 💪)는 그대로 둔다. 다색인 게 본질이라 단색 스트로크로는 의미가 안 남고,
-//     기능이 아니라 문장부호에 가깝다. 초등 대상 톤을 만드는 요소이기도 하다.
-//   · 캔버스(ctx.fillText)는 SVG 자체가 불가능하다 — 이미지로 가야 한다.
-//
-// 도형은 어디서 오나 — 출처가 아니라 '제도 규격'으로 통일한다:
-//   · 표준 도형은 Lucide(ISC)에서 가져온다. 작은 크기 인식률이 이미 검증된 도형이라,
-//     직접 그렸을 때의 '품질 하한이 없다'는 위험이 사라진다.
-//   · 이 제품 고유 개념(robot·board·brain·press·motor·digital)만 직접 그린다. 실제로 래스터화해
-//     비교한 결과 이 6종은 우리 크기(21~29px)와 우리 의미에서 Lucide 대응물보다 나았다:
-//       press  — Lucide 는 마우스 커서다. 실물 버튼 누르기엔 손가락이 맞다
-//       digital— Lucide square-activity 는 네모 안 물결이지 사각파가 아니다
-//       motor  — Lucide cog 는 안쪽 스포크가 21px 에서 뭉갠다
-//       board·brain — Lucide 쪽이 80px 에선 풍부하지만 21~29px 에선 더 뭉갠다
-//       robot  — 거의 동등. 안테나가 또렷한 쪽을 골랐다
-//   · 규격은 양쪽 다 viewBox 24 · fill:none · round cap/join 으로 같다. 스트로크만 원거리
-//     시인성 때문에 2.0 → ${STROKE} 로 올려 우리 값으로 통일한다.
-//
-// ⚠️ 아래 라이선스 고지는 `/*!` 형식이라 빌드(esbuild minify)에서 살아남는다.
-//    ISC·MIT 는 '사본에 고지를 포함할 것'이 유일한 조건이라, 일반 `//` 주석으로 바꾸면
-//    번들에서 지워져 조건을 못 지킨다. 전문은 public/THIRD-PARTY-LICENSES.txt.
-//
-// 색은 currentColor 로 상속받는다 — 탭 활성/비활성 같은 상태 변화가 CSS 만으로 따라온다.
-//
-// 되돌리기: 아래 USE_SVG 를 false 로 두면 FALLBACK 이모지가 그대로 나와 원본 화면으로 돌아간다.
-//           (나란히 놓고 비교할 때 쓰라고 남겨둔 스위치다.)
+// icons.js — 이론관·크롬 UI 아이콘(인라인 SVG). 이모지는 기기마다 글립이 달라 원거리에서 뭉갠다.
+// UI 크롬만 바꾸고 문장 속 장식 이모지·캔버스는 그대로 둔다 — 근거는 docs/THEORY-LEGIBILITY-PASS.md.
+// 배포물에서 ISC·MIT 조건을 지키는 것은 public/THIRD-PARTY-LICENSES.txt 다 — 빌드가 아래 고지는 지운다.
 
 /*! Lucide Icons — ISC License · Copyright (c) 2026 Lucide Icons and Contributors · https://lucide.dev
  *  일부 도형은 Feather 파생 — MIT License · Copyright (c) 2013-present Cole Bemis
  *  전문: public/THIRD-PARTY-LICENSES.txt */
-export const USE_SVG = true;
+const USE_SVG = true;   // false 로 두면 FALLBACK 이모지로 완전 복귀(A/B 비교용)
 
 const STROKE = 2.3;          // 24 viewBox 기준 — 원거리에서 형태가 남는 최소 굵기
 const DOT = (cx, cy, r) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="currentColor" stroke="none"/>`;

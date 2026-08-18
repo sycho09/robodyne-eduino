@@ -1,14 +1,11 @@
 // records.js — 기록실 (내 기록 보관함, 실시간 갱신 UI)
 
-import {
-  CHAPTERS, ROOMS, overallCleared, overallTotal, overallPercent,
-  roomStages, allRoomIds, isRoomCleared,
-} from '../content/curriculum.js';
+import { CHAPTERS, ROOMS, overallCleared, overallTotal, overallPercent, allRoomIds } from '../content/curriculum.js';
 import { results, PASS_GRADE } from '../app/results.js';
 import { saveAsPng } from '../app/reportCard.js';
+import { stageList, gradeText, gradeKey, hasMedal, esc } from '../app/achievement.js';
 
-// 등급 대신 '수료'로 표시하는 방 (이론 과정)
-const NO_GRADE = new Set(['basics']);
+const DASH = '-';
 
 export function showRecords(host, { onPlay } = {}) {
   ensureStyles();
@@ -135,7 +132,7 @@ function roomCells() {
   return allRoomIds().map((id) => {
     const room = ROOMS[id];
     if (!room) return '';
-    return `<li class="${isRoomCleared(id) ? 'is-got' : ''}" title="${esc(room.name)} · ${esc(room.reward || '')}">
+    return `<li class="${hasMedal(room) ? 'is-got' : ''}" title="${esc(room.name)} · ${esc(room.reward || '')}">
       <span class="rs-medal">${firstEmoji(room.reward)}</span>
     </li>`;
   }).join('');
@@ -145,26 +142,6 @@ function roomCells() {
 // 변이 선택자(🎚️)와 ZWJ 조합은 한 글자로 붙잡고, 새로 시작하는 별개 이모지에서 끊는다.
 const firstEmoji = (s) =>
   (String(s || '').match(/^\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*/u) || ['🏅'])[0];
-
-// ── 단계·메달 (두 배치가 같이 쓴다) ───────────────────────────────────────────
-// 단계별 등급 목록. 안 해 본 단계도 '-' 로 자리를 남겨 몇 단계짜리인지가 같이 읽힌다.
-// 이론관은 등급을 안 매기므로 번호 없이 '수료' 한 칸으로 끝낸다.
-function stageList(room) {
-  if (NO_GRADE.has(room.id)) {
-    const done = results.has(room.id);
-    return [{ no: null, name: '', grade: done ? '수료' : '-', attr: done ? 'done' : 'none' }];
-  }
-  return roomStages(room.id).map((s, i) => ({
-    no: i + 1,
-    name: s?.name || '',
-    grade: s ? s.grade : '-',
-    attr: s ? s.grade : 'none',
-  }));
-}
-
-// 방마다 다른 reward 이모지가 아니라 공통 🏅 — 이름 칸에 이미 그 방 아이콘이 있어
-// 같은 그림이 한 줄에 두 번 나온다. 고유 아이콘은 진열장(roomCells)에 몰아 준다.
-const hasMedal = (room) => isRoomCleared(room.id);
 
 // ── 카드 배치 ────────────────────────────────────────────────────────────────
 function sectionHtml(ch) {
@@ -195,7 +172,7 @@ const STAGE_NO = ['①', '②', '③', '④', '⑤'];
 
 function cardBadges(room) {
   const chips = stageList(room).map((s) =>
-    `<span class="rc-sb" title="${esc(s.name)}">${s.no ? `<i>${STAGE_NO[s.no - 1] || s.no}</i>` : ''}<b data-grade="${esc(s.attr)}">${esc(s.grade)}</b></span>`).join('');
+    `<span class="rc-sb" title="${esc(s.name)}">${s.no ? `<i>${STAGE_NO[s.no - 1] || s.no}</i>` : ''}<b data-grade="${gradeKey(s.grade)}">${esc(gradeText(s.grade, DASH))}</b></span>`).join('');
   return `<div class="rc-badges">${chips}</div>`;
 }
 
@@ -216,7 +193,7 @@ function mockHtml() {
 function mockSection(ch) {
   const rooms = roomsOf(ch);
   // 한 무대 안에서는 단계 수가 같지만, 최댓값으로 잡아야 한 방만 늘어도 열이 안 모자란다.
-  const cols = Math.max(1, ...rooms.map((r) => roomStages(r.id).length));
+  const cols = Math.max(1, ...rooms.map((r) => stageList(r).length));
   const head = `${esc(ch.short || ch.name)} ${MOCK_SUFFIX[ch.id] || '성취도'}`;
 
   const table = `
@@ -257,9 +234,9 @@ function mockRow(room, cols) {
 function stageCells(room, cols) {
   const list = stageList(room);
   return Array.from({ length: cols }, (_, i) => {
-    const s = list[i] || { name: '', grade: '-', attr: 'none' };
+    const s = list[i] || { name: '', grade: null };
     const title = s.name ? ` title="${esc(s.name)}"` : '';
-    return `<td class="mk-gr"${title}><span data-grade="${esc(s.attr)}">${esc(s.grade)}</span></td>`;
+    return `<td class="mk-gr"${title}><span data-grade="${gradeKey(s.grade)}">${esc(gradeText(s.grade, DASH))}</span></td>`;
   }).join('');
 }
 
@@ -316,8 +293,6 @@ export const recordsEntry = {
   },
   hide() { if (entryBtn) entryBtn.hidden = true; },
 };
-
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 // ── 스타일 ───────────────────────────────────────────────────────────────────
 let styled = false;
