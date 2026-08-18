@@ -21,8 +21,7 @@ export function showRecords(host, { onPlay } = {}) {
 
   let unsubscribe = null;
 
-  // [임시] 좌하단 패널로 갈아 끼우는 A/B 상태. 배치 넷은 두 쌍이고, 쌍 안에서는 마크업이 같고
-  // 판 색만 다르다(1 = 다크 판 + 챕터색, 2 = 흰 기 도는 평평한 판).
+  // [임시] 좌하단 패널로 갈아 끼우는 A/B 상태.
   // 조합을 정하면 이 상태와 abPanel(), 안 고른 [data-card=…]/[data-layout=…] 규칙을 지운다.
   const view = { card: 'dark', layout: 'split' };
 
@@ -54,8 +53,7 @@ export function showRecords(host, { onPlay } = {}) {
 }
 
 // ── 마크업 ───────────────────────────────────────────────────────────────────
-// 표 판을 쓰는 배치 — 마크업 한 벌(mockHtml)을 나눠 쓰고 색만 CSS 에서 갈린다.
-const DECK_LAYOUTS = new Set(['mock', 'table']);
+
 
 function template(view) {
   return `
@@ -76,7 +74,7 @@ function template(view) {
     </div>
 
     <div class="records-content">
-      ${DECK_LAYOUTS.has(view.layout)
+      ${view.layout === 'table'
         ? mockHtml()
         : CHAPTERS.map(sectionHtml).join('') + summaryHtml()}
     </div>
@@ -165,7 +163,7 @@ function abPanel(view) {
       </div>
       <div class="records-seg" role="group" aria-label="배치">
         <span class="records-seg-label">배치</span>
-        ${seg('layout', [['split', '카드1'], ['split2', '카드2'], ['table', '표1'], ['mock', '표2']])}
+        ${seg('layout', [['split', '카드'], ['table', '표']])}
       </div>
     </div>`;
 }
@@ -192,7 +190,7 @@ function sectionHtml(ch) {
     </section>`;
 }
 
-// ── 표 판 배치(표1·표2 공용) ──────────────────────────────────────────────────
+// ── 표 배치 ──────────────────────────────────────────────────────────────────
 const MOCK_SUFFIX = { ch4: '명예의 전당' };   // 나머지 무대는 '성취도'
 
 function mockHtml() {
@@ -225,8 +223,6 @@ function mockSection(ch) {
   // 한 무대 안에서는 단계 수가 같지만, 최댓값으로 잡아야 한 방만 늘어도 열이 안 모자란다.
   const cols = Math.max(1, ...rooms.map((r) => roomStages(r.id).length));
 
-  // 챕터색은 '표' 배치에서만 쓴다(시안은 평평한 판이라 이 값을 안 읽는다) — 두 배치가
-  // 마크업 한 벌을 나눠 쓰므로, 색을 쓰는 쪽에 맞춰 변수만 늘 실어 둔다.
   return `
     <section class="mk-stage" style="${chVars(ch.id)}">
       <h2 class="mk-head">
@@ -410,9 +406,7 @@ function ensureStyles() {
   el.textContent = `
 .records {
   --ink: #f5f3ff; --dim: #a5a0c0; --line: rgba(255,255,255,.2);
-  /* 판 크기의 기준값 — 시안 배치에서 정했고, 표 배치도 이걸 받아 쓴다.
-     전체 폭과 두 단 사이 홈을 같이 잡아야 한 열 폭(= (1180 - 32) / 2 = 574px)이 맞는다.
-     둘 중 하나만 맞추면 배치를 오갈 때 판이 몇 px 씩 어긋나 보인다. */
+  /* 판 크기의 기준값 — 전체 폭과 두 단 사이 홈을 같이 잡아야 한 열 폭이 574px 로 맞는다. */
   --deck-w: 1180px; --deck-gap: 32px;
   position: absolute; inset: 0; overflow-y: auto; z-index: 50;
   padding: 40px 24px 120px; color: var(--ink);
@@ -494,21 +488,17 @@ function ensureStyles() {
    좌/우를 고정 분할하지 않는 이유: 무대별 방 수가 1·6·2·1 로 크게 기울어 있어서
    반씩 자르면 한쪽만 길어진다. 단 흘림(column)은 높이가 알아서 맞물리고,
    나중에 방이 늘거나 줄어도 분할 지점을 다시 잡을 필요가 없다.
-   column-count 를 기본값이 아니라 배치 스코프에 두는 이유: 표·시안 배치도 .records-content 를
-   쓰는데, 거기는 안쪽이 .mk-cols 격자라 단 흘림이 걸리면 격자가 단에 잘려 깨진다. */
-.records[data-layout^="split"] .records-content { max-width: 1380px; column-count: 2; column-gap: 24px; }
-.records[data-layout^="split"] .records-stage {
+   column-count 를 배치 스코프에 두는 이유: 표 배치도 .records-content 를 쓰는데 거기는
+   안쪽이 .mk-cols 격자라, 단 흘림이 걸리면 격자가 단에 잘려 깨진다. */
+.records[data-layout="split"] .records-content { max-width: 1380px; column-count: 2; column-gap: 24px; }
+.records[data-layout="split"] .records-stage {
   /* inline-block + width:100% 는 단 안에서 break-inside 가 확실히 먹게 하는 조합이다. */
   display: inline-block; width: 100%; break-inside: avoid; margin-bottom: 24px;
 }
 
-/* ── [배치] 시안 · 표 공통 판 ─────────────────────────────────────────────────
-   시안(mock)과 표(table)는 여기 있는 .mk* 한 벌을 그대로 나눠 쓴다 — 구조·치수·열 분배·
-   헤더 이름·글자 크기가 전부 같다. 갈리는 건 색뿐이고, 그건 아래 [표] 블록에 몰아 뒀다.
-   여기 값은 시안 기준(평평한 회보라 판, 고정색)이라 --rc-rgb 를 안 읽는다.
+/* ── [배치] 표 ────────────────────────────────────────────────────────────────
    한 열 574px — 가장 긴 방 이름이 nowrap 으로 들어가고(표 최소폭 약 510px),
    나의 진척의 등급 6칸도 칸당 85px 로 여유가 남는 선이다. 값은 .records 의 --deck-* 에 있다. */
-.records[data-layout="mock"] .records-content,
 .records[data-layout="table"] .records-content { max-width: var(--deck-w); }
 .mk-cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--deck-gap); align-items: start; }
 .mk-col { display: flex; flex-direction: column; gap: 34px; }
@@ -519,37 +509,41 @@ function ensureStyles() {
 }
 .mk-head-icon { font-size: 21px; }
 
-/* 판은 어두운 색을 깐 게 아니라 '흰 기가 도는 반투명 막'이다 — 시안의 패널이 배경보다
-   밝고 회보라빛인 게 그래서고, 패널마다 톤이 미세하게 다른 것도 뒤가 비쳐서다.
-   어두운 색으로 채우면 배경보다 어두워져 시안과 정반대가 된다.
-   막의 알파가 곧 불투명도다: .085 는 배경이 91.5% 그대로 올라와 판이 배경색에 물들었다.
-   .16 이면 배경이 84% 비쳐 유리 느낌은 남기면서 판의 경계가 선다. 더/덜은 이 값 하나만 만지면 된다. */
-.mk-panel {
+/* 무대 표 판과 진척 판은 같은 옷을 입는다 — 나란히 놓이므로 톤이 다르면 한쪽만 뜬다.
+   모서리는 10px 로 맞춘다(.rs 기본값 14px 을 그대로 두면 옆 표와 둥글기가 어긋난다). */
+.mk-panel, .mk-stage .rs {
   border-radius: 10px; overflow: hidden;
-  background: rgba(236, 232, 245, .16);
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,.13);
+  background: var(--deck-fill);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(var(--rc-rgb), .5);
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+}
+/* '강화' 쪽에서는 카드와 같은 만큼 테두리·글로우를 올린다(원본과 차이가 보이게). */
+.records[data-card="dark"] .mk-panel,
+.records[data-card="dark"] .mk-stage .rs {
+  border-color: rgba(var(--rc-rgb), .75);
+  box-shadow: 0 10px 34px rgba(0,0,0,.5), 0 0 20px rgba(var(--rc-rgb), .18);
 }
 .mk { width: 100%; border-collapse: collapse; font-size: 13px; }
 /* 머리 행은 판 위에 한 겹 더 얹히므로, 판(.16)에 더해진 값이 이 행의 밝기다.
    배경보다는 밝아야 머리 행으로 읽히고(어둡게 깔면 배경에 잠겨 띠가 아니라 구멍처럼 보인다),
    그렇다고 예전 .14(겹치면 약 .28)까지 올리면 그 위의 밝은 글자가 묻힌다.
    .09 면 겹쳐서 약 .24 — 판보다 한 단 밝아 띠로 갈리면서 글자는 살아 있다. */
-.mk thead tr { background: rgba(255,255,255,.09); }
+.mk thead tr { background: rgba(255,255,255,.05); }
 .mk th {
   /* 바탕이 눌린 만큼 글자는 그대로 둔다 — #9b93a8 은 이 바탕에서 2.3:1 까지 떨어진다. */
-  padding: 12px 14px; text-align: center; font-size: 11.5px; font-weight: 600; color: #c8c1d4;
+  padding: 12px 14px; text-align: center; font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,.45);
 }
 .mk th:first-child { text-align: left; }
-.mk td { padding: 11px 14px; text-align: center; color: #b8b0c4; border-top: 1px solid rgba(255,255,255,.05); }
+.mk td { padding: 11px 14px; text-align: center; color: rgba(255,255,255,.6); border-top: 1px solid rgba(255,255,255,.07); }
 .mk tbody tr:first-child td { border-top: 0; }
 /* 한 행에 마우스를 올리면 그 줄만 밝아진다 — 방이 여섯인 무대가 있어 눈이 가로로 미끄러진다.
-   시안 판은 흰 막이라 표(.04)보다 조금 더 올려야 같은 만큼 눈에 띈다. */
-.mk tbody tr:hover { background: rgba(255,255,255,.07); }
+*/
+.mk tbody tr:hover { background: rgba(255,255,255,.04); }
 
 /* td 선택자(.mk td)가 가운데 정렬을 걸어 두므로, 이름 칸은 같은 무게(td.mk-name)로 받아야
    왼쪽 정렬이 먹는다. .mk-name 만으로는 구체성이 한 단 낮아 가운데로 끌려간다. */
-.mk td.mk-name { text-align: left; color: #e8e4ef; font-weight: 600; white-space: nowrap; }
+.mk td.mk-name { text-align: left; color: #fff; font-weight: 600; white-space: nowrap; }
 /* 표가 내용보다 넓으면 auto 레이아웃은 남는 폭을 열 크기에 비례해 나눠 준다 — 타이틀 열이
    제일 넓으니 남는 폭도 제일 많이 먹고, 그게 통째로 이름 뒤 빈칸이 되어 옆 열을 밀어낸다.
    width:1% 로 '이 열은 최소만' 이라 못 박는다. nowrap 이라 최소폭이 곧 이름 길이라
@@ -570,27 +564,17 @@ function ensureStyles() {
 .mk-medal-none { opacity: .5; }
 
 .mk-act { width: 132px; }
+/* 평소엔 표 글자와 같은 톤으로 눌러 둔다 — 기록 유무로도 안 가른다. 행마다 색이 다른 버튼이
+   세로로 늘어서면 눈이 거기부터 읽어서 정작 기록이 안 보인다.
+   무대 챕터색은 마우스를 올린 한 행에서만 올라온다 — '지금 누르는 건 이 무대' 라는 신호로만 쓴다. */
 .mk-btn {
   padding: 7px 12px; border-radius: 7px; cursor: pointer; white-space: nowrap;
-  font-size: 12px; font-weight: 700; background: transparent;
-  border: 1px solid rgba(150,130,220,.5); color: #b8a8e0;
-  transition: background .15s, border-color .15s;
+  font-size: 12px; font-weight: 700;
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.16); color: rgba(255,255,255,.6);
+  transition: background .15s, border-color .15s, color .15s;
 }
-.mk-btn:hover { background: rgba(150,130,220,.16); border-color: rgba(150,130,220,.9); }
-/* 기록이 있는 방은 금색 — 시안에서 '다시 도전'만 다른 색을 쓴다. */
-.mk-btn.is-again { border-color: rgba(212,168,67,.6); color: #e8c96a; }
-.mk-btn.is-again:hover { background: rgba(212,168,67,.16); border-color: rgba(212,168,67,1); }
-
-/* 진척 요약도 표와 같은 판으로 — .mk-stage 를 끼워 [data-card] 쪽 .rs 규칙(챕터색 글로우)보다
-   구체성을 한 단 높인다. 그 규칙이 이 아래에 있어 순서로는 못 이긴다. */
-/* 값은 위 .mk-panel 과 같아야 한다 — 나란히 놓이는 두 판이라 한쪽만 투명하면 그것만 묽어 보인다.
-   (판 불투명도를 .085 → .16 으로 올릴 때 표 판만 올리고 여기를 빠뜨려 실제로 그렇게 됐었다.) */
-.records[data-layout="mock"] .mk-stage .rs {
-  border-radius: 10px;
-  background: rgba(236, 232, 245, .16);
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,.13);
-  box-shadow: none;
+.mk-btn:hover {
+  background: rgba(var(--rc-rgb), .3); border-color: rgba(var(--rc-rgb), .9); color: #fff;
 }
 
 /* 진척 요약 판 — 카드 배치가 쓰는 톤. 무대 카드 묶음과 바로 나란히 놓이므로
@@ -601,53 +585,6 @@ function ensureStyles() {
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(var(--rc-rgb), .5);
   box-shadow: 0 8px 32px rgba(0,0,0,.4);
-}
-
-/* ── [배치] 표 = 시안의 판 + 표의 색 ─────────────────────────────────────────
-   구조·치수·열 분배·헤더 이름·글자 크기는 위 .mk* 한 벌을 그대로 받는다.
-   시안과 갈리는 건 이 블록이 전부고, 전부 색이다:
-     · 판 바탕 — 시안의 흰 기 도는 막 대신, 표가 쓰던 다크그레이 그라데이션
-     · 표 안 톤 — 머리 행·글자·구분선 모두 표가 쓰던 값
-     · 테두리 · 글로우 · 버튼 — 무대 챕터색(노랑·핑크·파랑·보라)
-   판 모서리(10px)만 시안 값을 따른다 — .rs 의 14px 을 그대로 두면 옆에 놓인
-   무대 표와 둥글기가 달라져 한 벌로 안 보인다. */
-.records[data-layout="table"] .mk-panel,
-.records[data-layout="table"] .mk-stage .rs {
-  border-radius: 10px;
-  background: var(--deck-fill);
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(var(--rc-rgb), .5);
-  box-shadow: 0 8px 32px rgba(0,0,0,.4);
-}
-/* '강화' 쪽에서는 카드와 같은 만큼 테두리·글로우를 올린다(원본과 차이가 보이게). */
-.records[data-card="dark"][data-layout="table"] .mk-panel,
-.records[data-card="dark"][data-layout="table"] .mk-stage .rs {
-  border-color: rgba(var(--rc-rgb), .75);
-  box-shadow: 0 10px 34px rgba(0,0,0,.5), 0 0 20px rgba(var(--rc-rgb), .18);
-}
-
-/* 표 안 톤 — 바탕이 어두워진 만큼 시안의 회보라 글자(#c8c1d4·#b8b0c4) 대신 흰 계열로 간다. */
-.records[data-layout="table"] .mk thead tr { background: rgba(255,255,255,.05); }
-.records[data-layout="table"] .mk th { color: rgba(255,255,255,.45); }
-.records[data-layout="table"] .mk td { color: rgba(255,255,255,.6); border-top-color: rgba(255,255,255,.07); }
-.records[data-layout="table"] .mk td.mk-name { color: #fff; }
-.records[data-layout="table"] .mk tbody tr:hover { background: rgba(255,255,255,.04); }
-
-/* 버튼은 평소엔 표 글자와 같은 톤으로 눌러 둔다 — 기록 유무로도 안 가른다.
-   행마다 색이 다른 버튼이 세로로 늘어서면 눈이 거기부터 읽어서 정작 기록이 안 보인다.
-   무대 챕터색은 마우스를 올린 한 행에서만 올라온다 — '지금 누르는 건 이 무대' 라는 신호로만 쓴다. */
-.records[data-layout="table"] .mk-btn,
-.records[data-layout="table"] .mk-btn.is-again {
-  background: rgba(255,255,255,.06);
-  border-color: rgba(255,255,255,.16);
-  color: rgba(255,255,255,.6);
-  transition: background .15s, border-color .15s, color .15s;
-}
-.records[data-layout="table"] .mk-btn:hover,
-.records[data-layout="table"] .mk-btn.is-again:hover {
-  background: rgba(var(--rc-rgb), .3);
-  border-color: rgba(var(--rc-rgb), .9);
-  color: #fff;
 }
 
 /* 등급색 — 카드의 도장과 표의 등급 칸이 [data-grade] 하나로 같은 값을 쓴다. */
@@ -734,38 +671,6 @@ function ensureStyles() {
   box-shadow: 0 16px 44px rgba(0,0,0,.55), 0 0 30px rgba(var(--rc-rgb), .42), inset 0 1px 0 rgba(255,255,255,.1);
 }
 
-/* ── [배치] 카드2 — 표2 와 같은 평평한 판 ────────────────────────────────────
-   구조·치수·반응형은 카드1 과 한 벌을 쓰고([data-layout^="split"]) 여기서는 판 색만 갈아 끼운다.
-   값은 표2 의 .mk-panel 과 같다 — 두 배치가 같은 '흰 기 도는 막' 이어야 나란히 놓고 고를 수 있다.
-   li.rc 로 잡는 이유: 위 [data-card] 규칙과 클래스 수가 같아 순서에 기대게 되는데,
-   요소 하나(li)를 더해 두면 규칙이 어디로 옮겨가도 이 값이 이긴다. */
-.records[data-layout="split2"] li.rc {
-  background: rgba(236, 232, 245, .16);
-  border-color: rgba(255,255,255,.13);
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  box-shadow: none;
-}
-/* 평평한 판이라 글로우로 뜨게 할 수 없다 — 막을 한 겹 더 얹고 테두리만 세운다. */
-.records[data-layout="split2"] li.rc:hover,
-.records[data-layout="split2"] li.rc:focus-visible {
-  background: rgba(236, 232, 245, .22);
-  border-color: rgba(255,255,255,.28);
-}
-/* 진척 판과 진열장도 같이 평평하게 — 카드와 나란히 놓이는 판이라 톤이 달라지면 그것만 뜬다.
-   빈 칸은 반대로 어둡게: 흰 막 위에 흰 칸을 얹으면 경계가 녹는다(표2 에서 겪은 것과 같다).
-   div.rs 로 잡는 이유는 li.rc 와 같다 — 아래 .records[data-card="dark"] .rs 와 클래스 수가 같아
-   순서로만 이기게 되는데, 그 규칙이 이 아래에 있어서 실제로 졌다(카드2 에서 '강화' 를 누르면
-   진척 판만 초록 테두리·글로우가 새어 나왔다). 요소 하나를 더해 순서와 무관하게 이기게 한다. */
-.records[data-layout="split2"] div.rs {
-  background: rgba(236, 232, 245, .16);
-  border-color: rgba(255,255,255,.13);
-  box-shadow: none;
-}
-.records[data-layout="split2"] .rs-rooms li:not(.is-got) {
-  background: rgba(28, 22, 44, .16);
-  border-color: rgba(255,255,255,.14);
-}
-
 /* 요약 패널도 '강화'에서는 카드와 같은 만큼 테두리·글로우를 올린다(원본과 차이가 보이게).
    표 배치의 판은 위 [배치] 표 블록에서 따로 올린다 — 거기가 구체성이 한 단 높다. */
 .records[data-card="dark"] .rs {
@@ -806,16 +711,6 @@ function ensureStyles() {
   display: flex; align-items: center; justify-content: center; padding: 7px 0;
   border-radius: 10px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
 }
-/* 시안 판은 흰 막(rgba(236,232,245,.16))이라 배경보다 밝다. 그 위에 흰색 바탕(.04)과 흰색
-   테두리(.07)를 얹으면 흰 위에 흰을 더하는 꼴이라 칸 경계가 사라진다 — 표(어두운 판)에서는
-   같은 값이 잘 보이는 이유가 이것이다. 그래서 시안에서만 반대로 간다:
-   바탕을 살짝 어둡게 깔아 판보다 한 단 내려앉히고, 테두리는 유리처럼 얇은 반투명 흰 선만 남긴다.
-   :not(.is-got) 로 빈 칸만 잡는다 — 딴 칸까지 걸면 이 규칙이 구체성에서 이겨 금색을 덮어쓴다.
-   딴 칸은 아래 공용 .rs-rooms li.is-got 값 그대로 간다(배치와 무관하게 같은 금색). */
-.records[data-layout="mock"] .rs-rooms li:not(.is-got) {
-  background: rgba(28, 22, 44, .16);
-  border-color: rgba(255,255,255,.14);
-}
 /* 안 딴 메달은 흑백 — 투명도로 누르면 '못 하는 것' 이 되지만, 흑백은 수집판의 관용 표현이라
    '아직 안 모은 것' 으로 읽힌다. 무엇을 모으는 중인지는 시작할 때부터 보여야 한다. */
 .rs-medal { font-size: 20px; line-height: 1.1; filter: grayscale(1); opacity: .5; }
@@ -853,9 +748,9 @@ function ensureStyles() {
 
 /* 2단은 좁아지면 글자가 먼저 깨진다 — 단부터 접는다. */
 @media (max-width: 900px) {
-  .records[data-layout^="split"] .records-content { column-count: 1; }
+  .records[data-layout="split"] .records-content { column-count: 1; }
 }
-/* 시안·표 배치는 표가 5열이라 더 일찍 접힌다. */
+/* 표 배치는 열이 많아 더 일찍 접힌다. */
 @media (max-width: 1100px) {
   .mk-cols { grid-template-columns: 1fr; }
 }
