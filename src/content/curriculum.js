@@ -53,15 +53,9 @@ export const chapterClearedCount = (id) => (getChapter(id)?.rooms || []).filter(
 export const chapterTotal = (id) => getChapter(id)?.rooms.length || 0;
 export const chapterDone = (id) => chapterTotal(id) > 0 && chapterClearedCount(id) === chapterTotal(id);
 
-// 플레이 — 결과 화면이 뜨면 등급과 무관하게 results 에 기록되므로, 기록 유무가 곧 '해봤는가'다.
-// 별도 저장소를 두지 않는 이유가 이것이다(D등급으로 끝내도 플레이로 집계된다).
-// 방마다 몇 단계인가 — 각 게임 씬의 GAMES/ACTS/STAGES 길이이자 finishAll() 의 클리어 조건 수다
-// (lampGame 의 cleared.wake && cleared.river && cleared.grand → 3). 값을 의심하면 거기를 보면 된다.
-// 단계 '이름' 은 여기로 옮기지 않는다: 이름은 문구를 다듬을 때마다 바뀌어 두 파일이 쉽게
-// 어긋나지만, 개수는 단계를 통째로 넣고 뺄 때만 바뀌고 그건 어차피 게임 코드를 크게 손대는 일이다.
-// 이름은 게임이 매판 results 로 넘기고 있으므로(record 의 summary) 화면이 거기서 받아 쓴다.
-// button 은 씬이 둘인 방이다 — 두더지(buttonGame) + 청기백기(flagGame) 를 합쳐 2단계.
-// setup 은 어느 무대에도 안 속하고 results 에 기록도 안 남아서 뺀다.
+// 방마다 몇 단계인가 — 각 게임 씬의 GAMES/ACTS 길이이자 finishAll() 의 클리어 조건 수다.
+// 단계 '이름' 은 여기로 안 옮긴다(문구를 다듬을 때마다 바뀌어 어긋난다) — 이름은 게임이
+// 매판 results 로 넘기므로 화면이 거기서 받아 쓴다. button 은 씬이 둘인 방이라 합쳐 2단계.
 const ROOM_STAGES = {
   basics: 1,
   led: 2, buzzer: 2, rgb: 2, cds: 2, pot: 2, button: 2,
@@ -69,25 +63,16 @@ const ROOM_STAGES = {
   final: 3,
 };
 
-// 방의 단계별 현황 — 표의 단계 배지가 그대로 쓴다. 길이는 그 방의 단계 수이고,
-// 아직 기록이 없는 칸은 null 이다(배지가 '아직' 자리로 그려 준다).
-// 순서는 results 에 처음 기록된 순서 = 플레이 순서다. 게임이 1단계부터 차례로 넘기므로
-// (각 씬의 nextGame 이 통과 여부와 무관하게 gi++ 한다) 그게 곧 단계 번호가 된다.
-// 저장된 단계가 적힌 개수보다 많으면(단계가 늘었는데 표를 안 고친 경우) 기록 쪽을 따른다 —
-// 실제로 남은 기록을 감추는 것보다 낫다.
-// 누적 클리어 — 그 방의 모든 단계를 '언젠가' A등급 이상으로 통과했으면 메달이다.
-// 한 번의 방문 안에 다 통과해야 하는 게 아니다. 기록실이 단계별 '최고' 기록을 나열하고 있으니
-// 보상도 그 최고 기록들의 합집합이어야 화면과 말이 맞는다 — 표에 1단계 A · 2단계 A 가 떠 있는데
-// 메달 칸만 비어 있으면 유저는 이유를 알 방법이 없다.
-// 예전에는 각 게임 씬의 지역 변수(const cleared = { … })로 쟀는데, 그건 방을 나가면 사라져서
-// '한 번의 방문 안에 전부 통과' 라는 숨은 조건이 됐다. 그건 설계 의도가 아니라 구현의 부산물이었다.
-// 각 게임의 finishAll() 이 이 함수로 판정한다. results.record() 는 단계가 끝날 때마다 불리므로,
-// finishAll() 시점에는 이번 판 결과까지 이미 저장돼 있다.
+// 누적 클리어 — 모든 단계를 '언젠가' A등급 이상으로 통과했으면 메달이다(한 방문 안일 필요 없다).
+// 화면이 단계별 최고 기록을 나열하니 보상도 그 합집합이어야 말이 맞는다.
+// 각 게임의 finishAll() 이 이 함수로 판정한다 — 그 시점엔 이번 판 결과까지 저장돼 있다.
 export const roomCleared = (id) => {
   const st = roomStages(id);
   return st.length > 0 && st.every((s) => s?.passed);
 };
 
+// 방의 단계별 현황 — 길이는 그 방의 단계 수, 기록 없는 칸은 null.
+// 순서는 results 에 처음 기록된 순서 = 플레이 순서 = 단계 번호다.
 export function roomStages(id) {
   const done = Object.entries(results.get(id)?.stages || {})
     .map(([name, s]) => ({ name, grade: s.grade, passed: s.passed }));
