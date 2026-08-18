@@ -122,7 +122,6 @@ export function showBombGame(root, { onExit, onComplete } = {}) {
   root.querySelector('#bm-start').onclick = () => { root.querySelector('#bm-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); };
 
   // ── 플로우 ──
-  const cleared = { arm: false, tune: false, live: false };
   let ai = 0, act = ACTS[0], parts = [], pops = [], heroFx = 0, shake = 0;
   let m = null, tk = null;                 // match / track 상태
   let ledOn = false, ledPhase = 0, beepPhase = 0;
@@ -174,7 +173,7 @@ export function showBombGame(root, { onExit, onComplete } = {}) {
         <button class="cel-go" id="lp-next">${last ? (pass ? '메달 받기 🏅' : '마치기 ▶') : '다음 단계 ▶'}</button>
       </div>`);
     el.querySelector('#lp-retry').onclick = () => { el.remove(); beginPlay(); };
-    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) cleared[act.key] = true; ai++; nextAct(); };
+    el.querySelector('#lp-next').onclick = () => { el.remove(); ai++; nextAct(); };
   }
   function finishAll() {
     cleanup();
@@ -184,7 +183,7 @@ export function showBombGame(root, { onExit, onComplete } = {}) {
     } else onExit?.();
   }
   skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); results.record('bomb', { accuracy: 85, grade: 'A', passed: true, summary: act.name, metrics: [] });   // 스킵도 통과 기록을 남긴다 — 메달 조건이 results 기준이라 이게 없으면 스킵으로 메달이 안 나온다
-    cleared[act.key] = true; state.ended = true; state.phase = 'result'; bgm.setDuck(1); ledOff(); ai++; nextAct(); };
+    state.ended = true; state.phase = 'result'; bgm.setDuck(1); ledOff(); ai++; nextAct(); };
 
   function sync() { elHit.textContent = state.hits; elCombo.textContent = state.combo; elScore.textContent = state.score; }
   function burst(x, y, color) { for (let i = 0; i < 16; i++) { const a = Math.random() * 6.283, s = 1.5 + Math.random() * 4.5; parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1, life: 38, color }); } }

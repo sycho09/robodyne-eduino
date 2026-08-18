@@ -91,7 +91,6 @@ export function showFinaleShow(root, { onExit } = {}) {
     { key: 'melody', no: 2, name: '멜로디 무대', icon: '🎵' },
     { key: 'finale', no: 3, name: '피날레 큐', icon: '🔘' },
   ];
-  const cleared = { color: false, melody: false, finale: false };
   let ai = 0, raf = 0, actCleanup = null;
   const state = { score: 0 };
 
@@ -130,10 +129,10 @@ export function showFinaleShow(root, { onExit } = {}) {
         <button class="cel-go" id="lp-next">${last ? (pass ? '왕관 받기 👑' : '마치기 ▶') : '다음 무대 ▶'}</button>
       </div>`);
     el.querySelector('#lp-retry').onclick = () => { el.remove(); nextAct(ai); };
-    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) cleared[key] = true; nextAct(ai + 1); };
+    el.querySelector('#lp-next').onclick = () => { el.remove(); nextAct(ai + 1); };
   }
   skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); results.record('final', { accuracy: 85, grade: 'A', passed: true, summary: ACTS[ai].name, metrics: [] });   // 스킵도 통과 기록을 남긴다 — 메달 조건이 results 기준이라 이게 없으면 스킵으로 메달이 안 나온다
-    cleared[ACTS[ai].key] = true; stopActCleanup(); neoOff(); nextAct(ai + 1); };
+    stopActCleanup(); neoOff(); nextAct(ai + 1); };
 
   function finishAll() {
     cleanup();

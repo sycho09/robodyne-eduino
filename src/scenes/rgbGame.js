@@ -113,7 +113,6 @@ export function showRgbGame(root, { onExit } = {}) {
   root.querySelector('#rg-start').onclick = () => { root.querySelector('#rg-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); };
 
   // ── 플로우 ──
-  const cleared = { easy: false, hard: false };
   let gi = 0, stage = STAGES[0], ri = 0, accs = [];
   function panel(html) { const el = document.createElement('div'); el.className = 'led-panel'; el.innerHTML = `<div class="prep-card led-pcard">${html}</div>`; scene.appendChild(el); return el; }
   function startFlow() { gi = 0; nextStage(); }
@@ -169,7 +168,7 @@ export function showRgbGame(root, { onExit } = {}) {
         <button class="cel-go" id="lp-next">${last ? (pass ? '메달 받기 🏅' : '마치기 ▶') : '다음 단계 ▶'}</button>
       </div>`);
     el.querySelector('#lp-retry').onclick = () => { el.remove(); beginPlay(); };
-    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) cleared[stage.key] = true; gi++; nextStage(); };
+    el.querySelector('#lp-next').onclick = () => { el.remove(); gi++; nextStage(); };
   }
   function finishAll() {
     cleanup();
@@ -179,7 +178,7 @@ export function showRgbGame(root, { onExit } = {}) {
     } else onExit?.();
   }
   skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); results.record('rgb', { accuracy: 85, grade: 'A', passed: true, summary: stage.name, metrics: [] });   // 스킵도 통과 기록을 남긴다 — 메달 조건이 results 기준이라 이게 없으면 스킵으로 메달이 안 나온다
-    cleared[stage.key] = true; gi++; bgm.setDuck(1); nextStage(); };
+    gi++; bgm.setDuck(1); nextStage(); };
 
   function cleanup() { bgm.setDuck(1); if (board.connected) sendRGB(0, 0, 0); window.removeEventListener('resize', onResize); }
   const onResize = () => {};

@@ -129,7 +129,6 @@ export function showLampGame(root, { onExit } = {}) {
   const wireProbe = new Image(); wireProbe.onload = () => { const el = root.querySelector('#lp-wire'); if (el) { el.src = wireProbe.src; el.hidden = false; } }; wireProbe.src = '/brand/wiring-lamp.webp';
 
   // ── 플로우 ──
-  const cleared = { wake: false, river: false, grand: false };
   let ai = 0, act = ACTS[0], parts = [], pops = [], curRGB = [0, 0, 0], curHue = 0, fx = 0, matching = false, motes = [], flash = 0, hintT = 0, hintTarget = null;
   let m = null, tk = null, sp = null;
   const state = { phase: 'prep', countT: 0, score: 0, combo: 0, maxCombo: 0, hits: 0, total: 0, ended: false };
@@ -176,7 +175,7 @@ export function showLampGame(root, { onExit } = {}) {
         <button class="cel-go" id="lp-next">${last ? (pass ? '메달 받기 🏅' : '마치기 ▶') : '다음 막 ▶'}</button>
       </div>`);
     el.querySelector('#lp-retry').onclick = () => { el.remove(); beginPlay(); };
-    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) cleared[act.key] = true; ai++; nextAct(); };
+    el.querySelector('#lp-next').onclick = () => { el.remove(); ai++; nextAct(); };
   }
   function finishAll() {
     cleanup();
@@ -184,7 +183,7 @@ export function showLampGame(root, { onExit } = {}) {
     else onExit?.();
   }
   skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); results.record('lamp', { accuracy: 85, grade: 'A', passed: true, summary: act.name, metrics: [] });   // 스킵도 통과 기록을 남긴다 — 메달 조건이 results 기준이라 이게 없으면 스킵으로 메달이 안 나온다
-    cleared[act.key] = true; state.ended = true; state.phase = 'result'; bgm.setDuck(1); ai++; nextAct(); };
+    state.ended = true; state.phase = 'result'; bgm.setDuck(1); ai++; nextAct(); };
 
   function sync() { elHit.textContent = state.hits; elCombo.textContent = state.combo; elScore.textContent = state.score; }
   function burst(x, y, rgb, n = 16) { for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, s = 1.5 + Math.random() * 4.5; parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1, life: 40, rgb }); } }

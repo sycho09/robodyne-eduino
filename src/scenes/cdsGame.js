@@ -95,7 +95,6 @@ export function showCdsGame(root, { onExit } = {}) {
   root.querySelector('#cd-start').onclick = () => { root.querySelector('#cd-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); };
 
   // ── 플로우 ──
-  const cleared = { easy: false, hard: false };
   let gi = 0, game = GAMES[0], beats = [], fly = null, pops = [], parts = [];
   const state = { phase: 'prep', t0: 0, countT: 0, score: 0, combo: 0, maxCombo: 0, hits: 0, total: 0, ended: false, lastHit: -1e9 };
   function panel(html) { const el = document.createElement('div'); el.className = 'led-panel'; el.innerHTML = `<div class="prep-card led-pcard">${html}</div>`; scene.appendChild(el); return el; }
@@ -142,7 +141,7 @@ export function showCdsGame(root, { onExit } = {}) {
         <button class="cel-go" id="lp-next">${last ? (pass ? '메달 받기 🏅' : '마치기 ▶') : '다음 미션 ▶'}</button>
       </div>`);
     el.querySelector('#lp-retry').onclick = () => { el.remove(); beginPlay(); };
-    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) cleared[game.key] = true; gi++; nextGame(); };
+    el.querySelector('#lp-next').onclick = () => { el.remove(); gi++; nextGame(); };
   }
   function finishAll() {
     cleanup();
@@ -150,7 +149,7 @@ export function showCdsGame(root, { onExit } = {}) {
     else onExit?.();
   }
   skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); results.record('cds', { accuracy: 85, grade: 'A', passed: true, summary: game.name, metrics: [] });   // 스킵도 통과 기록을 남긴다 — 메달 조건이 results 기준이라 이게 없으면 스킵으로 메달이 안 나온다
-    cleared[game.key] = true; state.ended = true; state.phase = 'result'; bgm.setDuck(1); gi++; nextGame(); };
+    state.ended = true; state.phase = 'result'; bgm.setDuck(1); gi++; nextGame(); };
 
   function sync() { elHit.textContent = state.hits; elCombo.textContent = state.combo; elScore.textContent = state.score; }
   function burst(x, y, color) { for (let i = 0; i < 14; i++) { const a = Math.random() * 6.283, s = 1.5 + Math.random() * 4; parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1, life: 36, color }); } }

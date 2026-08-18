@@ -79,7 +79,6 @@ export function showBuzzerGame(root, { onExit } = {}) {
   root.querySelector('#bz-start').onclick = () => { root.querySelector('#bz-prep').classList.add('hide'); skipBtn.hidden = !DEV_TOOLS; startFlow(); };
 
   // ── 플로우 ──
-  const cleared = { easy: false, hard: false };
   let gi = 0, game = GAMES[0], beats = [], pops = [];
   const state = { phase: 'prep', t0: 0, countT: 0, score: 0, combo: 0, maxCombo: 0, hits: 0, seen: 0, ended: false, lastHit: 0 };
   const scene = root.querySelector('.led');
@@ -119,7 +118,7 @@ export function showBuzzerGame(root, { onExit } = {}) {
         <button class="cel-go" id="lp-next">${last ? (pass ? '메달 받기 🏅' : '마치기 ▶') : '다음 곡 ▶'}</button>
       </div>`);
     el.querySelector('#lp-retry').onclick = () => { el.remove(); beginPlay(); };
-    el.querySelector('#lp-next').onclick = () => { el.remove(); if (pass) cleared[game.key] = true; gi++; nextGame(); };
+    el.querySelector('#lp-next').onclick = () => { el.remove(); gi++; nextGame(); };
   }
   function finishAll() {
     cleanup();
@@ -129,7 +128,7 @@ export function showBuzzerGame(root, { onExit } = {}) {
     } else onExit?.();
   }
   skipBtn.onclick = () => { document.querySelectorAll('.led-panel').forEach((e) => e.remove()); results.record('buzzer', { accuracy: 85, grade: 'A', passed: true, summary: game.name, metrics: [] });   // 스킵도 통과 기록을 남긴다 — 메달 조건이 results 기준이라 이게 없으면 스킵으로 메달이 안 나온다
-    cleared[game.key] = true; state.ended = true; state.phase = 'result'; bgm.setDuck(1); gi++; nextGame(); };
+    state.ended = true; state.phase = 'result'; bgm.setDuck(1); gi++; nextGame(); };
 
   // ── 입력/판정 ──
   function hitLane(lane) {

@@ -132,7 +132,6 @@ export function showLedGame(root, { onExit } = {}) {
   root.querySelector('#p-skip').onclick = () => { root.querySelector('#led-prep').classList.add('hide'); startFlow(); };
 
   // ===== 게임 플로우(2단계) =====
-  const cleared = { timing: false, play: false };
   let gi = 0, game = GAMES[0], beats = [], pops = [];
   const state = { phase: 'prep', t0: 0, countT: 0, score: 0, combo: 0, maxCombo: 0, hits: 0, seen: 0, ended: false };
 
@@ -140,7 +139,7 @@ export function showLedGame(root, { onExit } = {}) {
   skipBtn.onclick = () => {                       // 테스트용: 현재 단계 통과 처리하고 다음으로
     document.querySelectorAll('.led-panel').forEach((e) => e.remove());
     results.record('led', { accuracy: 85, grade: 'A', passed: true, summary: game.name, metrics: [] });   // 스킵도 통과 기록을 남긴다 — 메달 조건이 results 기준이라 이게 없으면 스킵으로 메달이 안 나온다
-    cleared[game.key] = true; state.ended = true; state.phase = 'result';
+    state.ended = true; state.phase = 'result';
     bgm.setDuck(1); gi++; nextGame();
   };
   function startFlow() { gi = 0; skipBtn.hidden = !DEV_TOOLS; nextGame(); }
@@ -189,7 +188,6 @@ export function showLedGame(root, { onExit } = {}) {
     el.querySelector('#lp-retry').onclick = () => { el.remove(); beginPlay(); };
     el.querySelector('#lp-next').onclick = () => {
       el.remove();
-      if (pass) cleared[game.key] = true;   // 메달 조건은 통과했을 때만 채워진다
       gi++; nextGame();                      // 진행은 통과 여부와 무관 — 막으면 포기한다
     };
   }
