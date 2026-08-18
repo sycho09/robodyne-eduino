@@ -172,13 +172,20 @@ function ensureStyles() {
 .report-table .st i { font-style: normal; font-size: 10px; color: #a8a29e; }
 .g { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px;
   border-radius: 8px; font-weight: 800; font-size: 13px; color: #fff; }
-.g-S { background: #7c3aed; } .g-A { background: #059669; } .g-B { background: #0284c7; }
-.g-C { background: #f59e0b; } .g-D { background: #a8a29e; }
-.g-done { background: #0f766e; width: auto; padding: 0 8px; font-size: 12px; }
-.g-none { background: #f5f5f4; color: #d6d3d1; }
+/* 등급색은 화면(records.js 의 .records [data-grade=…])과 같은 색상 계열을 쓴다.
+   값이 똑같지는 않다 — 화면은 어두운 바탕 위의 '글자색' 이고 여기는 흰 종이 위 '알 배경' 이라,
+   같은 hex 를 쓰면 흰 글자가 안 읽힌다. 그래서 색상(hue)은 맞추고 명도만 내렸다.
+   괄호 안이 화면 값이다. 흰 글자 대비는 전부 4.5:1 이상. */
+.g-S { background: #7c3aed; }   /* 보라 (#a855f7) */
+.g-A { background: #e11d48; }   /* 로즈 (#fb7185) */
+.g-B { background: #2563eb; }   /* 파랑 (#60a5fa) */
+.g-C { background: #c2410c; }   /* 주황 (#fb923c) */
+.g-D { background: #64748b; }   /* 슬레이트 (#94a3b8) */
+.g-done { background: #047857; width: auto; padding: 0 8px; font-size: 12px; }   /* 초록 (#34d399) */
+.g-none { background: #f1f5f9; color: #cbd5e1; }
 /* 메달 — 등급 알과 같은 모양·크기의 금색 알. 등급색(보라·초록·파랑·주황·회색) 어디와도
    안 겹쳐서, 같은 줄에 놓여도 '등급이 하나 더 있는' 것으로 안 읽힌다. */
-.g-medal { background: #d4a017; }
+.g-medal { background: #b45309; }
 /* 바닥글 범례용 — 표의 알과 같은 기호여야 '이게 그 표시구나' 로 이어진다. 11px 글줄에 맞춰 줄인다. */
 .g-mini { width: 16px; height: 16px; border-radius: 5px; font-size: 10px; vertical-align: -3px; }
 
