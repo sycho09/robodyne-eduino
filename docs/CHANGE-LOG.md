@@ -40,13 +40,12 @@ src/
         └─ 06-legibility.css                   [신규]  이론관 시인성 전용
 
 docs/
-├─ OPTIMIZE-REPORT.md      [신규]  최적화 결과 기록
-├─ THEORY-LEGIBILITY-PASS.md [신규] 이론관 시인성 결정 기록
-├─ THIRD-PARTY-LICENSES.md [신규]  아이콘 라이선스 고지
+├─ OPTIMIZE-REPORT.md      [신규]  최적화 Before/After 수치와 검증 방법
+├─ THEORY-LEGIBILITY-PASS.md [신규] 이론관 시인성 수치와 "되돌리지 말 것" 결정 기록
 └─ CHANGE-LOG.md           [신규]  이 문서
 
 public/
-└─ THIRD-PARTY-LICENSES.txt [신규] 배포물에 실제로 실리는 라이선스 고지
+└─ THIRD-PARTY-LICENSES.txt [신규] 라이선스 고지 — 배포물에 실려 의무를 지키는 유일한 원본
 ```
 
 ---

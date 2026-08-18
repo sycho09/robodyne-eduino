@@ -27,7 +27,7 @@
 //
 // ⚠️ 아래 라이선스 고지는 `/*!` 형식이라 빌드(esbuild minify)에서 살아남는다.
 //    ISC·MIT 는 '사본에 고지를 포함할 것'이 유일한 조건이라, 일반 `//` 주석으로 바꾸면
-//    번들에서 지워져 조건을 못 지킨다. 전문은 docs/THIRD-PARTY-LICENSES.md.
+//    번들에서 지워져 조건을 못 지킨다. 전문은 public/THIRD-PARTY-LICENSES.txt.
 //
 // 색은 currentColor 로 상속받는다 — 탭 활성/비활성 같은 상태 변화가 CSS 만으로 따라온다.
 //
@@ -36,7 +36,7 @@
 
 /*! Lucide Icons — ISC License · Copyright (c) 2026 Lucide Icons and Contributors · https://lucide.dev
  *  일부 도형은 Feather 파생 — MIT License · Copyright (c) 2013-present Cole Bemis
- *  전문: docs/THIRD-PARTY-LICENSES.md */
+ *  전문: public/THIRD-PARTY-LICENSES.txt */
 export const USE_SVG = true;
 
 const STROKE = 2.3;          // 24 viewBox 기준 — 원거리에서 형태가 남는 최소 굵기
