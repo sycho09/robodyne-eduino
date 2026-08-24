@@ -139,6 +139,11 @@ function renderClassList(cfg) {
   });
   cfg.countMeta.textContent = cfg.classes.length + ' / ' + cfg.max;
   cfg.addBtn.disabled = cfg.classes.length >= cfg.max;
+  /* 무료 구간의 클래스 수·데이터 상한을 덮어씌운다 (기준서 2장). 세 트랙이 같은 함수를 부른다. */
+  if (window.Access) window.Access.capClasses({
+    container: cfg.container, addBtn: cfg.addBtn, countMeta: cfg.countMeta,
+    count: cfg.classes.length, max: cfg.max, kind: cfg.kind || 'shots'
+  });
 }
 
 function renderClasses() {
@@ -186,6 +191,8 @@ async function toggleCam() {
 function captureSample() {
   const sel = state.classes.find(c => c.id === state.selectedId);
   if (!sel || !state.mobilenet || !state.stream) return;
+  /* 버튼은 비활성이지만 길게 누르기는 컨테이너 위임이라 여기서 한 번 더 막는다. */
+  if (window.Access && sel.embeddings.length >= window.Access.limit('shots')) return;
   const emb = tf.tidy(() => state.mobilenet.infer(els.video, true).flatten());
   sel.embeddings.push(Array.from(emb.dataSync()));
   emb.dispose();

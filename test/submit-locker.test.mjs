@@ -4,6 +4,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { loadApp } from "./load-app.mjs";
 
+/* 이 파일은 결과물 만들기·미션함·제출의 동작을 본다. 이 기능들은 무료 구간에서 잠기므로
+   (docs/access-policy.md 2-1), 접근 제어를 열어 두고 기능 자체만 확인한다.
+   무료 쪽 잠금은 test/access-phase2.test.mjs 가 따로 본다. */
+const PAID = { query: "?plan=paid" };
+
 function setPhase(doc, phase, { name = "클래스 1", pct = 92 } = {}) {
   const tp = doc.querySelector("#top-pred .tp-name");
   const donut = doc.getElementById("top-donut-pct");
@@ -78,7 +83,7 @@ async function submit(doc, win, name = "김에듀") {
 /* ══ 모드 분기 점검 ══ */
 
 test("세 모드가 같은 화면을 쓴다 — 수업 개설에만 미션 생성 버튼이 하나 더", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   setPhase(doc, "live");
 
   for (const [label, as] of [
@@ -125,7 +130,7 @@ test("세 모드가 같은 화면을 쓴다 — 수업 개설에만 미션 생�
 
 /* 진입 버튼 마크업 삭제 상태 검증 */
 test("죽은 진입 버튼 마크업이 문서에 남아 있지 않다", async () => {
-  const { doc } = await loadApp();
+  const { doc } = await loadApp(PAID);
   assert.equal(
     doc.querySelectorAll("[data-maker]").length,
     0,
@@ -140,7 +145,7 @@ test("죽은 진입 버튼 마크업이 문서에 남아 있지 않다", async (
 });
 
 test("상단 '내 현황' 버튼은 세 모드 공통 (교사만 '게시판')", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   const board = doc.getElementById("boardBtn");
   for (const [label, as] of [
     ["체험", asFree],
@@ -165,7 +170,7 @@ test("상단 '내 현황' 버튼은 세 모드 공통 (교사만 '게시판')", 
 
 /* 통합 제출 레코드 (vision_submissions) 포맷 검증 */
 test("세 모드 제출이 모두 vision_submissions 로 모인다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   setPhase(doc, "live");
 
   for (const [label, as] of [
@@ -189,7 +194,7 @@ test("세 모드 제출이 모두 vision_submissions 로 모인다", async () =>
 });
 
 test("제출 레코드는 게시판이 읽는 모양 그대로 (기존 필드 유지 · items 만 덧붙임)", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   asClass(win);
   setPhase(doc, "live");
   win.Submit.refresh();
@@ -232,7 +237,7 @@ test("제출 레코드는 게시판이 읽는 모양 그대로 (기존 필드 �
 /* ══════════════ 미션함은 서랍 하나 ══════════════ */
 
 test("미션함은 하나 — 모드를 오가도 담은 것이 그대로다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   asFree(win);
   setPhase(doc, "live");
   await add(win, "idea", "상상보드");
@@ -250,7 +255,7 @@ test("미션함은 하나 — 모드를 오가도 담은 것이 그대로다", a
 
 /* 미션/종류별 결과물 개별 저장 확인 */
 test("다른 미션에서 같은 종류를 또 만들면 줄이 따로 남고 이름으로 갈린다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   asFree(win);
   setPhase(doc, "live");
 
@@ -280,7 +285,7 @@ test("다른 미션에서 같은 종류를 또 만들면 줄이 따로 남고 �
 });
 
 test("트랙이 달라도 한 목록에 모이고 한 번에 낸다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   asFree(win);
   setPhase(doc, "live");
 
@@ -303,7 +308,7 @@ test("트랙이 달라도 한 목록에 모이고 한 번에 낸다", async () =
 
 /* 헤더 영역 미션함 상태 노출 제한 */
 test("헤더에 미션함 배지가 없다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   setPhase(doc, "live");
   asFree(win);
   await add(win, "idea", "상상보드");
@@ -317,7 +322,7 @@ test("헤더에 미션함 배지가 없다", async () => {
 /* ══════════════ 만들기 ══════════════ */
 
 test("만들기 버튼은 담김 여부를 말하지 않는다 (한 가지만 말한다)", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   asFree(win);
   setPhase(doc, "live");
   await add(win, "idea", "상상보드");
@@ -339,7 +344,7 @@ test("만들기 버튼은 담김 여부를 말하지 않는다 (한 가지만 �
 });
 
 test("추론을 껐다 켜도 미션함 목록은 그대로다 (단계와 무관)", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   asFree(win);
   setPhase(doc, "live");
   await add(win, "idea", "상상보드");
@@ -367,7 +372,7 @@ test("추론을 껐다 켜도 미션함 목록은 그대로다 (단계와 무관
 });
 
 test("학습 전: 만들기 버튼은 보이지만 눌러도 안 가고 이유를 말한다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   asFree(win);
   setPhase(doc, "untrained");
   win.Submit.refresh();
@@ -390,7 +395,7 @@ test("학습 전: 만들기 버튼은 보이지만 눌러도 안 가고 이유�
 });
 
 test("추론 중: 4개가 열리고 버튼이 결과물 화면을 연다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   asFree(win);
   setPhase(doc, "live");
   win.Submit.refresh();
@@ -411,7 +416,7 @@ test("추론 중: 4개가 열리고 버튼이 결과물 화면을 연다", async
 });
 
 test("추론을 켜면 버튼이 스스로 열린다 (다시 그리라고 부르지 않아도)", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   asFree(win);
   setPhase(doc, "untrained");
   win.Submit.refresh();
@@ -429,7 +434,7 @@ test("추론을 켜면 버튼이 스스로 열린다 (다시 그리라고 부르
 });
 
 test("이미지 저장하기: 미션함에 담고 파일로도 준다 · 다시 눌러 다시 담긴다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   asFree(win);
   setPhase(doc, "live");
   win.Submit.refresh();
@@ -459,7 +464,7 @@ test("이미지 저장하기: 미션함에 담고 파일로도 준다 · 다시 
 /* ══════════════ 내 미션함 ══════════════ */
 
 test("미션함: 줄에서 바로 이미지로 저장한다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   asFree(win);
   setPhase(doc, "live");
   setMission(win, "rps");
@@ -478,7 +483,7 @@ test("미션함: 줄에서 바로 이미지로 저장한다", async () => {
 });
 
 test("미션함: ✕ 로 삭제하면 확인 뒤 목록에서 사라진다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   asFree(win);
   setPhase(doc, "live");
   setMission(win, "rps");
@@ -505,7 +510,7 @@ test("미션함: ✕ 로 삭제하면 확인 뒤 목록에서 사라진다", asy
 });
 
 test("미션을 바꿔도 앞서 담은 것이 목록에 그대로 있다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   asFree(win);
   setPhase(doc, "live");
   const pick = async (k) => {
@@ -534,7 +539,7 @@ test("미션을 바꿔도 앞서 담은 것이 목록에 그대로 있다", asyn
 });
 
 test("미션함: 만든 시각이 오늘/어제/그 이전으로 갈려 보인다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   asFree(win);
   setPhase(doc, "live");
   const at = (ms) => new Date(Date.now() - ms).toISOString();
@@ -569,7 +574,7 @@ test("미션함: 만든 시각이 오늘/어제/그 이전으로 갈려 보인�
 /* ══════════════ 제출 ══════════════ */
 
 test("제출: 담긴 것을 한 건으로 낸다 · 그림 참조와 글이 함께 남는다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   asFree(win);
   setPhase(doc, "live");
   await add(win, "idea", "상상보드");
@@ -600,7 +605,7 @@ test("제출: 담긴 것을 한 건으로 낸다 · 그림 참조와 글이 함�
 });
 
 test("제출하고 나면 미션함이 비고 제출 버튼이 다시 잠긴다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   asFree(win);
   setPhase(doc, "live");
   await add(win, "idea", "상상보드");
@@ -615,7 +620,7 @@ test("제출하고 나면 미션함이 비고 제출 버튼이 다시 잠긴다"
 
 /* 제출 조건 미충족 시 버튼 비활성화 (라벨 변경 없음) */
 test("낼 게 없으면 제출 버튼이 같은 이름으로 꺼져 있다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   asFree(win);
   setPhase(doc, "live");
   win.Submit.refresh();
@@ -635,7 +640,7 @@ test("낼 게 없으면 제출 버튼이 같은 이름으로 꺼져 있다", asy
 });
 
 test("사전학습 체험 스테이지에는 결과물·미션함이 없다 (이전 담당자 동작 그대로)", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   /* 체험 스테이지 환경 모의 (직접 제작 패널 제거) */
   doc.getElementById("panel-direct").id = "panel-direct-x";
   asFree(win);

@@ -4,6 +4,17 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { JSDOM, VirtualConsole } from "jsdom";
+import { after } from "node:test";
+
+/* 이 하니스로 연 창을 모아 두었다가 파일이 끝날 때 한 번에 닫는다.
+   imagelab.js 가 1.3초 주기 타이머를 돌리므로, 닫지 않으면 테스트가 다 통과해도
+   프로세스가 끝나지 않아 파일이 타임아웃으로 실패한다. */
+const opened = [];
+after(() => {
+  for (const w of opened.splice(0)) {
+    try { w.close(); } catch (e) {}
+  }
+});
 
 const ROOT = join(import.meta.dirname, "..");
 const HTML = readFileSync(join(ROOT, "index.html"), "utf8");
@@ -16,18 +27,23 @@ const inlineLocalScripts = (html) =>
     return "<script>" + code.replace(/<\/script/gi, "<\\/script") + "</script>";
   });
 
-export async function loadApp() {
+/* opts.query : "?plan=paid" 처럼 URL 뒤에 붙일 문자열 (무료/유료 접근 제어 검증용)
+   opts.seed  : 페이지가 뜨기 전에 심어 둘 localStorage 값 (새로고침 후 상태 유지 검증용) */
+export async function loadApp(opts = {}) {
   const errors = [];
   const vc = new VirtualConsole();
   vc.on("jsdomError", (e) => errors.push(e));
 
   const dom = new JSDOM(inlineLocalScripts(HTML), {
     /* localStorage 접근 허용을 위한 URL 세팅 */
-    url: "http://localhost/",
+    url: "http://localhost/" + (opts.query || ""),
     runScripts: "dangerously",
     pretendToBeVisual: true,
     virtualConsole: vc,
     beforeParse(window) {
+      if (opts.seed)
+        for (const [k, v] of Object.entries(opts.seed))
+          window.localStorage.setItem(k, v);
       /* RAF 스텁 (테스트 결정성 확보) */
       window.requestAnimationFrame = () => 0;
       window.cancelAnimationFrame = () => {};
@@ -253,6 +269,8 @@ export async function loadApp() {
       );
     },
   });
+
+  opened.push(dom.window);
 
   /* 초기화 태스크 완료 대기 */
   await new Promise((r) => setTimeout(r, 0));

@@ -137,7 +137,7 @@ function poseSelectClass(id) { pose.selectedId = id; setSelectedItem(pEls.classL
 function poseRenderClasses() {
   renderClassList({
     container: pEls.classList, classes: pose.classes, selectedId: pose.selectedId,
-    max: POSE_MAX_CLASSES, countMeta: pEls.classCountMeta, addBtn: pEls.addClass,
+    max: POSE_MAX_CLASSES, countMeta: pEls.classCountMeta, addBtn: pEls.addClass, kind: 'shots',
     onSelect: poseSelectClass, onRemove: poseRemoveClass,
     onRename: () => { poseRenderBars(); poseUpdateCapTarget(); },
     onThumbs: null,  // 동작 탭은 갤러리 없음
@@ -248,6 +248,8 @@ function poseStopOverlayLoop() {
 async function poseCaptureSample() {
   const sel = pose.classes.find(c => c.id === pose.selectedId);
   if (!sel || !pose.detector || !pose.stream) return;
+  /* 버튼은 비활성이지만 길게 누르기는 컨테이너 위임이라 여기서 한 번 더 막는다. */
+  if (window.Access && sel.embeddings.length >= window.Access.limit('shots')) return;
   const r = await extractKeypoints();
   if (!r) return;
   sel.embeddings.push(r.feat);
@@ -465,6 +467,11 @@ function audioRenderClasses() {
   });
   aEls.classCountMeta.textContent = audio.classes.length + ' / ' + AUDIO_MAX;
   aEls.addClass.disabled = audio.classes.length >= AUDIO_MAX;
+  /* 무료 구간의 클래스 수·녹음 상한 — 이미지·동작 트랙과 같은 함수를 쓴다 (기준서 2장). */
+  if (window.Access) window.Access.capClasses({
+    container: aEls.classList, addBtn: aEls.addClass, countMeta: aEls.classCountMeta,
+    count: audio.classes.length, max: AUDIO_MAX, kind: 'records'
+  });
   audioUpdateCapTarget();
 }
 function audioUpdateCapTarget() {
@@ -524,6 +531,7 @@ function audioWaveformLoop() {
 async function audioCaptureFor(id) {
   const sel = audio.classes.find(c => c.id === id);
   if (!sel || !audio.base || !audio.micStream || audio.recording) return;
+  if (window.Access && sel.count >= window.Access.limit('records')) return;
   if (!audio.transfer) audio.transfer = audio.base.createTransfer('eddie-audio');
   audioSelectClass(id);
   audio.recording = true; audio.recordingId = id;

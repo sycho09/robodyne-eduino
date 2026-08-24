@@ -15,8 +15,11 @@ test('기본 클래스가 각 학습 탭에 렌더링된다', async () => {
   assert.equal(doc.querySelectorAll('#p-class-list .class-item').length, 2);
 });
 
+/* 트레이너 자체의 상한(MAX_CLASSES=4)을 보는 테스트다. 무료 구간은 상한이 2개로 좁아지고
+   추가 버튼도 disabled 대신 잠금 표시로 바뀌므로(docs/access-policy.md 2-5), 접근 제어를
+   열어 둔 상태로 확인한다. 무료 쪽 동작은 test/access-phase2.test.mjs 가 따로 본다. */
 test('addClass / 최대 클래스 제한이 동작한다 (이미지 탭)', async () => {
-  const { window, doc } = await loadApp();
+  const { window, doc } = await loadApp({ query: '?plan=paid' });
   window.addClass('테스트');
   assert.equal(doc.querySelectorAll('#class-list .class-item').length, 3);
   // MAX_CLASSES(4) 초과 추가는 무시
