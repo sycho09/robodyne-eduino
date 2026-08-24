@@ -1,0 +1,194 @@
+/* 4단계 학습 대시보드 공유 셸 (사전진단 → 이론 → 실습 → 평가)
+   모듈 자체 style.css의 CSS 변수(--card, --primary, --r 등)를 그대로 사용해
+   모듈별 라이트 카드 테마와 일관되게 맞춘다. .step/.steps 등 모듈 기존 클래스와는
+   겹치지 않도록 dash- 접두사만 사용. */
+
+/* 좌: 하얀 풀하이트 사이드바 / 우: 회색 콘텐츠 영역 (전체 화면 2열) */
+.dash-shell { display: grid; grid-template-columns: 240px 1fr; gap: 0; align-items: stretch; min-height: 100vh; }
+
+.dash-sidebar { position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto; background: var(--card); border-right: 1px solid var(--line); padding: 22px 14px; display: flex; flex-direction: column; gap: 26px; }
+.dash-nav-group { display: flex; flex-direction: column; gap: 2px; }
+.dash-nav-group-title { font-size: 11px; font-weight: 700; letter-spacing: .04em; color: var(--ink-4); padding: 0 9px 8px; }
+.dash-nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 9px; border-radius: 10px; font-size: 13.5px; font-weight: 600; color: var(--ink-2); cursor: default; text-decoration: none; }
+.dash-nav-item.linkable { cursor: pointer; }
+.dash-nav-item.linkable:hover { background: var(--card-2); }
+.dash-nav-item.active { background: var(--primary-soft); color: var(--primary-ink); font-weight: 700; }
+.dash-nav-num { width: 21px; height: 21px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 11px; font-family: var(--mono); font-weight: 700; background: var(--bg-soft); border: 1px solid var(--line); color: var(--ink-3); }
+.dash-nav-item.active .dash-nav-num { background: var(--primary); border-color: var(--primary); color: #fff; }
+.dash-nav-item.done .dash-nav-num { background: var(--green); border-color: var(--green); color: #fff; }
+.dash-nav-icon { width: 1em; height: 1em; flex: none; /* Inherit color and size from parent font-size/color */ }
+.dash-nav-item .dash-nav-icon { color: var(--ink-3); width: 18px; height: 18px; }
+.dash-nav-item.active .dash-nav-icon { color: var(--primary-ink); }
+
+.dash-home-btn { display: flex; align-items: center; margin: -10px -10px -6px; padding: 10px; border-radius: 12px; transition: 0.15s; text-decoration: none; }
+.dash-home-btn:hover { background: var(--bg-soft); }
+.dash-home-logo { display: block; height: 32px; width: auto; object-fit: contain; }
+
+.dash-main { min-width: 0; background: var(--bg-soft); padding: 26px 24px 40px; }
+.dash-panel[hidden] { display: none; }
+/* 실습 패널의 모듈 <main> 상단 여백이 .dash-main 패딩에 더해져 이론 탭보다 뱃지가 아래로 밀리는 문제 보정 */
+.dash-panel main { padding-top: 0; }
+.dash-badge { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .04em; color: var(--green); background: var(--green-soft); border: 1px solid rgba(17,160,111,.3); border-radius: 999px; padding: 5px 12px; margin-bottom: 12px; }
+.dash-head { text-align: center; padding: 6px 0 20px; display: flex; flex-direction: column; align-items: center; }
+.dash-head h1 { margin: 0 0 7px; font-size: 24px; font-weight: 800; letter-spacing: -.02em; }
+.dash-head p { margin: 0 auto; max-width: 560px; font-size: 13.5px; color: var(--ink-2); line-height: 1.6; }
+
+/* 진단/평가 공통 퀴즈 카드 */
+.dash-quiz-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 22px; max-width: 640px; margin: 0 auto; }
+.dash-quiz-progress { font-family: var(--mono); font-size: 11px; color: var(--ink-3); margin-bottom: 10px; }
+.dash-quiz-q { font-size: 16px; font-weight: 700; margin: 0 0 16px; line-height: 1.5; }
+.dash-quiz-options { display: flex; flex-direction: column; gap: 9px; }
+.dash-quiz-option { text-align: left; background: #fff; border: 1px solid var(--line-2); border-radius: 12px; padding: 13px 15px; font-size: 14px; color: var(--ink); transition: .15s; }
+.dash-quiz-option:hover:not(:disabled) { border-color: var(--primary-line); background: var(--primary-soft); }
+.dash-quiz-option.selected { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+.dash-quiz-option.correct { border-color: var(--green); background: var(--green-soft); color: var(--green); font-weight: 700; }
+.dash-quiz-option.wrong { border-color: var(--primary); background: var(--primary-soft); color: var(--primary-ink); }
+.dash-quiz-option:disabled { cursor: default; }
+
+/* 사전 진단(PreCheckOX) 전용 O/X 선택지 — 카드/피드백은 위 공통 컴포넌트를 그대로 쓴다 */
+.dash-ox-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dash-ox-option { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 12px; background: #fff; border: 1px solid var(--line-2); border-radius: 14px; transition: .15s; }
+.dash-ox-option:hover:not(:disabled) { border-color: var(--primary-line); background: var(--primary-soft); }
+.dash-ox-option .mark { font-family: var(--mono); font-size: 26px; font-weight: 800; line-height: 1; color: var(--ink-3); }
+.dash-ox-option .lab { font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.dash-ox-option.correct { border-color: var(--green); background: var(--green-soft); }
+.dash-ox-option.correct .mark, .dash-ox-option.correct .lab { color: var(--green); }
+.dash-ox-option.wrong { border-color: var(--primary); background: var(--primary-soft); }
+.dash-ox-option.wrong .mark, .dash-ox-option.wrong .lab { color: var(--primary-ink); }
+.dash-ox-option:disabled { cursor: default; }
+
+/* 선별 결과 리포트 — 점수·등급 대신 개념별 안내만 보여준다 */
+.dash-precheck-report { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 720px; margin: 0 auto; }
+.dash-status-group { background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-sm); padding: 20px; }
+.dash-status-group.weak { border-color: var(--primary-line); }
+.dash-status-group h3 { display: flex; align-items: center; gap: 7px; margin: 0 0 14px; font-size: 14px; font-weight: 800; }
+.dash-status-group h3 svg { width: 16px; height: 16px; }
+.dash-status-group.weak h3 { color: var(--primary-ink); }
+.dash-status-group.known h3 { color: var(--green); }
+.dash-status-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+/* 칩은 해당 개념 상세로 들어가는 링크다 */
+.dash-status-chip { display: inline-flex; align-items: center; gap: 5px; text-align: left; font-size: 12.5px; font-weight: 700; line-height: 1.4; border-radius: 999px; padding: 6px 12px; cursor: pointer; transition: .15s; }
+.dash-status-chip svg { width: 13px; height: 13px; flex: none; opacity: .65; transition: .15s; }
+.dash-status-chip:hover svg { opacity: 1; transform: translateX(2px); }
+.dash-status-chip.weak { background: var(--primary-soft); color: var(--primary-ink); border: 1px solid var(--primary-line); }
+.dash-status-chip.weak:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+.dash-status-chip.known { background: var(--green-soft); color: var(--green); border: 1px solid rgba(17,160,111,.3); }
+.dash-status-chip.known:hover { background: var(--green); color: #fff; border-color: var(--green); }
+.dash-status-empty { margin: 0; font-size: 12.5px; color: var(--ink-3); line-height: 1.6; }
+
+/* 이론 개념 카드뉴스 */
+.dash-theory-wrap { display: flex; align-items: center; gap: 14px; max-width: 680px; margin: 0 auto; }
+.dash-theory-arrow { flex: none; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line-2); background: #fff; color: var(--ink-3); font-size: 18px; display: grid; place-items: center; box-shadow: var(--shadow-sm); }
+.dash-theory-arrow:disabled { opacity: .35; }
+.dash-theory-card { flex: 1; min-width: 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 22px 26px; }
+.dash-theory-progress { display: flex; gap: 5px; margin-bottom: 14px; }
+.dash-theory-progress span { flex: 1; height: 4px; border-radius: 3px; background: var(--bg-soft); }
+.dash-theory-progress span.on { background: var(--primary); }
+.dash-theory-label { display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; color: var(--primary-ink); margin-bottom: 10px; }
+.dash-theory-q { font-size: 15px; font-weight: 700; margin: 0 0 16px; line-height: 1.5; }
+.dash-theory-explain { display: flex; gap: 8px; font-size: 13px; color: var(--ink-2); line-height: 1.6; background: var(--green-soft); border: 1px solid rgba(17,160,111,.25); border-radius: 11px; padding: 12px 14px; }
+.dash-theory-explain .ic { color: var(--green); flex: none; }
+.dash-theory-explain.wrong { background: var(--primary-soft); border-color: var(--primary-line); }
+.dash-theory-explain.wrong .ic { color: var(--primary-ink); }
+.dash-theory-next { text-align: center; margin-top: 18px; }
+
+/* 실습 힌트 버튼 + 팝업 */
+.dash-hint-btn { position: fixed; right: 26px; bottom: 26px; z-index: 40; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; font-size: 22px; background: linear-gradient(150deg,var(--primary-2),var(--primary)); color: #fff; border: none; border-radius: 50%; box-shadow: 0 8px 22px rgba(240,71,58,.35); cursor: pointer; transition: 0.15s; }
+.dash-hint-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(240,71,58,.45); }
+.dash-hint-modal { position: fixed; inset: 0; z-index: 100; display: none; place-items: center; background: rgba(20,22,31,.5); padding: 20px; backdrop-filter: blur(2px); }
+.dash-hint-modal.on { display: grid; }
+.dash-hint-dialog { position: relative; max-width: 480px; width: 100%; max-height: 80vh; overflow: auto; background: #fff; border-radius: var(--r); box-shadow: var(--shadow); padding: 26px; }
+.dash-hint-close { position: absolute; top: 12px; right: 12px; width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--bg-soft); color: var(--ink-3); font-size: 16px; line-height: 1; }
+.dash-hint-title { font-size: 16px; font-weight: 800; margin: 0 0 10px; }
+.dash-hint-body { font-size: 13.5px; color: var(--ink-2); line-height: 1.7; }
+.dash-hint-body p { margin: 0 0 10px; }
+.dash-hint-body b { color: var(--primary-ink); }
+
+/* 결과 리포트 */
+.dash-result { text-align: center; max-width: 480px; margin: 0 auto; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 32px 26px; }
+.dash-result .emoji { font-size: 44px; margin-bottom: 10px; }
+.dash-result h2 { margin: 0 0 8px; font-size: 20px; font-weight: 800; }
+.dash-result .score { font-family: var(--mono); font-size: 15px; color: var(--primary-ink); font-weight: 700; margin: 10px 0 6px; }
+.dash-result p { font-size: 13.5px; color: var(--ink-2); line-height: 1.6; }
+/* 진단 → 이론 → 실습 → 평가 완주 요약 */
+.dash-recap { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); }
+.dash-recap-step { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 700; color: var(--green); background: var(--green-soft); border-radius: 999px; padding: 5px 10px; }
+.dash-recap-step svg { width: 12px; height: 12px; }
+.dash-recap-arrow { color: var(--ink-4); display: inline-flex; }
+.dash-recap-arrow svg { width: 13px; height: 13px; }
+
+.dash-controls { display: flex; justify-content: space-between; max-width: 680px; margin: 22px auto 0; }
+
+.dash-theory-point { display: inline-flex; align-items: center; padding: 6px 12px; background: var(--bg-soft); color: var(--primary-ink); border: 1px solid var(--line-2); border-radius: 8px; font-size: 12px; font-weight: 700; }
+.dash-theory-action { text-align: center; margin-top: 32px; }
+
+/* 이론 목록: 개념 카드 그리드(진입점). 개념이 5개 이상이어도 그리드를 유지하고 세로 스크롤한다. */
+.dash-concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; max-width: 900px; margin: 0 auto; }
+.dash-concept-card { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; text-align: left; padding: 20px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-sm); cursor: pointer; transition: .16s; }
+.dash-concept-card:hover { transform: translateY(-2px); border-color: var(--primary-line); box-shadow: var(--shadow); }
+.dash-concept-top { display: flex; align-items: center; gap: 8px; width: 100%; }
+.dash-concept-icon { flex: none; width: 38px; height: 38px; border-radius: 11px; background: var(--primary-soft); color: var(--primary-ink); display: grid; place-items: center; }
+.dash-concept-icon svg { width: 20px; height: 20px; }
+.dash-concept-no { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--ink-3); }
+/* 사전 진단 결과 연동 배지 */
+.dash-concept-tag { margin-left: auto; display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
+.dash-concept-tag svg { width: 12px; height: 12px; }
+.dash-concept-tag.read { color: var(--ink-3); background: var(--bg-soft); }
+.dash-concept-tag.known { color: var(--green); background: var(--green-soft); }
+.dash-concept-tag.weak { color: var(--primary-ink); background: var(--primary-soft); }
+.dash-concept-card.weak { border-color: var(--primary-line); box-shadow: 0 0 0 3px var(--primary-soft); }
+.dash-concept-card.known { opacity: .78; }
+.dash-concept-card.known:hover { opacity: 1; }
+.dash-concept-title { margin: 4px 0 0; font-size: 15.5px; font-weight: 800; line-height: 1.45; color: var(--ink); }
+.dash-concept-summary { margin: 0; font-size: 13px; color: var(--ink-2); line-height: 1.65; }
+.dash-concept-cta { margin-top: auto; padding-top: 10px; display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 700; color: var(--primary-ink); }
+.dash-concept-cta svg { width: 14px; height: 14px; transition: .16s; }
+.dash-concept-card:hover .dash-concept-cta svg { transform: translateX(3px); }
+
+/* 이론 상세: 스크롤형 줄글 본문 */
+.dash-article-bar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 12px; max-width: 720px; margin: 0 auto 18px; padding: 10px 0; background: var(--bg-soft); }
+.dash-article-back { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: #fff; border: 1px solid var(--line-2); border-radius: 999px; font-size: 13px; font-weight: 700; color: var(--ink-2); box-shadow: var(--shadow-sm); transition: .15s; }
+.dash-article-back:hover { border-color: var(--primary-line); color: var(--primary-ink); }
+.dash-article-back svg { width: 15px; height: 15px; }
+.dash-article-counter { margin-left: auto; font-family: var(--mono); font-size: 11.5px; font-weight: 700; color: var(--ink-3); }
+.dash-article { max-width: 720px; margin: 0 auto; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 32px 34px 34px; }
+.dash-article-head { border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 8px; }
+.dash-article-icon { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 13px; background: var(--primary-soft); color: var(--primary-ink); margin-bottom: 14px; }
+.dash-article-icon svg { width: 24px; height: 24px; }
+.dash-article-head h1 { margin: 0 0 10px; font-size: 23px; font-weight: 800; letter-spacing: -.02em; line-height: 1.35; }
+.dash-article-lead { margin: 0 0 14px; font-size: 14.5px; color: var(--ink-2); line-height: 1.7; }
+.dash-article-section { padding-top: 24px; }
+.dash-article-h2 { display: flex; align-items: center; gap: 7px; margin: 0 0 10px; font-size: 15px; font-weight: 800; color: var(--primary-ink); }
+.dash-article-h2 svg { width: 17px; height: 17px; }
+.dash-article-body { font-size: 14.5px; color: var(--ink-2); line-height: 1.85; }
+.dash-article-body p { margin: 0 0 12px; }
+.dash-article-body p:last-child { margin-bottom: 0; }
+.dash-article-body b { color: var(--ink); }
+.dash-article-body code { font-family: var(--mono); font-size: 13px; background: var(--bg-soft); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; }
+
+/* 상세 하단 이전/다음 개념 (카드형의 개념 간 연속 학습 취약점 보완) */
+.dash-article-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 720px; margin: 18px auto 0; }
+.dash-article-navbtn { display: flex; flex-direction: column; gap: 5px; text-align: left; padding: 15px 18px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-sm); cursor: pointer; transition: .15s; }
+.dash-article-navbtn:hover { border-color: var(--primary-line); transform: translateY(-1px); }
+.dash-article-navbtn.next { text-align: right; }
+.dash-article-navbtn .dir { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700; color: var(--ink-3); }
+.dash-article-navbtn.next .dir { justify-content: flex-end; }
+.dash-article-navbtn .dir svg { width: 13px; height: 13px; }
+.dash-article-navbtn b { font-size: 13.5px; font-weight: 700; color: var(--ink); line-height: 1.45; }
+.dash-article-navbtn.empty { background: none; border: none; box-shadow: none; cursor: default; }
+
+@media (max-width: 880px) {
+  .dash-shell { grid-template-columns: 1fr; }
+  .dash-sidebar { position: static; height: auto; overflow-y: visible; overflow-x: auto; flex-direction: row; gap: 18px; border-right: none; border-bottom: 1px solid var(--line); padding: 14px; }
+  .dash-nav-group { flex: none; min-width: 200px; }
+  .dash-main { padding: 18px 14px 32px; }
+  .dash-theory-wrap { flex-direction: column; }
+  .dash-theory-arrow { display: none; }
+  .dash-concept-grid { grid-template-columns: 1fr; }
+  .dash-precheck-report { grid-template-columns: 1fr; }
+  .dash-article { padding: 24px 20px 26px; }
+  .dash-article-nav { grid-template-columns: 1fr; }
+  .dash-article-navbtn.next { text-align: left; }
+  .dash-article-navbtn.next .dir { justify-content: flex-start; }
+  .dash-article-navbtn.empty { display: none; }
+}

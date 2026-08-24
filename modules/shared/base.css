@@ -1,0 +1,127 @@
+/* 5개 학습 모듈이 공유하는 공통 베이스 스타일.
+   각 모듈의 style.css 5개 파일에서 선언이 완전히 동일했던 규칙만 추출했다.
+   각 모듈 style.css 보다 먼저 로드되므로, 모듈별로 값이 다른 규칙
+   (.layout, .step, .card, .btn, .metrics 등)은 여기 두지 않고
+   각 모듈 파일에 그대로 남겨 덮어쓰도록 한다. */
+
+/* 디자인 토큰 — 5개 모듈 전체의 단일 출처(single source of truth).
+   모듈마다 복사돼 있던 것을 합쳤다(값은 모두 동일했고, 일부 모듈에 몇 개가 빠져 있었을 뿐).
+   브랜드 색·간격·그림자를 바꿀 때는 이 블록만 고치면 5개 코스에 함께 반영된다.
+   특정 모듈만 다른 값을 써야 하면 해당 style.css 의 :root 에서 그 토큰만 덮어쓸 것. */
+:root {
+  --bg:#f6f7fb; --bg-soft:#eef1f7; --card:#fff; --card-2:#f9fafd;
+  --line:#e9ebf2; --line-2:#dfe2ec;
+  --ink:#14161f; --ink-2:#50566a; --ink-3:#868da3; --ink-4:#aeb4c6;
+  --primary:#f0473a; --primary-ink:#d12e1e; --primary-2:#ff6a52; --primary-soft:#fff1ee; --primary-line:#ffd6cd;
+  /* UI 강조색은 --primary 하나로 통일한다. 상태색(green/amber)과 정보색(blue)만 예외.
+     보라(--violet)는 선택 상태·슬라이더·배지에 흩어져 브랜드 색과 충돌해 걷어냈다.
+     차트의 계열 색은 서로 구분돼야 하므로 각 app.js 의 PALETTE 배열에서 따로 관리한다. */
+  --green:#11a06f; --green-soft:#e6f6ef; --blue:#4d8dff; --blue-soft:#eaf1ff; --amber:#d98a1f; --amber-soft:#fcf3e2;
+  /* --blue 는 밝아서 흰 배경 위 본문 글자로는 대비가 모자란다. blue-soft 배경 위 글자·제목에는
+     이 어두운 쪽을 쓴다(--primary 와 --primary-ink 의 관계와 같다).
+     concept·text·data 세 파일에 #2c63c4 리터럴로 흩어져 있던 값이다. */
+  --blue-ink:#2c63c4;
+  --shadow-sm:0 1px 2px rgba(20,22,31,.05), 0 1px 3px rgba(20,22,31,.05);
+  --shadow:0 2px 6px rgba(20,22,31,.05), 0 12px 30px rgba(20,22,31,.07);
+  --r:16px; --sans:'Pretendard',-apple-system,sans-serif; --mono:'JetBrains Mono','Pretendard',ui-monospace,monospace;
+}
+
+* { box-sizing:border-box; }
+body { margin:0; font-family:var(--sans); color:var(--ink); font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+    word-break:keep-all; overflow-wrap:break-word;
+    background:radial-gradient(1000px 520px at 88% -8%, rgba(240,71,58,.08), transparent 62%), var(--bg); min-height:100vh; }
+button { font-family:inherit; cursor:pointer; }
+.topbar { position:sticky; top:0; z-index:30; background:rgba(246,247,251,.85); backdrop-filter:blur(14px) saturate(1.4); border-bottom:1px solid var(--line); }
+.topbar::after { content:''; display:block; height:3px; background:linear-gradient(90deg,var(--primary),#ff8a3d 40%,rgba(255,138,61,0) 80%); }
+.topbar-inner { max-width:1140px; margin:0 auto; padding:11px 22px; display:flex; align-items:center; gap:13px; }
+.back:hover { color:var(--primary-ink); border-color:var(--primary-line); }
+.logo-mark { width:38px; height:38px; border-radius:11px; background:linear-gradient(150deg,var(--primary-2),var(--primary)); color:#fff; display:grid; place-items:center; font-weight:800; font-size:20px; box-shadow:0 4px 12px rgba(240,71,58,.4), inset 0 1px 0 rgba(255,255,255,.4); }
+.logo-title { font-size:18px; font-weight:800; letter-spacing:-.02em; }
+.logo-title span { color:var(--primary); }
+.logo-mark-img { height:38px; width:auto; display:block; }
+.logo-tag { font-size:12px; color:var(--ink-3); }
+.status { margin-left:auto; font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:.04em; padding:7px 13px; border-radius:999px; border:1px solid var(--line-2); color:var(--ink-3); background:#fff; }
+.status.busy { color:var(--amber); border-color:rgba(217,138,31,.4); background:var(--amber-soft); }
+.status.ready { color:var(--green); border-color:rgba(17,160,111,.4); background:var(--green-soft); }
+main { max-width:1140px; margin:0 auto; padding:26px 22px 22px; }
+.cintro { text-align:center; padding:6px 0 16px; display:flex; flex-direction:column; align-items:center; }
+.cintro .eyebrow { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:.06em; color:var(--primary-ink); background:var(--primary-soft); border:1px solid var(--primary-line); border-radius:999px; padding:5px 12px; margin-bottom:12px; }
+.cintro h1 { margin:0 0 7px; font-size:26px; font-weight:800; letter-spacing:-.02em; }
+.cintro p b { color:var(--primary-ink); }
+.steps { display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+.step .t b { font-size:14.5px; font-weight:700; display:block; }
+.step .t span { font-size:12px; color:var(--ink-3); }
+.card h2 { margin:0 0 4px; font-size:16px; font-weight:800; display:flex; align-items:center; gap:8px; }
+.card h2::before { content:''; width:4px; height:16px; border-radius:2px; background:var(--primary); }
+/* 가운데 정렬 카드용 수식자.
+   .card h2 는 flex 컨테이너라 부모의 text-align:center 가 먹지 않는다(제목이 왼쪽에 붙는다).
+   또 제목 앞 막대(::before)는 좌측 정렬을 전제로 한 장식이라 가운데 정렬에서는 숨긴다. */
+.centered { text-align:center; }
+.centered h2 { justify-content:center; }
+.centered h2::before { display:none; }
+
+/* ── 버튼 위계 ─────────────────────────────────────────────────────────
+   브랜드 색은 --primary 하나만 쓰고, "얼마나 채웠는가"로 시선의 무게를 나눈다.
+
+     .btn.primary  채움      한 화면에 하나. 흐름을 다음 단계로 넘기는 동작.
+     .btn.accent   연한 채움  제자리에서 실행하는 동작(분류 실행·재분류 테스트 등).
+     .btn          흰 배경    중립 보조.
+     .btn.quiet    투명      힌트·부가.
+
+   .block(전폭)과 .lg(크게)도 강조 신호다. .primary 에만 곁들이고 남용하지 않는다.
+   전부 강조하면 아무것도 강조되지 않는다. */
+.btn:hover { border-color:var(--primary-line); color:var(--primary-ink); }
+.btn:disabled { opacity:.45; cursor:not-allowed; box-shadow:none; }
+.btn.primary { background:linear-gradient(150deg,var(--primary-2),var(--primary)); border-color:transparent; color:#fff; box-shadow:0 5px 16px rgba(240,71,58,.32); }
+.btn.primary:hover { color:#fff; transform:translateY(-1px); }
+.btn.accent { background:var(--primary-soft); border-color:var(--primary-line); color:var(--primary-ink); box-shadow:none; }
+.btn.accent:hover { background:#ffe4dd; border-color:var(--primary); color:var(--primary-ink); }
+.btn.quiet { background:transparent; border-color:transparent; color:var(--ink-2); box-shadow:none; }
+.btn.quiet:hover { background:var(--primary-soft); border-color:transparent; color:var(--primary-ink); }
+.btn.block { width:100%; }
+/* 지금까지 gesture·life 에만 있어 나머지 3개 코스에서는 아무 효과가 없던 크기 수식자. */
+.btn.lg { padding:13px 20px; font-size:15px; }
+/* 버튼 하나를 가운데 두는 래퍼. .btn 이 inline-flex 라 margin:auto 로는 가운데로 오지 않는다. */
+.btn-row { display:flex; justify-content:center; margin-top:16px; }
+.learn b { color:var(--primary-ink); }
+.fill { flex:1 1 auto; }
+.thead { display:flex; align-items:baseline; gap:10px; margin:0 0 14px; flex-wrap:wrap; }
+.thead h2 { margin:0; font-size:18px; font-weight:800; letter-spacing:-.02em; }
+.thead h2::before { content:''; display:inline-block; width:4px; height:16px; border-radius:2px; background:linear-gradient(180deg,var(--primary-2),var(--primary)); margin-right:9px; vertical-align:-2px; }
+.thead span { font-size:12.5px; color:var(--ink-3); font-weight:600; }
+.tgrid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.tcard { background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px; box-shadow:var(--shadow-sm); transition:.16s; }
+.tcard:hover { box-shadow:var(--shadow); transform:translateY(-2px); border-color:var(--primary-line); }
+.tcard .tc-ic { width:38px; height:38px; border-radius:11px; display:grid; place-items:center; font-size:19px; margin-bottom:10px; background:var(--primary-soft); }
+.tcard:nth-child(1) .tc-ic { background:var(--green-soft); }
+.tcard:nth-child(3) .tc-ic { background:var(--amber-soft); }
+
+/* ── 인라인 SVG 아이콘 (shared/icons.js) ──────────────────────────────
+   이모지 자리를 대신한다. 크기는 1em 이라 컨테이너가 쓰던 font-size 를 그대로 승계하고,
+   색은 currentColor 라 컨테이너 색을 따른다 — 그래서 이모지와 달리 테마 색이 적용된다. */
+.eic { width:1em; height:1em; flex:none; display:block; }
+.ic-inline { display:inline-grid; place-items:center; vertical-align:-.16em; color:var(--ink-3); }
+/* 이론 카드 — soft 배경과 같은 계열 색을 얹어 듀오톤으로 읽히게 한다. */
+.tcard .tc-ic { color:var(--primary-ink); }
+.tcard:nth-child(1) .tc-ic { color:var(--green); }
+.tcard:nth-child(2) .tc-ic { color:var(--blue); }
+.tcard:nth-child(3) .tc-ic { color:var(--amber); }
+.step .n { color:var(--ink-3); }
+.step.active .n { color:var(--primary-ink); }
+.say .ic { color:var(--primary-ink); }
+.tip .ic-inline { color:var(--ink-4); }
+.tcard h3 { margin:0 0 6px; font-size:14.5px; font-weight:800; }
+.tcard p { margin:0; font-size:13px; color:var(--ink-2); line-height:1.6; }
+.tcard p b { color:var(--primary-ink); }
+.tflow { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:12px; background:var(--card-2); border:1px solid var(--line); border-radius:12px; padding:12px 14px; }
+.tflow .tf-lab { font-size:11.5px; font-family:var(--mono); font-weight:700; color:var(--ink-3); margin-right:2px; }
+.tflow .tf { font-size:12.5px; font-weight:700; color:var(--ink-2); background:#fff; border:1px solid var(--line-2); border-radius:8px; padding:6px 11px; }
+.tflow .tarr { color:var(--ink-4); font-weight:700; }
+@media (max-width:760px){ .tgrid { grid-template-columns:1fr; } }
+.flow { display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:var(--r); padding:7px; box-shadow:var(--shadow-sm); margin-bottom:18px; }
+.flow .fstep:hover { background:var(--card-2); }
+.flow .fstep.active { background:var(--primary-soft); }
+.flow .fstep .fn { width:28px; height:28px; border-radius:50%; flex:none; display:grid; place-items:center; font-family:var(--mono); font-weight:700; font-size:13px; background:var(--bg-soft); border:1px solid var(--line); color:var(--ink-3); transition:.15s; }
+.flow .fstep.active .fn { background:linear-gradient(150deg,var(--primary-2),var(--primary)); border-color:transparent; color:#fff; }
+.flow .fstep.done .fn { background:var(--green); border-color:transparent; color:#fff; }
+.flow .farrow { color:var(--ink-4); flex:none; padding:0 2px; }

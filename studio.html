@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta name="theme-color" content="#0a0b12" />
+<title>VISION STUDIO · Eduino AI</title>
+<meta name="robots" content="noindex" />
+<!-- ────────────────────────────────────────────────────────────────
+     허브 UI는 제안 7안 체제라 실물은 console/ 폴더에 있다.
+     이 파일은 정식 URL 을 지키는 라우터 스텁 —
+     stages/*.html 의 "콘솔" 링크가 여기로 돌아오므로 남겨 둬야 한다.
+     ──────────────────────────────────────────────────────────────── -->
+<meta http-equiv="refresh" content="0; url=/console/cards.html" />
+<style>
+  html,body{margin:0;height:100%;background:#0a0b12;color:#737c9c;
+    font-family:'Pretendard',system-ui,sans-serif;display:grid;place-items:center;}
+  a{color:#6aa6ff;font-size:14px;}
+</style>
+<script>
+  /* 공통 셸을 통째로 불러올 필요 없이 선택된 안만 읽는다 (shared.js 의 VARIANTS 와 같은 목록) */
+  (function () {
+    var URLS = {
+      map: '/console/map.html', cards: '/console/cards.html'
+    };
+    var v; try { v = localStorage.getItem('vision_ui_variant'); } catch (e) {}
+    location.replace((URLS[v] || URLS.cards) + (location.hash || ''));
+  })();
+</script>
+</head>
+<body>
+<noscript><a href="/console/cards.html">비전 스튜디오 콘솔 열기 →</a></noscript>
+</body>
+</html>

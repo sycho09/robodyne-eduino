@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta name="theme-color" content="#f6f7fb" />
+<title>무료 샘플 · 미니 이미지 학습 — Eduino AI</title>
+<meta name="description" content="카메라로 두 가지를 가르치면 AI가 맞히는 무료 미니 체험. 설치 없이 브라우저에서 바로." />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<style>
+  :root {
+    --bg:#f6f7fb; --bg-soft:#eef1f7; --card:#fff; --card-2:#f9fafd;
+    --line:#e9ebf2; --line-2:#dfe2ec;
+    --ink:#14161f; --ink-2:#50566a; --ink-3:#868da3; --ink-4:#aeb4c6;
+    --primary:#f0473a; --primary-ink:#d12e1e; --primary-2:#ff6a52; --primary-soft:#fff1ee; --primary-line:#ffd6cd;
+    --green:#11a06f; --green-soft:#e6f6ef; --blue:#4d8dff; --amber:#d98a1f; --amber-soft:#fcf3e2;
+    --shadow-sm:0 1px 2px rgba(20,22,31,.05), 0 1px 3px rgba(20,22,31,.05);
+    --shadow:0 2px 6px rgba(20,22,31,.05), 0 12px 30px rgba(20,22,31,.07);
+    --r:16px; --sans:'Pretendard',-apple-system,sans-serif; --mono:'JetBrains Mono','Pretendard',ui-monospace,monospace;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:var(--sans); color:var(--ink); font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+    word-break:keep-all; overflow-wrap:break-word;
+    background:radial-gradient(1000px 520px at 88% -8%, rgba(240,71,58,.08), transparent 62%), var(--bg); min-height:100vh; }
+  a { color:inherit; text-decoration:none; } button { font-family:inherit; cursor:pointer; }
+
+  .topbar { position:sticky; top:0; z-index:30; background:rgba(246,247,251,.85); backdrop-filter:blur(14px) saturate(1.4); border-bottom:1px solid var(--line); }
+  .topbar::after { content:''; display:block; height:3px; background:linear-gradient(90deg,var(--primary),#ff8a3d 40%,rgba(255,138,61,0) 80%); }
+  .topbar-inner { max-width:1280px; margin:0 auto; padding:11px 22px; display:flex; align-items:center; gap:13px; }
+  .back { font-size:13px; font-weight:600; color:var(--ink-2); display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border:1px solid var(--line-2); border-radius:10px; background:#fff; box-shadow:var(--shadow-sm); }
+  .back:hover { color:var(--primary-ink); border-color:var(--primary-line); }
+  .logo-mark { width:34px; height:34px; border-radius:10px; background:linear-gradient(150deg,var(--primary-2),var(--primary)); color:#fff; display:grid; place-items:center; font-weight:800; font-size:18px; box-shadow:0 4px 12px rgba(240,71,58,.4), inset 0 1px 0 rgba(255,255,255,.4); }
+  .logo-title { font-size:16px; font-weight:800; } .logo-title span { color:var(--primary); }
+  .free { margin-left:auto; font-family:var(--mono); font-size:11px; font-weight:700; color:var(--green); background:var(--green-soft); border:1px solid rgba(17,160,111,.4); border-radius:999px; padding:6px 12px; }
+
+  main { max-width:1280px; margin:0 auto; padding:22px; }
+  /* 다크 히어로 밴드 (고급화) */
+  .intro { position:relative; margin:6px 0 20px; border-radius:26px; overflow:hidden; padding:42px 28px 34px; text-align:center;
+    background:linear-gradient(165deg,#14161f 0%, #1b1411 58%, #23101a 100%);
+    border:1px solid rgba(255,255,255,.08); box-shadow:0 30px 70px rgba(20,22,31,.28), inset 0 1px 0 rgba(255,255,255,.06); }
+  .intro::before { content:''; position:absolute; inset:0; pointer-events:none; opacity:.72;
+    background:radial-gradient(40% 56% at 16% 18%, rgba(240,71,58,.5), transparent 60%), radial-gradient(44% 58% at 84% 12%, rgba(255,138,61,.42), transparent 60%), radial-gradient(52% 66% at 62% 104%, rgba(124,108,255,.32), transparent 62%); }
+  .intro::after { content:''; position:absolute; inset:0; pointer-events:none;
+    background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px); background-size:32px 32px;
+    -webkit-mask-image:radial-gradient(120% 95% at 50% 0%,#000 26%,transparent 78%); mask-image:radial-gradient(120% 95% at 50% 0%,#000 26%,transparent 78%); }
+  .intro > * { position:relative; z-index:1; }
+  .intro .eyebrow { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11.5px; font-weight:700; letter-spacing:.06em; color:#ffd9d1; background:rgba(240,71,58,.16); border:1px solid rgba(240,71,58,.36); border-radius:999px; padding:6px 13px; margin-bottom:15px; }
+  .intro h1 { margin:0 0 10px; font-size:38px; font-weight:800; letter-spacing:-.03em; color:#fff; line-height:1.12; }
+  .intro h1 .g { background:linear-gradient(100deg,#ff9a3d,#ff6a52 50%,#ff6ab5); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .intro p { margin:0 auto; max-width:600px; font-size:15px; color:rgba(255,255,255,.76); line-height:1.6; }
+  .intro p b { color:#fff; }
+  .trust { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:18px; }
+  .trust span { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:rgba(255,255,255,.85); background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.16); border-radius:999px; padding:7px 13px; backdrop-filter:blur(6px); }
+
+  .steps3 { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:16px 0 2px; }
+  .steps3 span { font-size:12.5px; font-weight:700; color:#fff; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); border-radius:999px; padding:6px 13px; }
+  .steps3 b { color:#ff9a8f; font-family:var(--mono); }
+  @media (max-width:600px) { .intro { padding:30px 18px; } .intro h1 { font-size:27px; } }
+
+  .tm { display:grid; grid-template-columns:1.05fr 0.95fr 1.05fr; gap:16px; align-items:start; margin-top:14px; }
+  .train-status { margin-top:12px; font-size:13px; color:var(--ink-3); text-align:center; font-weight:600; }
+  .learnbox { margin-top:14px; background:var(--card-2); border:1px solid var(--line); border-radius:12px; padding:13px 15px; font-size:12.5px; color:var(--ink-2); line-height:1.7; }
+  .learnbox b { color:var(--primary-ink); }
+  .tcurve[hidden] { display:none; }
+  .tlabel { font-size:12px; color:var(--ink-3); font-weight:700; margin-top:14px; }
+  .tg { width:100%; height:96px; background:var(--card-2); border:1px solid var(--line); border-radius:10px; margin-top:8px; display:block; }
+  .tg .grid { stroke:var(--line-2); stroke-width:1; stroke-dasharray:4 4; }
+  .tg-acc { font-size:13px; color:var(--ink-2); font-weight:600; margin-top:9px; text-align:center; }
+  .tg-acc b { color:var(--green); font-family:var(--mono); font-size:15px; }
+  .tconf { margin-top:12px; }
+  .tconf table { width:100%; border-collapse:collapse; font-size:11.5px; }
+  .tconf caption { caption-side:top; text-align:left; font-size:11px; color:var(--ink-4); margin-bottom:5px; }
+  .tconf th, .tconf td { border:1px solid var(--line); padding:5px 4px; text-align:center; }
+  .tconf th { background:var(--card-2); color:var(--ink-2); font-weight:700; }
+  .tconf td.rowh { background:var(--card-2); font-weight:700; color:var(--ink-2); }
+  .tconf td.diag { background:var(--green-soft); color:var(--green); font-weight:800; }
+  @media (max-width:980px){ .tm{ grid-template-columns:1fr; } }
+  .card { background:#fff; border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); padding:18px; min-width:0; }
+  .cls-item { min-width:0; }
+  .card h2 { margin:0 0 4px; font-size:16px; font-weight:800; display:flex; align-items:center; gap:9px; }
+  .card h2::before { content:''; width:4px; height:16px; border-radius:2px; background:var(--primary); }
+  .tm .card h2::before { display:none; }
+  .hb { width:25px; height:25px; border-radius:8px; flex:none; display:grid; place-items:center; font-family:var(--mono); font-size:13px; font-weight:800; color:#fff; background:linear-gradient(150deg,var(--primary-2),var(--primary)); box-shadow:0 3px 9px rgba(240,71,58,.35); }
+  /* 카드 등장 모션 */
+  .tm > .card { animation:rise .5s cubic-bezier(.16,1,.3,1) both; }
+  .tm > .card:nth-child(2){ animation-delay:.06s; } .tm > .card:nth-child(3){ animation-delay:.12s; }
+  @keyframes rise { from{ opacity:0; transform:translateY(12px); } }
+  @media (prefers-reduced-motion: reduce){ .tm>.card{ animation:none; } }
+  /* 결과 도넛 */
+  .result { display:flex; align-items:center; gap:14px; padding:8px 0 4px; }
+  .rdonut { position:relative; width:76px; height:76px; flex:none; }
+  .rdonut svg { transform:rotate(-90deg); }
+  .rdonut .rbg { fill:none; stroke:var(--bg-soft); stroke-width:8; }
+  .rdonut .rfg { fill:none; stroke:var(--primary); stroke-width:8; stroke-linecap:round; transition:stroke-dasharray .35s cubic-bezier(.16,1,.3,1), stroke .3s; }
+  .rdonut i { position:absolute; inset:0; display:grid; place-items:center; font-weight:800; font-size:16px; color:var(--primary-ink); }
+  .rlab .big { font-size:20px; font-weight:800; line-height:1.2; }
+  .rlab .conf { font-size:12.5px; color:var(--ink-3); margin-top:2px; }
+  .card .sub { font-size:12.5px; color:var(--ink-3); margin:0 0 14px; }
+  .cam-state { margin-left:auto; font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink-3); background:var(--bg-soft); border:1px solid var(--line); border-radius:999px; padding:3px 9px; }
+  .cam-state.on { color:var(--primary-ink); background:var(--primary-soft); border-color:var(--primary-line); }
+  .stage { position:relative; width:100%; aspect-ratio:4/3; background:#0d1016; border-radius:13px; overflow:hidden; border:1px solid var(--line); }
+  .stage video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transform:scaleX(-1); }
+  .stage .ph { position:absolute; inset:0; display:grid; place-items:center; color:#9aa3b2; font-size:13.5px; text-align:center; padding:20px; }
+  .rec-dot { position:absolute; top:12px; left:12px; display:none; align-items:center; gap:7px; background:rgba(240,71,58,.92); color:#fff; font-size:11.5px; font-weight:700; padding:5px 11px; border-radius:999px; }
+  .rec-dot.on { display:inline-flex; } .rec-dot i { width:8px; height:8px; border-radius:50%; background:#fff; animation:blink 1s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+  .cam-ctrl { display:flex; gap:10px; margin-top:12px; }
+  .fx { display:flex; align-items:center; gap:7px; margin-top:12px; flex-wrap:wrap; }
+  .fx .fx-lab { font-size:12.5px; color:var(--ink-3); font-weight:700; margin-right:2px; }
+  .fx button { border:1px solid var(--line-2); background:#fff; color:var(--ink-2); border-radius:9px; padding:7px 13px; font-size:13px; font-weight:600; }
+  .fx button.on { background:var(--primary-soft); color:var(--primary-ink); border-color:var(--primary-line); }
+  .fx-note { font-size:12px; color:var(--ink-3); margin:9px 0 0; line-height:1.55; }
+  .fx-note b { color:var(--primary-ink); }
+  .btn { border:1px solid var(--line-2); background:#fff; color:var(--ink); border-radius:11px; padding:11px 16px; font-size:14px; font-weight:700; transition:.15s; box-shadow:var(--shadow-sm); display:inline-flex; align-items:center; justify-content:center; gap:7px; }
+  .btn:hover { border-color:var(--primary-line); color:var(--primary-ink); }
+  .btn:disabled { opacity:.45; cursor:not-allowed; box-shadow:none; }
+  .btn.primary { background:linear-gradient(150deg,var(--primary-2),var(--primary)); border-color:transparent; color:#fff; box-shadow:0 5px 16px rgba(240,71,58,.32); }
+  .btn.primary:hover { color:#fff; transform:translateY(-1px); }
+  .btn.lg { padding:13px 20px; font-size:15px; } .btn.block { width:100%; }
+
+  .cls { display:flex; flex-direction:column; gap:10px; }
+  .cls-item { background:var(--card-2); border:1px solid var(--line); border-radius:12px; padding:12px; transition:.15s; }
+  .cls-item.rec { border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-soft); }
+  .cls-head { display:flex; align-items:center; gap:9px; }
+  .swatch { width:13px; height:13px; border-radius:50%; flex:none; }
+  .cls-name { flex:1; background:transparent; border:none; color:var(--ink); font-size:14.5px; font-weight:700; padding:4px 2px; min-width:0; }
+  .cls-name:focus { outline:none; background:#fff; box-shadow:0 0 0 1px var(--line-2); border-radius:6px; }
+  .cls-count { font-family:var(--mono); font-size:12px; color:var(--ink-3); }
+  .cls-clear { border:none; background:none; color:var(--ink-4); font-size:11.5px; font-weight:600; text-decoration:underline; cursor:pointer; padding:2px 4px; }
+  .cls-clear:hover { color:var(--primary); }
+  .collect { width:100%; margin-top:9px; border:1px solid var(--line-2); background:#fff; color:var(--ink-2); border-radius:9px; padding:9px; font-size:13px; font-weight:700; }
+  .collect.rec { background:linear-gradient(150deg,var(--primary-2),var(--primary)); border-color:transparent; color:#fff; }
+  .thumbs { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; max-height:132px; overflow-y:auto; }
+  .thumbs:empty { display:none; }
+  .thumbs img { width:44px; height:33px; border-radius:6px; object-fit:cover; border:1px solid var(--line); flex:none; }
+  .samp-bar { height:5px; border-radius:3px; background:var(--bg-soft); overflow:hidden; margin-top:9px; }
+  .samp-bar i { display:block; height:100%; background:var(--primary); width:0; transition:.12s; }
+
+  .bars { display:flex; flex-direction:column; gap:9px; margin-top:12px; }
+  .bar .top { display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:4px; font-weight:700; }
+  .bar .track { height:9px; border-radius:5px; background:var(--bg-soft); overflow:hidden; }
+  .bar .fill { height:100%; width:0; border-radius:5px; transition:.15s; }
+  .hint { font-size:12.5px; color:var(--ink-3); margin-top:12px; text-align:center; }
+
+  .upsell { margin-top:22px; border-radius:var(--r); padding:22px; text-align:center; background:linear-gradient(180deg,var(--primary-soft),#fff); border:1px solid var(--primary-line); }
+  .upsell h3 { margin:0 0 6px; font-size:18px; font-weight:800; }
+  .upsell p { margin:0 0 16px; font-size:13.5px; color:var(--ink-2); }
+  .upsell .row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .banner { background:var(--amber-soft); border:1px solid rgba(217,138,31,.4); color:#8a5a12; border-radius:12px; padding:11px 15px; font-size:13px; margin-bottom:16px; display:none; }
+  .banner.on { display:block; } .banner b { color:#6b4408; }
+
+  @media (max-width:820px){ .layout{ grid-template-columns:1fr; } }
+  /* ── 가이드 퀘스트(온보딩) ── */
+  .quest-hole { position:fixed; z-index:9998; border-radius:14px; box-shadow:0 0 0 9999px rgba(15,19,32,.62); pointer-events:none; transition:left .25s,top .25s,width .25s,height .25s; }
+  .quest-hole::after { content:''; position:absolute; inset:-4px; border:2.5px solid var(--primary); border-radius:16px; animation:questPulse 1.4s infinite; }
+  @keyframes questPulse { 0%,100%{ box-shadow:0 0 0 0 rgba(240,71,58,.5);} 50%{ box-shadow:0 0 0 9px rgba(240,71,58,0);} }
+  .quest-card { position:fixed; z-index:9999; width:300px; max-width:calc(100vw - 28px); background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:0 18px 50px rgba(20,22,31,.3); padding:16px 18px; transition:left .25s,top .25s; }
+  .quest-card .qk { font-family:var(--mono); font-size:11px; font-weight:700; color:var(--primary-ink); letter-spacing:.04em; }
+  .quest-card h4 { margin:6px 0 6px; font-size:16px; font-weight:800; letter-spacing:-.01em; }
+  .quest-card p { margin:0; font-size:13.5px; color:var(--ink-2); line-height:1.6; }
+  .quest-card p b { color:var(--primary-ink); }
+  .quest-card .qf { display:flex; align-items:center; justify-content:space-between; margin-top:14px; gap:10px; }
+  .quest-card .qprog { font-size:11.5px; color:var(--ink-3); font-weight:700; font-family:var(--mono); }
+  .quest-card .qwait { font-size:12px; color:var(--green); font-weight:700; display:inline-flex; align-items:center; gap:6px; }
+  .quest-card .qwait::before { content:''; width:7px; height:7px; border-radius:50%; background:var(--green); animation:questPulse2 1s infinite; }
+  @keyframes questPulse2 { 50%{ opacity:.3; } }
+  .quest-skip { background:none; border:none; color:var(--ink-4); font-size:12px; font-weight:600; cursor:pointer; padding:4px; }
+  .quest-skip:hover { color:var(--ink-2); }
+  .quest-next { background:linear-gradient(150deg,var(--primary-2),var(--primary)); color:#fff; border:none; border-radius:9px; padding:8px 15px; font-size:13px; font-weight:700; cursor:pointer; }
+  .quest-modal { position:fixed; inset:0; z-index:10000; display:none; place-items:center; background:rgba(15,19,32,.55); padding:20px; backdrop-filter:blur(3px); }
+  .quest-modal.on { display:grid; }
+  .quest-dialog { max-width:440px; width:100%; background:#fff; border-radius:22px; box-shadow:0 30px 70px rgba(20,22,31,.4); padding:32px 28px; text-align:center; }
+  .quest-dialog .qicon { font-size:46px; line-height:1; }
+  .quest-dialog h3 { margin:14px 0 9px; font-size:23px; font-weight:800; letter-spacing:-.02em; }
+  .quest-dialog p { margin:0 0 22px; font-size:14.5px; color:var(--ink-2); line-height:1.65; }
+  .quest-dialog .qbtns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .quest-dialog .btn-go { background:linear-gradient(150deg,var(--primary-2),var(--primary)); color:#fff; border:none; border-radius:12px; padding:13px 26px; font-size:15px; font-weight:800; cursor:pointer; box-shadow:0 8px 20px rgba(240,71,58,.32); }
+  .quest-dialog .btn-skip { background:#fff; border:1px solid var(--line-2); color:var(--ink-2); border-radius:12px; padding:13px 20px; font-size:14px; font-weight:700; cursor:pointer; }
+  .quest-replay { position:fixed; right:18px; bottom:18px; z-index:60; background:#fff; border:1px solid var(--line-2); border-radius:999px; padding:10px 16px; font-size:13px; font-weight:700; color:var(--ink-2); box-shadow:var(--shadow); cursor:pointer; display:none; align-items:center; gap:6px; }
+  .quest-replay.on { display:inline-flex; }
+  .q-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .q-badge { font-size:10.5px; font-weight:800; color:var(--primary-ink); background:var(--primary-soft); border:1px solid var(--primary-line); border-radius:999px; padding:3px 9px; white-space:nowrap; transition:.2s; }
+  .quest-card.done .q-badge { color:var(--green); background:var(--green-soft); border-color:rgba(17,160,111,.35); }
+  .q-pbar { height:7px; border-radius:6px; background:var(--bg-soft); overflow:hidden; margin:12px 0 2px; }
+  .q-pbar i { display:block; height:100%; width:0; border-radius:6px; background:linear-gradient(90deg,var(--primary-2),var(--primary)); transition:width .35s ease; }
+  .quest-card.done .q-pbar i { background:linear-gradient(90deg,#1ece90,var(--green)); }
+  .quest-card.done .qprog { color:var(--green); }
+  .quest-hole.done { box-shadow:0 0 0 9999px rgba(15,19,32,.5); }
+  .quest-hole.done::after { border-color:var(--green); animation:none; }
+  /* 완료 축하 컨페티 */
+  .quest-confetti { position:fixed; inset:0; z-index:10001; pointer-events:none; overflow:hidden; }
+  .quest-confetti i { position:absolute; top:-14px; width:9px; height:14px; border-radius:2px; opacity:.95; animation:confFall linear forwards; }
+  @keyframes confFall { to { transform:translateY(108vh) rotate(720deg); opacity:.9; } }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="back" href="/platform/index.html">← 플랫폼</a>
+    <a class="back" href="/platform/index.html" style="border:none;box-shadow:none;padding-left:0"><span class="logo-mark">E</span></a>
+    <div class="logo-title">Eduino <span>AI</span></div>
+    <span class="free">무료 샘플</span>
+  </div>
+</header>
+
+<main>
+  <div class="banner" id="banner"></div>
+  <div class="intro">
+    <span class="eyebrow">⚡ 무료 체험 · 미니 이미지 학습</span>
+    <h1>1분 만에 <span class="g">나만의 AI를 가르쳐</span> 보기</h1>
+    <p>카메라로 두 가지를 보여주면 AI가 둘을 구분해요. <b>설치도 코딩도 없이</b> — 지금 바로 “AI 학습”의 가장 작은 한 조각을 직접 만들어 보세요.</p>
+    <div class="trust">
+      <span>🌐 설치 없이 브라우저에서</span>
+      <span>🔒 데이터는 기기 안에서만 · 개인정보 안전</span>
+      <span>🎓 현장 교사가 설계</span>
+      <span>📷 카메라만 있으면 OK</span>
+    </div>
+    <div class="steps3"><span><b>①</b> 데이터 모으기</span><span><b>②</b> 학습</span><span><b>③</b> 미리보기·맞히기</span></div>
+  </div>
+
+  <!-- 좌: 데이터셋 · 가운데: 학습 · 우: 미리보기 -->
+  <div class="tm">
+    <!-- 좌 -->
+    <div class="card">
+      <h2><span class="hb">1</span>데이터셋</h2>
+      <p class="sub">이름을 눌러 바꾸고, 우측 카메라에 비추며 [데이터 수집]. <b>탭=1장 · 길게=연속</b></p>
+      <div class="cls" id="cls"></div>
+    </div>
+
+    <!-- 가운데 -->
+    <div class="card center-col">
+      <h2><span class="hb">2</span>학습</h2>
+      <p class="sub">모은 데이터로 AI가 패턴을 배워요.</p>
+      <button class="btn primary block lg" id="train" disabled>학습하기</button>
+      <div class="train-status" id="train-status">왼쪽에서 두 가지를 각각 3장 이상 모아주세요</div>
+      <div class="tcurve" id="tcurve" hidden>
+        <div class="tlabel">📈 데이터가 늘수록 정확도 ↑</div>
+        <svg class="tg" id="tg" viewBox="0 0 240 96" preserveAspectRatio="none">
+          <line class="grid" x1="10" y1="48" x2="230" y2="48"/>
+          <polyline id="tg-line" fill="none" stroke="#11a06f" stroke-width="2.4" stroke-linejoin="round"/>
+        </svg>
+        <div class="tg-acc">학습 정확도 <b id="tg-accv">—</b></div>
+        <div class="tconf" id="tconf"></div>
+      </div>
+      <div class="learnbox">AI는 모은 예시의 <b>공통된 특징</b>을 찾아 둘을 구분하는 기준을 만들어요. 데이터가 <b>많고 다양</b>할수록 똑똑해집니다.</div>
+    </div>
+
+    <!-- 우 -->
+    <div class="card">
+      <h2><span class="hb">3</span>미리보기 <span class="cam-state" id="cam-state">대기</span></h2>
+      <div class="stage">
+        <video id="v" playsinline muted></video>
+        <div class="rec-dot" id="rec"><i></i> 수집 중</div>
+        <div class="ph" id="ph">📷 [카메라 켜기]를 누르고<br>물체나 손을 비춰주세요</div>
+      </div>
+      <div class="cam-ctrl">
+        <button class="btn primary lg" id="cam">카메라 켜기</button>
+        <button class="btn lg" id="stop" disabled>중지</button>
+      </div>
+      <div class="fx" id="fx"><span class="fx-lab">영상효과</span><button data-fx="none" class="on">원본</button><button data-fx="gray">흑백</button><button data-fx="invert">색반전</button></div>
+      <div class="result">
+        <div class="rdonut"><svg width="76" height="76" viewBox="0 0 76 76"><circle class="rbg" cx="38" cy="38" r="32"/><circle class="rfg" id="r-arc" cx="38" cy="38" r="32" stroke-dasharray="0 201"/></svg><i id="r-pct">0%</i></div>
+        <div class="rlab"><div class="big" id="r-name">아직 학습 전</div><div class="conf" id="r-sub">데이터를 모아 학습해 보세요</div></div>
+      </div>
+      <div class="bars" id="bars"></div>
+      <button class="btn block lg" id="guess" disabled style="margin-top:12px">맞혀보기 시작</button>
+      <div class="hint">※ 가벼운 맛보기 — 색·밝기 변화에 민감할 수 있어요. 효과는 보기용(AI는 원본 학습).</div>
+    </div>
+  </div>
+
+  <div class="upsell">
+    <h3>여기까지가 “맛보기”예요 🎯</h3>
+    <p>전체 코스에서는 이미지뿐 아니라 <b>동작·음성·데이터·언어·생활 인식</b>까지, 더 정교하게 만들고 평가하며 배웁니다.</p>
+    <div class="row">
+      <a class="btn primary lg" href="/platform/index.html#modules">전체 코스 둘러보기 →</a>
+      <a class="btn lg" href="/platform/index.html#plans">도입·구매 문의</a>
+    </div>
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const FW = 32, FH = 24;
+const COLORS = ['#f0473a', '#4d8dff'];
+let classes = [{ name: '클래스 1', samples: [], thumbs: [] }, { name: '클래스 2', samples: [], thumbs: [] }];
+let centroids = null, trained = false, guessing = false, recId = null, lastCap = 0, raf = null;
+let stream = null;
+const v = $('v'), pc = document.createElement('canvas'); pc.width = FW; pc.height = FH;
+const pctx = pc.getContext('2d', { willReadFrequently: true });
+const tc = document.createElement('canvas'); tc.width = 64; tc.height = 48;
+const tctx = tc.getContext('2d');
+function thumb() { tctx.save(); tctx.scale(-1, 1); tctx.drawImage(v, -64, 0, 64, 48); tctx.restore(); return tc.toDataURL('image/jpeg', 0.6); }
+const MAXTHUMB = 40;
+
+function feat() {
+  pctx.drawImage(v, 0, 0, FW, FH);
+  const d = pctx.getImageData(0, 0, FW, FH).data, n = FW * FH, x = new Float32Array(n);
+  let m = 0;
+  for (let i = 0, j = 0; i < d.length; i += 4, j++) { x[j] = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255; m += x[j]; }
+  m /= n; for (let j = 0; j < n; j++) x[j] -= m; // 평균 제거(밝기 보정)
+  return x;
+}
+function dist(a, b) { let s = 0; for (let i = 0; i < a.length; i++) { const d = a[i] - b[i]; s += d * d; } return Math.sqrt(s); }
+function meanVec(samps) { const n = samps[0].length, m = new Float32Array(n); samps.forEach(s => { for (let i = 0; i < n; i++) m[i] += s[i]; }); for (let i = 0; i < n; i++) m[i] /= samps.length; return m; }
+function esc(s) { return (s || '').replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m])); }
+let curveTimer = null;
+function drawCurve(a) { const W = 240, H = 96, pad = 10; const pts = a.map((v, i) => { const x = pad + (a.length <= 1 ? 0 : (i / (a.length - 1)) * (W - 2 * pad)); const y = H - pad - Math.max(0, Math.min(1, v)) * (H - 2 * pad); return x.toFixed(1) + ',' + y.toFixed(1); }); $('tg-line').setAttribute('points', pts.join(' ')); }
+if (typeof module !== 'undefined') { module.exports = { dist }; }
+
+function renderCls() {
+  $('cls').innerHTML = classes.map((c, i) => `
+    <div class="cls-item" data-i="${i}">
+      <div class="cls-head"><span class="swatch" style="background:${COLORS[i]}"></span>
+        <input class="cls-name" value="${c.name.replace(/"/g, '&quot;')}" data-i="${i}">
+        <span class="cls-count" data-count="${i}">${c.samples.length}장</span>
+        <button class="cls-clear" data-clear="${i}" title="비우기">비우기</button></div>
+      <button class="collect" data-collect="${i}">📸 데이터 수집하기</button>
+      <div class="thumbs" id="thumbs-${i}">${c.thumbs.map(u => `<img src="${u}" alt="">`).join('')}</div>
+    </div>`).join('');
+  updateCounts();
+}
+function updateCounts() {
+  classes.forEach((c, k) => { const el = document.querySelector(`[data-count="${k}"]`); if (el) el.textContent = c.samples.length + '장'; });
+  const ready = classes[0].samples.length >= 3 && classes[1].samples.length >= 3;
+  $('train').disabled = !ready;
+  if (!trained) $('train-status').textContent = ready ? '준비됐어요! [학습하기]를 누르세요' : '두 가지를 각각 3장 이상 모아주세요';
+}
+function captureOne(i) {
+  if (!stream) return; const c = classes[i]; if (c.samples.length >= 300) return;
+  c.samples.push(feat());
+  const url = thumb(); c.thumbs.push(url);
+  const strip = document.getElementById('thumbs-' + i);
+  if (strip) { const im = new Image(); im.src = url; strip.appendChild(im); while (strip.children.length > MAXTHUMB) strip.removeChild(strip.firstChild); strip.scrollTop = strip.scrollHeight; }
+  if (c.thumbs.length > MAXTHUMB) c.thumbs.shift();
+  updateCounts();
+}
+function setHoldVisual(i) {
+  document.querySelectorAll('[data-collect]').forEach(b => {
+    const on = +b.dataset.collect === i;
+    b.classList.toggle('rec', on); b.textContent = on ? '● 수집 중… (놓으면 멈춤)' : '📸 데이터 수집하기';
+    b.closest('.cls-item').classList.toggle('rec', on);
+  });
+  $('rec').classList.toggle('on', i != null);
+  $('cam-state').textContent = i != null ? '수집 중' : (stream ? '준비됨' : '대기');
+  $('cam-state').classList.toggle('on', i != null);
+}
+function startHold(i) { if (!stream) return; recId = i; lastCap = performance.now(); captureOne(i); setHoldVisual(i); }
+function endHold() { if (recId == null) return; recId = null; setHoldVisual(null); }
+$('cls').addEventListener('input', (e) => { const i = +e.target.dataset.i; if (e.target.classList.contains('cls-name')) classes[i].name = e.target.value; });
+$('cls').addEventListener('pointerdown', (e) => { const b = e.target.closest('[data-collect]'); if (!b) return; e.preventDefault(); startHold(+b.dataset.collect); });
+$('cls').addEventListener('click', (e) => { const b = e.target.closest('[data-clear]'); if (!b) return; const i = +b.dataset.clear; classes[i].samples = []; classes[i].thumbs = []; const s = document.getElementById('thumbs-' + i); if (s) s.innerHTML = ''; updateCounts(); });
+window.addEventListener('pointerup', endHold);
+window.addEventListener('pointercancel', endHold);
+
+async function start() {
+  stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+  v.srcObject = stream;
+  await new Promise(res => { if (v.videoWidth) return res(); v.onloadedmetadata = () => res(); });
+  await v.play(); $('ph').style.display = 'none';
+}
+function loop() {
+  if (!stream) return;
+  if (recId != null) { const now = performance.now(); if (now - lastCap > 90) { lastCap = now; captureOne(recId); } }
+  if (guessing && trained) classify();
+  raf = requestAnimationFrame(loop);
+}
+$('cam').onclick = async () => {
+  try { $('cam').disabled = true; await start(); $('stop').disabled = false; $('cam-state').textContent = '준비됨'; $('cam-state').classList.add('on'); loop(); }
+  catch (e) { $('cam').disabled = false; alert('카메라를 시작할 수 없습니다: ' + e.message); }
+};
+$('stop').onclick = () => {
+  if (raf) cancelAnimationFrame(raf); if (stream) stream.getTracks().forEach(t => t.stop());
+  stream = null; raf = null; guessing = false; recId = null;
+  $('ph').style.display = 'grid'; $('cam').disabled = false; $('stop').disabled = true;
+  $('guess').textContent = '맞혀보기 시작'; setHoldVisual(null);
+};
+$('train').onclick = () => {
+  if (!(classes[0].samples.length >= 3 && classes[1].samples.length >= 3)) return;
+  centroids = classes.map(c => meanVec(c.samples));
+  trained = true;
+  $('bars').innerHTML = classes.map((c, i) => `<div class="bar"><div class="top"><span style="color:${COLORS[i]}">${esc(c.name)}</span><span id="pc${i}">0%</span></div><div class="track"><div class="fill" id="bf${i}" style="background:${COLORS[i]}"></div></div></div>`).join('');
+  $('guess').disabled = false; $('r-name').textContent = '학습 완료!'; $('r-name').style.color = ''; $('r-sub').textContent = '③에서 [맞혀보기 시작]을 눌러보세요';
+  $('train-status').textContent = '✓ 학습 완료! 우측에서 맞혀보세요';
+
+  // 학습 곡선: 클래스별 1..k개로 중심을 만들 때의 정확도
+  const minN = Math.min(classes[0].samples.length, classes[1].samples.length);
+  const accs = [];
+  for (let k = 1; k <= minN; k++) {
+    const cen = classes.map(c => meanVec(c.samples.slice(0, k)));
+    let ok = 0, tot = 0;
+    classes.forEach((c, ci) => c.samples.forEach(s => { tot++; if ((dist(s, cen[0]) <= dist(s, cen[1]) ? 0 : 1) === ci) ok++; }));
+    accs.push(ok / tot);
+  }
+  // 혼동행렬 (최종 중심, 학습 데이터 기준)
+  const m = [[0, 0], [0, 0]];
+  classes.forEach((c, ci) => c.samples.forEach(s => { m[ci][dist(s, centroids[0]) <= dist(s, centroids[1]) ? 0 : 1]++; }));
+  $('tg-accv').textContent = Math.round((accs.length ? accs[accs.length - 1] : 0) * 100) + '%';
+  $('tconf').innerHTML = '<table><caption>학습 데이터 점검 (대각선 = 정답)</caption><tr><th>실제＼예측</th><th>' + esc(classes[0].name) + '</th><th>' + esc(classes[1].name) + '</th></tr>' +
+    [0, 1].map(i => '<tr><td class="rowh">' + esc(classes[i].name) + '</td>' + [0, 1].map(j => '<td class="' + (i === j ? 'diag' : '') + '">' + m[i][j] + '</td>').join('') + '</tr>').join('') + '</table>';
+  $('tcurve').hidden = false;
+  if (curveTimer) clearInterval(curveTimer);
+  let step = 1; curveTimer = setInterval(() => { drawCurve(accs.slice(0, step)); step++; if (step > accs.length) clearInterval(curveTimer); }, 35);
+};
+const RDC = 201.06;
+function setRDonut(frac, color) { $('r-arc').setAttribute('stroke-dasharray', (frac * RDC).toFixed(1) + ' ' + RDC); if (color) $('r-arc').style.stroke = color; $('r-pct').textContent = Math.round(frac * 100) + '%'; }
+function classify() {
+  const x = feat(), ds = centroids.map(c => dist(x, c));
+  const inv = ds.map(d => 1 / (d + 1e-3)); const sum = inv.reduce((a, b) => a + b, 0);
+  const probs = inv.map(p => p / sum);
+  let top = probs[0] >= probs[1] ? 0 : 1;
+  classes.forEach((c, i) => { const pct = Math.round(probs[i] * 100); const f = $('bf' + i), p = $('pc' + i); if (f) f.style.width = pct + '%'; if (p) p.textContent = pct + '%'; });
+  $('r-name').textContent = classes[top].name; $('r-name').style.color = COLORS[top];
+  $('r-sub').textContent = '확신도 ' + Math.round(probs[top] * 100) + '%';
+  setRDonut(probs[top], COLORS[top]);
+}
+$('guess').onclick = () => {
+  if (!trained) return; guessing = !guessing; $('guess').textContent = guessing ? '맞혀보기 중지' : '맞혀보기 시작';
+  if (!guessing) { $('r-name').textContent = '일시정지'; $('r-name').style.color = ''; $('r-sub').textContent = '[맞혀보기 시작]을 누르면 다시 인식해요'; setRDonut(0, 'var(--primary)'); }
+};
+
+const FILTERS = { none: '', gray: 'grayscale(1) contrast(1.05)', invert: 'invert(1)' };
+$('fx').addEventListener('click', (e) => { const f = e.target.dataset.fx; if (!f) return; v.style.filter = FILTERS[f]; $('fx').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.fx === f)); });
+
+renderCls();
+if (!window.isSecureContext) { const b = $('banner'); b.classList.add('on'); b.innerHTML = '⚠ 카메라는 <b>localhost</b> 또는 <b>https</b> 에서만 켜집니다.'; }
+</script>
+
+<!-- ── 가이드 퀘스트 온보딩 ── -->
+<div id="quest-hole" class="quest-hole" hidden></div>
+<div id="quest-card" class="quest-card" hidden>
+  <div class="q-top"><span class="qk" id="q-k"></span><span class="q-badge" id="q-badge">직접 해보세요</span></div>
+  <h4 id="q-h"></h4>
+  <p id="q-p"></p>
+  <div class="q-pbar" id="q-pbar"><i id="q-fill"></i></div>
+  <div class="qf">
+    <button class="quest-skip" id="q-skip">건너뛰기</button>
+    <span class="qprog" id="q-pinfo"></span>
+  </div>
+</div>
+<div class="quest-confetti" id="quest-confetti"></div>
+<div class="quest-modal" id="quest-modal">
+  <div class="quest-dialog">
+    <div class="qicon" id="q-icon">🤖</div>
+    <h3 id="q-title"></h3>
+    <p id="q-desc"></p>
+    <div class="qbtns" id="q-mbtns"></div>
+  </div>
+</div>
+<button class="quest-replay" id="quest-replay">❔ 가이드 다시보기</button>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const KEY = 'eduino_sample_quest_v1';
+  const hole = $('quest-hole'), card = $('quest-card'), modal = $('quest-modal'), replay = $('quest-replay');
+
+  // 진행 상태는 DOM에서 읽어 앱 내부와 분리(결합도 0)
+  const count = (i) => { const e = document.querySelector('[data-count="' + i + '"]'); return e ? (parseInt(e.textContent, 10) || 0) : 0; };
+  const camOn = () => { const s = $('stop'); return !!s && !s.disabled; };
+  const trained = () => document.querySelectorAll('#bars .bar').length > 0;
+  const guessing = () => /중지/.test(($('guess') || {}).textContent || '');
+
+  const STEPS = [
+    { modal: 'intro' },
+    { sel: '#cam', k: 'STEP 1 / 5', h: '카메라를 켜요', p: '오른쪽 <b>[카메라 켜기]</b>를 직접 눌러 시작해요. 켜면 다음 단계로 넘어가요.', done: camOn },
+    { sel: '[data-collect="0"]', k: 'STEP 2 / 5', h: '첫 번째를 직접 가르쳐요', p: '이 버튼을 눌러(탭=1장·길게=연속) 첫 번째 대상을 <b>3장 이상</b> 찍어보세요. 예: ✋ 손바닥', goal: 3, prog: () => count(0), done: () => count(0) >= 3 },
+    { sel: '[data-collect="1"]', k: 'STEP 3 / 5', h: '두 번째도 직접 가르쳐요', p: '두 번째 대상도 <b>3장 이상</b> 모아요. 둘이 서로 달라야 AI가 구분할 수 있어요. 예: ✊ 주먹', goal: 3, prog: () => count(1), done: () => count(1) >= 3 },
+    { sel: '#train', k: 'STEP 4 / 5', h: 'AI를 학습시켜요', p: '<b>[학습하기]</b>를 직접 눌러보세요. AI가 두 가지의 <b>공통 특징</b>을 찾아 구분 기준을 만들어요.', done: trained },
+    { sel: '#guess', k: 'STEP 5 / 5', h: '맞혀보기로 확인!', p: '<b>[맞혀보기 시작]</b>을 누르고 카메라에 비춰보세요. AI가 실시간으로 둘을 구분합니다!', done: guessing },
+    { modal: 'done' },
+  ];
+
+  let cur = 0, timer = null;
+
+  function clearTimer() { if (timer) { clearInterval(timer); timer = null; } }
+  function hideStep() { hole.hidden = true; card.hidden = true; }
+
+  function end(done) {
+    clearTimer(); hideStep(); modal.classList.remove('on');
+    if (done) localStorage.setItem(KEY, '1');
+    replay.classList.add('on');
+  }
+
+  function showModal(kind) {
+    hideStep(); clearTimer();
+    if (kind === 'intro') {
+      $('q-icon').textContent = '🤖';
+      $('q-title').textContent = 'AI는 어떻게 배울까요?';
+      $('q-desc').innerHTML = '사람이 <b>예시</b>를 보여주면, AI는 그 안의 <b>공통된 특징</b>을 찾아 구분하는 법을 스스로 익혀요.<br>지금 직접 가르쳐 볼까요? <b>1분</b>이면 첫 AI를 만들 수 있어요.';
+      $('q-mbtns').innerHTML = '<button class="btn-go" id="q-go">가이드 시작하기 →</button><button class="btn-skip" id="q-skip2">그냥 둘러볼게요</button>';
+      modal.classList.add('on');
+      $('q-go').onclick = () => { modal.classList.remove('on'); go(1); };
+      $('q-skip2').onclick = () => end(true);
+    } else {
+      $('q-icon').textContent = '🎉';
+      $('q-title').textContent = '첫 AI를 직접 만들었어요!';
+      $('q-desc').innerHTML = '데이터 수집 → 학습 → 추론까지, 방금 그 흐름이 바로 <b>머신러닝의 핵심</b>이에요.<br><br>이건 <b>맛보기 한 조각</b>일 뿐 — 정식 코스에선 <b>음성·동작·텍스트·실시간 추론</b>까지 직접 만들어요.';
+      $('q-mbtns').innerHTML = '<button class="btn-go" id="q-more">🚀 전체 코스 보러가기</button><button class="btn-skip" id="q-close">더 체험할래요</button>';
+      modal.classList.add('on');
+      confetti();
+      $('q-more').onclick = () => location.href = '/platform/index.html#modules';
+      $('q-close').onclick = () => end(true);
+    }
+  }
+
+  function renderProg(step) {
+    if (step.goal) {
+      const c = Math.min(step.prog(), step.goal);
+      $('q-fill').style.width = (c / step.goal * 100) + '%';
+      $('q-pinfo').textContent = c + ' / ' + step.goal + '장';
+    } else {
+      const done = card.classList.contains('done');
+      $('q-fill').style.width = done ? '100%' : '40%';
+      $('q-pinfo').textContent = done ? '완료' : '직접 눌러보세요';
+    }
+  }
+  function complete(next) {
+    card.classList.add('done'); hole.classList.add('done');
+    $('q-badge').textContent = '✓ 완료!'; $('q-fill').style.width = '100%'; $('q-pinfo').textContent = '완료';
+    setTimeout(next, 950);
+  }
+  function confetti() {
+    const box = $('quest-confetti'), cols = ['#f0473a', '#ff6a52', '#11a06f', '#4d8dff', '#ffb15c', '#7c6cff'];
+    box.innerHTML = '';
+    for (let n = 0; n < 80; n++) {
+      const s = document.createElement('i');
+      s.style.left = Math.random() * 100 + 'vw';
+      s.style.background = cols[n % cols.length];
+      s.style.animationDuration = (2.2 + Math.random() * 1.8) + 's';
+      s.style.animationDelay = (Math.random() * 0.5) + 's';
+      box.appendChild(s);
+    }
+    setTimeout(() => { box.innerHTML = ''; }, 4800);
+  }
+
+  function place(step) {
+    const t = document.querySelector(step.sel);
+    if (!t) return;
+    const r = t.getBoundingClientRect();
+    hole.style.left = (r.left - 6) + 'px'; hole.style.top = (r.top - 6) + 'px';
+    hole.style.width = (r.width + 12) + 'px'; hole.style.height = (r.height + 12) + 'px';
+    hole.hidden = false;
+    card.hidden = false;
+    const cw = card.offsetWidth, ch = card.offsetHeight, gap = 14, vw = innerWidth, vh = innerHeight;
+    let top = r.bottom + gap, left = r.left + r.width / 2 - cw / 2;
+    if (top + ch > vh - 10) top = Math.max(10, r.top - ch - gap); // 아래 공간 없으면 위로
+    left = Math.min(Math.max(10, left), vw - cw - 10);
+    card.style.left = left + 'px'; card.style.top = top + 'px';
+  }
+
+  function go(i) {
+    cur = i; clearTimer();
+    const step = STEPS[i];
+    if (!step) return end(true);
+    if (step.modal) return showModal(step.modal);
+    card.classList.remove('done'); hole.classList.remove('done');
+    $('q-k').textContent = step.k; $('q-h').textContent = step.h; $('q-p').innerHTML = step.p;
+    $('q-badge').textContent = '직접 해보세요';
+    renderProg(step);
+    const t = document.querySelector(step.sel);
+    if (t) t.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    setTimeout(() => place(step), 320);
+    let completing = false;
+    timer = setInterval(() => {
+      renderProg(step);
+      if (!completing && step.done && step.done()) {
+        completing = true; clearTimer();
+        complete(() => go(i + 1)); // ✓ 완료를 잠깐 보여준 뒤 다음 단계
+      }
+    }, 300);
+  }
+
+  function start() { replay.classList.remove('on'); go(0); }
+
+  $('q-skip').onclick = () => end(true);
+  replay.onclick = start;
+  addEventListener('resize', () => { if (!card.hidden) place(STEPS[cur]); });
+  addEventListener('scroll', () => { if (!card.hidden) place(STEPS[cur]); }, true);
+
+  // 첫 방문이면 자동 시작, 아니면 다시보기 버튼만
+  if (!localStorage.getItem(KEY)) setTimeout(start, 600);
+  else replay.classList.add('on');
+})();
+</script>
+</body>
+</html>

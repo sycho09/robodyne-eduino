@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta name="theme-color" content="#f6f7fb" />
+<title>텍스트 · 언어 AI — Eduino AI</title>
+<meta name="description" content="글을 숫자로 바꿔 비슷한 말을 찾고, 예문으로 문장 분류 AI를 직접 학습시키는 체험형 언어 AI 수업." />
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<link rel="stylesheet" href="../shared/components.css" />
+<link rel="stylesheet" href="./style.css" />
+<link rel="stylesheet" href="../shared/course-dashboard.css" />
+</head>
+<body>
+<div id="practice-content">
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="back" href="/platform/index.html">← 플랫폼</a>
+    <img class="logo-mark-img" src="/platform/img/logo-mark.webp" alt="Eduino AI" />
+    <div>
+      <div class="logo-title">텍스트 · 언어 <span>AI</span></div>
+      <div class="logo-tag">글을 숫자로 이해하는 AI · Eduino AI</div>
+    </div>
+    <div class="status" id="status">준비됨</div>
+  </div>
+</header>
+
+<main>
+  <div class="cintro">
+    <span class="eyebrow">텍스트 · 언어 AI 코스</span>
+    <h1>글을 숫자로 이해하는 AI</h1>
+    <p>컴퓨터가 글을 어떻게 다루는지 직접 봐요. 문장을 숫자로 바꿔 <b>비슷한 말을 찾고</b>(초급), 예문을 모아 <b>문장 분류 AI</b>를 학습시켜 봅니다(중급).</p>
+  </div>
+
+  <div class="steps">
+    <button class="step active" data-step="similar"><div class="n" data-ic="link"></div><div class="t"><b>비슷한 말 찾기</b><span>글의 닮은 정도를 숫자로</span></div></button>
+    <button class="step" data-step="classify"><div class="n" data-ic="tag"></div><div class="t"><b>문장 분류 만들기</b><span>예문으로 분류 AI 학습</span></div></button>
+    <button class="step" data-step="review"><div class="n" data-ic="briefcase"></div><div class="t"><b>고객 리뷰 분류기 만들기</b><span>임계값 조절로 실무 미션 해결</span></div></button>
+  </div>
+
+  <!-- 초급: 비슷한 말 찾기 -->
+  <section id="panel-similar" class="layout">
+    <div class="card">
+      <h2>문장 써보기</h2>
+      <p class="sub">아무 문장이나 써보세요. AI가 아래 보기 문장들과 <b>얼마나 닮았는지</b> 숫자로 비교해 줍니다.</p>
+      <input class="ti" id="sim-input" placeholder="예: 강아지가 너무 귀여워요" value="강아지가 너무 귀여워요" />
+      <div class="ctrl"><button class="btn primary" id="sim-go">비슷한 말 찾기</button></div>
+      <div class="sub" style="margin:16px 0 6px">보기 문장</div>
+      <div class="examples" id="sim-refs"></div>
+    </div>
+    <div class="card">
+      <h2>닮은 정도</h2>
+      <p class="sub">막대가 길수록 더 비슷하다는 뜻이에요.</p>
+      <div class="bars" id="sim-bars"><div class="empty">왼쪽에 문장을 쓰고 [비슷한 말 찾기]를 눌러보세요.</div></div>
+    </div>
+
+    <div class="theory-sec">
+      <div class="thead"><h2>원리와 활용</h2><span>글을 숫자로 바꿔 비교하는 법</span></div>
+      <div class="tgrid">
+        <div class="tcard">
+          <span class="tc-ic" data-ic="hash"></span>
+          <h3>문장 → 숫자 벡터</h3>
+          <p>컴퓨터는 글자를 그대로 못 읽어요. 그래서 문장을 <b>단어 묶음(숫자 벡터)</b>으로 바꿔요. 어떤 단어가 들어있는지를 숫자로 표현하는 거예요.</p>
+        </div>
+        <div class="tcard">
+          <span class="tc-ic" data-ic="triangle"></span>
+          <h3>닮은 정도(유사도)</h3>
+          <p>두 문장이 <b>같은 단어를 많이 공유</b>할수록 숫자(벡터)가 닮아요. 이 닮은 정도를 수치로 재서 ‘비슷하다/다르다’를 판단합니다.</p>
+        </div>
+        <div class="tcard">
+          <span class="tc-ic" data-ic="search"></span>
+          <h3>어디에 쓰일까?</h3>
+          <p>검색(비슷한 문서 찾기), 추천, 표절·중복 검사, 챗봇이 질문 의도를 파악하는 데까지 — 언어 AI의 기본기예요.</p>
+        </div>
+      </div>
+      <div class="tflow"><span class="tf-lab">처리 흐름</span><span class="tf">문장 입력</span><span class="tarr">→</span><span class="tf">단어로 쪼개기</span><span class="tarr">→</span><span class="tf">숫자 벡터화</span><span class="tarr">→</span><span class="tf">유사도 비교</span></div>
+    </div>
+  </section>
+
+  <!-- 중급: 문장 분류 -->
+  <section id="panel-classify" class="layout" hidden>
+    <div class="card">
+      <h2>분류 예문 모으기</h2>
+      <p class="sub">분류(라벨)마다 예문을 <b>한 줄에 하나씩</b> 적어주세요. 많을수록 똑똑해져요. [예시 채우기]로 빠르게 시작할 수도 있어요.</p>
+      <div id="cats"></div>
+      <button class="add-cat" id="add-cat">+ 분류 추가</button>
+      <div class="ctrl"><button class="btn" id="cl-sample">예시 채우기</button><button class="btn" id="cl-clear">비우기</button></div>
+    </div>
+    <div class="card">
+      <h2>AI 학습 &amp; 분류</h2>
+      <p class="sub">예문으로 ‘어떤 단어가 어느 분류에 많은지’를 학습합니다.</p>
+      <div class="proc" id="cl-proc"><div class="p"><b>1</b>예문 모으기</div><div class="p"><b>2</b>AI 학습</div><div class="p"><b>3</b>분류하기</div></div>
+      <div class="say"><span class="ic" data-ic="bot"></span><span id="cl-say">분류 2개에 예문을 2개 이상씩 적어주세요.</span></div>
+      <button class="btn primary block" id="cl-train" disabled>문장 분류 AI 학습</button>
+      <div class="metrics">
+        <div class="m"><span>학습 횟수</span><b id="m-epoch">—</b></div>
+        <div class="m"><span>틀린 정도</span><b id="m-loss" style="color:var(--primary)">—</b></div>
+        <div class="m"><span>배운 단어</span><b id="m-vocab">0</b></div>
+      </div>
+      <input class="ti" id="cl-test" placeholder="여기에 문장을 써서 분류해 보세요" disabled />
+      <div class="ctrl"><button class="btn primary" id="cl-do" disabled>분류하기</button></div>
+      <div class="bars" id="cl-bars" style="margin-top:12px"><div class="empty">학습 후 분류 결과가 여기 표시됩니다.</div></div>
+    </div>
+
+    <div class="theory-sec">
+      <div class="thead"><h2>원리와 활용</h2><span>문장을 분류하도록 가르치는 법</span></div>
+      <div class="tgrid">
+        <div class="tcard">
+          <span class="tc-ic" data-ic="book"></span>
+          <h3>단어 사전 만들기</h3>
+          <p>모은 예문을 단어로 쪼개 <b>단어 사전</b>을 만들고, 각 문장을 ‘어떤 단어가 들어있는지’ 숫자로 바꿔요(Bag-of-words).</p>
+        </div>
+        <div class="tcard">
+          <span class="tc-ic" data-ic="tag"></span>
+          <h3>분류를 학습</h3>
+          <p><b>어느 분류에 어떤 단어가 자주 나오는지</b>를 반복 학습해요. 그래서 새 문장이 오면 단어를 보고 어느 쪽인지 맞힙니다.</p>
+        </div>
+        <div class="tcard">
+          <span class="tc-ic" data-ic="message"></span>
+          <h3>어디에 쓰일까?</h3>
+          <p>감정 분석(칭찬/불평), 스팸 메일 걸러내기, 문의 자동 분류, 뉴스 주제 분류 등 실제 서비스에 폭넓게 쓰여요.</p>
+        </div>
+      </div>
+      <div class="tflow"><span class="tf-lab">학습 흐름</span><span class="tf">예문 모으기</span><span class="tarr">→</span><span class="tf">단어 사전</span><span class="tarr">→</span><span class="tf">숫자 변환·학습</span><span class="tarr">→</span><span class="tf">새 문장 분류</span></div>
+    </div>
+  </section>
+
+  <!-- 고급-응용: 고객 리뷰 자동 분류기 -->
+  <section id="panel-review" hidden>
+    <div class="flow" id="flow-review">
+      <button class="fstep active" data-w="1"><span class="fn">✓</span><span class="ft"><b>미션 수령</b><span>리뷰 200건 분류 마케터</span></span></button>
+      <span class="farrow">→</span>
+      <button class="fstep" data-w="2"><span class="fn">2</span><span class="ft"><b>일단 돌려보기</b><span>의도된 실패 경험</span></span></button>
+      <span class="farrow">→</span>
+      <button class="fstep" data-w="3"><span class="fn">3</span><span class="ft"><b>개념 충전·튜닝</b><span>임계값(민감도) 조절</span></span></button>
+      <span class="farrow">→</span>
+      <button class="fstep" data-w="4"><span class="fn">4</span><span class="ft"><b>리포트 산출</b><span>실무 연결 리포트</span></span></button>
+    </div>
+
+    <div class="work" style="display:block">
+      <div class="phost">
+        <!-- Step 1: 미션 수령 -->
+        <div class="wstep" data-w="1">
+          <div class="card centered" style="padding: 60px 20px;">
+            <div class="rv-chat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
+            <h2 style="font-size: 24px; margin-bottom: 16px;">당신은 쇼핑몰 마케터입니다.</h2>
+            <div class="rv-mission-box">
+              하루 200건씩 쏟아지는 고객 리뷰 데이터 중에서<br>
+              <strong style="color: #f0473a;">오직 '배송 불만' 관련 리뷰만</strong> 추출해야 합니다.<br>
+              기본 세팅된 AI로 분류를 시작해 볼까요?
+            </div>
+            <button class="btn primary lg" id="btn-mission-start" style="margin:32px auto 0;">미션 시작하기</button>
+          </div>
+        </div>
+
+        <!-- Step 2: 일단 돌려보기 -->
+        <div class="wstep" data-w="2" hidden>
+          <!-- 판정은 전부 advanced.js 가 실제로 계산한다(고정 문구·하드코딩 결과 없음). -->
+          <div class="card">
+            <h2>기본 AI로 분류해보기</h2>
+            <p class="sub">지금 AI는 <b>'배송 불만'이라는 말과 글자가 얼마나 겹치는지</b>만 봅니다. 준비된 리뷰 4건을 그대로 돌려보겠습니다.</p>
+            <div id="rv-base-rows" class="rv-rows"></div>
+            <div id="rv-base-verdict"></div>
+          </div>
+
+          <div class="card" style="margin-top:16px;">
+            <h2>직접 넣어보기</h2>
+            <p class="sub">리뷰 문장을 직접 써 보세요. 위와 똑같은 기준으로 분류합니다.</p>
+            <textarea id="rv-try-input" class="rv-try-input" rows="2" placeholder="예: 택배 상자가 다 구겨져서 왔어요."></textarea>
+            <div class="btn-row" style="justify-content:flex-start; margin-top:12px;"><button class="btn accent" id="btn-rv-try">AI로 분류해보기</button></div>
+            <div id="rv-try-result" hidden></div>
+          </div>
+
+          <div class="btn-row"><button class="btn primary lg" id="btn-tuning-start">개념 충전 및 튜닝하기</button></div>
+        </div>
+
+        <!-- Step 3: 개념 충전 및 튜닝 -->
+        <div class="wstep" data-w="3" hidden>
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+              <h2 style="margin: 0;">임베딩(유사도) 임계값 튜닝</h2>
+              <button class="btn quiet" id="btn-embedding-hint" style="font-size:13px; padding:6px 12px;"><span class="ic-inline" data-ic="lightbulb"></span> 힌트 보기</button>
+            </div>
+            
+            <div class="rv-slider-wrap">
+              <input type="range" id="threshold-slider" class="rv-slider" min="0" max="100" value="30">
+              <div class="rv-slider-labels">
+                <span>느슨하게 (조금만 비슷해도 잡음)</span>
+                <strong class="rv-slider-val" id="threshold-val">임계값: 30%</strong>
+                <span>엄격하게 (의미가 아주 가까울 때만)</span>
+              </div>
+            </div>
+            <div class="btn-row"><button class="btn accent" id="btn-reclassify">이 설정으로 재분류 테스트</button></div>
+
+            <!-- 임계값에 따라 4개 리뷰의 판정이 실제로 바뀐다 -->
+            <div id="rv-result-rows" hidden class="rv-rows" style="margin-top:24px; padding-top:20px; border-top:1px solid var(--line);"></div>
+            <div id="rv-metrics" hidden style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;"></div>
+          </div>
+
+          <div class="rv-alert" id="tuning-success-card" hidden style="margin-top: 16px;">
+            <span class="rv-alert-ic" id="rv-verdict-icon"></span>
+            <div style="flex:1">
+              <strong class="rv-alert-title" id="rv-verdict-title">튜닝 성공!</strong>
+              <span class="rv-alert-desc" id="rv-verdict-desc"></span>
+              <button class="btn primary" id="btn-report-start" style="margin-top:16px;" hidden>최종 리포트 산출</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: 리포트 산출 -->
+        <div class="wstep" data-w="4" hidden>
+          <div class="rv-report-grid">
+            <div class="rv-donut-card">
+              <h3 style="font-size:16px; margin:0; display:flex; align-items:center; gap:8px; color:var(--primary-ink);"><span style="font-size:20px;"><span class="ic-inline" data-ic="file-text"></span></span> 일일 리뷰 분석 리포트</h3>
+              <div class="rv-donut">
+                <svg>
+                  <circle class="bg" cx="70" cy="70" r="60"></circle>
+                  <circle class="fg" id="rv-donut-fg" cx="70" cy="70" r="60"></circle>
+                </svg>
+                <div class="rv-donut-text">
+                  <b id="rv-donut-pct">18%</b>
+                  <span>배송 불만</span>
+                </div>
+              </div>
+              <div style="background:var(--card-2); border:1px solid var(--line); padding:12px 20px; border-radius:8px; font-size:13px; color:var(--ink-2); line-height:1.7;">
+                전체 200건 중 <b>36건</b> 추출<br>
+                <b>정밀도 92%</b> — 뽑은 36건 중 33건이 진짜 불만<br>
+                <b>재현율 87%</b> — 실제 불만 38건 중 33건을 잡음
+              </div>
+              <div style="font-size:12px; color:#888; line-height:1.6; margin-top:10px;">
+                정확도(전체 중 맞힌 비율)는 여기서 쓰지 않습니다. 불만이 18%뿐이라 전부 "정상"이라 답해도 정확도는 82%가 나오기 때문입니다.
+              </div>
+            </div>
+            <div class="rv-prac-card">
+              <div style="display:inline-flex; width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid rgba(77,141,255,.2); align-items:center; justify-content:center; font-size:24px; margin-bottom:16px;"><span class="ic-inline" data-ic="target"></span></div>
+              <h3 style="font-size:18px; margin:0 0 12px 0;">실무 연결 포인트</h3>
+              <p style="margin:0 0 16px 0; font-size:13.5px; color:var(--ink-2);">방금 수행한 '유사도 기반 텍스트 분류'는 실제 산업에서 광범위하게 쓰입니다.</p>
+              <ul>
+                <li><b>챗봇 의도 파악:</b> 고객의 다양한 질문 패턴 인식</li>
+                <li><b>검색/추천 엔진:</b> 키워드가 달라도 유사한 상품 노출</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- <span class="ic-inline" data-ic="lightbulb"></span> 임베딩이란? 힌트 모달 -->
+  <div class="rv-hint-modal" id="rv-hint-modal">
+    <div class="rv-hint-dialog">
+      <button class="rv-hint-close" id="rv-hint-close">×</button>
+      <h3 style="margin:0 0 12px 0; color:var(--primary-ink); display:flex; align-items:center; gap:8px;"><span class="ic-inline" data-ic="lightbulb"></span> 임베딩(Embedding)이란?</h3>
+      <p style="margin:0; font-size:14px; color:#555; line-height:1.6;">
+        컴퓨터는 단어를 숫자 벡터로 바꿉니다. '택배'와 '배송'은 글자가 다르지만, 벡터로 바꾸면 <b>수백 차원의 공간</b>에서 방향이 아주 비슷해집니다.
+        임계값은 "얼마나 비슷해야 같은 뜻으로 볼 것인가"의 기준선입니다. 낮추면 애매한 것까지 잡히고, 올리면 확실한 것만 남습니다.
+      </p>
+    </div>
+  </div>
+
+  </main>
+</div>
+
+<script src="../shared/icons.js"></script>
+<script src="./app.js"></script>
+<script src="./advanced.js"></script>
+<script src="../shared/course-dashboard.js"></script>
+<script src="./course-config.js"></script>
+</body>
+</html>

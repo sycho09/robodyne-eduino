@@ -1,0 +1,197 @@
+/* 5개 학습 모듈이 공유하는 재사용 컴포넌트.
+   shared/base.css 가 디자인 토큰과 문서 골격(body·topbar·main·버튼 위계)을 맡고,
+   이 파일은 그 위에 올라가는 "부품"을 맡는다.
+
+   로드 순서: base.css → components.css → <모듈>/style.css → course-dashboard.css
+
+   ── 추출 원칙 (base.css 와 동일) ──────────────────────────────────
+   **선언이 완전히 동일했던 것만** 여기로 올린다. 모듈마다 값이 다른 선언
+   (.btn 의 padding·font-size, .cintro p 의 max-width, .layout 의 컬럼비 등)은
+   여기 두지 않고 각 모듈 style.css 에 그대로 남긴다.
+   값을 임의로 통일하지 않는다 — 이미 배포된 화면이고, platform/ 과 stages/ 는
+   또 다른 값을 쓰고 있어 "하나로 맞춘다"는 판단은 이 파일이 내릴 일이 아니다.
+   ─────────────────────────────────────────────────────────────── */
+
+/* ── 링크 · 헤더 ───────────────────────────────────────────────── */
+a { color:inherit; text-decoration:none; }
+.back { font-size:13px; font-weight:600; color:var(--ink-2); display:inline-flex; align-items:center; gap:6px; padding:8px 12px;
+  border:1px solid var(--line-2); border-radius:10px; background:#fff; box-shadow:var(--shadow-sm); transition:.15s; }
+.status.live { color:var(--primary-ink); border-color:var(--primary-line); background:var(--primary-soft); }
+
+/* 카메라 모듈(gesture·life)의 https 안내 배너 */
+.banner { display:none; background:var(--amber-soft); border:1px solid rgba(217,138,31,.4); color:#8a5a12;
+  border-radius:12px; padding:13px 16px; font-size:13.5px; margin-bottom:18px; }
+.banner.on { display:block; }
+.banner b { color:#6b4408; }
+
+/* ── 코스 인트로 · 단계 탭 ─────────────────────────────────────
+   .cintro p 의 max-width, .step 의 min-width 는 모듈마다 달라 각 파일에 남겼다. */
+.cintro p { margin:0 auto; font-size:14px; color:var(--ink-2); line-height:1.6; }
+.step { flex:1; text-align:left; background:#fff; border:1px solid var(--line); border-radius:var(--r);
+  padding:13px 16px; transition:.15s; display:flex; gap:12px; align-items:center; box-shadow:var(--shadow-sm); }
+.step.active { border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-soft), var(--shadow); }
+
+/* ── 레이아웃 · 카드 ───────────────────────────────────────────
+   .layout 의 컬럼비는 코스마다 달라 각 파일에 남겼다.
+   .card 의 display:flex 도 마찬가지 — gesture 만 block 이었다. */
+.layout[hidden] { display:none; }
+.layout > .card:first-child { align-self:start; }
+.card { background:#fff; border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); padding:18px; }
+.card .sub { color:var(--ink-3); margin:0 0 14px; }
+/* 고급·응용 탭의 4단계 위저드 셸 — concept·life·gesture 에 같은 인라인 스타일로 복제돼 있었다.
+   원본의 margin-top:16px 은 위쪽 .flow 의 margin-bottom(18px)과 상쇄되던 값이라 두지 않는다. */
+.card.wizard { padding:40px 24px; min-height:460px; }
+@media (max-width:880px){ .layout { grid-template-columns:1fr; align-items:start; } }
+
+/* ── 컨트롤 ─────────────────────────────────────────────────────
+   .btn 의 상태·변형(.primary/.accent/.quiet/.block/.lg)은 base.css 가 맡는다.
+   padding 과 font-size 는 concept·text·data(10px 15px/13.5px)와
+   gesture·life(11px 16px/14px)가 달라 각 모듈 style.css 에 남겼다. */
+.btn { border:1px solid var(--line-2); background:#fff; color:var(--ink); border-radius:11px; font-weight:700;
+  transition:.15s; box-shadow:var(--shadow-sm); display:inline-flex; align-items:center; justify-content:center; gap:7px; }
+.ctrl { display:flex; gap:9px; margin-top:12px; flex-wrap:wrap; align-items:center; }
+.seg-label { font-size:13px; color:var(--ink-3); font-weight:600; }
+.swatch { width:13px; height:13px; border-radius:4px; flex:none; }
+/* .seg 의 radius·padding 은 life 만 한 단계 작아 그쪽 파일에 남겼다. */
+.seg { display:inline-flex; border:1px solid var(--line-2); overflow:hidden; }
+.seg button { border:none; background:#fff; color:var(--ink-2); font-weight:600; }
+.seg button.on { background:var(--primary-soft); color:var(--primary-ink); }
+/* .row 의 gap·margin 과 .val 의 폭은 코스마다 달라 각 파일에 남겼다. */
+.row { display:flex; align-items:center; font-size:13.5px; color:var(--ink-2); font-weight:600; }
+.row input[type=range] { flex:1; accent-color:var(--primary); }
+.row .val { font-family:var(--mono); color:var(--ink); text-align:right; }
+
+/* ── 값 조절 슬라이더 ──────────────────────────────────────────
+   gesture 의 신뢰도 임계값과 text 의 유사도 임계값이 같은 부품이다.
+   채운 비율은 JS 가 --p 커스텀 속성으로 넘긴다.
+
+   gesture 쪽에만 있던 border:2px solid var(--ink)(검정)는 걷어낸다 —
+   이 코드베이스의 다른 컨트롤은 전부 --line 계열 테두리만 쓴다.
+   채움을 --primary 원색이 아니라 한 단계 밝은 --primary-2 로 두는 이유:
+   이 슬라이더는 옆의 수치(--primary-ink)와 아래 CTA(.btn.primary)와 한 카드에 함께 놓인다.
+   셋 다 원색이면 카드가 통째로 붉게 무거워진다. */
+.ui-slider { width:100%; appearance:none; -webkit-appearance:none; height:6px; border-radius:999px; outline:none; cursor:pointer;
+  background:linear-gradient(to right, var(--primary-2) var(--p,50%), var(--line-2) var(--p,50%)); }
+.ui-slider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%;
+  background:var(--primary); border:2px solid #fff; box-shadow:var(--shadow-sm); cursor:pointer; }
+/* Firefox — 지금까지 -webkit- 만 있어 기본 썸이 그대로 노출됐다. */
+.ui-slider::-moz-range-thumb { width:16px; height:16px; border-radius:50%;
+  background:var(--primary); border:2px solid #fff; box-shadow:var(--shadow-sm); cursor:pointer; }
+.ui-slider::-moz-range-track { height:6px; border-radius:999px; background:transparent; }
+
+/* ── 판정 · 알림 카드 ──────────────────────────────────────────
+   text 의 .rv-alert 를 그대로 옮긴 것이다. 상태별 soft 배경 + 같은 계열 테두리라
+   밝은 본문 위에서 튀지 않으면서 성공/경고/실패가 색으로 구분된다.
+   gesture 의 임계값 경고가 JS 인라인 스타일로 같은 일을 하고 있어 함께 쓰게 한다. */
+.alert { display:flex; gap:12px; align-items:flex-start; padding:16px 18px; border-radius:12px;
+  border:1px solid var(--line); background:var(--card-2); color:var(--ink-2); }
+.alert .alert-ic { flex:none; display:grid; place-items:center; }
+.alert .alert-ic svg { width:22px; height:22px; }
+.alert-title { display:block; font-size:15px; font-weight:800; margin-bottom:4px; }
+.alert-desc { display:block; font-size:13.5px; line-height:1.65; }
+.alert.success { background:var(--green-soft); border-color:rgba(17,160,111,.35); }
+.alert.success .alert-title, .alert.success .alert-ic { color:var(--green); }
+.alert.warn { background:var(--amber-soft); border-color:rgba(217,138,31,.4); }
+.alert.warn .alert-title, .alert.warn .alert-ic { color:var(--amber); }
+.alert.fail { background:var(--primary-soft); border-color:var(--primary-line); }
+.alert.fail .alert-title, .alert.fail .alert-ic { color:var(--primary-ink); }
+/* 제목 없이 아이콘+한 문장짜리 인라인 경고 */
+.alert.compact { align-items:center; justify-content:center; gap:8px; padding:12px; font-size:13px; font-weight:600; text-align:center; line-height:1.5; }
+.alert.compact svg { width:16px; height:16px; flex:none; }
+
+/* ── 진행 표시 · AI 말풍선 ─────────────────────────────────────
+   concept·text·data 에 바이트 단위로 동일하게 복제돼 있던 블록.
+   .proc .p 의 transition 은 data 에만 있어 그쪽에 남겼다. */
+.proc { display:flex; gap:6px; margin-bottom:12px; }
+.proc .p { flex:1; font-size:11px; font-weight:700; color:var(--ink-4); background:var(--card-2); border:1px solid var(--line);
+  border-radius:9px; padding:7px 4px; text-align:center; }
+.proc .p b { display:block; font-size:13px; font-family:var(--mono); margin-bottom:2px; }
+.proc .p.on { color:var(--primary-ink); background:var(--primary-soft); border-color:var(--primary-line); }
+.proc .p.done { color:var(--green); background:var(--green-soft); border-color:rgba(17,160,111,.3); }
+.proc .p.done b::before { content:'✓ '; }
+.say { background:#fff; border:1px dashed var(--primary-line); border-radius:11px; padding:11px 13px; font-size:13px;
+  color:var(--ink-2); margin:0 0 12px; display:flex; gap:9px; align-items:flex-start; min-height:46px; line-height:1.5; }
+.say .ic { flex:none; font-size:16px; }
+.say b { color:var(--primary-ink); }
+
+/* ── 지표 타일 ──────────────────────────────────────────────────
+   padding·font-size 는 concept 이 한 단계 크므로 그쪽 파일에 남겼다. */
+.metrics .m { background:var(--card-2); border:1px solid var(--line); border-radius:11px; text-align:center; }
+.metrics .m span { color:var(--ink-3); display:block; }
+.metrics .m b { font-family:var(--mono); font-weight:700; }
+.metrics .m b.acc { color:var(--green); }
+
+/* ── 차트 · 보조 문구 ─────────────────────────────────────────
+   .tip 의 margin-top 과 .learn 의 line-height 는 코스마다 달라 각 파일에 남겼다. */
+.chart-wrap { position:relative; width:100%; border:1px solid var(--line); border-radius:13px; background:var(--card-2); overflow:hidden; }
+canvas.chart { width:100%; height:auto; display:block; cursor:crosshair; touch-action:none; }
+.tip { font-size:12px; color:var(--ink-4); text-align:center; }
+.learn { background:var(--card-2); border:1px solid var(--line); border-radius:12px; padding:13px 15px; margin-top:14px;
+  font-size:12.5px; color:var(--ink-2); }
+.learn .ex { display:block; margin-top:7px; color:var(--ink-3); }
+
+/* ── 카메라 스테이지 (gesture · life) ──────────────────────────
+   영상 좌우 반전(transform)은 전면 카메라를 쓰는 gesture 에만 있어 그쪽에 남겼다. */
+.stage { position:relative; width:100%; aspect-ratio:4/3; background:#0d1016; border-radius:13px; overflow:hidden; border:1px solid var(--line); }
+.stage video, .stage canvas { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+/* 오버레이 레이어 고정 — 랜드마크 캔버스가 영상 위에 확실히 표시(GPU 레이어 가림 예방) */
+.stage video { z-index:1; }
+.stage canvas { z-index:2; }
+.stage .ph { position:absolute; inset:0; display:grid; place-items:center; color:#9aa3b2; font-size:13.5px; text-align:center; padding:20px; }
+.cam-state { margin-left:auto; font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink-3);
+  background:var(--bg-soft); border:1px solid var(--line); border-radius:999px; padding:3px 9px; }
+.cam-state.on { color:var(--primary-ink); background:var(--primary-soft); border-color:var(--primary-line); }
+.cam-ctrl { display:flex; gap:10px; margin-top:12px; }
+
+/* ── 4단계 위저드 단계바 (.flow 컨테이너는 base.css) ─────────────
+   .ft span 의 display:block·margin-top 은 data 에만 있어 그쪽에 남겼다. */
+.flow .fstep { flex:1; display:flex; align-items:center; gap:11px; padding:10px 14px; border-radius:11px; cursor:pointer;
+  transition:.15s; border:none; background:none; text-align:left; font-family:var(--sans); }
+.flow .fstep .ft b { font-size:14px; font-weight:700; display:block; line-height:1.2; color:var(--ink); }
+.flow .fstep .ft span { font-size:11.5px; color:var(--ink-3); }
+/* 좁은 화면에서 4단계를 가로로 욱여넣지 않고 세로로 쌓는다.
+   text·gesture·data 에만 있던 규칙이라 concept·life 도 여기서 함께 적용받는다. */
+@media (max-width:720px){
+  .flow { flex-direction:column; align-items:stretch; padding:6px; }
+  .flow .farrow { display:none; }
+  .flow .fstep .ft span { display:none; }
+}
+
+/* ── 고급·응용 탭 퀴즈 카드 ────────────────────────────────────
+   concept(.vl-quiz-*)·gesture(.dm-quiz-*)에 접두사만 다른 동일 규칙으로 복제돼 있었고,
+   둘 다 혼자 다크 테마였다. shared/course-dashboard.css 의 .dash-quiz-card 와 같은
+   라이트 카드로 맞춰, 한 코스 안에서 퀴즈 생김새가 갈리지 않게 한다. */
+.qz-card { background:var(--card); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); padding:24px; margin-top:24px; }
+.qz-card h3 { display:flex; align-items:center; gap:8px; font-size:16px; font-weight:800; margin:0 0 8px; color:var(--primary-ink); }
+.qz-card > p { font-size:14px; color:var(--ink-2); line-height:1.65; margin:0 0 20px; }
+.qz-btn { display:block; width:100%; text-align:left; background:#fff; border:1px solid var(--line-2); color:var(--ink);
+  padding:14px 16px; border-radius:12px; font-size:14px; line-height:1.5; margin-bottom:10px; cursor:pointer; transition:.15s; }
+.qz-btn:hover:not(:disabled) { border-color:var(--primary-line); background:var(--primary-soft); }
+.qz-btn.correct { border-color:var(--green); background:var(--green-soft); color:var(--green); font-weight:700; }
+.qz-btn.wrong { border-color:var(--primary); background:var(--primary-soft); color:var(--primary-ink); font-weight:700; }
+.qz-btn:disabled { cursor:default; }
+.qz-feedback { margin-top:16px; padding:14px 16px; border-radius:12px; border-left:3px solid; font-size:13.5px; line-height:1.65; }
+/* 자식 선택자로 좁힌 것은 판정 문구(<b>정답입니다</b>)만 한 줄로 띄우기 위해서다.
+   해설 본문 안의 강조 <b> 까지 block 이 걸리면 문장이 통째로 끊겨 보인다. */
+.qz-feedback > b { display:block; margin-bottom:4px; font-size:14px; }
+.qz-feedback span { color:var(--ink-2); }
+.qz-feedback.right { border-left-color:var(--green); background:var(--green-soft); }
+.qz-feedback.right > b { color:var(--green); }
+.qz-feedback.miss { border-left-color:var(--primary); background:var(--primary-soft); }
+.qz-feedback.miss > b { color:var(--primary-ink); }
+
+/* ── 이론 보강 영역 ───────────────────────────────────────────
+   .theory-sec 의 margin-top 은 gesture 만 18px 이라 그쪽 파일에 남겼다. */
+.theory-sec { grid-column:1 / -1; }
+.tcard:nth-child(2) .tc-ic { background:var(--blue-soft); }
+
+/* ── 유틸 ─────────────────────────────────────────────────────
+   .btn-row 는 base.css 에 있다. 여기서는 위저드 CTA 용 변형만 얹는다.
+   .btn 이 inline-flex 라 margin:auto 로는 가운데로 오지 않으므로 래퍼를 쓴다. */
+.btn-row.lg { margin-top:32px; }
+.btn-row .btn.block { max-width:600px; }
+/* 미리 준비된 예시로 동작하는 시뮬레이션 화면임을 밝히는 배지 */
+.sim-badge { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; font-weight:700;
+  letter-spacing:.04em; color:var(--ink-3); background:var(--bg-soft); border:1px solid var(--line);
+  border-radius:999px; padding:4px 11px; }
+.sim-badge svg { width:13px; height:13px; }

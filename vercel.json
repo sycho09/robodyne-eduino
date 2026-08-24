@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "echo 'static site - no install needed'",
+  "buildCommand": "echo 'static site - no build needed'",
+  "outputDirectory": ".",
+  "redirects": [
+    { "source": "/", "destination": "/platform/index.html", "permanent": false }
+  ]
+}
