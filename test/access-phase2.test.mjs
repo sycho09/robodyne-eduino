@@ -20,7 +20,7 @@ const TRACKS = [
 
 /* 기준서 2-2 · 2-3 · 2-4 의 프리셋 접근 표 */
 const PRESETS = {
-  image: { free: ["recycle", "rps"], paid: ["mask", "thumb", "custom"] },
+  image: { free: ["mask", "thumb"], paid: ["recycle", "rps", "custom"] },
   pose: { free: ["pose-arm", "pose-sit"], paid: ["pose-custom"] },
   audio: { free: ["audio-onoff", "audio-updown"], paid: ["audio-custom"] },
 };

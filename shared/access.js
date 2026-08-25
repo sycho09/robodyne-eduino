@@ -164,18 +164,7 @@
     }
     return null;
   }
-  /* ── 정책이 이미 허용한 경로는 잠깐 비켜 준다 ──
-     무료 프리셋(분리수거·가위바위보)은 기준서 2-2 가 클래스 3개로 못박아 둔 주제다.
-     클래스 2개 상한을 여기에도 걸면 정책이 무료로 정한 주제가 반쪽이 되므로,
-     상한은 "직접 클래스 추가" 에만 적용하고 프리셋 적용 중에는 통과시킨다. */
-  var bypassing = false;
-  function bypass(fn) {
-    bypassing = true;
-    try { return fn(); } finally { bypassing = false; }
-  }
-
   function intercept(e) {
-    if (bypassing) return;
     /* 상태에 따라 붙였다 떼는 잠금(setLocked)은 이름표로 위임해 받는다 —
        다시 그려지는 DOM 이라 요소를 배열에 들고 있으면 끊기거나 쌓인다. */
     var named = e.target.closest ? e.target.closest('[data-ax-lock]') : null;
@@ -327,9 +316,7 @@
     if (!cfg || !cfg.container) return;
     defineVisionLocks();
     var free = !isPaid(cfg.scope);
-    /* 프리셋이 이미 만들어 둔 클래스는 상한 위에 있어도 그대로 둔다 — 줄이지 않고,
-       그 지점에서 더 늘리는 것만 막는다. */
-    var classMax = Math.min(cfg.max, Math.max(limit('classes', cfg.scope), cfg.count));
+    var classMax = Math.min(cfg.max, limit('classes', cfg.scope));
     var dataMax = limit(cfg.kind, cfg.scope);
 
     if (cfg.countMeta) cfg.countMeta.textContent = cfg.count + ' / ' + classMax;
@@ -511,7 +498,6 @@
     badge: badge,
     applyCourseGate: applyCourseGate,
     applyVisionGate: applyVisionGate,
-    bypass: bypass,
     capClasses: capClasses,
     limit: limit,
     defineLock: defineLock,

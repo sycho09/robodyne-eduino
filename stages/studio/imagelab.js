@@ -23,33 +23,37 @@
   }
 
   const SCEN = [
+    /* 무료 프리셋을 앞에 둔다 — 잠긴 칩을 지나치지 않고 바로 시작할 수 있고,
+       동작·음성 트랙(무료 2개 → 자유 주제)과 순서 규칙이 같아진다.
+       무료 항목은 전부 2클래스다. 무료 클래스 상한이 2개라서, 3클래스 주제를 무료로 두면
+       프리셋만 상한을 비켜 가는 예외가 필요해진다 (기준서 2-1 · 2-2). */
     {
-      key: "recycle", track: "image",
-      emoji: "♻️",
-      name: "분리수거 분류기",
-      classes: ["캔", "페트병", "종이"],
-      tip: "쓰레기를 각도·거리를 바꿔가며 20장씩. 배경이 섞이지 않게!",
-    },
-    {
-      key: "rps", track: "image",
-      emoji: "✌️",
-      name: "가위바위보",
-      classes: ["가위", "바위", "보"],
-      tip: "손을 화면 가운데에 크게. 배경은 단순하게.",
-    },
-    {
-      key: "mask", paid: true, track: "image",
+      key: "mask", track: "image",
       emoji: "😷",
       name: "마스크 썼나요?",
       classes: ["썼음", "안 썼음"],
       tip: "얼굴이 잘 보이게, 밝은 곳에서 다양한 표정으로.",
     },
     {
-      key: "thumb", paid: true, track: "image",
+      key: "thumb", track: "image",
       emoji: "👍",
       name: "엄지 척 / 아래",
       classes: ["엄지 척", "엄지 아래"],
       tip: "손 모양을 또렷하게, 손 위치를 조금씩 바꿔가며.",
+    },
+    {
+      key: "recycle", paid: true, track: "image",
+      emoji: "♻️",
+      name: "분리수거 분류기",
+      classes: ["캔", "페트병", "종이"],
+      tip: "쓰레기를 각도·거리를 바꿔가며 20장씩. 배경이 섞이지 않게!",
+    },
+    {
+      key: "rps", paid: true, track: "image",
+      emoji: "✌️",
+      name: "가위바위보",
+      classes: ["가위", "바위", "보"],
+      tip: "손을 화면 가운데에 크게. 배경은 단순하게.",
     },
     {
       key: "custom", paid: true, track: "image",
@@ -245,12 +249,7 @@
     }
     guard = 0;
     const add = el("add-class", s.track);
-    /* 무료 프리셋은 클래스가 3개인 것이 있다(기준서 2-2). 상한 잠금을 비켜 그대로 만든다. */
-    const addAll = () => {
-      while (items().length < s.classes.length && guard++ < 12 && add) add.click();
-    };
-    if (window.Access) window.Access.bypass(addAll);
-    else addAll();
+    while (items().length < s.classes.length && guard++ < 12 && add) add.click();
     items().forEach((it, i) => {
       const inp = it.querySelector(".class-name");
       if (inp && s.classes[i] !== undefined) {
