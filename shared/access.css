@@ -99,8 +99,8 @@
   }
 
   .ax-locked.dash-nav-item .ax-badge-ic {
-    width: 11px;
-    height: 11px;
+    width: 10px;
+    height: 10px;
   }
 
 
@@ -438,6 +438,28 @@
 }
 input.ax-frozen { color: var(--ax-ink-3); }
 .cap-btn.ax-frozen { filter: grayscale(1); }
+
+/* 배지가 flex 컨테이너가 아닌 곳(예: 학습 카드의 <label>)에 붙으면 margin-left:auto 가
+   먹지 않아 글자에 딱 붙고, inline-flex 20px 이라 13px 글자의 기준선 아래로 처진다.
+   붙는 라벨 자체를 작은 flex 줄로 만들어 간격과 세로 중심을 함께 맞춘다. */
+label.ax-locked {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+/* 배지 안 여백은 정수로 떨어져야 한다 — box-sizing:border-box 라 안쪽 폭은
+   (배지 − 테두리 2px) 이고, 거기서 아이콘을 뺀 나머지가 좌우로 나뉜다.
+   17/10 이면 한쪽이 2.5px 이라 브라우저가 2px·3px 로 몰아 그려 자물쇠가 밀려 보인다.
+   18/10 → 안쪽 16 − 10 = 6 → 한쪽 3px 로, 기본 배지(20/12)와 같은 링 여백이 된다. */
+label.ax-locked .ax-badge {
+  margin-left: 0;
+  width: 18px;
+  height: 18px;
+}
+label.ax-locked .ax-badge-ic {
+  width: 10px;
+  height: 10px;
+}
 
 /* 혼동행렬처럼 자리를 유지한 채 덮어야 하는 영역 */
 .ax-veiled { position: relative; }
