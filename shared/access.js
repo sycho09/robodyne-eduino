@@ -1,12 +1,7 @@
-/* 무료/유료 접근 제어 공통 레이어 — 기준서: docs/access-policy.md
+/* 무료/유료 접근 제어 공통 레이어 — 기준서: docs/access-policy.md (3장 "공통 제약")
    일반 코스 5종(modules/)과 비전 제작 트랙 3종이 이 파일 하나를 공유한다.
-
-   설계 원칙 (기준서 3장 "공통 제약")
-   - 구매 상태의 단일 출처는 이 파일이다. 다른 파일에서 localStorage 를 직접 읽지 않는다.
-   - 학습 콘텐츠·모델 로직은 건드리지 않는다. 잠금은 (1) 잠금 표시 렌더링 (2) 이벤트 차단
-     두 가지로만 만든다. 잠긴 화면의 원본 DOM 은 그대로 두고 진입만 막는다.
-   - 코스·트랙별 분기 코드를 두지 않는다. 다섯 코스가 공유하는 마크업 규칙
-     (.steps > .step[data-step] ↔ #panel-<step>) 에 규칙 하나를 적용한다. */
+   구매 상태의 단일 출처이며, 잠금은 표시 렌더링과 이벤트 차단으로만 만든다
+   (학습 콘텐츠·모델 로직 무수정). 코스·트랙별 분기 없이 공유 마크업 규약에 규칙 하나를 적용한다. */
 (function () {
   'use strict';
 
@@ -69,10 +64,8 @@
     return el;
   }
 
-  /* ── 잠금 화면 ──
-     info = { title, desc, previewLabel, items:[{title,desc}], note }
-     제자리에 둘 때는 screen() 의 HTML 을, 클릭을 막고 띄울 때는 open() 을 쓴다.
-     desc·note 는 HTML 그대로 넣는다(호출부가 <b> 강조를 쓴다). items·title 은 escape 한다. */
+  /* 잠금 화면 — info = { title, desc, previewLabel, items:[{title,desc}], note }
+     desc·note 만 HTML 그대로 넣는다(호출부가 <b> 강조를 쓴다). 나머지는 escape. */
   function screen(info) {
     info = info || {};
     var items = info.items || [];
@@ -126,79 +119,77 @@
   }
   function close() { if (modal) modal.classList.remove('on'); }
 
-  /* ── 인라인 안내 띠 ──
-     screen() 은 제목·설명·미리보기·CTA 를 다 갖춘 "화면 한 장" 이다. 최종 평가처럼 그 자리
-     전체가 잠긴 곳에는 그대로 쓰면 되지만, 무료 내용이 이미 있는 화면(사전 진단 결과)에 얹으면
-     제목도 다음 행동 버튼도 두 벌이 되어 읽기 어려워진다.
-     그런 자리에는 한 줄 띠만 두고 자세한 내용은 눌렀을 때 모달로 보여 준다
-     — 실습 ③ 탭 잠금과 같은 상호작용이라 "잠긴 건 눌러 보면 설명이 나온다" 규칙 하나로 통일된다. */
-  var NOTICES = {};
-  function defineNotice(key, info) { NOTICES[key] = info; }
-  function notice(key, text) {
+  /* ── 잠금 정보 저장소 ──
+     화면 내용은 키로 등록해 두고 DOM 에는 키만 남긴다. 다시 그려져도 위임으로 받으므로
+     리스너가 끊기지 않고, 요소 참조를 배열에 쌓지 않아 새지도 않는다. */
+  var INFOS = {};
+  var seq = 0;
+  function defineInfo(key, info) { INFOS[key] = info; return key; }
+  function infoFor(key) {
+    var info = INFOS[key];
+    return typeof info === 'function' ? info() : info;
+  }
+
+  /* 상태에 따라 켜고 끄는 잠금 (예: 클래스가 2개일 때만 추가 버튼 잠금). */
+  function setLocked(el, key, on, label) {
+    if (!el) return el;
+    if (on) {
+      if (el.dataset.axLock) return el;
+      el.dataset.axLock = key;
+      el.setAttribute('aria-disabled', 'true');
+      mark(el, label);
+    } else if (el.dataset.axLock) {
+      delete el.dataset.axLock;
+      el.removeAttribute('aria-disabled');
+      el.classList.remove('ax-locked');
+      var b = el.querySelector('.ax-badge');
+      if (b) b.parentNode.removeChild(b);
+    }
+    return el;
+  }
+
+  /* 한 번 걸면 풀지 않는 잠금. info 를 함수로 주면 클릭 시점의 DOM 을 읽는다. */
+  function gate(el, info, label) {
+    if (!el || el.dataset.axLock) return el;
+    return setLocked(el, defineInfo('gate:' + (++seq), info), true, label);
+  }
+
+  /* 한 줄 안내 띠 — 무료 내용이 이미 있는 화면(사전 진단 결과·최종 평가)에서 쓴다.
+     screen() 을 통째로 얹으면 제목도 다음 행동 버튼도 두 벌이 되므로, 띠만 두고
+     자세한 내용은 눌렀을 때 모달로 보여 준다(실습 ③ 탭 잠금과 같은 상호작용). */
+  function notice(key, info, text) {
+    defineInfo(key, info);
     return '<div class="ax-inline" data-ax-notice="' + esc(key) + '" role="button" tabindex="0">' +
              lockIcon('ax-inline-ic') +
              '<span class="ax-inline-text">' + text + '</span>' +
              '<span class="ax-inline-more">자세히 보기</span>' +
            '</div>';
   }
-  /* 위임으로 받는다 — 안내 띠가 있는 화면은 innerHTML 로 다시 그려지므로
-     요소마다 리스너를 달면 다시 그릴 때마다 끊긴다. */
-  function onNoticeClick(e) {
-    var el = e.target.closest && e.target.closest('[data-ax-notice]');
-    if (!el) return;
-    var info = NOTICES[el.dataset.axNotice];
-    if (info) open(typeof info === 'function' ? info() : info);
-  }
-  document.addEventListener('click', onNoticeClick);
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') onNoticeClick(e);
-  });
 
-  /* ── 이벤트 차단 ──
-     문서 캡처 단계에서 끊는다. 대상 버튼의 onclick 은 버블 단계에 붙어 있어
-     스크립트 등록 순서와 무관하게 여기서 먼저 잡히고, 원본 핸들러는 실행되지 않는다. */
-  var gates = [];
-  function hit(target) {
-    for (var i = 0; i < gates.length; i++) {
-      if (gates[i].el.contains(target)) return gates[i];
-    }
-    return null;
-  }
-  function intercept(e) {
-    /* 상태에 따라 붙였다 떼는 잠금(setLocked)은 이름표로 위임해 받는다 —
-       다시 그려지는 DOM 이라 요소를 배열에 들고 있으면 끊기거나 쌓인다. */
-    var named = e.target.closest ? e.target.closest('[data-ax-lock]') : null;
-    if (named) {
+  /* ── 이벤트 위임 (캡처 단계) ──
+     data-ax-lock   : 원래 동작을 막고 잠금 화면을 띄운다. 대상의 onclick 은 버블 단계에
+                      있어 스크립트 등록 순서와 무관하게 여기서 먼저 잡힌다.
+     data-ax-notice : 막지 않고 띄우기만 한다 — 띠 자체가 여는 버튼이다. */
+  function onActivate(e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    var locked = t.closest('[data-ax-lock]');
+    if (locked) {
       e.preventDefault();
       e.stopImmediatePropagation();
-      open(lockInfo(named.dataset.axLock));
+      open(infoFor(locked.dataset.axLock));
       return;
     }
-    var g = hit(e.target);
-    if (!g) return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    open(typeof g.info === 'function' ? g.info() : g.info);
+    var hint = t.closest('[data-ax-notice]');
+    if (hint) open(infoFor(hint.dataset.axNotice));
   }
-  document.addEventListener('click', intercept, true);
+  document.addEventListener('click', onActivate, true);
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') intercept(e);
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') onActivate(e);
   }, true);
 
-  /* el 클릭을 막고 잠금 화면을 띄운다. info 를 함수로 주면 클릭 시점의 DOM 을 읽는다. */
-  function gate(el, info, label) {
-    if (!el || el.dataset.axGate === '1') return el;
-    el.dataset.axGate = '1';
-    el.setAttribute('aria-disabled', 'true');   // 여는 대신 잠금 화면을 띄우는 요소만 붙인다
-    mark(el, label);
-    gates.push({ el: el, info: info });
-    return el;
-  }
-
-  /* ── 일반 코스 5종 공통 게이트 (기준서 1-2 "전 코스 단일 규칙 — 실습 ③ 탭만 잠금") ──
-     다섯 코스의 실습 퀘스트 탭 스트립은 마크업이 같다:
-       .steps > .step[data-step] 3개 ↔ #panel-<step>
-     세 번째 탭 하나만 잠그는 인덱스 규칙이므로 코스별 분기가 필요 없다. */
+  /* 일반 코스 5종 공통 게이트 — 실습 ③ 탭만 잠근다 (기준서 1-2).
+     다섯 코스가 .steps > .step 3개 마크업을 공유하므로 인덱스 규칙 하나로 끝난다. */
   function applyCourseGate(opt) {
     opt = opt || {};
     if (isPaid(opt.scope)) return false;
@@ -264,33 +255,6 @@
     return FREE_LIMITS[kind] == null ? Infinity : FREE_LIMITS[kind];
   }
 
-  /* ── 상태에 따라 켜고 끄는 잠금 ──
-     gate() 는 한 번 걸면 못 푸는 정적 잠금이라 "클래스가 2개일 때만 잠근다" 같은
-     자리에는 맞지 않는다. 여기서는 표시를 붙였다 떼고, 클릭은 이름표(data-ax-lock)를
-     보고 위임으로 막는다 — 다시 그려지는 DOM 에서도 리스너가 끊기지 않는다. */
-  var LOCKS = {};
-  function defineLock(key, info) { LOCKS[key] = info; }
-  function lockInfo(key) {
-    var info = LOCKS[key];
-    return typeof info === 'function' ? info() : info;
-  }
-  function setLocked(el, key, on) {
-    if (!el) return el;
-    if (on) {
-      if (el.dataset.axLock) return el;
-      el.dataset.axLock = key;
-      el.setAttribute('aria-disabled', 'true');
-      mark(el);
-    } else if (el.dataset.axLock) {
-      delete el.dataset.axLock;
-      el.removeAttribute('aria-disabled');
-      el.classList.remove('ax-locked');
-      var b = el.querySelector('.ax-badge');
-      if (b) b.parentNode.removeChild(b);
-    }
-    return el;
-  }
-
   /* 자리를 유지한 채 덮는다 (기준서 2-1 세부 규칙: 혼동행렬 영역은 자리를 유지한 채 잠금 표시). */
   function veil(el, key) {
     if (!el || el.dataset.axVeil === '1') return el;
@@ -302,22 +266,20 @@
     cover.setAttribute('role', 'button');
     cover.setAttribute('tabindex', '0');
     cover.innerHTML = lockIcon('ax-veil-lock') +
-      '<span class="ax-veil-label">' + esc((lockInfo(key) || {}).title || '') + '</span>' +
+      '<span class="ax-veil-label">' + esc((infoFor(key) || {}).title || '') + '</span>' +
       '<span class="ax-veil-more">자세히 보기</span>';
     el.appendChild(cover);
     return el;
   }
 
-  /* ── 클래스 수 · 데이터 상한 (기준서 2-1 · 2-5) ──
-     세 트랙의 클래스 목록 DOM 이 같으므로(.class-item / .class-count / .cap-btn)
-     각 렌더러가 끝난 뒤 이 함수 하나로 상한을 덮어씌운다. 렌더러 쪽 변경은 호출 한 줄뿐이다.
+  /* 클래스 수 · 데이터 상한 (기준서 2-1 · 2-5). 세 트랙이 클래스 목록 DOM 을 공유하므로
+     각 렌더러 끝에서 이 함수 하나를 부르면 된다.
      cfg = { container, addBtn, countMeta, count, max, kind, scope } · kind: 'shots' | 'records' */
   function capClasses(cfg) {
     if (!cfg || !cfg.container) return;
-    defineVisionLocks();
     var free = !isPaid(cfg.scope);
-    var classMax = Math.min(cfg.max, limit('classes', cfg.scope));
-    var dataMax = limit(cfg.kind, cfg.scope);
+    var classMax = free ? Math.min(cfg.max, FREE_LIMITS.classes) : cfg.max;
+    var dataMax = free ? (FREE_LIMITS[cfg.kind] || Infinity) : Infinity;
 
     if (cfg.countMeta) cfg.countMeta.textContent = cfg.count + ' / ' + classMax;
     if (cfg.addBtn) {
@@ -369,7 +331,7 @@
 
   /* 잠금 화면 문구 — 한곳에 모아 둔다. 여러 번 불러도 같은 값으로 덮어쓸 뿐이다. */
   function defineVisionLocks() {
-    defineLock('classes', {
+    defineInfo('classes', {
       title: '클래스 3개 이상',
       desc: '무료 구간은 <b>클래스 2개</b>까지예요. 3~4개로 늘리면 더 촘촘하게 나누는 분류기를 만들 수 있어요.',
       previewLabel: '클래스를 늘리면',
@@ -379,7 +341,7 @@
       ],
       note: '클래스 2개짜리 분류기는 무료로 끝까지 만들 수 있어요.'
     });
-    defineLock('epochs', {
+    defineInfo('epochs', {
       title: '학습 횟수 조절',
       desc: '같은 데이터를 <b>몇 번 반복해 학습</b>할지 직접 정합니다. 무료 구간은 기본값으로 고정돼요.',
       previewLabel: '조절하면 볼 수 있는 것',
@@ -389,7 +351,7 @@
       ],
       note: '기본값으로도 학습 · 추론은 끝까지 무료로 할 수 있어요.'
     });
-    defineLock('confusion', {
+    defineInfo('confusion', {
       title: '혼동행렬',
       desc: 'AI 가 <b>어떤 클래스를 서로 헷갈렸는지</b> 표로 보여 줍니다. 틀린 이유를 짚는 평가 도구예요.',
       previewLabel: '이 표에서 읽는 것',
@@ -399,7 +361,7 @@
       ],
       note: '학습곡선(정확도 · 손실 변화)은 무료로 볼 수 있어요.'
     });
-    defineLock('preset', {
+    defineInfo('preset', {
       title: '더 많은 주제',
       desc: '마스크 착용 여부, 손동작 같은 <b>준비된 주제</b>를 바로 불러옵니다.',
       previewLabel: '열리는 주제',
@@ -409,7 +371,7 @@
       ],
       note: '분리수거 · 가위바위보는 무료로 그대로 쓸 수 있어요.'
     });
-    defineLock('preset-custom', {
+    defineInfo('preset-custom', {
       title: '자유 주제',
       desc: '<b>직접 주제를 정해 나만의 분류기 만들기</b> — 무엇을 나눌지 내가 정하고 클래스 이름도 직접 붙입니다.',
       previewLabel: '자유 주제로 할 수 있는 것',
@@ -419,7 +381,7 @@
       ],
       note: '준비된 무료 주제로도 파이프라인 4단계를 끝까지 체험할 수 있어요.'
     });
-    defineLock('output', {
+    defineInfo('output', {
       title: '결과물 만들기',
       desc: '학습한 모델로 <b>AI 상상보드</b>와 <b>내 AI 캐릭터 카드</b>를 만들어 남깁니다.',
       previewLabel: '만들 수 있는 것',
@@ -429,7 +391,7 @@
       ],
       note: '추론 결과 화면은 <b>이미지 저장하기</b>로 무료로 남길 수 있어요.'
     });
-    defineLock('challenge', {
+    defineInfo('challenge', {
       title: '정확도 챌린지',
       desc: '만든 모델의 정확도를 <b>겨루는 미션</b>이에요. 기록이 남고 결과를 견줘 볼 수 있어요.',
       previewLabel: '챌린지에서 하는 것',
@@ -439,7 +401,7 @@
       ],
       note: '추론 · 평가 자체는 무료로 계속 할 수 있어요.'
     });
-    defineLock('mission', {
+    defineInfo('mission', {
       title: '미션함 · 미션 제출',
       desc: '만든 결과물을 <b>미션함에 담아 제출</b>하고, 선생님이 학급 현황을 확인합니다.',
       previewLabel: '제출하면',
@@ -456,7 +418,6 @@
   function applyVisionGate(opt) {
     opt = opt || {};
     if (isPaid(opt.scope)) return false;
-    defineVisionLocks();
 
     PREFIXES.forEach(function (pfx) {
       /* 학습 횟수 — 숨기지 않고 기본값을 보인 채 잠근다(기준서 2-1 세부 규칙).
@@ -484,24 +445,22 @@
   defineVisionLocks();
 
   window.Access = {
+    /* 구매 상태 */
     plan: plan,
-    setPlan: setPlan,
+    setPlan: setPlan,          // 결제 연동 시 서버 조회로 갈아 끼울 자리
     isPaid: isPaid,
+    limit: limit,
+    /* 잠금 표시 */
     mark: mark,
     gate: gate,
+    setLocked: setLocked,
+    /* 잠금 화면 */
     screen: screen,
     notice: notice,
-    defineNotice: defineNotice,
-    open: open,
     close: close,
-    lockIcon: lockIcon,
-    badge: badge,
+    /* 화면별 일괄 적용 */
     applyCourseGate: applyCourseGate,
     applyVisionGate: applyVisionGate,
-    capClasses: capClasses,
-    limit: limit,
-    defineLock: defineLock,
-    setLocked: setLocked,
-    veil: veil
+    capClasses: capClasses
   };
 })();

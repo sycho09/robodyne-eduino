@@ -49,20 +49,16 @@
     var storeKey = STORE_PREFIX + (config.courseKey || 'unknown');
     var THEORY_LEN = (config.theory || []).length;
 
-    /* 무료/유료 구분은 shared/access.js 한 곳에서만 판단한다 (기준서: docs/access-policy.md).
-       access.js 가 없는 환경(단위 테스트 등)에서는 잠그지 않는다 — 접근 제어는 이 셸의
-       기능이 아니라 상위 레이어의 기능이고, 레이어가 없을 때 학습을 막을 이유가 없다. */
+    /* 무료/유료 판단은 shared/access.js 한 곳에서만 한다. 그 레이어가 없는 환경
+       (단위 테스트 등)에서는 잠그지 않는다 — 없다고 학습을 막을 이유가 없다. */
     function paid() { return !window.Access || window.Access.isPaid(config.courseKey); }
+    /* 화면 전체가 잠긴 자리(최종 평가)는 lockScreen, 무료 내용이 이미 있는 자리는 noticeStrip. */
     function lockScreen(info) { return window.Access ? window.Access.screen(info) : ''; }
-    /* 무료 내용이 이미 있는 화면에서 쓰는 한 줄 안내 — 자세한 내용은 눌렀을 때 모달로 뜬다.
-       화면 전체가 잠긴 자리(최종 평가)에만 lockScreen 을 쓴다. */
     function noticeStrip(key, info, text) {
-      if (!window.Access) return '';
-      window.Access.defineNotice(key, info);
-      return window.Access.notice(key, text);
+      return window.Access ? window.Access.notice(key, info, text) : '';
     }
-    /* 사전 진단의 개념별 분석(취약/스킵 가능)은 유료다. 이론 카드·상세에 같은 결과를
-       그대로 내보이면 잠금이 무의미해지므로, 표시에 쓰는 값은 이 함수로만 읽는다. */
+    /* 사전 진단의 개념별 분석은 유료다. 이론 카드·상세에 그대로 내보이면 잠금이
+       무의미해지므로, 표시에 쓰는 값은 이 함수로만 읽는다. */
     function shownStatus(i) { return paid() ? (state.conceptStatus[i] || '') : ''; }
 
     function freshState() {
@@ -175,10 +171,8 @@
       syncSidebar();
     }
 
-    /* 사이드바 잠금 표시 (기준서 1-3)
-       - 학습 흐름 4 최종 평가: 표시만 붙이고 이동은 막지 않는다. 눌러 들어가면 그 자리에서
-         무엇이 잠겼는지 보여주는 편이, 눌리지 않는 항목보다 이유가 분명하다.
-       - 학습 현황 종합: 화면이 없으므로 클릭을 막고 잠금 화면을 띄운다. */
+    /* 사이드바 잠금 표시 (기준서 1-3) — 최종 평가는 표시만 붙여 들어갈 수 있게 두고
+       (그 자리에서 무엇이 잠겼는지 보여준다), 화면이 없는 학습 현황 종합은 클릭을 막는다. */
     function applySidebarLocks(sb) {
       if (paid() || !window.Access) return;
       var evalItem = sb.querySelector('[data-goto-step="3"]');
