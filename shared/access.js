@@ -444,6 +444,55 @@
   /* 잠금 문구는 로드 시점에 한 번 등록해 둔다 — 어느 화면이 먼저 그려지든 참조할 수 있게. */
   defineVisionLocks();
 
+  /* ── QA 전환 배지 (개발용) ────────────────────────────────────────
+     지금 무료로 보고 있는지 유료로 보고 있는지 화면에서 알 수가 없으면 QA 가 계속
+     헷갈린다. 그래서 상태 표시와 전환을 한 칩에서 겸한다.
+
+     프로덕션에 딸려 나가지 않는 것이 이 코드의 제1 요건이라, "지울 때 잊지 않기" 에
+     기대지 않는다 — 개발 호스트가 아니면 DOM 을 아예 만들지 않는다.
+       · localhost · 127.0.0.1 · app:// · file://  → 항상 표시
+       · 그 밖(배포 도메인)                        → ?qa=1 이 붙었을 때만
+     ?qa=1 은 저장하지 않으므로 그 링크를 벗어나면 사라진다. 결제 연동 후에는
+     plan() 이 서버 값을 읽게 되므로 이 배지도 함께 걷어내면 된다. */
+  function qaBadge() {
+    var h = location.hostname;
+    var devHost = h === 'localhost' || h === '127.0.0.1' || h === '' ||
+      location.protocol === 'app:' || location.protocol === 'file:';
+    if (!devHost && !/[?&]qa=1(&|$)/.test(location.search)) return;
+    if (!document.body || document.getElementById('ax-qa')) return;
+
+    var now = plan();
+    var box = document.createElement('div');
+    box.id = 'ax-qa';
+    box.className = 'ax-qa';
+    box.setAttribute('role', 'group');
+    box.setAttribute('aria-label', '개발용 등급 전환');
+    box.innerHTML =
+      '<span class="ax-qa-lab">QA</span>' +
+      '<span class="ax-qa-seg" data-on="' + now + '">' +
+        '<button type="button" class="ax-qa-opt" data-p="free">무료</button>' +
+        '<button type="button" class="ax-qa-opt" data-p="paid">유료</button>' +
+      '</span>';
+    Array.prototype.forEach.call(box.querySelectorAll('.ax-qa-opt'), function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.p === now));
+      b.addEventListener('click', function () {
+        if (b.dataset.p === plan()) return;          // 이미 그 등급이면 아무것도 하지 않는다
+        setPlan(b.dataset.p);
+        /* 잠금은 화면을 그릴 때 한 번 적용되므로 다시 그려야 반영된다.
+           이때 URL 에 ?plan= 이 남아 있으면 다음 로드에서 그 값이 방금 고른 값을
+           덮어쓰므로(applyQueryOverride) 떼고 이동한다. */
+        try {
+          var u = new URL(location.href);
+          u.searchParams.delete('plan');
+          location.replace(u.toString());
+        } catch (e) { location.reload(); }
+      });
+    });
+    document.body.appendChild(box);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', qaBadge);
+  else qaBadge();
+
   window.Access = {
     /* 구매 상태 */
     plan: plan,
