@@ -284,14 +284,14 @@ test("다른 미션에서 같은 종류를 또 만들면 줄이 따로 남고 �
   assert.equal(bag(doc).length, 2, "같은 미션에서 다시 만들었는데 줄이 늘었다");
 });
 
-test("트랙이 달라도 한 목록에 모이고 한 번에 낸다", async () => {
+test("미션함은 지금 보고 있는 트랙의 결과물만 담는다", async () => {
   const { doc, window: win } = await loadApp(PAID);
   asFree(win);
   setPhase(doc, "live");
 
   setMission(win, "rps");
   await add(win, "idea", "상상보드");
-  /* 다른 트랙 결과물 혼합 저장 */
+  /* 다른 트랙(음성)에서 만든 결과물도 미션함에 들어 있는 상태로 둔다 */
   await win.Locker.add(
     "character",
     { title: "캐릭터 카드", img: "data:image/png;base64,c" },
@@ -300,10 +300,12 @@ test("트랙이 달라도 한 목록에 모이고 한 번에 낸다", async () =
   await waitFor(() => win.Locker.count() === 2);
   win.Submit.refresh();
 
-  assert.deepEqual(bagFrom(doc), ["가위바위보", "음성 분류"]);
+  /* 지금 화면은 이미지 트랙이므로 음성 결과물은 여기 섞이지 않는다.
+     트랙을 가로질러 모아 보는 자리는 제출 뒤의 '내 제출 현황'이다. */
+  assert.deepEqual(bagFrom(doc), ["가위바위보"], "다른 트랙 결과물이 섞여 들어왔다");
   assert.ok(await submit(doc, win));
   const [rec] = subs(win);
-  assert.equal(rec.items.length, 2, "트랙이 다르다고 따로 나갔다");
+  assert.equal(rec.items.length, 1, "다른 트랙 결과물까지 함께 나갔다");
 });
 
 /* 헤더 영역 미션함 상태 노출 제한 */
