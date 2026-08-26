@@ -188,6 +188,9 @@ function paintReport() {
 /* ── 단계 이동 ── */
 function msSetStep(n) {
   msStep = n;
+  /* 완료 신호는 마지막 단계 도달에 건다 — 상단 단계 버튼으로 바로 올 수도 있어서,
+     ms-finish 버튼에만 걸면 그 경로가 빠진다. */
+  if (n === 4) CourseDashboard.markDone('mission');
   document.querySelectorAll('#flow-ms .fstep').forEach((el) => {
     const sw = +el.dataset.m;
     el.classList.toggle('active', sw === n);
@@ -242,4 +245,4 @@ $('ms-go2').onclick = () => msSetStep(2);
 $('ms-go3').onclick = () => msSetStep(3);
 $('ms-go4').onclick = () => msSetStep(4);
 $('ms-back3').onclick = () => msSetStep(3);
-$('ms-finish').onclick = () => { CourseDashboard.markDone('mission'); CourseDashboard.finish(); };
+$('ms-finish').onclick = () => CourseDashboard.finish();

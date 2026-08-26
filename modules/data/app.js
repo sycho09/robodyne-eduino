@@ -82,6 +82,9 @@ function updateExNav() {
   $('ex-view-12').style.display = (exStep === 1 || exStep === 2) ? 'grid' : 'none';
   $('ex-view-3').style.display = exStep === 3 ? 'block' : 'none';
   $('ex-view-4').style.display = exStep === 4 ? 'block' : 'none';
+  /* 완료 신호는 '리포트에 도달' 에 건다. 예전에는 btn-ex-report 버튼에만 걸려 있어서,
+     상단 단계 버튼으로 4단계에 바로 가면 완료로 잡히지 않았다(그 버튼은 특정 조건에서만 나타난다). */
+  if (exStep === 4) window.CourseDashboard && CourseDashboard.markDone('explore');
   
   if(exStep === 1 || exStep === 2) renderVarCharts();
   if(exStep === 3) renderCtrlStep();
@@ -226,7 +229,7 @@ function renderCtrlStep() {
 
 $('temp-slider').addEventListener('input', renderCtrlStep);
 
-$('btn-ex-report').onclick = () => { exStep = 4; updateExNav(); window.CourseDashboard && CourseDashboard.markDone('explore'); };
+$('btn-ex-report').onclick = () => { exStep = 4; updateExNav(); };
 $('btn-confound-info').onclick = () => $('modal-confound').style.display = 'block';
 $('btn-close-confound').onclick = () => $('modal-confound').style.display = 'none';
 

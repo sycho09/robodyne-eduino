@@ -81,7 +81,7 @@ $('bd-train').onclick = async () => {
 /* ════ 2. 지도 vs 비지도 ════ */
 let cmpPts = [], cmpMode = 'sup', cmpAssign = [], cmpCents = [];
 const cmpCtx = $('c-cmp').getContext('2d');
-function makeCmp() { cmpPts = [...blob(3.2, 7, 10, 0, 3.2), ...blob(7, 3.6, 10, 1, 3.2)]; cmpMode = 'sup'; $('cmp-seg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.m === 'sup')); renderCmp(); window.CourseDashboard && CourseDashboard.markDone('compare'); }
+function makeCmp() { cmpPts = [...blob(3.2, 7, 10, 0, 3.2), ...blob(7, 3.6, 10, 1, 3.2)]; cmpMode = 'sup'; $('cmp-seg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.m === 'sup')); renderCmp(); }
 function kmeans2(pts, K, cents, assign) {
   let changed = 0;
   pts.forEach((p, i) => { let b = 0, bd = Infinity; cents.forEach((c, k) => { const d = (p.x - c.x) ** 2 + (p.y - c.y) ** 2; if (d < bd) { bd = d; b = k; } }); if (assign[i] !== b) { assign[i] = b; changed++; } });
@@ -106,8 +106,12 @@ function renderCmp() {
     ? EduinoIcons.svg('target') + ' 정답(색)이 정해진 점들이에요'
     : EduinoIcons.svg('puzzle') + ' 정답을 무시하고 위치만 보고 다시 묶었어요 (★=무리 중심)';
 }
-$('cmp-sample').onclick = makeCmp;
-$('cmp-seg').addEventListener('click', (e) => { const m = e.target.dataset.m; if (!m) return; cmpMode = m; $('cmp-seg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.m === m)); if (m === 'unsup') runUnsup(); renderCmp(); setStatus(m === 'sup' ? '지도학습 보기' : '비지도학습 보기', 'ready'); });
+/* makeCmp() 는 로드 시점 초기화에도 쓰인다. 완료 신호를 그 안에 두면 화면을 열자마자
+   완료로 찍히므로, 사용자가 실제로 누른 자리에만 건다. */
+$('cmp-sample').onclick = () => { makeCmp(); window.CourseDashboard && CourseDashboard.markDone('compare'); };
+/* 이 탭의 핵심은 지도/비지도를 바꿔 보는 것이다 — 그 전환을 완료로 본다. */
+$('cmp-seg').addEventListener('click', (e) => { const m = e.target.dataset.m; if (!m) return;
+  window.CourseDashboard && CourseDashboard.markDone('compare'); cmpMode = m; $('cmp-seg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.m === m)); if (m === 'unsup') runUnsup(); renderCmp(); setStatus(m === 'sup' ? '지도학습 보기' : '비지도학습 보기', 'ready'); });
 
 /* ── 단계 전환 ── */
 document.querySelectorAll('.step').forEach(btn => {
