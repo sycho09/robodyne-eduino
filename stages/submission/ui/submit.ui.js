@@ -187,6 +187,9 @@
   .sb-i .t{flex:1;min-width:0;font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.3;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   /* 결과물 생성 출처 표기 (종류 중복 구별용) */
+  /* 구분자는 CSS 로 넣는다 — <small> 의 글자는 출처 이름 그 자체여야 한다.
+     구분자를 마크업에 넣으면 출처를 읽어 가는 쪽(테스트·스크린리더)이 " · 가위바위보" 를 이름으로 본다. */
+  .sb-i .t small::before{content:" · ";}
   .sb-i .t small{font-size:10.5px;font-weight:600;color:var(--ink-4);
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .sb-i .at{flex:none;font-size:10.5px;font-weight:600;color:var(--ink-4);}
@@ -627,7 +630,7 @@
                     it,
                   ) => `<div class="sb-i" data-key="${esc(it.key)}" data-k="${esc(it.kind)}">
               <span class="i">${IC[it.kind] || IC.box}</span>
-              <span class="t">${esc(it.title)}${it.from ? `<small> &middot; ${esc(it.from)}</small>` : ""}</span>
+              <span class="t">${esc(it.title)}${it.from ? `<small>${esc(it.from)}</small>` : ""}</span>
               <span class="at">${ago(it.at)}</span>
               <button class="op" data-a="dl" data-key="${esc(it.key)}" title="이미지로 저장">${IC.down}</button>
               <button class="op" data-a="rm" data-key="${esc(it.key)}" title="미션함에서 삭제">${IC.x}</button>
