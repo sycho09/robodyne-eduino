@@ -392,7 +392,6 @@ $('btn-run-cluster').onclick = () => {
   clAssign = new Array(clPts.length).fill(-1); clustered = true;
   
   setStatus('AI 군집화 진행 중...', 'busy');
-  window.CourseDashboard && CourseDashboard.markDone('cluster'); 
   let it = 0;
   clTimer = setInterval(() => {
     const changed = kmeans(clPts, clK, clCents, clAssign);
@@ -473,16 +472,15 @@ window.selectDecision = function(k, el) {
 
 $('decision-reason').addEventListener('input', checkDecisionReady);
 
+/* 예전에는 이 조건이 '실습 완료' 버튼의 disabled 를 풀었다. 그 버튼은 하단 공통
+   컨트롤과 겹쳐 지웠고, 대신 같은 조건을 이 탭의 완료 조건으로 삼는다 —
+   군집을 돌린 것만으로는 부족하고 어떤 판단을 내렸는지까지 적어야 끝난 것이다. */
 function checkDecisionReady() {
   const reason = $('decision-reason').value.trim();
-  $('btn-finish-cluster').disabled = (selectedDecision === -1 || reason.length < 5);
-}
-
-$('btn-finish-cluster').onclick = () => {
-  if (typeof CourseDashboard !== 'undefined') {
-    CourseDashboard.finish();
+  if (selectedDecision !== -1 && reason.length >= 5) {
+    window.CourseDashboard && CourseDashboard.markDone('cluster');
   }
-};
+}
 
 
 /* ── 단계 전환 ── */
