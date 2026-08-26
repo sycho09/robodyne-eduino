@@ -88,7 +88,10 @@
       progress: {
         completedSteps: [false, false, false, false],   // 사이드바 초록 체크
         conceptStatus: new Array(THEORY_LEN).fill(''),  // '' | 'weak' | 'known' — 취약/스킵 태그
-        theoryRead: new Array(THEORY_LEN).fill(false)   // 읽음 태그
+        theoryRead: new Array(THEORY_LEN).fill(false),  // 읽음 태그
+        /* 최종 평가 점수. draft 는 단계를 떠날 때 비워지므로 여기에 남긴다 —
+           리포트가 draft 를 읽으면 두 번째 방문부터 0점이 된다. */
+        quizScore: null                                 // null | { correct, total }
       },
       draft: freshDraft()
     };
@@ -104,7 +107,8 @@
       state.progress = {
         completedSteps: saved.completedSteps.slice(),
         conceptStatus: saved.conceptStatus.slice(),
-        theoryRead: saved.theoryRead.slice()
+        theoryRead: saved.theoryRead.slice(),
+        quizScore: saved.quizScore || null
       };
     }
     function progressPayload() {
@@ -112,7 +116,8 @@
         courseKey: config.courseKey,
         completedSteps: state.progress.completedSteps.slice(),
         conceptStatus: state.progress.conceptStatus.slice(),
-        theoryRead: state.progress.theoryRead.slice()
+        theoryRead: state.progress.theoryRead.slice(),
+        quizScore: state.progress.quizScore
       };
     }
     function emitProgress() {
@@ -131,6 +136,7 @@
       '<section class="dash-panel" id="dash-panel-1" hidden></section>' +
       '<section class="dash-panel" id="dash-panel-2" hidden></section>' +
       '<section class="dash-panel" id="dash-panel-3" hidden></section>' +
+      '<section class="dash-panel" id="dash-panel-4" hidden></section>' +
       '</div>' +
       '</div>';
     document.body.insertBefore(shell, practiceContent);
@@ -168,7 +174,8 @@
     function goTo(i) {
       var from = state.step;
       state.step = i;
-      for (var p = 0; p < 4; p++) shell.querySelector('#dash-panel-' + p).hidden = p !== i;
+      for (var p = 0; p < 5; p++) shell.querySelector('#dash-panel-' + p).hidden = p !== i;
+      if (i === 4) paintSummary();
       if (from !== i) leaveStep(from);
       syncSidebar();
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -199,8 +206,8 @@
       /* 4단계 진행률·성취를 한 화면에 모아 보는 통합 대시보드는 유료 기능이고, 화면은 아직 없다.
          무료 기준이 "없음" 이므로 화면을 지어내지 않고 무엇이 잠겼는지 알리는 진입점만 둔다.
          유료 화면을 만들 때 이 항목을 그 화면으로 연결하면 된다(그래서 유료에서는 아직 감춘다). */
-      var summaryItem = paid() ? '' :
-        '<div class="dash-nav-item linkable" id="dash-nav-summary">' +
+      /* 유료/무료 관계없이 학습 현황 종합 뷰 제공 (유저 피드백 반영) */
+      var summaryItem = '<div class="dash-nav-item linkable" data-goto-step="4" id="dash-nav-summary">' +
         icon('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 16v-4M12 16V8M16 16v-6"/>') +
         '<span>학습 현황 종합</span></div>';
       sb.innerHTML =
@@ -224,27 +231,14 @@
     }
 
     /* 사이드바 잠금 표시 (기준서 1-3) — 최종 평가는 표시만 붙여 들어갈 수 있게 두고
-       (그 자리에서 무엇이 잠겼는지 보여준다), 화면이 없는 학습 현황 종합은 클릭을 막는다. */
+       (그 자리에서 무엇이 잠겼는지 보여준다) */
     function applySidebarLocks(sb) {
       if (paid() || !window.Access) return;
       var evalItem = sb.querySelector('[data-goto-step="3"]');
       if (evalItem) window.Access.mark(evalItem);
-      var summary = sb.querySelector('#dash-nav-summary');
-      if (summary) window.Access.gate(summary, summaryLockInfo);
+      /* 학습 현황 종합은 무료에서도 연다(제품 결정). 잠금 표시를 붙이지 않는다. */
     }
-    function summaryLockInfo() {
-      return {
-        title: '학습 현황 종합',
-        desc: '진단 · 이론 · 실습 · 평가 <b>4단계를 한 화면에서</b> 되짚어 봅니다. 학급 단위로 진행률을 확인할 때 씁니다.',
-        previewLabel: '이 화면에서 보는 것',
-        items: [
-          { title: '4단계 진행률', desc: STEP_LABELS.join(' · ') + ' 단계별 완료 현황' },
-          { title: '성취 종합', desc: '사전 진단 대비 개념 이해도 변화와 최종 평가 점수' },
-          { title: '코스 간 비교', desc: '수강 중인 코스를 나란히 놓고 보기' }
-        ],
-        note: '단계별 진행 표시는 무료에서도 사이드바에서 확인할 수 있어요.'
-      };
-    }
+
     function syncSidebar() {
       shell.querySelectorAll('#dash-sidebar [data-goto-step]').forEach(function (elm, i) {
         var isActive = i === state.step;
@@ -764,6 +758,7 @@
       syncSidebar();
       var total = config.quiz.length;
       var correct = config.quiz.filter(function (q, i) { return state.draft.quizAnswers[i] === q.answerIndex; }).length;
+      state.progress.quizScore = { correct: correct, total: total };
       var rc = config.resultCopy || { title: '수고했어요!', body: '학습을 모두 완료했습니다.' };
       // 진단 → 이론 → 실습 → 평가 4단계를 한 줄로 되짚어 코스의 완결감을 준다.
       var recap = STEP_LABELS.map(function (label) {
@@ -777,6 +772,121 @@
         '<p>' + esc(rc.body) + '</p>' +
         '<div class="dash-recap">' + recap + '</div>' +
         '</div>';
+    }
+
+    /* ---- Step 5: 학습 현황 종합 ---------------------------------------
+       "어디까지 왔나" 를 보는 화면이라, 숫자를 늘어놓기보다 남은 것과 다음 행동이
+       바로 보여야 한다. 카드·칩은 다른 단계에서 쓰던 것을 그대로 재사용한다. */
+    function paintSummary() {
+      var panel = shell.querySelector('#dash-panel-4');
+      var courseName = COURSES.find(function (c) { return c.key === config.courseKey; });
+      var title = courseName ? courseName.name : '이 코스';
+      var steps = state.progress.completedSteps;
+      var doneCount = steps.filter(Boolean).length;
+      var pct = Math.round((doneCount / STEP_LABELS.length) * 100);
+
+      /* 진행률 — 제목만 있고 정작 진행률이 없으면 카드가 비어 보인다. 비율을 먼저 준다. */
+      var recap = STEP_LABELS.map(function (label, i) {
+        var done = steps[i];
+        return '<span class="dash-recap-step' + (done ? '' : ' todo') + '">' +
+          (done ? icon('<polyline points="20 6 9 17 4 12"/>') : '') + ' ' + label + '</span>';
+      }).join('<span class="dash-recap-arrow">' + icon('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>') + '</span>');
+
+      var progressHtml =
+        '<section class="dash-sum-progress">' +
+          '<div class="dash-sum-top">' +
+            '<h2>전체 진행률</h2>' +
+            '<span class="dash-sum-count"><b>' + doneCount + '</b> / ' + STEP_LABELS.length + ' 단계</span>' +
+          '</div>' +
+          '<div class="dash-sum-bar"><i style="width:' + pct + '%"></i></div>' +
+          '<div class="dash-recap">' + recap + '</div>' +
+        '</section>';
+
+      /* 이론 — 셋 다 0 이면 "0 0 0" 세 개가 고장처럼 보인다. 시작 전에는 한 줄로 말한다. */
+      var theories = theoryList();
+      /* 개념별 취약/스킵 분석은 유료 구간이다(기준서 2-1). 여기서 conceptStatus 를
+         직접 읽으면 잠금을 우회하게 되므로 표시용 값은 shownStatus() 로만 읽는다. */
+      var n = { weak: 0, known: 0, read: 0 };
+      theories.forEach(function (t, i) {
+        var st = shownStatus(i);
+        if (st === 'weak') n.weak++;
+        else if (st === 'known') n.known++;
+        if (state.progress.theoryRead[i]) n.read++;
+      });
+      var readChip = '<span class="dash-stat">' + icon('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>') +
+        ' 읽은 개념 <b>' + n.read + '</b> / ' + theories.length + '</span>';
+      var conceptHtml;
+      if (!theories.length) {
+        conceptHtml = '<p class="dash-status-empty">이 코스에는 이론 개념이 등록되어 있지 않습니다.</p>';
+      } else if (!paid()) {
+        /* 무료 — 읽은 개수까지만. 취약/스킵 분석이 잠겨 있다는 것도 함께 알린다. */
+        conceptHtml = '<div class="dash-status-chips">' + readChip + '</div>' +
+          noticeStrip('summary-concept', {
+            title: '개념별 이해도 분석',
+            desc: '사전 진단 결과로 <b>어떤 개념이 약한지</b> 개념 단위로 갈라 봅니다.',
+            previewLabel: '여기서 보는 것',
+            items: [
+              { title: '보강 필요 개념', desc: '진단에서 틀린 개념만 모아 다시 보기' },
+              { title: '스킵 가능 개념', desc: '이미 아는 개념을 건너뛰어 시간 아끼기' }
+            ],
+            note: '읽은 개념 수와 전체 진행률은 무료로 계속 볼 수 있어요.'
+          }, '개념별 <b>보강 필요 · 스킵 가능</b> 분석은 수업용 라이선스에 들어 있어요.');
+      } else if (!n.weak && !n.known && !n.read) {
+        conceptHtml = '<p class="dash-status-empty">아직 사전 진단과 이론 학습을 시작하지 않았어요. 진단을 마치면 개념별 이해도가 여기에 모입니다.</p>';
+      } else {
+        conceptHtml =
+          '<div class="dash-status-chips">' +
+            '<span class="dash-stat known">' + icon('<polyline points="20 6 9 17 4 12"/>') + ' 스킵 가능 <b>' + n.known + '</b></span>' +
+            '<span class="dash-stat weak">' + icon('<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>') + ' 보강 필요 <b>' + n.weak + '</b></span>' +
+            readChip +
+          '</div>';
+      }
+
+      /* 평가 — 점수는 progress 에서 읽는다(draft 는 단계를 떠나면 비워진다). */
+      var quizHtml;
+      var sc = state.progress.quizScore;
+      if (!config.quiz || !config.quiz.length) {
+        quizHtml = '<p class="dash-status-empty">이 코스는 최종 평가가 없습니다.</p>';
+      } else if (!sc) {
+        quizHtml = '<p class="dash-status-empty">아직 최종 평가를 보지 않았어요. 실습을 마치면 도전할 수 있습니다.</p>';
+      } else {
+        var score = Math.round((sc.correct / sc.total) * 100);
+        var tone = score >= 80 ? ' known' : (score < 60 ? ' weak' : '');
+        quizHtml =
+          '<div class="dash-status-chips">' +
+            '<span class="dash-stat lg' + tone + '">' + icon('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>') + ' <b>' + score + '</b>점</span>' +
+            '<span class="dash-stat">' + sc.total + '문항 중 <b>' + sc.correct + '문항</b> 정답</span>' +
+          '</div>';
+      }
+
+      /* 현황만 보여 주고 끝내면 할 일이 없다. 다음에 할 단계로 바로 보낸다. */
+      var nextIdx = steps.indexOf(false);
+      var nextHtml = nextIdx === -1
+        ? '<div class="dash-sum-next done">' + icon('<polyline points="20 6 9 17 4 12"/>') + ' 이 코스의 4단계를 모두 마쳤어요.</div>'
+        : '<div class="dash-sum-next"><button class="btn primary lg" data-goto-step="' + nextIdx + '">' +
+            '이어서 하기 · ' + esc(STEP_LABELS[nextIdx]) + ' ' +
+            icon('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>') + '</button></div>';
+
+      panel.innerHTML =
+        '<div class="dash-head"><span class="dash-badge">학습 현황 종합</span>' +
+        '<h1>어디까지 왔는지 한눈에 봐요</h1>' +
+        '<p><b>' + esc(title) + '</b> 코스의 진행 상태와 성취를 모아 보여 줍니다.</p></div>' +
+        progressHtml +
+        '<div class="dash-precheck-report">' +
+          '<section class="dash-status-group">' +
+            '<h3>' + icon('<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>') + ' 이론 이해도</h3>' +
+            conceptHtml +
+          '</section>' +
+          '<section class="dash-status-group">' +
+            '<h3>' + icon('<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .8 1.6v.5h5.4v-.5c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3z"/>') + ' 최종 평가 성취</h3>' +
+            quizHtml +
+          '</section>' +
+        '</div>' +
+        nextHtml;
+
+      panel.querySelectorAll('[data-goto-step]').forEach(function (elm) {
+        elm.addEventListener('click', function () { goTo(+elm.dataset.gotoStep); });
+      });
     }
   }
 

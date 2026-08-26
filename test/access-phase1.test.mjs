@@ -141,10 +141,11 @@ for (const course of COURSES) {
     assert.equal(panel.querySelector(".dash-result"), null, "평가 결과가 렌더됐다");
   });
 
-  test(`${course} · 무료: 사이드바에 최종 평가 잠금 · 학습 현황 종합 잠금`, () => {
+  test(`${course} · 무료: 사이드바에 최종 평가만 잠금 표시`, () => {
     const { doc, win } = load(course);
+    /* 4단계 + 학습 현황 종합. 종합은 제품 결정으로 무료에도 연다(유저 피드백). */
     const flow = [...doc.querySelectorAll("#dash-sidebar [data-goto-step]")];
-    assert.equal(flow.length, 4);
+    assert.equal(flow.length, 5);
     assert.equal(badgeIn(flow[0]), null, "사전 진단에 잠금 표시가 붙었다");
     assert.equal(badgeIn(flow[1]), null, "이론 학습에 잠금 표시가 붙었다");
     assert.equal(badgeIn(flow[2]), null, "실습 퀘스트에 잠금 표시가 붙었다");
@@ -153,10 +154,12 @@ for (const course of COURSES) {
     flow[3].dispatchEvent(new win.MouseEvent("click", { bubbles: true }));
     assert.equal(doc.querySelector("#dash-panel-3").hidden, false, "평가 단계로 이동하지 못했다");
 
+    /* 학습 현황 종합은 무료에서도 열린다 — 잠금 표시도, 차단도 없어야 한다 */
     const summary = doc.querySelector("#dash-nav-summary");
-    assert.ok(summary && badgeIn(summary), "학습 현황 종합에 잠금 표시가 없다");
-    assert.equal(clickWithSpy(win, summary), false, "학습 현황 종합 클릭이 차단되지 않았다");
-    assert.ok(doc.querySelector(".ax-modal.on"), "학습 현황 종합 잠금 화면이 없다");
+    assert.ok(summary, "학습 현황 종합 진입점이 없다");
+    assert.equal(badgeIn(summary), null, "학습 현황 종합에 잠금 표시가 붙었다");
+    summary.dispatchEvent(new win.MouseEvent("click", { bubbles: true }));
+    assert.equal(doc.querySelector("#dash-panel-4").hidden, false, "학습 현황 종합으로 이동하지 못했다");
   });
 
   test(`${course} · 무료: 코스 목록에는 잠금 표시가 없다`, () => {
@@ -214,7 +217,7 @@ for (const course of COURSES) {
     assert.equal(clickWithSpy(win, t[2]), true, "유료인데 실습 ③ 클릭이 막혔다");
     assert.equal(doc.querySelector(".ax-modal.on"), null, "유료인데 잠금 화면이 떴다");
     assert.equal(doc.querySelector(".ax-remaining"), null, "유료인데 잔여 분량 안내가 있다");
-    assert.equal(doc.querySelector("#dash-nav-summary"), null, "유료 통합 대시보드 진입점이 남아 있다");
+    assert.ok(doc.querySelector("#dash-nav-summary"), "학습 현황 종합 진입점이 없다");
 
     const flow = [...doc.querySelectorAll("#dash-sidebar [data-goto-step]")];
     assert.deepEqual(flow.filter(badgeIn), [], "유료인데 사이드바에 잠금 표시가 있다");

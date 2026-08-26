@@ -224,3 +224,48 @@
   .dash-article-navbtn.next .dir { justify-content: flex-start; }
   .dash-article-navbtn.empty { display: none; }
 }
+
+/* ══ 학습 현황 종합 ══════════════════════════════════════════════════════
+   "어디까지 왔나" 를 보는 화면. 카드·칩은 다른 단계의 것을 그대로 쓰고,
+   여기서는 진행률 표시와 비클릭 통계 칩만 더한다. */
+
+/* 진행률 카드 — 제목만 있고 정작 비율이 없으면 카드가 비어 보인다. */
+.dash-sum-progress {
+  max-width: 720px; margin: 0 auto 20px; padding: 22px 24px;
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow-sm);
+}
+.dash-sum-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.dash-sum-top h2 { margin: 0; font-size: 15px; font-weight: 800; }
+.dash-sum-count { font-family: var(--mono); font-size: 12.5px; color: var(--ink-3); }
+.dash-sum-count b { font-size: 17px; color: var(--primary-ink); }
+.dash-sum-bar { height: 8px; border-radius: 999px; background: var(--bg-soft); overflow: hidden; margin: 12px 0 0; }
+.dash-sum-bar i {
+  display: block; height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary-2), var(--primary));
+  transition: width .45s cubic-bezier(.2, .8, .3, 1);
+}
+/* 완주 화면의 recap 은 전부 초록이지만, 여기서는 남은 단계를 함께 보여야 한다. */
+.dash-recap-step.todo { color: var(--ink-4); background: var(--bg-soft); }
+.dash-sum-progress .dash-recap { margin-top: 16px; padding-top: 16px; justify-content: flex-start; }
+
+/* 통계 칩 — .dash-status-chip 은 개념 상세로 들어가는 링크라 hover 가 움직인다.
+   여기 숫자는 누를 것이 아니므로 같은 생김새의 비클릭 변형을 따로 둔다. */
+.dash-stat {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12.5px; font-weight: 700; line-height: 1.4;
+  border-radius: 999px; padding: 6px 12px; cursor: default;
+  background: var(--bg-soft); color: var(--ink-2); border: 1px solid var(--line);
+}
+.dash-stat svg { width: 13px; height: 13px; flex: none; opacity: .7; }
+.dash-stat b { font-family: var(--mono); }
+.dash-stat.known { background: var(--green-soft); color: var(--green); border-color: rgba(17, 160, 111, .3); }
+.dash-stat.weak { background: var(--primary-soft); color: var(--primary-ink); border-color: var(--primary-line); }
+.dash-stat.lg { font-size: 14px; padding: 8px 15px; }
+.dash-stat.lg b { font-size: 19px; }
+
+/* 현황만 보여 주고 끝내지 않는다 — 다음에 할 단계로 바로 보낸다. */
+.dash-sum-next { display: flex; justify-content: center; margin-top: 28px; }
+.dash-sum-next.done {
+  gap: 6px; align-items: center; font-size: 13.5px; font-weight: 700; color: var(--green);
+}
+.dash-sum-next.done svg { width: 16px; height: 16px; }
