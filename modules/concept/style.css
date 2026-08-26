@@ -54,7 +54,24 @@
 
 /* 차트 래퍼 */
 .vl-chart-wrap { background:var(--card-2); border:1px solid var(--line); border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; padding:16px; min-height:360px; position:relative; }
-.vl-chart-wrap canvas { background:#fff; border-radius:8px; box-shadow:var(--shadow-sm); width:100%; max-width:600px; height:auto; aspect-ratio:600/400; }
+.vl-chart-wrap canvas { background:#fff; border-radius:8px; box-shadow:var(--shadow-sm); width:100%; max-width:600px; height:auto; aspect-ratio:600/430; }
+
+/* 학습 진행 오버레이 — 차트 위를 덮는 유일한 레이어다(경고는 차트 아래 배너로 내렸다).
+   .dash-badge 처럼 display 를 author 규칙으로 정하는 요소는 [hidden] 이 UA 규칙이라
+   덮이지 않는다. 그래서 [hidden] 을 명시적으로 다시 눌러 준다(.dash-panel[hidden] 과 같은 이유). */
+.vl-train-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:9px;
+  border-radius:12px; background:rgba(255,255,255,.82); backdrop-filter:blur(2px); z-index:11; font-size:14px; color:var(--ink-2); }
+.vl-train-overlay[hidden] { display:none; }
+.vl-train-overlay b { color:var(--ink); }
+.vl-train-overlay .ic-inline { color:var(--primary-ink); }
+#vl-train-pct { font-family:var(--mono); font-weight:700; color:var(--primary-ink); min-width:42px; }
+
+/* 2단계 무리별 인원 — 군집에는 이름이 없어 '무리 A/B'로만 쓴다. */
+.vl-clusters { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:0 0 14px; }
+.vl-clusters .c { display:inline-flex; align-items:center; gap:8px; background:var(--card-2); border:1px solid var(--line);
+  border-radius:999px; padding:7px 14px; font-size:13px; font-weight:600; color:var(--ink-2); }
+.vl-clusters .d { width:13px; height:13px; border-radius:50%; flex:none; }
+.vl-clusters b { font-family:var(--mono); color:var(--ink); }
 
 /* 하단 결과 카드 */
 .vl-res-card { background:var(--card-2); border:1px solid var(--line); border-radius:12px; padding:24px; margin-top:24px; display:flex; align-items:center; gap:24px; }
@@ -69,12 +86,21 @@
   .vl-res-left { flex:none; width:100%; border-right:none; border-bottom:1px solid var(--line); padding:0 0 16px; }
 }
 
-/* 과적합 경고 오버레이 — 색은 전부 primary 토큰으로. */
-.vl-warn-overlay { position:absolute; inset:0; background:rgba(240,71,58,.14); display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; opacity:0; pointer-events:none; transition:opacity 0.2s; backdrop-filter:blur(2px); z-index:10; }
-.vl-warn-overlay.show { opacity:1; pointer-events:auto; }
-.vl-warn-box { background:#fff; border:1px solid var(--primary-line); border-radius:12px; padding:24px; text-align:center; max-width:400px; box-shadow:var(--shadow); }
-.vl-warn-box h3 { display:flex; align-items:center; justify-content:center; gap:8px; color:var(--primary-ink); font-size:18px; font-weight:800; margin:0 0 12px; }
-.vl-warn-box p { color:var(--ink-2); font-size:14px; margin-bottom:16px; line-height:1.6; }
+/* 과적합 경고 배너 — 색은 전부 primary 토큰으로.
+   예전에는 차트를 덮는 오버레이였는데, "경계가 섬처럼 휘었다"고 말하면서 정작 그 섬을
+   가려 버렸다. 증거를 가리는 경고는 거꾸로라 차트 아래 배너로 내렸다. */
+.vl-warn { display:none; margin-top:14px; background:var(--primary-soft); border:1px solid var(--primary-line);
+  border-radius:12px; padding:16px 18px; gap:14px; align-items:flex-start; }
+.vl-warn.show { display:flex; }
+.vl-warn > .ic-inline { color:var(--primary-ink); font-size:20px; flex:none; margin-top:1px; }
+.vl-warn-body { flex:1; min-width:0; }
+.vl-warn h3 { color:var(--primary-ink); font-size:15px; font-weight:800; margin:0 0 6px; }
+.vl-warn p { color:var(--ink-2); font-size:13px; line-height:1.6; margin:0; }
+.vl-warn .btn { flex:none; align-self:center; }
+@media (max-width:640px){
+  .vl-warn.show { flex-direction:column; }
+  .vl-warn .btn { align-self:stretch; }
+}
 
 /* 단계 안내 문단 · 복잡도 슬라이더 줄 */
 .vl-note { font-size:14px; color:var(--ink-2); line-height:1.6; margin:0 0 16px; }
@@ -83,3 +109,8 @@
 .vl-cx-row { max-width:600px; margin:24px auto 0; background:var(--card-2); border:1px solid var(--line); border-radius:10px; padding:16px; }
 .vl-cx-row .val { min-width:60px; }
 #vl-cx-readout { max-width:600px; margin:8px auto 0; text-align:right; font-size:12px; color:var(--ink-3); font-family:var(--mono); }
+
+/* 개념 정리 완료 배지 — 모양은 공용 .dash-badge 를 그대로 쓴다.
+   그 규칙이 display:inline-flex 라 [hidden] (UA 규칙)이 먹지 않아 여기서 눌러 준다. */
+#vl-done-badge { margin:16px 0 0; }
+#vl-done-badge[hidden] { display:none; }
