@@ -6,11 +6,11 @@
   // 사이드바 "코스 목록" 순서 — 플랫폼 카탈로그(platform/index.html MODULES)와 같은 순서를 유지한다.
   // 두 곳이 어긋나면 학생이 카탈로그에서 고른 자리와 코스 안에서 보는 자리가 달라진다.
   var COURSES = [
+    { key: 'concept', name: '머신러닝 개념 실험실', href: '/modules/concept/index.html', icon: '<circle cx="6" cy="6" r="2"/><circle cx="18" cy="7" r="2"/><circle cx="9" cy="17" r="2"/><path d="M8 7l8 0M8 16l8-8"/>' },
+    { key: 'data', name: '데이터 · 예측 AI (AIoT)', href: '/modules/data/index.html', icon: '<path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 4-5"/>' },
+    { key: 'text', name: '텍스트 · 언어 AI', href: '/modules/text/index.html', icon: '<path d="M4 6h16M4 12h16M4 18h10"/>' },
     { key: 'vision', name: '비전 · 영상처리 AI', href: '/modules/vision/index.html', icon: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/>' },
     { key: 'gesture', name: '제스처 · 동작 AI', href: '/modules/gesture/index.html', icon: '<circle cx="12" cy="4" r="2"/><path d="M12 6v6m0 0l-4 6m4-6l4 6M6 9l6 1 6-1"/>' },
-    { key: 'data', name: '데이터 · 예측 AI (AIoT)', href: '/modules/data/index.html', icon: '<path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 4-5"/>' },
-    { key: 'concept', name: '머신러닝 개념 실험실', href: '/modules/concept/index.html', icon: '<circle cx="6" cy="6" r="2"/><circle cx="18" cy="7" r="2"/><circle cx="9" cy="17" r="2"/><path d="M8 7l8 0M8 16l8-8"/>' },
-    { key: 'text', name: '텍스트 · 언어 AI', href: '/modules/text/index.html', icon: '<path d="M4 6h16M4 12h16M4 18h10"/>' },
     { key: 'life', name: '생활 속 인식 AI', href: '/modules/life/index.html', icon: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h2v2H8zM14 8h2v2h-2zM8 14h2v2H8zM14 14h2v2h-2z"/>' }
   ];
   var STEP_LABELS = ['사전 진단', '이론 학습', '실습 퀘스트', '최종 평가'];
@@ -21,11 +21,8 @@
     { key: 'example', label: '예시', icon: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>' },
     { key: 'practice', label: '실무 활용', icon: '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>' }
   ];
-  var activeFinish = null;   // init 시점의 finishPractice — CourseDashboard.finish() 가 위임한다.
-  // 진도는 코스별로 따로 보관한다. 키를 공유하면 A코스의 단계가 B코스로 새어 나간다.
-  // sessionStorage가 아닌 localStorage인 이유: 브라우저를 닫았다 다시 들어와도 진도가 남아야 한다.
-  // 계정별 진도는 추후 서버로 옮길 예정이며, 그때 이 키 하나만 교체하면 된다.
-  var STORE_PREFIX = 'eduino_course_progress:';
+  var activeFinish = null;     // init 시점의 finishPractice — CourseDashboard.finish() 가 위임한다.
+  var activeProgress = null;   // init 시점의 progressPayload — CourseDashboard.progress() 가 위임한다.
 
   function esc(s) {
     return String(s).replace(/[&<>"]/g, function (c) {
@@ -48,30 +45,60 @@
     var PRE_ITEMS = config.precheck || config.diagnosis || [];
     var PRE_MODE = config.precheck ? 'ox' : 'mcq';
 
-    var storeKey = STORE_PREFIX + (config.courseKey || 'unknown');
     var THEORY_LEN = (config.theory || []).length;
 
-    function freshState() {
-      return { step: 0, maxStep: 0, completedSteps: [false, false, false, false], preIndex: 0, preAnswers: new Array(PRE_ITEMS.length).fill(null), conceptStatus: new Array(THEORY_LEN).fill(''), theoryIndex: 0, theoryView: 'list', theoryRead: new Array(THEORY_LEN).fill(false), quizIndex: 0, quizAnswers: new Array(config.quiz.length).fill(null) };
-    }
-    // 저장된 진도는 저장 당시의 문항·개념 수를 전제로 한 인덱스 뭉치다. course-config.js에서
-    // 문항을 추가/삭제하면 인덱스가 어긋나 엉뚱한 개념이 "취약"으로 표시되므로, 길이가 하나라도
-    // 다르면 복원하지 않고 처음부터 시작한다.
-    function loadState() {
-      try {
-        var s = JSON.parse(localStorage.getItem(storeKey));
-        if (!s || !s.preAnswers || !s.conceptStatus || !s.quizAnswers || !s.theoryRead) return null;
-        if (s.preAnswers.length !== PRE_ITEMS.length) return null;
-        if (s.conceptStatus.length !== THEORY_LEN || s.theoryRead.length !== THEORY_LEN) return null;
-        if (s.quizAnswers.length !== config.quiz.length) return null;
-        return s;
-      } catch (e) { return null; }
-    }
-    function saveState() {
-      try { localStorage.setItem(storeKey, JSON.stringify(state)); } catch (e) {}
+    // 이전 버전이 남긴 저장 키 청소 — 프런트에는 더 이상 아무것도 저장하지 않는다.
+    try {
+      localStorage.removeItem('eduino_course_progress:' + config.courseKey);
+      localStorage.removeItem('eduino-ocr-corrections');
+    } catch (e) {}
+
+    // 풀던 답안과 보던 위치. 단계를 떠나면 버리고, 서버로 가지 않는다.
+    function freshDraft() {
+      return {
+        preIndex: 0, preAnswers: new Array(PRE_ITEMS.length).fill(null),
+        theoryIndex: 0, theoryView: 'list',
+        quizIndex: 0, quizAnswers: new Array(config.quiz.length).fill(null)
+      };
     }
 
-    var state = loadState() || freshState();
+    var state = {
+      step: 0,
+      // 화면에 남는 '표시' = DB 로 갈 값. 단계를 옮겨도 지우지 않는다. 새 표시는 반드시 여기에.
+      progress: {
+        completedSteps: [false, false, false, false],   // 사이드바 초록 체크
+        conceptStatus: new Array(THEORY_LEN).fill(''),  // '' | 'weak' | 'known' — 취약/스킵 태그
+        theoryRead: new Array(THEORY_LEN).fill(false)   // 읽음 태그
+      },
+      draft: freshDraft()
+    };
+
+    /* ── DB 연동 지점 ─────────────────────────────────────────────────────
+       서버와 오갈 것은 state.progress 가 전부다. init 전에 서버 값을 config.progress 로 넣고,
+       config.onProgress 에서 PUT 한다. 배열 길이가 다르면(course-config 에서 개념을 늘리거나
+       줄이면) 인덱스가 어긋나 엉뚱한 개념이 "취약"으로 뜨므로 통째로 무시한다. */
+    var saved = config.progress;
+    if (saved && saved.completedSteps && saved.conceptStatus && saved.theoryRead &&
+        saved.completedSteps.length === 4 &&
+        saved.conceptStatus.length === THEORY_LEN && saved.theoryRead.length === THEORY_LEN) {
+      state.progress = {
+        completedSteps: saved.completedSteps.slice(),
+        conceptStatus: saved.conceptStatus.slice(),
+        theoryRead: saved.theoryRead.slice()
+      };
+    }
+    function progressPayload() {
+      return {
+        courseKey: config.courseKey,
+        completedSteps: state.progress.completedSteps.slice(),
+        conceptStatus: state.progress.conceptStatus.slice(),
+        theoryRead: state.progress.theoryRead.slice()
+      };
+    }
+    function emitProgress() {
+      if (typeof config.onProgress !== 'function') return;
+      try { config.onProgress(progressPayload()); } catch (e) {}
+    }
 
     var shell = document.createElement('div');
     shell.className = 'dash-shell';
@@ -102,6 +129,7 @@
 
     if (config.hint) setupHint(config.hint);
     activeFinish = finishPractice;
+    activeProgress = progressPayload;
 
     renderSidebar();
     paintPreCheck();
@@ -114,12 +142,25 @@
        사이드바의 초록 체크로만 알린다(진행 상황 표시 ≠ 접근 제한).
        순서 안내가 필요하면 각 단계의 설명 문구로 다룬다. */
     function goTo(i) {
+      var from = state.step;
       state.step = i;
-      state.maxStep = Math.max(state.maxStep, i);
       for (var p = 0; p < 4; p++) shell.querySelector('#dash-panel-' + p).hidden = p !== i;
+      if (from !== i) leaveStep(from);
       syncSidebar();
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      saveState();
+    }
+
+    /* 단계를 떠날 때의 뒷정리. state.progress 는 건드리지 않는다 — 초록 체크·취약/스킵·읽음 태그는 남는다.
+       한 번에 한 단계만 진행 중이므로 draft 를 통째로 새로 만들어도 다른 단계에 영향이 없다.
+       DB 연동 후 답안을 서버에 남기려면 이 초기화를 빼면 된다.
+       실습(2)은 결과를 지우지 않고 켜 둔 카메라·타이머만 끈다 — 패널을 hidden 처리하는 것만으로는
+       스트림이 멈추지 않아 카메라가 켜진 채 남기 때문이다. 각 코스 app.js 가 훅을 등록한다. */
+    function leaveStep(i) {
+      state.draft = freshDraft();
+      if (i === 0) paintPreCheck();
+      else if (i === 1) paintTheory();
+      else if (i === 2) (window.CoursePracticeLeave || []).forEach(function (fn) { try { fn(); } catch (e) {} });
+      else if (i === 3) paintQuizQuestion();
     }
 
     function renderSidebar() {
@@ -153,7 +194,7 @@
         var isActive = i === state.step;
         // 완료 표시는 "지금 보고 있는 단계"여도 유지한다. 현재 위치는 행 배경(active)이,
         // 완료 여부는 번호 자리의 초록 체크가 각각 나타내야 되짚어 볼 때 진도를 읽을 수 있다.
-        var isDone = !!state.completedSteps[i];
+        var isDone = !!state.progress.completedSteps[i];
         elm.classList.toggle('active', isActive);
         elm.classList.toggle('done', isDone);
         elm.classList.add('linkable');
@@ -189,7 +230,7 @@
     // 형식만 분기하고 카드/피드백/진행 표시 등 공통 UI 컴포넌트는 그대로 재사용한다.
     function paintPreCheck() {
       var panel = shell.querySelector('#dash-panel-0');
-      if (state.preIndex >= PRE_ITEMS.length) { paintPreCheckResult(panel); return; }
+      if (state.draft.preIndex >= PRE_ITEMS.length) { paintPreCheckResult(panel); return; }
       if (PRE_MODE === 'ox') paintPreCheckOX(panel);
       else paintPreCheckMCQ(panel);
     }
@@ -198,7 +239,7 @@
     function preCheckCard(optionsHtml, questionText) {
       return '<div class="dash-head"><span class="dash-badge">사전 진단</span><h1>실습 전, 아는 만큼 확인해봐요</h1><p>점수를 매기는 시험이 아니에요. 어떤 개념을 이미 아는지 가려내어 이론 학습을 맞춰 드립니다.</p></div>' +
              '<div class="dash-quiz-card">' +
-               '<div class="dash-quiz-progress">문항 ' + (state.preIndex + 1) + ' / ' + PRE_ITEMS.length + '</div>' +
+               '<div class="dash-quiz-progress">문항 ' + (state.draft.preIndex + 1) + ' / ' + PRE_ITEMS.length + '</div>' +
                '<p class="dash-quiz-q">' + questionText + '</p>' +
                optionsHtml +
                '<div id="pre-feedback-area" style="margin-top:24px; display:none; padding-top:24px; border-top:1px solid var(--line);"></div>' +
@@ -207,7 +248,7 @@
 
     // 진술이 맞는지 즉답하는 O/X. 개념 하나당 한 문장이라 문항 수를 늘려도 부담이 적다.
     function paintPreCheckOX(panel) {
-      var q = PRE_ITEMS[state.preIndex];
+      var q = PRE_ITEMS[state.draft.preIndex];
       var optionsHtml =
         '<div class="dash-ox-options">' +
           '<button class="dash-ox-option" data-v="true"><span class="mark">O</span><span class="lab">맞다</span></button>' +
@@ -218,8 +259,7 @@
       panel.querySelectorAll('.dash-ox-option').forEach(function (btn) {
         btn.addEventListener('click', function () {
           var my = btn.dataset.v === 'true';
-          state.preAnswers[state.preIndex] = my;
-          saveState();
+          state.draft.preAnswers[state.draft.preIndex] = my;
           var opts = panel.querySelectorAll('.dash-ox-option');
           opts.forEach(function (b) { b.disabled = true; });
           var matched = my === q.answer;
@@ -234,7 +274,7 @@
 
     // precheck를 아직 정의하지 않은 코스용 4지선다 폴백.
     function paintPreCheckMCQ(panel) {
-      var q = PRE_ITEMS[state.preIndex];
+      var q = PRE_ITEMS[state.draft.preIndex];
       var optionsHtml = '<div class="dash-quiz-options">' + q.options.map(function (opt, i) {
         return '<button class="dash-quiz-option" data-i="' + i + '">' + esc(opt) + '</button>';
       }).join('') + '</div>';
@@ -243,8 +283,7 @@
       panel.querySelectorAll('.dash-quiz-option').forEach(function (btn) {
         btn.addEventListener('click', function () {
           var my = +btn.dataset.i;
-          state.preAnswers[state.preIndex] = my;
-          saveState();
+          state.draft.preAnswers[state.draft.preIndex] = my;
           var opts = panel.querySelectorAll('.dash-quiz-option');
           opts.forEach(function (b) { b.disabled = true; });
           var matched = my === q.answerIndex;
@@ -260,17 +299,16 @@
       var fbArea = panel.querySelector('#pre-feedback-area');
       fbArea.style.display = 'block';
       fbArea.innerHTML =
-        '<div class="dash-theory-label" style="margin-bottom:12px;">' + icon('<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .8 1.6v.5h5.4v-.5c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3z"/>') + ' Concept ' + (state.preIndex + 1) + '</div>' +
+        '<div class="dash-theory-label" style="margin-bottom:12px;">' + icon('<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .8 1.6v.5h5.4v-.5c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3z"/>') + ' Concept ' + (state.draft.preIndex + 1) + '</div>' +
         '<div class="dash-theory-explain' + (matched ? '' : ' wrong') + '"><span class="ic">' +
           icon(matched
             ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'
             : '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>') +
           '</span><span>' + explain + '</span></div>' +
         '<div class="dash-theory-next"><button class="btn primary" id="dash-pf-next">' +
-          (state.preIndex < PRE_ITEMS.length - 1 ? '다음 문항' : '진단 마치기') + '</button></div>';
+          (state.draft.preIndex < PRE_ITEMS.length - 1 ? '다음 문항' : '진단 마치기') + '</button></div>';
       fbArea.querySelector('#dash-pf-next').addEventListener('click', function () {
-        state.preIndex++;
-        saveState();
+        state.draft.preIndex++;
         paintPreCheck();
       });
     }
@@ -278,13 +316,13 @@
     // 개념별 선별 결과 — 응답을 theory 인덱스(concept)로 묶어 known/weak을 계산한다.
     function computeConceptStatus() {
       var theories = theoryList();
-      state.conceptStatus = theories.map(function (t, ci) {
+      state.progress.conceptStatus = theories.map(function (t, ci) {
         var answered = 0, missed = 0;
         PRE_ITEMS.forEach(function (item, i) {
-          if (item.concept !== ci || state.preAnswers[i] === null) return;
+          if (item.concept !== ci || state.draft.preAnswers[i] === null) return;
           answered++;
           var truth = PRE_MODE === 'ox' ? item.answer : item.answerIndex;
-          if (state.preAnswers[i] !== truth) missed++;
+          if (state.draft.preAnswers[i] !== truth) missed++;
         });
         if (!answered) return '';
         return missed > 0 ? 'weak' : 'known';
@@ -293,20 +331,20 @@
 
     // 점수·등급은 표기하지 않는다. 어떤 개념을 건너뛰어도 되고 어떤 개념을 봐야 하는지만 안내한다.
     function paintPreCheckResult(panel) {
-      state.completedSteps[0] = true;
+      state.progress.completedSteps[0] = true;
       computeConceptStatus();
-      saveState();
+      emitProgress();
       syncSidebar();
       paintTheory(); // 이론 목록 카드에 스킵 가능 / 취약 개념 표시 반영
 
       var theories = theoryList();
-      var weak = theories.filter(function (t, i) { return state.conceptStatus[i] === 'weak'; });
-      var known = theories.filter(function (t, i) { return state.conceptStatus[i] === 'known'; });
+      var weak = theories.filter(function (t, i) { return state.progress.conceptStatus[i] === 'weak'; });
+      var known = theories.filter(function (t, i) { return state.progress.conceptStatus[i] === 'known'; });
 
       // 칩을 누르면 이론 학습 탭의 해당 개념 상세로 곧장 들어간다.
       function chips(cls) {
         return theories.reduce(function (acc, t, i) {
-          if (state.conceptStatus[i] !== cls) return acc;
+          if (state.progress.conceptStatus[i] !== cls) return acc;
           return acc + '<button class="dash-status-chip ' + cls + '" data-jump-theory="' + i + '">' +
             esc(t.title) + icon('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>') + '</button>';
         }, '');
@@ -338,21 +376,20 @@
     function theoryList() { return config.theory || []; }
 
     function paintTheory() {
-      if (state.theoryView === 'detail' && theoryList()[state.theoryIndex]) paintTheoryDetail();
+      if (state.draft.theoryView === 'detail' && theoryList()[state.draft.theoryIndex]) paintTheoryDetail();
       else paintTheoryList();
     }
 
     function openTheory(i) {
-      state.theoryIndex = i;
-      state.theoryRead[i] = true;
-      state.theoryView = 'detail';
-      saveState();
+      state.draft.theoryIndex = i;
+      state.draft.theoryView = 'detail';
+      state.progress.theoryRead[i] = true;
+      emitProgress();
       paintTheory();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     function closeTheory() {
-      state.theoryView = 'list';
-      saveState();
+      state.draft.theoryView = 'list';
       paintTheory();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -363,13 +400,13 @@
       var theories = theoryList();
       var cardsHtml = theories.map(function (t, i) {
         // 사전 진단(선별) 결과 연동: weak = 강조, known = 스킵 가능 표시
-        var st = state.conceptStatus[i] || '';
+        var st = state.progress.conceptStatus[i] || '';
         var tag = st === 'weak'
           ? '<span class="dash-concept-tag weak">' + icon('<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>') + ' 취약 개념</span>'
           : st === 'known'
             ? '<span class="dash-concept-tag known">' + icon('<polyline points="20 6 9 17 4 12"/>') + ' 스킵 가능</span>'
-            : (state.theoryRead[i] ? '<span class="dash-concept-tag read">' + icon('<polyline points="20 6 9 17 4 12"/>') + ' 읽음</span>' : '');
-        return '<button class="dash-concept-card' + (st ? ' ' + st : '') + (state.theoryRead[i] ? ' read' : '') + '" data-open-theory="' + i + '">' +
+            : (state.progress.theoryRead[i] ? '<span class="dash-concept-tag read">' + icon('<polyline points="20 6 9 17 4 12"/>') + ' 읽음</span>' : '');
+        return '<button class="dash-concept-card' + (st ? ' ' + st : '') + (state.progress.theoryRead[i] ? ' read' : '') + '" data-open-theory="' + i + '">' +
                  '<div class="dash-concept-top">' +
                    '<span class="dash-concept-icon">' + icon(t.icon) + '</span>' +
                    '<span class="dash-concept-no">개념 ' + (i + 1) + '</span>' +
@@ -386,7 +423,7 @@
 
       panel.innerHTML =
         '<div class="dash-head"><span class="dash-badge">이론학습</span><h1>' + esc(title) + '</h1><p>' +
-          (state.conceptStatus.some(function (s) { return s; })
+          (state.progress.conceptStatus.some(function (s) { return s; })
             ? '사전 진단 결과를 반영했어요. <b>취약 개념</b>부터 열어 보고, <b>스킵 가능</b> 표시는 건너뛰어도 좋습니다.'
             : '카드를 눌러 개념별 상세 설명으로 들어가세요. 정의 → 예시 → 실무 활용 순으로 이어집니다.') +
         '</p></div>' +
@@ -399,7 +436,8 @@
         elm.addEventListener('click', function () { openTheory(+elm.dataset.openTheory); });
       });
       panel.querySelector('#dash-th-go-practice').addEventListener('click', function () {
-        state.completedSteps[1] = true;
+        state.progress.completedSteps[1] = true;
+        emitProgress();
         syncSidebar();
         goTo(2);
       });
@@ -410,7 +448,7 @@
     function paintTheoryDetail() {
       var panel = shell.querySelector('#dash-panel-1');
       var theories = theoryList();
-      var t = theories[state.theoryIndex];
+      var t = theories[state.draft.theoryIndex];
       var total = theories.length;
 
       var bodyHtml = THEORY_SECTIONS.map(function (sec) {
@@ -422,18 +460,18 @@
                '</section>';
       }).join('');
 
-      var prev = theories[state.theoryIndex - 1];
-      var next = theories[state.theoryIndex + 1];
+      var prev = theories[state.draft.theoryIndex - 1];
+      var next = theories[state.draft.theoryIndex + 1];
 
       panel.innerHTML =
         '<div class="dash-article-bar">' +
           '<button class="dash-article-back" id="dash-th-back">' + icon('<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>') + ' 목록으로 돌아가기</button>' +
-          '<span class="dash-article-counter">개념 ' + (state.theoryIndex + 1) + ' / ' + total + '</span>' +
+          '<span class="dash-article-counter">개념 ' + (state.draft.theoryIndex + 1) + ' / ' + total + '</span>' +
         '</div>' +
         '<article class="dash-article">' +
           '<header class="dash-article-head">' +
             '<span class="dash-article-icon">' + icon(t.icon) + '</span>' +
-            (state.conceptStatus[state.theoryIndex] === 'weak'
+            (state.progress.conceptStatus[state.draft.theoryIndex] === 'weak'
               ? '<div class="dash-concept-tag weak" style="margin-bottom:10px;">' + icon('<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>') + ' 사전 진단에서 헷갈린 개념이에요</div>' : '') +
             '<h1>' + esc(t.title) + '</h1>' +
             (t.summary || t.desc ? '<p class="dash-article-lead">' + esc(t.summary || t.desc) + '</p>' : '') +
@@ -443,10 +481,10 @@
         '</article>' +
         '<nav class="dash-article-nav">' +
           (prev
-            ? '<button class="dash-article-navbtn" data-go-theory="' + (state.theoryIndex - 1) + '"><span class="dir">' + icon('<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>') + ' 이전 개념</span><b>' + esc(prev.title) + '</b></button>'
+            ? '<button class="dash-article-navbtn" data-go-theory="' + (state.draft.theoryIndex - 1) + '"><span class="dir">' + icon('<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>') + ' 이전 개념</span><b>' + esc(prev.title) + '</b></button>'
             : '<span class="dash-article-navbtn empty"></span>') +
           (next
-            ? '<button class="dash-article-navbtn next" data-go-theory="' + (state.theoryIndex + 1) + '"><span class="dir">다음 개념 ' + icon('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>') + '</span><b>' + esc(next.title) + '</b></button>'
+            ? '<button class="dash-article-navbtn next" data-go-theory="' + (state.draft.theoryIndex + 1) + '"><span class="dir">다음 개념 ' + icon('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>') + '</span><b>' + esc(next.title) + '</b></button>'
             : '<span class="dash-article-navbtn empty"></span>') +
         '</nav>';
 
@@ -468,7 +506,8 @@
       controls.querySelector('#dash-to-eval').addEventListener('click', finishPractice);
     }
     function finishPractice() {
-      state.completedSteps[2] = true;
+      state.progress.completedSteps[2] = true;
+      emitProgress();
       goTo(3);
     }
 
@@ -478,12 +517,12 @@
     function paintQuizQuestion() {
       var panel = shell.querySelector('#dash-panel-3');
       var total = config.quiz.length;
-      if (state.quizIndex >= total) { paintQuizResult(panel); return; }
-      var q = config.quiz[state.quizIndex];
+      if (state.draft.quizIndex >= total) { paintQuizResult(panel); return; }
+      var q = config.quiz[state.draft.quizIndex];
       panel.innerHTML =
         '<div class="dash-head"><span class="dash-badge">최종 평가</span><h1>배운 내용을 확인해봐요</h1><p>진단 → 이론 → 실습에서 다룬 개념을 종합해 고르세요. 비슷해 보이는 보기를 구분하는 게 핵심입니다.</p></div>' +
         '<div class="dash-quiz-card">' +
-          '<div class="dash-quiz-progress">문항 ' + (state.quizIndex + 1) + ' / ' + total + '</div>' +
+          '<div class="dash-quiz-progress">문항 ' + (state.draft.quizIndex + 1) + ' / ' + total + '</div>' +
           '<p class="dash-quiz-q">Q. ' + esc(q.question) + '</p>' +
           '<div class="dash-quiz-options">' + q.options.map(function (opt, i) {
             return '<button class="dash-quiz-option" data-i="' + i + '">' + esc(opt) + '</button>';
@@ -493,8 +532,7 @@
       panel.querySelectorAll('.dash-quiz-option').forEach(function (btn) {
         btn.addEventListener('click', function () {
           var my = +btn.dataset.i;
-          state.quizAnswers[state.quizIndex] = my;
-          saveState();
+          state.draft.quizAnswers[state.draft.quizIndex] = my;
           var opts = panel.querySelectorAll('.dash-quiz-option');
           opts.forEach(function (b) { b.disabled = true; });
           
@@ -505,19 +543,18 @@
           var fbArea = panel.querySelector('#quiz-feedback-area');
           fbArea.style.display = 'block';
           fbArea.innerHTML = 
-            '<div class="dash-theory-label" style="margin-bottom:12px;">' + icon('<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .8 1.6v.5h5.4v-.5c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3z"/>') + ' Q' + (state.quizIndex + 1) + ' 해설</div>' +
+            '<div class="dash-theory-label" style="margin-bottom:12px;">' + icon('<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .8 1.6v.5h5.4v-.5c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3z"/>') + ' Q' + (state.draft.quizIndex + 1) + ' 해설</div>' +
             '<div class="dash-theory-explain' + (isRight ? '' : ' wrong') + '"><span class="ic">' +
               icon(isRight
                 ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'
                 : '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>') +
               '</span><span>' + (q.explain || '정답입니다.') + '</span></div>' +
-            '<div class="dash-theory-next">' + (state.quizIndex < total - 1
+            '<div class="dash-theory-next">' + (state.draft.quizIndex < total - 1
               ? '<button class="btn primary" id="dash-qf-next">다음 문제 풀기</button>'
               : '<button class="btn primary" id="dash-qf-next">최종 결과 확인하기</button>') + '</div>';
               
           fbArea.querySelector('#dash-qf-next').addEventListener('click', function () {
-            state.quizIndex++;
-            saveState();
+            state.draft.quizIndex++;
             paintQuizQuestion();
           });
         });
@@ -525,11 +562,11 @@
     }
 
     function paintQuizResult(panel) {
-      state.completedSteps[3] = true;
-      saveState();
+      state.progress.completedSteps[3] = true;
+      emitProgress();
       syncSidebar();
       var total = config.quiz.length;
-      var correct = config.quiz.filter(function (q, i) { return state.quizAnswers[i] === q.answerIndex; }).length;
+      var correct = config.quiz.filter(function (q, i) { return state.draft.quizAnswers[i] === q.answerIndex; }).length;
       var rc = config.resultCopy || { title: '수고했어요!', body: '학습을 모두 완료했습니다.' };
       // 진단 → 이론 → 실습 → 평가 4단계를 한 줄로 되짚어 코스의 완결감을 준다.
       var recap = STEP_LABELS.map(function (label) {
@@ -550,6 +587,7 @@
   // (예: data 코스의 "실습 완료, 최종 평가로 넘어가기") — 실습 단계를 완료 처리하고 평가로 넘어간다.
   window.CourseDashboard = {
     init: init,
-    finish: function () { if (activeFinish) activeFinish(); }
+    finish: function () { if (activeFinish) activeFinish(); },
+    progress: function () { return activeProgress ? activeProgress() : null; }
   };
 })();

@@ -168,3 +168,7 @@ if (dmQuiz) {
     });
   });
 }
+/* goToDmStep 으로 넘어갈 때 말고는 스스로 멈추지 않는 데모 타이머 — 실습을 떠날 때 끈다. */
+(window.CoursePracticeLeave = window.CoursePracticeLeave || []).push(() => {
+  if (dmAnimTimer) { clearInterval(dmAnimTimer); dmAnimTimer = null; }
+});

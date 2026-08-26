@@ -280,3 +280,16 @@ if (!window.isSecureContext) {
   b.innerHTML = EduinoIcons.svg('alert') +
     ' 카메라는 <b>localhost</b> 또는 <b>https</b> 에서만 켜집니다. 배포된 https 주소로 접속해 주세요.';
 }
+/* 실습 단계를 떠날 때 켜 둔 카메라를 끈다 (course-dashboard.js 의 leaveStep 이 부른다).
+   showTab 은 모듈 안 탭 버튼을 눌러야 돌므로 여기서 따로 꺼야 한다. 학습 결과는 그대로 둔다. */
+(window.CoursePracticeLeave = window.CoursePracticeLeave || []).push(() => {
+  if (detectCam.stream) {
+    detectCam.stop();
+    resetDetectPanel();
+    $('detect-cam').textContent = '카메라 켜기';
+    $('detect-state').textContent = '대기';
+    $('detect-state').classList.remove('on');
+  }
+  if (typeof window.visionTrainStop === 'function') window.visionTrainStop();
+  setStatus('대기 중');
+});

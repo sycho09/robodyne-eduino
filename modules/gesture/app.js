@@ -334,3 +334,9 @@ document.querySelectorAll('.step').forEach(btn => {
 addClass('주먹'); addClass('손바닥');
 setStatus('대기 중'); showIdle();
 if (!window.isSecureContext) { const b = $('banner'); b.classList.add('on'); b.innerHTML = EduinoIcons.svg('alert') + ' 카메라는 <b>localhost</b> 또는 <b>https</b> 에서만 켜집니다. 배포된 https 주소로 접속해 주세요.'; }
+/* 실습 단계를 떠날 때 켜 둔 카메라를 끈다. 등록한 동작과 수집한 샘플은 건드리지 않는다. */
+(window.CoursePracticeLeave = window.CoursePracticeLeave || []).push(() => {
+  if (play.stream) { play.stop(); $('play-cam').textContent = '카메라 켜기'; }
+  if (train.stream) trainCamStop();
+  setStatus('대기 중');
+});

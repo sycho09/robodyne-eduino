@@ -195,9 +195,8 @@ $('ocr-shot').onclick = async () => {
 };
 
 /* ── 교정으로 배우는 OCR ── */
+// 교정 사전은 메모리에만 둔다 — 저장하지 않으므로 새로고침하면 비워진다.
 let corrections = {}, lastShown = '';
-try { corrections = JSON.parse(localStorage.getItem('eduino-ocr-corrections') || '{}'); } catch (e) { corrections = {}; }
-function saveCorrections() { try { localStorage.setItem('eduino-ocr-corrections', JSON.stringify(corrections)); } catch (e) {} }
 function applyCorrections(text) {
   let count = 0;
   for (const w in corrections) {
@@ -244,15 +243,15 @@ $('ocr-learn').onclick = () => {
   const subs = tokenDiff(lastShown, cur);
   let added = 0;
   subs.forEach(([w, r]) => { if (w && r && w !== r) { corrections[w] = r; added++; } });
-  saveCorrections(); renderLearned(); lastShown = cur;
+  renderLearned(); lastShown = cur;
   $('ocr-learn').disabled = true;
   const h = $('ocr-learn-hint');
   h.className = 'learn-hint ok';
   h.textContent = added ? `✓ 교정 ${added}개를 배웠어요! 다음 인식부터 자동 적용돼요.` : '✓ 반영했어요 (새로 배운 치환은 없음)';
   setStatus(added ? '교정 ' + added + '개 학습됨 · READY' : 'READY', 'ready');
 };
-$('ocr-clearlearn').onclick = () => { corrections = {}; saveCorrections(); renderLearned(); };
-$('ocr-chips').addEventListener('click', (e) => { const w = e.target.dataset.del; if (w == null) return; delete corrections[w]; saveCorrections(); renderLearned(); });
+$('ocr-clearlearn').onclick = () => { corrections = {}; renderLearned(); };
+$('ocr-chips').addEventListener('click', (e) => { const w = e.target.dataset.del; if (w == null) return; delete corrections[w]; renderLearned(); });
 renderLearned();
 
 /* ── 단계 전환 ── */
@@ -276,3 +275,18 @@ document.querySelectorAll('.step').forEach(btn => {
 
 setStatus('대기 중');
 if (!window.isSecureContext) { const b = $('banner'); b.classList.add('on'); b.innerHTML = EduinoIcons.svg('alert') + ' 카메라는 <b>localhost</b> 또는 <b>https</b> 에서만 켜집니다. 배포된 https 주소로 접속해 주세요.'; }
+/* 실습 단계를 떠날 때 켜 둔 카메라를 끈다. 촬영 뒤에는 이미 꺼져 있어 사진·OCR 결과는 남는다. */
+(window.CoursePracticeLeave = window.CoursePracticeLeave || []).push(() => {
+  if (scan.stream) {
+    scan.stop();
+    $('scan-frame').style.display = 'none';
+    $('scan-cam').disabled = false; $('scan-stop').disabled = true;
+    $('scan-state').textContent = '대기'; $('scan-state').classList.remove('on');
+  }
+  if (ocr.stream) {
+    ocr.stop();
+    $('ocr-cam').disabled = false;
+    $('ocr-state').textContent = '대기'; $('ocr-state').classList.remove('on');
+  }
+  setStatus('대기 중');
+});
