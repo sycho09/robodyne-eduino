@@ -95,31 +95,6 @@
           </div>
         </div>
 
-        <div class="theory-sec">
-          <div class="thead">
-            <h2>원리와 활용</h2><span>손을 ‘점·선’으로 보고 판정하는 법</span>
-          </div>
-          <div class="tgrid">
-            <div class="tcard">
-              <span class="tc-ic" data-ic="palm"></span>
-              <h3>손 관절 21점 추적</h3>
-              <p>AI가 손가락 끝·관절의 <b>위치 21곳</b>을 실시간으로 찾아요. 사진 전체가 아니라 ‘점 좌표’만 보므로 <b>배경·옷·조명에 강하고 가벼워요</b>.</p>
-            </div>
-            <div class="tcard">
-              <span class="tc-ic" data-ic="ruler"></span>
-              <h3>규칙 기반 판정</h3>
-              <p>손목에서 손끝까지 <b>얼마나 폈는지</b>로 펴짐/접힘을 판단해요. 펴진 손가락 <b>0=바위, 2=가위, 5=보</b> — 학습 없이도 바로 작동합니다.</p>
-            </div>
-            <div class="tcard">
-              <span class="tc-ic" data-ic="gamepad"></span>
-              <h3>어디에 쓰일까?</h3>
-              <p>수어 인식, 동작 게임, 화면을 손으로 넘기는 <b>제스처 제어</b>, VR/AR의 맨손 조작 등 사람-컴퓨터 상호작용에 쓰여요.</p>
-            </div>
-          </div>
-          <div class="tflow"><span class="tf-lab">처리 흐름</span><span class="tf">카메라</span><span
-              class="tarr">→</span><span class="tf">21점 추적</span><span class="tarr">→</span><span class="tf">펴진 손가락
-              세기</span><span class="tarr">→</span><span class="tf">가위·바위·보 판정</span></div>
-        </div>
       </section>
 
       <!-- 중급: 3단계 위저드 -->
@@ -222,31 +197,6 @@
           </div>
         </div>
 
-        <div class="theory-sec">
-          <div class="thead">
-            <h2>원리와 활용</h2><span>내 제스처를 학습시키는 법</span>
-          </div>
-          <div class="tgrid">
-            <div class="tcard">
-              <span class="tc-ic" data-ic="package"></span>
-              <h3>데이터가 핵심</h3>
-              <p>같은 제스처도 <b>각도·거리를 바꿔 30개 이상</b> 모을수록 똑똑해져요. ‘데이터 양 = 정확도’ — AI 학습에서 가장 중요한 원칙이에요.</p>
-            </div>
-            <div class="tcard">
-              <span class="tc-ic" data-ic="brain"></span>
-              <h3>전이학습</h3>
-              <p>손 관절 <b>21개 좌표만</b> 입력으로 작은 분류기를 학습해요. 무거운 모델을 새로 만들지 않아 <b>브라우저에서 빠르게</b> 배웁니다.</p>
-            </div>
-            <div class="tcard">
-              <span class="tc-ic" data-ic="repeat"></span>
-              <h3>추론 & 개선</h3>
-              <p>학습한 AI가 새 손 모양을 <b>실시간 예측</b>(막대가 가장 높은 것이 답). 틀리면 ① 단계로 돌아가 데이터를 더 모아 개선해요.</p>
-            </div>
-          </div>
-          <div class="tflow"><span class="tf-lab">학습 흐름</span><span class="tf">데이터 수집</span><span
-              class="tarr">→</span><span class="tf">학습</span><span class="tarr">→</span><span class="tf">실시간
-              추론</span><span class="tarr">→</span><span class="tf">틀리면 보강</span></div>
-        </div>
       </section>
 
       <!-- 고급-응용: 내 제스처로 도구 만들기 -->

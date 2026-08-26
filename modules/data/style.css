@@ -145,10 +145,6 @@
   .learn { background:var(--card-2); border:1px solid var(--line); border-radius:12px; padding:13px 15px; margin-top:14px; font-size:12.5px; color:var(--ink-2); line-height:1.7; }
   .learn .ex { display:block; margin-top:7px; color:var(--ink-3); }
 
-  /* 이론 보강 영역 (인터랙션 카드와 분리) */
-  .theory-sec { grid-column:1 / -1; margin-top:6px; }
-  .tcard:nth-child(2) .tc-ic { background:var(--blue-soft); }
-
   /* New Clustering UI Styles */
   .segment-card { display:flex; align-items:center; gap:16px; background:#fff; border:1px solid var(--line); border-radius:var(--r); padding:16px; margin-bottom:12px; transition:0.2s; box-shadow:var(--shadow-sm); }
   .segment-card:hover { border-color:var(--primary-line); box-shadow:var(--shadow); }
@@ -164,7 +160,6 @@
   .decision-btn-desc { font-size:13px; color:var(--ink-2); font-weight:600; margin-top:4px; }
 
   @media (max-width:880px){ .layout{ grid-template-columns:1fr; align-items:start; } }
-
 
 /* 이모지 → SVG 전환에 따른 색 지정 */
 .insight-box .ic { color:var(--amber); }

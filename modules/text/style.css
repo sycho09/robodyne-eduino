@@ -58,9 +58,6 @@
 
   .learn { background:var(--card-2); border:1px solid var(--line); border-radius:12px; padding:13px 15px; margin-top:14px; font-size:12.5px; color:var(--ink-2); line-height:1.7; }
   .learn .ex { display:block; margin-top:7px; color:var(--ink-3); }
-  /* 이론 보강 영역 (인터랙션 카드와 분리) */
-  .theory-sec { grid-column:1 / -1; margin-top:6px; }
-  .tcard:nth-child(2) .tc-ic { background:var(--blue-soft); }
   @media (max-width:880px){ .layout{ grid-template-columns:1fr; align-items:start; } }
 /* ---- 고급-응용 (리뷰 분류) 추가 스타일 ---- */
 .flow .fstep { flex:1; display:flex; align-items:center; gap:11px; padding:10px 14px; border-radius:11px; cursor:pointer; transition:.15s; border:none; background:none; text-align:left; color:inherit; }

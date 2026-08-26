@@ -180,11 +180,6 @@ canvas.chart { width:100%; height:auto; display:block; cursor:crosshair; touch-a
 .qz-feedback.miss { border-left-color:var(--primary); background:var(--primary-soft); }
 .qz-feedback.miss > b { color:var(--primary-ink); }
 
-/* ── 이론 보강 영역 ───────────────────────────────────────────
-   .theory-sec 의 margin-top 은 gesture 만 18px 이라 그쪽 파일에 남겼다. */
-.theory-sec { grid-column:1 / -1; }
-.tcard:nth-child(2) .tc-ic { background:var(--blue-soft); }
-
 /* ── 유틸 ─────────────────────────────────────────────────────
    .btn-row 는 base.css 에 있다. 여기서는 위저드 CTA 용 변형만 얹는다.
    .btn 이 inline-flex 라 margin:auto 로는 가운데로 오지 않으므로 래퍼를 쓴다. */

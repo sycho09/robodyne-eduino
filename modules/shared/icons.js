@@ -5,11 +5,11 @@
    인라인 SVG로 통일한다(대시보드 셸이 이미 쓰는 방식과 같은 규격).
 
    색은 잃지 않는다 — stroke 을 currentColor 로 두어 감싼 요소의 색을 그대로 상속하므로,
-   .tc-ic 처럼 soft 배경을 가진 컨테이너 안에서는 배경색과 짝을 이룬 듀오톤이 된다.
+   soft 배경을 가진 컨테이너 안에서는 배경색과 짝을 이룬 듀오톤이 된다.
    테마 토큰(--primary, --green …)을 바꾸면 아이콘 색도 함께 따라온다.
 
    사용법
-     HTML : <span class="tc-ic" data-ic="scissors"></span>
+     HTML : <span class="ic-inline" data-ic="scissors"></span>
             → DOMContentLoaded 때 EduinoIcons.mount() 가 SVG 를 채워 넣는다.
      JS   : el.innerHTML = EduinoIcons.svg('camera');
             동적으로 그린 영역에 data-ic 을 썼다면 EduinoIcons.mount(container) 를 호출한다. */

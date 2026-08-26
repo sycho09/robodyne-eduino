@@ -116,31 +116,6 @@
           <div class="learn fill">· <b>흑백·색 반전·윤곽선</b> 어디로 바꿔도 인식이 유지됩니다 — AI 는 색이 아니라 <b>형태</b>를 봅니다.<br>· 카메라를 <b>빈 벽</b>으로 돌리면 상자가 0개가 됩니다.</div>
         </div>
 
-        <div class="theory-sec">
-          <div class="thead">
-            <h2>원리와 활용</h2><span>AI 가 세상을 상자로 쪼개서 보는 법</span>
-          </div>
-          <div class="tgrid">
-            <div class="tcard">
-              <span class="tc-ic" data-ic="hash"></span>
-              <h3>이미지 = 숫자 격자</h3>
-              <p>픽셀마다 <b>R·G·B 세 숫자(0~255)</b>가 적혀 있어요. 흑백은 <b>세 숫자의 평균</b>, 반전은 <b>255 − 값</b> — 전부 산수입니다.</p>
-            </div>
-            <div class="tcard">
-              <span class="tc-ic" data-ic="ruler"></span>
-              <h3>바운딩 박스</h3>
-              <p>탐지는 물체의 <b>위치(x, y, 너비, 높이)</b>를 상자로 찾습니다. 개수가 정해져 있지 않아 <b>0개일 수도</b> 있어요.</p>
-            </div>
-            <div class="tcard">
-              <span class="tc-ic" data-ic="target"></span>
-              <h3>신뢰도와 임계값</h3>
-              <p>임계값을 <b>올리면</b> 헛다리는 줄지만 <b>놓치는 것이 늡니다.</b> 반대도 마찬가지 — 공짜 이득은 없습니다.</p>
-            </div>
-          </div>
-          <div class="tflow"><span class="tf-lab">처리 흐름</span><span class="tf">카메라 영상</span><span
-              class="tarr">→</span><span class="tf">픽셀 숫자</span><span class="tarr">→</span><span class="tf">특징 추출</span><span
-              class="tarr">→</span><span class="tf">후보 상자 + 신뢰도</span><span class="tarr">→</span><span class="tf">임계값으로 걸러 표시</span></div>
-        </div>
       </section>
 
       <!-- ══════════ 탭 2 · 중급 — 전이학습 4단계 위저드 ══════════ -->
@@ -258,31 +233,6 @@
           </div>
         </div>
 
-        <div class="theory-sec">
-          <div class="thead">
-            <h2>원리와 활용</h2><span>전이학습으로 나만의 분류기 만들기</span>
-          </div>
-          <div class="tgrid">
-            <div class="tcard">
-              <span class="tc-ic" data-ic="package"></span>
-              <h3>데이터가 핵심</h3>
-              <p>분류할 대상을 <b>다양한 환경에서 많이</b> 모을수록 똑똑해져요. 한 배경에서만 모으면 <b>배경을 외워 버립니다.</b></p>
-            </div>
-            <div class="tcard">
-              <span class="tc-ic" data-ic="brain"></span>
-              <h3>전이학습</h3>
-              <p>MobileNet 이 사진을 <b>숫자 1024개</b>로 압축해 주고, 그 위에 작은 분류기만 새로 학습합니다. 그래서 <b>브라우저에서 몇 초</b>면 끝나요.</p>
-            </div>
-            <div class="tcard">
-              <span class="tc-ic" data-ic="repeat"></span>
-              <h3>평가와 개선</h3>
-              <p>혼동행렬은 <b>어디서 틀리는지</b>를 알려 줍니다. 새는 방향을 보고 <b>그 경계의 데이터를 보강</b>해 다시 학습시킵니다.</p>
-            </div>
-          </div>
-          <div class="tflow"><span class="tf-lab">학습 흐름</span><span class="tf">다양한 이미지 수집</span><span
-              class="tarr">→</span><span class="tf">전이학습</span><span class="tarr">→</span><span class="tf">추론 테스트</span><span
-              class="tarr">→</span><span class="tf">혼동행렬 보고 데이터 보강</span></div>
-        </div>
       </section>
 
       <!-- ══════════ 탭 3 · 심화 — 문제 해결 미션 ══════════ -->
