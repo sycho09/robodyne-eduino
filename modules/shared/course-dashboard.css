@@ -269,3 +269,13 @@
   gap: 6px; align-items: center; font-size: 13.5px; font-weight: 700; color: var(--green);
 }
 .dash-sum-next.done svg { width: 16px; height: 16px; }
+
+/* 요약 카드는 2열이라 폭이 좁다. access.css 의 안내 띠(.ax-inline)를 기본값 그대로 두면
+   글이 줄바꿈되고 버튼까지 아래로 밀려 카드 하나가 세 줄 높이로 커진다.
+   다른 화면(사전 진단 결과·최종 평가)은 한 줄 폭이 넉넉하므로 여기서만 촘촘히 둔다. */
+.dash-status-group .ax-inline {
+  width: auto; margin: 10px 0 0; padding: 9px 11px; gap: 8px;
+  align-items: flex-start; font-size: 12.5px; line-height: 1.5;
+}
+.dash-status-group .ax-inline-ic { width: 15px; height: 15px; margin-top: 2px; }
+.dash-status-group .ax-inline-more { margin: 0; padding: 4px 10px; font-size: 11.5px; }
