@@ -9,48 +9,99 @@
       (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" })[c],
     );
 
-  // 이미지 분류 활성화 시 동작
-  function isImage() {
-    const h = (location.hash || "").replace("#", "");
-    return !h || h === "image" || h === "create";
+  /* 트랙별 id 접두사 — 세 트랙은 이 표 하나로만 갈린다.
+     이미지 = 없음, 동작 = p-, 음성 = a- (index.html 의 마크업 규약) */
+  const PFX = { image: "", pose: "p-", audio: "a-" };
+  const el = (name, track) => $((PFX[track != null ? track : curTrack()] || "") + name);
+
+  // 현재 활성화된 비전 트랙 판별
+  function curTrack() {
+    if (document.getElementById("panel-direct")?.classList.contains("active")) return "image";
+    if (document.getElementById("sub-pose")?.classList.contains("active")) return "pose";
+    if (document.getElementById("sub-audio")?.classList.contains("active")) return "audio";
+    return "";
   }
 
   const SCEN = [
+    /* 무료 프리셋을 앞에 두고, 전부 2클래스로 맞춘다 — 무료 상한이 2개라
+       3클래스 주제를 무료로 두면 예외 장치가 필요해진다 (기준서 2-1 · 2-2). */
     {
-      key: "recycle",
-      emoji: "♻️",
-      name: "분리수거 분류기",
-      classes: ["캔", "페트병", "종이"],
-      tip: "쓰레기를 각도·거리를 바꿔가며 20장씩. 배경이 섞이지 않게!",
-    },
-    {
-      key: "rps",
-      emoji: "✌️",
-      name: "가위바위보",
-      classes: ["가위", "바위", "보"],
-      tip: "손을 화면 가운데에 크게. 배경은 단순하게.",
-    },
-    {
-      key: "mask",
+      key: "mask", track: "image",
       emoji: "😷",
       name: "마스크 썼나요?",
       classes: ["썼음", "안 썼음"],
       tip: "얼굴이 잘 보이게, 밝은 곳에서 다양한 표정으로.",
     },
     {
-      key: "thumb",
+      key: "thumb", track: "image",
       emoji: "👍",
       name: "엄지 척 / 아래",
       classes: ["엄지 척", "엄지 아래"],
       tip: "손 모양을 또렷하게, 손 위치를 조금씩 바꿔가며.",
     },
     {
-      key: "custom",
+      key: "recycle", paid: true, track: "image",
+      emoji: "♻️",
+      name: "분리수거 분류기",
+      classes: ["캔", "페트병", "종이"],
+      tip: "쓰레기를 각도·거리를 바꿔가며 20장씩. 배경이 섞이지 않게!",
+    },
+    {
+      key: "rps", paid: true, track: "image",
+      emoji: "✌️",
+      name: "가위바위보",
+      classes: ["가위", "바위", "보"],
+      tip: "손을 화면 가운데에 크게. 배경은 단순하게.",
+    },
+    {
+      key: "custom", paid: true, track: "image",
       emoji: "✨",
       name: "자유 주제",
       classes: ["클래스 1", "클래스 2"],
       tip: "내가 원하는 종류로 직접 만들어 보세요!",
     },
+    {
+      key: "pose-arm", track: "pose",
+      emoji: "💪",
+      name: "팔 들기 / 내리기",
+      classes: ["팔 들기", "팔 내리기"],
+      tip: "팔을 확실히 들고 내린 동작을 여러 번 찍으세요.",
+    },
+    {
+      key: "pose-sit", track: "pose",
+      emoji: "🪑",
+      name: "앉기 / 서기",
+      classes: ["앉음", "섬"],
+      tip: "카메라에 전신이 잘 나오게 거리를 조절하세요.",
+    },
+    {
+      key: "pose-custom", paid: true, track: "pose",
+      emoji: "✨",
+      name: "자유 동작",
+      classes: ["클래스 1", "클래스 2"],
+      tip: "나만의 특이한 자세를 만들어 보세요!",
+    },
+    {
+      key: "audio-onoff", track: "audio",
+      emoji: "💡",
+      name: "켜 / 꺼",
+      classes: ["켜", "꺼"],
+      tip: "조용한 곳에서 짧고 강하게 말하세요.",
+    },
+    {
+      key: "audio-updown", track: "audio",
+      emoji: "↕️",
+      name: "위 / 아래",
+      classes: ["위", "아래"],
+      tip: "음높이나 억양을 바꿔가며 녹음해 보세요.",
+    },
+    {
+      key: "audio-custom", paid: true, track: "audio",
+      emoji: "✨",
+      name: "자유 명령어",
+      classes: ["클래스 1", "클래스 2"],
+      tip: "내가 원하는 마법의 주문을 만들어 보세요!",
+    }
   ];
   const BADGES = [
     {
@@ -125,8 +176,11 @@
     toastT = setTimeout(() => toastEl.classList.remove("on"), 2000);
   }
 
-  // DOM 헬퍼
-  const items = () => [...document.querySelectorAll("#class-list .class-item")];
+  // DOM 헬퍼 (활성 트랙 기준)
+  const items = () => {
+    const list = el("class-list");
+    return list ? [...list.querySelectorAll(".class-item")] : [];
+  };
   const counts = () =>
     items().map((it) => ({
       name: (it.querySelector(".class-name")?.value || "").trim(),
@@ -134,7 +188,7 @@
     }));
   const hasData = () => counts().some((c) => c.n > 0);
   const trained = () => {
-    const t = $("infer-toggle");
+    const t = el("infer-toggle");
     return !!(t && !t.disabled);
   };
   const savedAcc = () => {
@@ -182,7 +236,7 @@
     // 현재 미션 상태 저장 (studio.js에서 참조)
     try {
       sessionStorage.setItem("vision_imagelab_mission", s.key);
-    } catch (e) {}
+    } catch (e) { }
     markScenario(s.key);
     // 기존 클래스 삭제 처리 (학습 상태 초기화 위해 내부 닫기 버튼 트리거)
     let guard = 0;
@@ -192,10 +246,8 @@
       del.click();
     }
     guard = 0;
-    const add = $("add-class");
-    while (items().length < s.classes.length && guard++ < 12 && add) {
-      add.click();
-    }
+    const add = el("add-class", s.track);
+    while (items().length < s.classes.length && guard++ < 12 && add) add.click();
     items().forEach((it, i) => {
       const inp = it.querySelector(".class-name");
       if (inp && s.classes[i] !== undefined) {
@@ -211,17 +263,24 @@
     update();
   }
 
+  /* 마지막으로 프리셋 행을 그린 트랙. 탭 전환은 hashchange 를 내지 않으므로
+     update() 가 이 값을 보고 다시 그린다. */
+  let drawnTrack = null;
+
   function renderScenarios() {
     const box = $("lab-scenarios");
     if (!box) return;
-    if (!isImage()) {
+    const track = curTrack();
+    drawnTrack = track;
+    if (!track) {
       box.innerHTML = "";
       return;
     }
+    const myScen = SCEN.filter((s) => s.track === track);
     box.innerHTML =
       '<div class="lab-sctip" id="lab-sctip"></div>' +
       '<div style="display:flex;gap:9px;flex-wrap:wrap;width:100%">' +
-      SCEN.map(
+      myScen.map(
         (s) =>
           `<button class="lab-sc" data-k="${s.key}" aria-pressed="false"><span class="e">${s.emoji}</span><span>${esc(s.name)}<small>${s.classes.join(" · ")}</small></span></button>`,
       ).join("") +
@@ -233,11 +292,26 @@
       }),
     );
 
+    /* 유료 프리셋은 숨기지 않는다 — 라벨·클래스 설명을 선명하게 둔 채 잠금 표시만 붙이고,
+       눌러도 프리셋이 적용되지 않고 잠금 화면이 뜬다 (기준서 2-5).
+       "자유 주제" 는 값 문구가 달라 잠금 화면을 따로 쓴다. */
+    if (window.Access) {
+      box.querySelectorAll(".lab-sc").forEach((b) => {
+        const s = SCEN.find((x) => x.key === b.dataset.k);
+        if (!s || !s.paid) return;
+        const key = s.key.indexOf("custom") !== -1 ? "preset-custom" : "preset";
+        window.Access.setLocked(b, key, !window.Access.isPaid());
+      });
+    }
+
+    /* 미션 키는 세 트랙이 함께 쓴다 — studio.js·submit.store.js 가 결과물에 붙일 이름을
+       이 키 하나에서 읽기 때문이다. 그래서 지금 트랙의 미션일 때만 표시한다. */
     const key = curScen();
     if (!key) return;
+    const s = SCEN.find((x) => x.key === key);
+    if (!s || s.track !== track) return;
     markScenario(key);
-    const s = SCEN.find((x) => x.key === key),
-      tip = $("lab-sctip");
+    const tip = $("lab-sctip");
     if (s && tip) {
       tip.innerHTML = "💡 " + esc(s.tip);
       tip.classList.add("on");
@@ -248,7 +322,8 @@
   function renderCoach() {
     const box = $("lab-coach");
     if (!box) return;
-    if (!isImage()) {
+    const track = curTrack();
+    if (!track || track !== "image") {
       box.innerHTML = "";
       return;
     }
@@ -290,7 +365,7 @@
   function renderBadges() {
     const box = $("lab-badges");
     if (!box) return;
-    if (!isImage()) {
+    if (curTrack() !== "image") {
       box.innerHTML = "";
       return;
     }
@@ -320,7 +395,7 @@
     if (changed) {
       try {
         localStorage.setItem("vision_imagelab_badges", JSON.stringify(got));
-      } catch (e) {}
+      } catch (e) { }
       renderBadges();
     }
   }
@@ -359,9 +434,10 @@
     if (!document.body.contains(cOv)) document.body.appendChild(cOv);
   }
   function curPred() {
-    const el = document.querySelector("#top-pred .tp-name");
-    const t = el ? el.textContent.trim() : "";
-    return t && t !== "아직 학습 전" && t !== "지금 무엇으로 보이나요?"
+    const host = el("top-pred");
+    const node = host && host.querySelector(".tp-name");
+    const t = node ? node.textContent.trim() : "";
+    return t && t !== "아직 학습 전" && t !== "대기 중" && !t.includes("무엇으로")
       ? t
       : "";
   }
@@ -385,7 +461,7 @@
     cOv.querySelector("#lcStart").onclick = run;
   }
   function ensureInfer() {
-    const t = $("infer-toggle");
+    const t = el("infer-toggle");
     if (t && /시작/.test(t.textContent)) t.click();
   }
   function run() {
@@ -430,7 +506,7 @@
     const acc = Math.round((cCorrect / ROUNDS) * 100);
     try {
       localStorage.setItem("vision_imagelab_acc", String(acc));
-    } catch (e) {}
+    } catch (e) { }
     const grade =
       acc >= 90
         ? "🏆 완벽해요!"
@@ -479,17 +555,21 @@
   });
 
   function update() {
+    if (curTrack() !== drawnTrack) renderScenarios();
     renderCoach();
     renderBadges();
     checkBadges();
     const cb = $("challengeBtn");
     if (cb) {
-      const show = isImage() && trained();
+      const show = !!curTrack() && trained();
       cb.style.display = show ? "" : "none";
       if (show && !cb._wired) {
         cb._wired = true;
         cb.addEventListener("click", openChallenge);
       }
+    }
+    if (window.Access && window.Access.applyVisionGate) {
+      window.Access.applyVisionGate();
     }
   }
 
@@ -509,5 +589,5 @@
     const s = SCEN.find((x) => x.key === k);
     return s ? s.name : "";
   };
-  window.ImageLab = { applyScenario, update, missionName };
+  window.ImageLab = { applyScenario, renderScenarios, update, missionName, curTrack };
 })();

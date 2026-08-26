@@ -4,6 +4,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { loadApp } from "./load-app.mjs";
 
+/* 이 파일은 미션 전환 동작(선택 표시·사진 초기화·학습 해제)을 본다. 마스크·엄지척은
+   무료 구간에서 잠기는 프리셋이므로(docs/access-policy.md 2-2), 접근 제어를 열어 두고
+   전환 동작만 확인한다. 무료 쪽 잠금은 test/access-phase2.test.mjs 가 따로 본다. */
+const PAID = { query: "?plan=paid" };
+
 const chips = (doc) => [...doc.querySelectorAll("#lab-scenarios .lab-sc")];
 const chip = (doc, key) =>
   doc.querySelector(`#lab-scenarios .lab-sc[data-k="${key}"]`);
@@ -21,14 +26,14 @@ const shots = (doc) =>
 const tick = () => new Promise((r) => setTimeout(r, 0));
 
 test("처음에는 아무 미션도 선택돼 있지 않다", async () => {
-  const { doc } = await loadApp();
+  const { doc } = await loadApp(PAID);
   assert.ok(chips(doc).length >= 5, "미션 칩이 렌더되지 않았다");
   assert.deepEqual(onKeys(doc), [], "고르지도 않은 미션이 선택돼 있다");
   assert.equal(chip(doc, "rps").getAttribute("aria-pressed"), "false");
 });
 
 test("미션을 누르면 그 칩만 선택 표시가 서고 힌트가 뜬다", async () => {
-  const { doc } = await loadApp();
+  const { doc } = await loadApp(PAID);
   chip(doc, "recycle").click();
 
   assert.deepEqual(
@@ -50,7 +55,7 @@ test("미션을 누르면 그 칩만 선택 표시가 서고 힌트가 뜬다", 
 });
 
 test("다른 미션을 누르면 선택이 옮겨간다", async () => {
-  const { doc } = await loadApp();
+  const { doc } = await loadApp(PAID);
   chip(doc, "recycle").click();
   chip(doc, "mask").click();
   assert.deepEqual(onKeys(doc), ["mask"], "이전 선택이 남아 있다");
@@ -58,7 +63,7 @@ test("다른 미션을 누르면 선택이 옮겨간다", async () => {
 });
 
 test("다시 그려도(hashchange) 선택 표시와 힌트가 남는다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   chip(doc, "thumb").click();
   assert.deepEqual(onKeys(doc), ["thumb"]);
 
@@ -75,7 +80,7 @@ test("다시 그려도(hashchange) 선택 표시와 힌트가 남는다", async 
 });
 
 test("사진을 모은 뒤 미션 변경을 취소하면 이전 선택이 그대로다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   chip(doc, "rps").click();
   await tick();
   assert.deepEqual(onKeys(doc), ["rps"]);
@@ -116,7 +121,7 @@ test("사진을 모은 뒤 미션 변경을 취소하면 이전 선택이 그대
 });
 
 test("사진을 모은 뒤 확인하면 그 주제로 바뀐다", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   chip(doc, "rps").click();
   await tick();
   doc.querySelector("#class-list .class-item .class-count").textContent = "12";
@@ -131,7 +136,7 @@ test("사진을 모은 뒤 확인하면 그 주제로 바뀐다", async () => {
 
 /* 미션 변경 시 이전 미션 사진 초기화 확인 (id 재생성 체크) */
 test("미션을 바꾸면 모은 사진이 따라오지 않는다 — 클래스 개수가 같아도", async () => {
-  const { doc } = await loadApp();
+  const { doc } = await loadApp(PAID);
   chip(doc, "rps").click();
   await tick();
   const before = ids(doc);
@@ -157,7 +162,7 @@ test("미션을 바꾸면 모은 사진이 따라오지 않는다 — 클래스 
 });
 
 test("미션을 바꾸면 학습도 풀린다 (다른 주제 사진으로 만든 모델이 남지 않게)", async () => {
-  const { doc } = await loadApp();
+  const { doc } = await loadApp(PAID);
   chip(doc, "rps").click();
   await tick();
   doc.querySelector("#class-list .class-item .class-count").textContent = "12";
@@ -173,7 +178,7 @@ test("미션을 바꾸면 학습도 풀린다 (다른 주제 사진으로 만든
 });
 
 test("선택 표시는 hover 와 구별된다 (테두리 위에 링을 얹는다)", async () => {
-  const { doc, window: win } = await loadApp();
+  const { doc, window: win } = await loadApp(PAID);
   chip(doc, "recycle").click();
   const st = win.getComputedStyle(chip(doc, "recycle"));
   /* :hover 도 border-color 를 accent 로 바꾸므로, 선택은 inset 링 + 배경으로 구분한다 */
