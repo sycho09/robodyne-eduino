@@ -32,25 +32,34 @@ function goToDmStep(w) {
     const hand = $('dm-cam-hand');
     const bar = $('dm-cam-bar');
     const txt = $('dm-cam-text');
-    let tick = 0;
-    dmAnimTimer = setInterval(() => {
-      tick++;
-      const val = Math.sin(tick * 0.4) * 20 + 75; // 55% ~ 95%
-      const thres = +$('dm-slider').value;
-      if (bar) bar.style.width = val + '%';
-      if (val >= thres) {
-        if (bar) bar.style.background = 'var(--green)';
-        if (txt) { txt.style.color = 'var(--green)'; txt.textContent = 'AI 확신도: ' + Math.round(val) + '% (작동)'; }
-        if (hand) hand.classList.add('pulse');
-      } else {
-        if (bar) bar.style.background = 'var(--amber)';
-        if (txt) { txt.style.color = 'var(--amber)'; txt.textContent = 'AI 확신도: ' + Math.round(val) + '% (미반응)'; }
-        if (hand) hand.classList.remove('pulse');
-      }
-    }, 150);
+    const m = dmMeasure(true);
+    if (!m) {
+      if (bar) { bar.style.width = '0%'; bar.style.background = 'var(--amber)'; }
+      if (hand) hand.classList.remove('pulse');
+      if (txt) { txt.style.color = 'var(--amber)'; txt.textContent = '②단계에서 학습을 먼저 마쳐 주세요'; }
+    } else {
+      /* 지어낸 sin 파형 대신, ②단계에서 모은 샘플의 실제 확신도를 차례로 재생한다.
+         자기 데이터가 애매하면 막대도 실제로 낮게 흔들린다. */
+      const conf = m.rows.map(r => Math.max.apply(null, r.p) * 100);
+      let i = 0;
+      dmAnimTimer = setInterval(() => {
+        const val = conf[i++ % conf.length];
+        const thres = +$('dm-slider').value;
+        if (bar) bar.style.width = val.toFixed(1) + '%';
+        if (val >= thres) {
+          if (bar) bar.style.background = 'var(--green)';
+          if (txt) { txt.style.color = 'var(--green)'; txt.textContent = 'AI 확신도: ' + Math.round(val) + '% (작동)'; }
+          if (hand) hand.classList.add('pulse');
+        } else {
+          if (bar) bar.style.background = 'var(--amber)';
+          if (txt) { txt.style.color = 'var(--amber)'; txt.textContent = 'AI 확신도: ' + Math.round(val) + '% (미반응)'; }
+          if (hand) hand.classList.remove('pulse');
+        }
+      }, 150);
+    }
   }
-  
-  if (w === 3) paintConfusion();
+
+  if (w === 3) { dmMeasure(true); paintConfusion(); }
 
   if (w === 4) {
     const resFunc = $('dm-res-func');
@@ -60,49 +69,118 @@ function goToDmStep(w) {
   }
 }
 
-/* 혼동행렬을 Step 2의 임계값과 연동한다.
-   가위·보 각 100회 시도에서, 확신도가 임계값을 넘지 못하면 '미반응'으로 빠지고,
-   넘더라도 각도에 따라 접은 손가락이 가려지면 서로 오인된다.
-   임계값을 올리면 오인은 줄지만 미반응이 늘어나는 트레이드오프가 숫자로 드러난다. */
+/* ②단계에서 학생이 직접 모은 샘플을, 그 데이터로 학습한 head 에 되돌려 넣어
+   실제 확신도를 잰다.
+
+   예전에는 임계값에서 숫자를 만들어 내는 공식을 썼다(지어낸 값). 학습 결과와
+   아무 관계가 없어서, 데이터를 아무리 더 모아도 혼동행렬이 늘 똑같았다.
+   이제는 자기 데이터가 나쁘면 숫자도 나쁘게 나온다.
+
+   한계: 학습에 쓴 데이터를 그대로 되재는 self-prediction 이다(②단계 혼동행렬과
+   같은 방식). 따로 떼어 둔 검증 세트가 없으므로 실제 현장 성능보다 후하게 나온다. */
+let dmRows = null;   // { names, rows:[{ truth, p }] } — 임계값과 무관하므로 단계 진입 때 한 번만 잰다
+function dmMeasure(force) {
+  if (dmRows && !force) return dmRows;
+  dmRows = null;
+  if (typeof tf === 'undefined' || typeof head === 'undefined' || typeof classes === 'undefined') return null;
+  if (!head) return null;
+  const usable = classes.filter(c => c.samples.length >= 8);
+  if (usable.length < 2) return null;
+  const rows = [];
+  usable.forEach((c, idx) => {
+    const valid = c.samples.filter(s => s.length === 42 && s.every(v => isFinite(v)));
+    if (!valid.length) return;
+    const probs = tf.tidy(() => head.predict(tf.tensor2d(valid)).arraySync());
+    probs.forEach(p => rows.push({ truth: idx, p }));
+  });
+  if (rows.length < 2) return null;
+  dmRows = { names: usable.map(c => c.name), rows };
+  return dmRows;
+}
+/* 다시 학습하면 앞서 잰 값은 버린다(새 head 로 다시 재야 한다). */
+(function () {
+  const bt = $('btn-train');
+  if (bt) bt.addEventListener('click', () => { dmRows = null; });
+})();
+
+/* 기준선을 못 넘으면 '무시', 넘었는데 다른 클래스면 '오인'.
+   임계값만 바꿔 다시 세는 것이므로 예측은 다시 돌리지 않는다. */
 function confusionAt(thres) {
-  // 확신도 분포를 단순화한 모델: 임계값이 높을수록 통과하지 못하는 시도가 늘어난다.
-  const pass = Math.max(0, Math.min(100, Math.round(100 - Math.max(0, thres - 80) * 2.5)));
-  // 통과한 시도 중 서로 오인되는 비율은 임계값이 낮을수록 높다(애매한 것까지 통과하므로).
-  const confuseRate = Math.max(0.02, (100 - thres) / 100 * 0.42);
-  const sci = { miss: 100 - pass };
-  sci.wrong = Math.round(pass * confuseRate);
-  sci.right = pass - sci.wrong;
-  const pap = { miss: 100 - pass };
-  pap.wrong = Math.round(pass * confuseRate * 1.25); // 보는 접은 손가락 가려짐이 더 잦다
-  pap.right = pass - pap.wrong;
-  const wrong = sci.wrong + pap.wrong, miss = sci.miss + pap.miss;
-  // 임계값 구간을 따로 두지 않고, 이 숫자에서 바로 판정을 끌어낸다(Step 2·3 문구의 단일 출처).
+  const m = dmMeasure();
+  if (!m) return null;
+  const cut = thres / 100;
+  const per = m.names.map(() => ({ right: 0, wrong: 0, miss: 0 }));
+  m.rows.forEach(r => {
+    let top = 0;
+    for (let i = 1; i < r.p.length; i++) if (r.p[i] > r.p[top]) top = i;
+    if (r.p[top] < cut) per[r.truth].miss++;
+    else if (top === r.truth) per[r.truth].right++;
+    else per[r.truth].wrong++;
+  });
+  const wrong = per.reduce((s, x) => s + x.wrong, 0);
+  const miss = per.reduce((s, x) => s + x.miss, 0);
   const verdict = miss > wrong * 1.8 ? 'miss' : wrong > miss * 1.8 ? 'wrong' : 'balanced';
-  return { sci, pap, pass, wrong, miss, verdict };
+  return { per, names: m.names, wrong, miss, total: m.rows.length, verdict };
+}
+
+/* 표의 라벨을 학생이 실제로 만든 클래스 이름에 맞춘다.
+   (HTML 기본값은 '가위/보' 인데 이 코스의 기본 클래스는 '주먹/손바닥' 이라 어긋나 있었다)
+   이미 그려진 아이콘 노드는 지우지 않고 되돌려 놓아 표 모양은 그대로 둔다. */
+function dmSetLabel(el, name) {
+  if (!el || !name) return;
+  const ic = el.querySelector('.ic-inline');
+  el.textContent = '';
+  if (ic) { el.appendChild(ic); el.appendChild(document.createTextNode(' ' + name)); }
+  else el.appendChild(document.createTextNode(name));
 }
 
 function paintConfusion() {
   const slider = $('dm-slider');
   if (!slider) return;
   const thres = +slider.value;
-  const c = confusionAt(thres);
   const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
-  set('dm-cm-thres', thres + '%');
-  set('dm-cm-00', c.sci.right + ' (성공)');
-  set('dm-cm-01', c.sci.wrong + ' (오인)');
-  set('dm-cm-0n', c.sci.miss + ' (무시)');
-  set('dm-cm-10', c.pap.wrong + ' (오인)');
-  set('dm-cm-11', c.pap.right + ' (성공)');
-  set('dm-cm-1n', c.pap.miss + ' (무시)');
-
+  const cells = ['dm-cm-00', 'dm-cm-01', 'dm-cm-0n', 'dm-cm-10', 'dm-cm-11', 'dm-cm-1n'];
   const note = $('dm-cm-note');
+  /* 표 위 안내문에는 id 가 없다 — 임계값 <b> 의 부모가 그 문단이다. */
+  const lead = $('dm-cm-thres') ? $('dm-cm-thres').parentElement : null;
+  const c = confusionAt(thres);
+
+  if (!c) {
+    cells.forEach(id => set(id, '—'));
+    if (lead) lead.innerHTML = '임계값 <b id="dm-cm-thres">' + thres + '%</b> — 아직 잴 것이 없습니다.';
+    if (note) note.innerHTML = '이 표는 <b>②단계에서 직접 모은 데이터</b>로 채워집니다. 제스처 2가지를 각각 <b>8개 이상</b> 모아 학습을 마친 뒤 다시 오세요.';
+    return;
+  }
+
+  const a = c.per[0], b = c.per[1];
+  if (lead) {
+    lead.innerHTML = '임계값 <b id="dm-cm-thres">' + thres + '%</b> 로, ②단계에서 모은 샘플 <b>' + c.total +
+      '개</b>를 학습한 모델에 되돌려 넣어 실제로 센 결과입니다. 임계값을 바꾸면 아래 숫자도 함께 달라집니다.';
+  }
+  set('dm-cm-00', a.right + ' (성공)');
+  set('dm-cm-01', a.wrong + ' (오인)');
+  set('dm-cm-0n', a.miss + ' (무시)');
+  set('dm-cm-10', b.wrong + ' (오인)');
+  set('dm-cm-11', b.right + ' (성공)');
+  set('dm-cm-1n', b.miss + ' (무시)');
+
+  const tbl = document.querySelector('.dm-cm-table');
+  if (tbl) {
+    const hs = tbl.querySelectorAll('thead th');
+    dmSetLabel(hs[1], c.names[0]); dmSetLabel(hs[2], c.names[1]);
+    const rs = tbl.querySelectorAll('tbody tr');
+    if (rs[0]) dmSetLabel(rs[0].querySelector('th'), c.names[0]);
+    if (rs[1]) dmSetLabel(rs[1].querySelector('th'), c.names[1]);
+  }
+
   if (!note) return;
+  const extra = c.names.length > 2 ? ' (클래스 ' + c.names.length + '개 중 앞의 2개만 표에 나옵니다)' : '';
   if (c.verdict === 'miss') {
-    note.innerHTML = '임계값이 높아 <b>오인은 거의 없지만</b> 200번 중 ' + c.miss + '번이 아예 무시됐습니다. 안전하지만 답답한 설정입니다.';
+    note.innerHTML = '임계값이 높아 <b>오인은 거의 없지만</b> ' + c.total + '개 중 ' + c.miss + '개가 아예 무시됐습니다. 안전하지만 답답한 설정입니다.' + extra;
   } else if (c.verdict === 'wrong') {
-    note.innerHTML = '임계값이 낮아 <b>반응은 잘 하지만</b> 200번 중 ' + c.wrong + '번을 엉뚱한 동작으로 실행했습니다. 오작동이 잦은 설정입니다.';
+    note.innerHTML = '임계값이 낮아 <b>반응은 잘 하지만</b> ' + c.total + '개 중 ' + c.wrong + '개를 엉뚱한 동작으로 실행했습니다. 오작동이 잦은 설정입니다.' + extra;
   } else {
-    note.innerHTML = '오인 ' + c.wrong + '번, 무시 ' + c.miss + '번으로 균형이 잡힌 설정입니다. 어느 쪽 실수가 더 치명적인지에 따라 임계값을 옮기면 됩니다.';
+    note.innerHTML = '오인 ' + c.wrong + '개, 무시 ' + c.miss + '개로 균형이 잡힌 설정입니다. 어느 쪽 실수가 더 치명적인지에 따라 임계값을 옮기면 됩니다.' + extra;
   }
 }
 if (typeof window !== 'undefined') window.paintConfusion = paintConfusion;
@@ -123,14 +201,17 @@ function paintThresWarn() {
   const warn = $('dm-alert-warn');
   if (!warn) return;
   const c = confusionAt(v);
-  if (c.verdict === 'miss') {
-    warn.innerHTML = EduinoIcons.svg('alert') + ' 동작을 완벽하게 해야만 넘어갑니다 — 200번 중 ' + c.miss + '번 미반응';
+  if (!c) {
+    warn.innerHTML = EduinoIcons.svg('alert') + ' ②단계에서 학습을 마치면 이 임계값의 실제 결과가 표시됩니다';
+    warn.style.color = '#92400e'; warn.style.border = '1px solid #fde68a'; warn.style.background = '#fef3c7';
+  } else if (c.verdict === 'miss') {
+    warn.innerHTML = EduinoIcons.svg('alert') + ' 동작을 완벽하게 해야만 넘어갑니다 — ' + c.total + '개 중 ' + c.miss + '개 미반응';
     warn.style.color = '#92400e'; warn.style.border = '1px solid #fde68a'; warn.style.background = '#fef3c7';
   } else if (c.verdict === 'wrong') {
-    warn.innerHTML = EduinoIcons.svg('alert') + ' 엉뚱한 동작에도 반응합니다 — 200번 중 ' + c.wrong + '번 오작동';
+    warn.innerHTML = EduinoIcons.svg('alert') + ' 엉뚱한 동작에도 반응합니다 — ' + c.total + '개 중 ' + c.wrong + '개 오작동';
     warn.style.color = '#991b1b'; warn.style.border = '1px solid #fecaca'; warn.style.background = '#fee2e2';
   } else {
-    warn.innerHTML = EduinoIcons.svg('check-circle') + ' 균형 잡힌 임계값입니다 — 오작동 ' + c.wrong + '번 / 미반응 ' + c.miss + '번';
+    warn.innerHTML = EduinoIcons.svg('check-circle') + ' 균형 잡힌 임계값입니다 — 오작동 ' + c.wrong + '개 / 미반응 ' + c.miss + '개';
     warn.style.color = '#065f46'; warn.style.border = '1px solid #a7f3d0'; warn.style.background = '#d1fae5';
   }
 }
