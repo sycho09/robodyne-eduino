@@ -26,6 +26,7 @@ function goToRvStep(w) {
   
   if (w === 2) renderRvBase();
   if (w === 4) {
+    window.CourseDashboard && CourseDashboard.markDone('review');
     setTimeout(() => {
       const fg = $('rv-donut-fg');
       if(fg) fg.style.strokeDashoffset = 440 - (440 * 0.18); // 18%

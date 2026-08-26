@@ -62,6 +62,7 @@ function goToDmStep(w) {
   if (w === 3) { dmMeasure(true); paintConfusion(); }
 
   if (w === 4) {
+    window.CourseDashboard && CourseDashboard.markDone('demo');
     const resFunc = $('dm-res-func');
     if (resFunc) resFunc.textContent = dmFuncNames[dmFunc];
     const resThres = $('dm-res-thres');

@@ -199,6 +199,7 @@ function goToLmStep(w) {
     $('lm-batch-btn').textContent = '일괄 스캔 시작';
     $('lm-batch-btn').onclick = startLmBatch;
   } else if (w === 4) {
+    window.CourseDashboard && CourseDashboard.markDone('limit');
     paintLmReport();
   }
 }

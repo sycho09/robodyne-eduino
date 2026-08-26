@@ -113,6 +113,7 @@ const detectCam = mkCam($('v-detect'), $('c-detect'), $('ph-detect'));
 const work = document.createElement('canvas');           // 필터를 건 프레임 = 탐지 입력 = 화면 출력
 const wctx = work.getContext('2d', { willReadFrequently: true });
 let cocoModel = null;
+let detectSeen = false;          // 상자를 한 번이라도 그렸는지 — 실습 ① 완료 신호
 let thres = 0.5;
 
 async function loadCoco() {
@@ -205,6 +206,7 @@ async function detectLoop() {
     const shown = preds.filter((p) => p.score >= thres).sort((a, b) => b.score - a.score);
     shown.forEach((p) => drawBox(ctx, p));
     paintDetectPanel(shown, preds.length - shown.length);
+    if (shown.length && !detectSeen) { detectSeen = true; window.CourseDashboard && CourseDashboard.markDone('detect'); }
   }
   detectCam.raf = requestAnimationFrame(detectLoop);
 }

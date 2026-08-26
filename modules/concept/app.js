@@ -72,6 +72,7 @@ $('bd-train').onclick = async () => {
   $('bd-acc').textContent = Math.round(accT * 100) + '%';
   xs.dispose(); ys.dispose();
   bdTrained = true; bdTraining = false; renderBd();
+  window.CourseDashboard && CourseDashboard.markDone('boundary');
   const cxName = CXLABEL[$('bd-cx').value];
   $('bd-say').innerHTML = `✓ 완성! 복잡도 <b>${cxName}</b>로 경계를 그렸어요. 복잡도를 바꿔 다시 학습하면 경계 모양이 달라져요.`;
   setStatus('학습 완료 · READY', 'ready');
@@ -80,7 +81,7 @@ $('bd-train').onclick = async () => {
 /* ════ 2. 지도 vs 비지도 ════ */
 let cmpPts = [], cmpMode = 'sup', cmpAssign = [], cmpCents = [];
 const cmpCtx = $('c-cmp').getContext('2d');
-function makeCmp() { cmpPts = [...blob(3.2, 7, 10, 0, 3.2), ...blob(7, 3.6, 10, 1, 3.2)]; cmpMode = 'sup'; $('cmp-seg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.m === 'sup')); renderCmp(); }
+function makeCmp() { cmpPts = [...blob(3.2, 7, 10, 0, 3.2), ...blob(7, 3.6, 10, 1, 3.2)]; cmpMode = 'sup'; $('cmp-seg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.m === 'sup')); renderCmp(); window.CourseDashboard && CourseDashboard.markDone('compare'); }
 function kmeans2(pts, K, cents, assign) {
   let changed = 0;
   pts.forEach((p, i) => { let b = 0, bd = Infinity; cents.forEach((c, k) => { const d = (p.x - c.x) ** 2 + (p.y - c.y) ** 2; if (d < bd) { bd = d; b = k; } }); if (assign[i] !== b) { assign[i] = b; changed++; } });

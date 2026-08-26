@@ -226,7 +226,7 @@ function renderCtrlStep() {
 
 $('temp-slider').addEventListener('input', renderCtrlStep);
 
-$('btn-ex-report').onclick = () => { exStep = 4; updateExNav(); };
+$('btn-ex-report').onclick = () => { exStep = 4; updateExNav(); window.CourseDashboard && CourseDashboard.markDone('explore'); };
 $('btn-confound-info').onclick = () => $('modal-confound').style.display = 'block';
 $('btn-close-confound').onclick = () => $('modal-confound').style.display = 'none';
 
@@ -291,7 +291,7 @@ $('pr-train').onclick = () => {
     W1 = w1.dataSync()[0]; W2 = w2.dataSync()[0]; B = b.dataSync()[0]; trained = true;
     $('m-epoch').textContent = ep + ' / ' + TOTAL; $('m-loss').textContent = (lossV * DOM * DOM).toFixed(2); renderPredict(); updateEqn(); updatePredProc();
     if (ep < TOTAL) raf = requestAnimationFrame(stepFn);
-    else { xs.dispose(); ys.dispose(); w1.dispose(); w2.dispose(); b.dispose(); training = false; $('pr-x').disabled = false; $('pr-train').disabled = false; setStatus('학습 완료 · READY', 'ready'); updatePred(); }
+    else { xs.dispose(); ys.dispose(); w1.dispose(); w2.dispose(); b.dispose(); training = false; $('pr-x').disabled = false; $('pr-train').disabled = false; setStatus('학습 완료 · READY', 'ready'); updatePred(); window.CourseDashboard && CourseDashboard.markDone('predict'); }
   }
   stepFn();
 };
@@ -388,7 +388,8 @@ $('btn-run-cluster').onclick = () => {
   clCents = idx.map(i => ({ x: clPts[i].x, y: clPts[i].y }));
   clAssign = new Array(clPts.length).fill(-1); clustered = true;
   
-  setStatus('AI 군집화 진행 중...', 'busy'); 
+  setStatus('AI 군집화 진행 중...', 'busy');
+  window.CourseDashboard && CourseDashboard.markDone('cluster'); 
   let it = 0;
   clTimer = setInterval(() => {
     const changed = kmeans(clPts, clK, clCents, clAssign);

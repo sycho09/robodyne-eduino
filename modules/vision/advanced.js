@@ -300,6 +300,7 @@ $('btn-train').onclick = async () => {
   $('train-hint').textContent = '학습 완료! 자동으로 ③단계로 이동합니다.';
   setStatus('학습 완료 · READY', 'ready');
   paintConfusion();
+  window.CourseDashboard && CourseDashboard.markDone('train');
   setStep(3);
 };
 

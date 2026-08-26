@@ -4,6 +4,7 @@ const CONNECTIONS = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10
   [0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]];
 const DONUT_C = 251.3;
 let model = null;
+let playSeen = false;             // 손을 한 번이라도 인식했는지 — 실습 ① 완료 신호
 
 function setStatus(t, c) { const s = $('status'); s.textContent = t; s.className = 'status' + (c ? ' ' + c : ''); }
 
@@ -100,6 +101,7 @@ async function playLoop() {
     const st = [r.fingers.thumb, ...r.fingers.four];
     fingerEls.forEach((el, i) => el.classList.toggle('up', !!st[i]));
     setPlayDonut(r.conf); $('play-conf-label').textContent = '손 인식됨';
+    if (!playSeen) { playSeen = true; window.CourseDashboard && CourseDashboard.markDone('play'); }
   } else {
     $('rps-name').textContent = '손이 안 보여요'; $('rps-hint').textContent = '손을 화면 안에 비춰주세요';
     fingerEls.forEach(el => el.classList.remove('up')); setPlayDonut(0); $('play-conf-label').textContent = '대기 중';
@@ -302,6 +304,7 @@ $('btn-train').onclick = async () => {
   $('btn-train').disabled = false; $('btn-infer').disabled = false;
   $('train-hint').textContent = '학습 완료! 자동으로 ③단계로 이동합니다.';
   setStatus('학습 완료 · READY', 'ready');
+  window.CourseDashboard && CourseDashboard.markDone('train');
   setStep(3); // 학습 끝나면 바로 사용해보기로
 };
 function buildBars(names) {

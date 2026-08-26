@@ -32,6 +32,7 @@ function runSimilar() {
     return `<div class="bar"><div class="top"><span class="nm">${i === 0 ? EduinoIcons.svg('medal') + ' ' : ''}${o.r}</span><span class="pc">${pct}%</span></div><div class="track"><div class="fill" style="width:${pct}%;background:${col}"></div></div></div>`;
   }).join('');
   setStatus('가장 비슷: ' + Math.round(scored[0].s * 100) + '%', 'ready');
+  window.CourseDashboard && CourseDashboard.markDone('similar');
 }
 $('sim-go').onclick = runSimilar;
 $('sim-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') runSimilar(); });
@@ -96,6 +97,7 @@ $('cl-train').onclick = async () => {
   $('cl-test').disabled = false; $('cl-do').disabled = false; $('cl-train').disabled = false;
   $('cl-say').innerHTML = '✓ 학습 완료! 아래에 문장을 써서 <b>[분류하기]</b>를 눌러보세요.'; updateClProc();
   setStatus('학습 완료 · READY', 'ready');
+  window.CourseDashboard && CourseDashboard.markDone('classify');
   if ($('cl-test').value.trim()) classify();
 };
 function classify() {

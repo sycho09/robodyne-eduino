@@ -207,6 +207,7 @@ function goToVlStep(w) {
     $('vl-badge').className = 'vl-badge reveal';
     paintVlAgreement();
   } else if (w === 4) {
+    window.CourseDashboard && CourseDashboard.markDone('valid');
     trainVlModel();
   }
   

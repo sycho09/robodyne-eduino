@@ -23,6 +23,7 @@
   ];
   var activeFinish = null;     // init 시점의 finishPractice — CourseDashboard.finish() 가 위임한다.
   var activeProgress = null;   // init 시점의 progressPayload — CourseDashboard.progress() 가 위임한다.
+  var activeMarkDone = null;   // init 시점의 markDone — CourseDashboard.markDone() 이 위임한다.
 
   function esc(s) {
     return String(s).replace(/[&<>"]/g, function (c) {
@@ -74,6 +75,12 @@
         quizIndex: 0, quizAnswers: new Array(config.quiz.length).fill(null)
       };
     }
+
+    /* 실습 탭 완료 상태. appendPracticeControls() 가 init 앞쪽에서 채우므로
+       선언도 그보다 앞에 둔다 — 뒤에 두면 var 초기화가 나중에 실행되어
+       이미 채운 값을 다시 비운다. */
+    var practiceTabs = [];
+    var practiceControls = null;
 
     var state = {
       step: 0,
@@ -142,6 +149,7 @@
 
     if (config.hint) setupHint(config.hint);
     activeFinish = finishPractice;
+    activeMarkDone = markDone;
     activeProgress = progressPayload;
 
     renderSidebar();
@@ -573,20 +581,106 @@
       });
     }
 
-    // ---- Step 3: 실습 (기존 콘텐츠 그대로, 하단 컨트롤만 추가) ----
+    /* ---- Step 3: 실습 ----------------------------------------------------
+       실습 탭을 다 거쳐야 평가로 넘어간다. 예전에는 어느 탭에 있든 '평가로 이동'이
+       늘 활성이라, 탭 하나만 보고도 그냥 넘어갈 수 있었다.
+
+       완료 판정은 각 모듈이 알린다 — 탭마다 "의미 있는 결과가 한 번 나온 시점"이
+       다르므로 셸이 짐작하지 않는다(방문만으로는 완료로 보지 않는다).
+         모듈 쪽:  CourseDashboard.markDone('탭키')
+
+       탭 6종이 모두 같은 .steps .step[data-step] 마크업을 쓰므로 코스별 분기가 없다.
+       완료 표시는 사이드바(.dash-nav-item.done)와 같은 언어 — 번호 자리를 초록
+       체크로 바꾼다. 유료 잠금 배지는 탭 오른쪽 끝이라 자리가 겹치지 않는다. */
+
+    function collectPracticeTabs() {
+      var btns = practiceContent.querySelectorAll('.steps .step');
+      practiceTabs = Array.prototype.map.call(btns, function (b, i) {
+        var b1 = b.querySelector('.t b');
+        return {
+          key: b.dataset.step || String(i),
+          label: (b1 ? b1.textContent : '').trim() || ('실습 ' + (i + 1)),
+          el: b,
+          done: false
+        };
+      });
+    }
+    function tabsLeft() {
+      return practiceTabs.filter(function (t) { return !t.done; });
+    }
+    var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+    function paintPracticeTabs() {
+      practiceTabs.forEach(function (t, i) {
+        t.el.classList.toggle('done', t.done);
+        var n = t.el.querySelector('.n');
+        if (!n) return;
+        if (t.done) { if (!n.querySelector('svg')) n.innerHTML = CHECK; }
+        else if (n.querySelector('svg')) n.textContent = String(i + 1);
+      });
+    }
+
+    /* 무료 사용자에게는 아예 그리지 않는다. 실습 ③ 이 잠겨 3/3 을 만들 수 없고
+       최종 평가도 잠겨 있어, 눌러도 잠금 화면으로 가는 막다른 길이다.
+       그 자리에는 access.js 의 잔여 분량 안내 띠가 이미 놓여 있다. */
+    function paintPracticeControls() {
+      if (!practiceControls) return;
+      if (!paid()) { practiceControls.hidden = true; return; }
+      practiceControls.hidden = false;
+      var left = tabsLeft();
+      var btn = practiceControls.querySelector('#dash-to-eval');
+      if (left.length) {
+        btn.className = 'btn accent';
+        btn.setAttribute('aria-disabled', 'true');
+        btn.textContent = '실습 진행도 ' + (practiceTabs.length - left.length) + '/' + practiceTabs.length +
+          /* 탭 이름 자체에 ' · ' 가 들어가는 코스가 있어(초급 · 체험) 같은 문자로
+             이으면 경계가 사라진다. 쉼표로 끊는다. */
+          ' — 남은 실습: ' + left.map(function (t) { return t.label; }).join(', ');
+      } else {
+        btn.className = 'btn primary lg';
+        btn.removeAttribute('aria-disabled');
+        btn.textContent = '실습 완료, 최종 평가로 이동';
+      }
+    }
+
+    /* 남은 탭을 말로 설명하는 대신 그 자리를 가리킨다. */
+    function pointAtLeftovers() {
+      var left = tabsLeft();
+      if (!left.length) return;
+      left[0].el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      left.forEach(function (t) {
+        t.el.classList.remove('dash-flash');
+        void t.el.offsetWidth;              // 연속 클릭에도 다시 재생되게 리플로우로 끊는다
+        t.el.classList.add('dash-flash');
+      });
+    }
+
+    function markDone(tabKey) {
+      var t = practiceTabs.filter(function (x) { return x.key === tabKey; })[0];
+      if (!t || t.done) return;
+      t.done = true;
+      paintPracticeTabs();
+      paintPracticeControls();
+    }
+
     function appendPracticeControls() {
       var panel = shell.querySelector('#dash-panel-2');
-      var controls = document.createElement('div');
-      controls.className = 'dash-controls';
-      // accent(연한 채움)로 둔다 — 모든 실습 화면에 상시 노출되므로 채움으로 두면
-      // 각 단계가 가진 본래의 다음-단계 버튼과 강조가 겹친다.
-      controls.innerHTML = '<span></span><button class="btn accent" id="dash-to-eval">평가로 이동</button>';
-      panel.appendChild(controls);
-      controls.querySelector('#dash-to-eval').addEventListener('click', finishPractice);
+      collectPracticeTabs();
+      practiceControls = document.createElement('div');
+      practiceControls.className = 'dash-controls';
+      practiceControls.innerHTML = '<button class="btn accent" id="dash-to-eval">평가로 이동</button>';
+      panel.appendChild(practiceControls);
+      practiceControls.querySelector('#dash-to-eval').addEventListener('click', finishPractice);
+      paintPracticeTabs();
+      paintPracticeControls();
     }
+
+    /* 게이트를 여기 한 곳에 둔다 — 모듈이 각자 두고 있는 완료 버튼
+       (CourseDashboard.finish())도 같은 규칙을 그대로 따르게 된다. */
     function finishPractice() {
+      if (tabsLeft().length) { pointAtLeftovers(); return; }
       state.progress.completedSteps[2] = true;
       emitProgress();
+      syncSidebar();
       goTo(3);
     }
 
@@ -691,6 +785,9 @@
   window.CourseDashboard = {
     init: init,
     finish: function () { if (activeFinish) activeFinish(); },
+    /* 실습 탭 하나를 끝냈다고 알린다. 각 모듈이 그 탭의 '의미 있는 결과가
+       나온 시점'에 한 번 부른다 — 탭 키는 .steps .step 의 data-step 값이다. */
+    markDone: function (tabKey) { if (activeMarkDone) activeMarkDone(tabKey); },
     progress: function () { return activeProgress ? activeProgress() : null; }
   };
 })();

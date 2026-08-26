@@ -84,7 +84,7 @@ function doDetect() {
   let got = null;
   if (window.jsQR) { const c = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' }); if (c && c.data) got = { text: c.data, fmt: 'QR code' }; }
   if (!got) { const b = zxDecode(sproc); if (b) got = b; }
-  if (got) pushCode(got.text, got.fmt);
+  if (got) { pushCode(got.text, got.fmt); window.CourseDashboard && CourseDashboard.markDone('scan'); }
 }
 async function scanLoop() {
   if (!scan.stream) return;
@@ -186,6 +186,7 @@ $('ocr-shot').onclick = async () => {
     const chars = text.replace(/\s/g, '').length;
     $('ocr-meta').innerHTML = `<span>신뢰도 <b>${conf}%</b></span><span>글자 수 <b>${chars}</b></span><span>언어 <b>${ocrLang}</b></span>` + (count ? `<span class="applied">자동 교정 ${count}건</span>` : '');
     setStatus('인식 완료 · READY', 'ready');
+    window.CourseDashboard && CourseDashboard.markDone('ocr');
   } catch (e) {
     $('ocr-out').value = '인식 중 오류가 발생했어요: ' + e.message;
     setStatus('오류', 'busy');
