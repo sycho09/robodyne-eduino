@@ -28,10 +28,7 @@ function goToRvStep(w) {
   if (w === 2) renderRvBase();
   if (w === 4) {
     window.CourseDashboard && CourseDashboard.markDone('review');
-    setTimeout(() => {
-      const fg = $('rv-donut-fg');
-      if(fg) fg.style.strokeDashoffset = 440 - (440 * 0.18); // 18%
-    }, 100);
+    renderRvReport();
   }
 }
 
@@ -53,6 +50,83 @@ const RV_REVIEWS = [
   { text: '빠른 배송 정말 감사합니다! 또 살게요.', sim: 41, want: false, cue: [] },
   { text: '사이즈가 생각보다 작아요. 반품할게요.', sim: 23, want: false, cue: [] }
 ];
+
+/* ── 실전 200건 코퍼스 ─────────────────────────────────────────────
+   미션은 "하루 200건"인데 학습자가 만지는 건 4건뿐이라, 4단계 리포트의
+   숫자가 근거 없이 등장했었다(정밀도 92%·재현율 87% 등이 HTML 상수였고
+   임계값을 어떻게 두고 와도 같은 값이 나왔다). 이제 200건을 실제로 돌린다.
+
+   학습자가 200개 문장을 읽을 일은 없다 — 분류기는 `sim >= 임계값` 한 줄이라
+   집계에 필요한 것은 (sim, want) 쌍 200개뿐이다. 그래서 문장은 이름 붙은
+   8건에만 달아 두고, 나머지 192건은 시드 고정 난수로 만든다. 시드가 고정이라
+   누가 언제 열어도 같은 리포트가 나온다(수업에서 학생마다 숫자가 달라지면 안 된다).
+
+   두 분포를 **일부러 겹치게** 잡은 것이 이 단계의 핵심이다:
+     정상 162건 ──█████▓▓▒░              평균 29
+     불만  38건       ░▒▓▓████████──      평균 72
+                       └ 겹침 40~70 ┘
+   겹침이 없으면 어떤 임계값이든 100%가 나와 배울 것이 없다. 겹침이 있으면
+   어떤 선을 그어도 누락 아니면 오분류가 남는다. 연습 4건(sim 88·62·41·23)은
+   이 겹침을 피해 양 끝에서 뽑은 쉬운 샘플이라 42~62% 어디를 골라도 만점이지만,
+   그 21가지 임계값의 실전 성적은 정밀도 64%~97%로 크게 갈린다 —
+   "연습 4건으로는 좋은 임계값과 그저 그런 임계값을 구분할 수 없다"가 이 코스의 결론이다.
+
+   파라미터(seed 5 · 불만 N(72,17) · 정상 N(29,12))는 임계값 52%에서
+   추출 36건·정밀도 92%·재현율 87%가 나오도록 맞춘 값이다. 바꾸면 리포트 숫자가
+   전부 따라 움직이므로, 손대려면 임계값을 훑어 보며 다시 맞춰야 한다. */
+
+/* 겹침 구간에 걸린 4건 — 리포트에서 "왜 100%가 안 나왔나"의 실물 증거로 쓴다.
+   앞 둘은 뜻은 배송 불만인데 표현이 우회적이라 점수가 낮고,
+   뒤 둘은 배송 얘기를 하지만 결론이 만족이라 점수만 높다. */
+const RV_EDGE = [
+  { text: '결제하고 나서 감감무소식이네요.', sim: 48, want: true },
+  { text: '언제 오는지 알 수가 없어요.', sim: 44, want: true },
+  { text: '배송이 하루 늦었는데 그래도 잘 받았어요.', sim: 57, want: false },
+  { text: '포장이 튼튼해서 상자가 멀쩡했어요.', sim: 55, want: false }
+];
+
+const RV_CORPUS = (function () {
+  /* mulberry32 — 짧고 시드가 확실히 먹는 PRNG. 암호용이 아니라 재현용이다. */
+  var a = 5;
+  var rnd = function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+  var normal = function (mu, sd) {          // Box-Muller
+    var u = 0, v = 0;
+    while (!u) u = rnd();
+    while (!v) v = rnd();
+    return mu + sd * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  };
+  var clamp = function (x, lo, hi) { return Math.max(lo, Math.min(hi, Math.round(x))); };
+
+  /* 이름 붙은 8건이 먼저 들어가고 난수는 쓰지 않는다 —
+     생성 순서(불만 34건 → 정상 158건)를 바꾸면 시드가 어긋나 숫자가 달라진다. */
+  var out = RV_REVIEWS.concat(RV_EDGE).map(function (r) {
+    return { text: r.text, sim: r.sim, want: r.want };
+  });
+  for (var i = 0; i < 34; i++) out.push({ sim: clamp(normal(72, 17), 25, 98), want: true });
+  for (var j = 0; j < 158; j++) out.push({ sim: clamp(normal(29, 12), 2, 78), want: false });
+  return out;
+})();
+
+/* 연습 4건이 만점을 내는 임계값 구간. 상수로 박지 않고 훑어서 구한다 —
+   RV_REVIEWS 의 sim 을 손대면 이 구간도 저절로 따라와야 한다. */
+function rvPracBand() {
+  var lo = null, hi = null;
+  for (var t = 0; t <= 100; t++) {
+    var r = rvClassify(t);
+    if (r.fp === 0 && r.fn === 0) { if (lo === null) lo = t; hi = t; }
+  }
+  return { lo: lo, hi: hi };
+}
+
+/* 학습자가 3단계에서 확정한 임계값. 흐름 탭으로 튜닝을 건너뛰고 4단계로 올 수
+   있으므로 슬라이더 초기값과 같은 값으로 시작한다. */
+var rvThres = 30;
+var rvTuned = false;
 
 /* ── Step 2: 의도된 실패 ──────────────────────────────────────────────
    여기서는 sim 값을 쓰지 않는다. app.js 의 cosine()(단어·글자 겹침 기반)으로
@@ -111,12 +185,22 @@ function rvMarkup(text, seen, cue) {
 /* seen 은 Step 2 에서만 넘긴다. Step 3 은 글자가 아니라 뜻(sim)으로 판정하므로
    거기서 노란 형광펜을 칠하면 거짓말이 된다 — 그리고 형광펜이 사라지는 것 자체가
    "이제 글자가 아니라 뜻을 본다"의 증거다. */
-function rvRowHtml(r, verdictLabel, ok, scoreLabel, seen) {
+function rvRowHtml(r, hit, scoreLabel, seen) {
+  var ok = (hit === r.want);
+  /* 맞은 행은 AI 가 내린 결정을 같은 동사로 적는다 — '처리'와 '판정'을 섞어 쓰면
+     같은 일인데 다른 종류의 결과처럼 읽힌다. 옳고 그름은 앞의 ✓/✗ 와 행 색이 말한다.
+     틀린 행만 '누락'·'오분류' 로 적어 오른쪽 성적 칩(누락된 불만 / 오분류된 정상)과 잇는다. */
+  var chipText = '';
+  if (hit && r.want) chipText = '배송 불만으로 분류';
+  else if (!hit && r.want) chipText = '배송 불만 누락';
+  else if (hit && !r.want) chipText = '정상 리뷰 오분류';
+  else chipText = '정상 리뷰로 분류';
+
   return '<div class="rv-test-row ' + (ok ? 'ok' : 'miss') + '">' +
     '<span class="rv-test-text">"' + rvMarkup(r.text, seen, r.cue) + '"</span>' +
     '<span class="rv-test-meta">' +
-      '<span class="rv-test-score">' + scoreLabel + ' · ' + verdictLabel + '</span>' +
-      '<span class="rv-chip rv-verdict">' + (ok ? '정답' : '오분류') + (ok ? SVG_OK : SVG_NG) + '</span>' +
+      '<span class="rv-test-score">' + scoreLabel + ' → </span>' +
+      '<span class="rv-chip rv-verdict" style="display:inline-flex; align-items:center; gap:4px;">' + (ok ? SVG_OK : SVG_NG) + chipText + '</span>' +
     '</span>' +
   '</div>';
 }
@@ -130,7 +214,7 @@ function renderRvBase() {
     var hit = score >= RV_BASE_THRES;
     var ok = hit === r.want;
     if (!ok) miss++;
-    return rvRowHtml(r, hit ? '배송 불만' : '정상 리뷰', ok, '겹침 ' + score + '%', rvSeen(r.text));
+    return rvRowHtml(r, hit, '겹침 ' + score + '%', rvSeen(r.text));
   }).join('');
 
   var v = $('rv-base-verdict');
@@ -144,7 +228,7 @@ function renderRvBase() {
       (miss ? '4건 중 ' + miss + '건 오분류' : '전부 맞혔습니다') + '</strong>' +
     '<span class="rv-alert-desc rv-bubble">' +
       (miss
-        ? '앗! 저는 <b>배송</b>이라는 글자만 찾을 줄 알아요.<br>' +
+        ? '앗! 저는 <b>배송 불만</b>이라는 글자만 찾을 줄 알아요.<br>' +
           '진짜 불만(택배)은 놓치고, 칭찬(빠른 배송)을 불만으로 잡아버렸네요.'
         : '기준 문장과 글자가 잘 겹쳤어요.') +
     '</span></div>';
@@ -173,9 +257,11 @@ function renderRvTry() {
         : '뜻이 아니라 글자 겹침만 센 결과입니다.') + '</p>';
 }
 
-function rvClassify(thres) {
+/* 목록을 인자로 받는다 — 연습 4건(RV_REVIEWS)과 실전 200건(RV_CORPUS)이
+   같은 판정 규칙을 쓴다는 것이 4단계의 논지이므로 함수도 하나여야 한다. */
+function rvClassify(thres, list) {
   let tp = 0, fp = 0, fn = 0;
-  const rows = RV_REVIEWS.map(r => {
+  const rows = (list || RV_REVIEWS).map(r => {
     const hit = r.sim >= thres;
     if (hit && r.want) tp++;
     else if (hit && !r.want) fp++;
@@ -192,11 +278,16 @@ function renderRvTuning() {
   if (!slider) return;
   const thres = +slider.value;
   const res = rvClassify(thres);
+  /* 4단계 리포트는 여기서 확정한 값을 그대로 200건에 돌린다. */
+  rvThres = thres;
+  rvTuned = true;
 
   const rowsEl = $('rv-result-rows');
   rowsEl.hidden = false;
   rowsEl.innerHTML = res.rows.map(r =>
-    rvRowHtml(r, r.hit ? '배송 불만' : '정상 리뷰', r.ok, '유사도 ' + r.sim + '%')
+    /* 2단계는 '겹침 %', 여기는 '뜻 %' — 같은 자리 같은 서식이라 라벨만 갈린다.
+       무엇을 재는지가 바뀌었다는 신호를 판정 바로 옆에서 준다. */
+    rvRowHtml(r, r.hit, '뜻 ' + r.sim + '%')
   ).join('');
 
   const mEl = $('rv-metrics');
@@ -208,8 +299,8 @@ function renderRvTuning() {
   mEl.innerHTML =
     chip('정밀도', res.precision === null ? '—' : res.precision + '%', 'var(--card-2)') +
     chip('재현율', res.recall + '%', 'var(--card-2)') +
-    chip('놓친 불만', res.fn + '건', res.fn ? 'var(--primary-soft)' : 'var(--green-soft)') +
-    chip('잘못 잡은 정상', res.fp + '건', res.fp ? 'var(--primary-soft)' : 'var(--green-soft)');
+    chip('누락된 불만', res.fn + '건', res.fn ? 'var(--primary-soft)' : 'var(--green-soft)') +
+    chip('오분류된 정상', res.fp + '건', res.fp ? 'var(--primary-soft)' : 'var(--green-soft)');
 
   const card = $('tuning-success-card');
   card.hidden = false;
@@ -233,6 +324,79 @@ function renderRvTuning() {
     title.textContent = '양쪽 모두 어긋납니다';
     desc.textContent = '놓친 불만 ' + res.fn + '건, 잘못 잡은 정상 ' + res.fp + '건입니다. 임계값을 다시 조정해 보세요.';
   }
+}
+
+/* ── Step 4: 실전 200건 리포트 ────────────────────────────────────
+   숫자를 하나도 적지 않는다 — 전부 학습자가 3단계에서 정한 임계값을
+   RV_CORPUS 에 돌린 결과다. 임계값을 바꿔 다시 오면 리포트도 바뀐다. */
+function renderRvReport() {
+  var total = RV_CORPUS.length;
+  var real = RV_CORPUS.filter(function (r) { return r.want; }).length;
+  var res = rvClassify(rvThres, RV_CORPUS);
+  var ext = res.tp + res.fp;
+
+  var pctEl = $('rv-donut-pct');
+  if (pctEl) pctEl.textContent = Math.round(ext / total * 100) + '%';
+  // 원 둘레(2πr, r=60)는 약 377 이지만 기존 마크업이 440 기준으로 그려져 있어 그대로 쓴다.
+  setTimeout(function () {
+    var fg = $('rv-donut-fg');
+    if (fg) fg.style.strokeDashoffset = 440 - (440 * ext / total);
+  }, 100);
+
+  var prac = rvClassify(rvThres);       // 같은 임계값을 연습 4건에 돌리면?
+  var band = rvPracBand();
+  var bridge = $('rv-report-bridge');
+  if (bridge) {
+    if (!rvTuned) {
+      bridge.innerHTML = '튜닝을 건너뛰어 임계값은 기본값 <b>' + rvThres + '%</b>입니다. ' +
+        '3단계에서 조절하면 이 리포트도 바뀝니다.';
+    } else if (prac.fp === 0 && prac.fn === 0) {
+      /* 이 코스의 결론. 연습에서 만점인 임계값이 여러 개인데 실전 성적은 그 안에서
+         갈린다는 것이 4건짜리 연습 데이터의 한계를 보여주는 유일한 증거다. */
+      bridge.innerHTML = '연습 4건은 <b>' + band.lo + '~' + band.hi + '%</b> 어디를 골라도 만점입니다. ' +
+        '그중 <b>' + rvThres + '%</b>로 실제 ' + total + '건을 돌린 결과 — ' +
+        '<b>연습 만점이 실전 성적을 보장하지 않습니다.</b>';
+    } else {
+      bridge.innerHTML = '임계값 <b>' + rvThres + '%</b>는 연습 4건에서도 ' + (prac.fp + prac.fn) + '건이 어긋났습니다. ' +
+        '실제 ' + total + '건 결과입니다.';
+    }
+  }
+
+  var nums = $('rv-report-nums');
+  if (nums) {
+    nums.innerHTML =
+      (ext === 0
+        ? '<b>정밀도 —</b> — 한 건도 뽑지 않아 잴 수 없습니다<br>'
+        : '<b>정밀도 ' + res.precision + '%</b> — 뽑은 ' + ext + '건 중 ' + res.tp + '건이 진짜 불만<br>') +
+      '<b>재현율 ' + res.recall + '%</b> — 실제 불만 ' + real + '건 중 ' + res.tp + '건을 잡음';
+  }
+
+  /* 성적이 왜 그 숫자인지 문장으로 보여 준다. RV_EDGE 중 이 임계값에서 실제로
+     틀린 것만 고르므로, 화면의 예시와 위의 집계가 어긋날 수 없다. */
+  var edge = $('rv-report-edge');
+  if (edge) {
+    var missed = RV_EDGE.filter(function (r) { return r.want && r.sim < rvThres; });
+    var wrong = RV_EDGE.filter(function (r) { return !r.want && r.sim >= rvThres; });
+    var quote = function (r, why) {
+      return '<div style="margin-top:5px;">"' + esc(r.text) + '" ' +
+        '<span style="color:var(--ink-3);">뜻 ' + r.sim + '% · ' + why + '</span></div>';
+    };
+    var html = '';
+    if (missed.length) {
+      html += '<div style="margin-top:10px;"><b>놓친 불만 ' + res.fn + '건</b> 중</div>' +
+        missed.slice(0, 1).map(function (r) { return quote(r, '임계값 아래'); }).join('');
+    }
+    if (wrong.length) {
+      html += '<div style="margin-top:10px;"><b>잘못 잡은 정상 ' + res.fp + '건</b> 중</div>' +
+        wrong.slice(0, 1).map(function (r) { return quote(r, '임계값 위'); }).join('');
+    }
+    edge.hidden = !html;
+    /* 제목을 마크업에 두면 예시가 없는 임계값에서 제목만 덩그러니 남는다. */
+    edge.innerHTML = html
+      ? '<b style="color:var(--blue-ink);">왜 100%가 아닐까</b>' + html
+      : '';
+  }
+
 }
 
 const slider = $('threshold-slider');
