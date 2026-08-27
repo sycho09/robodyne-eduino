@@ -55,6 +55,13 @@
 /* 차트 래퍼 */
 .vl-chart-wrap { background:var(--card-2); border:1px solid var(--line); border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; padding:16px; min-height:360px; position:relative; }
 .vl-chart-wrap canvas { background:#fff; border-radius:8px; box-shadow:var(--shadow-sm); width:100%; max-width:600px; height:auto; aspect-ratio:600/430; }
+/* 축 이름 자리 — 캔버스 여백(PAD 28px)에는 눈금 숫자까지만 들어간다.
+   세로 이름은 writing-mode 로 세우고, 캔버스는 2열 1행에 그대로 둔다. */
+.vl-plot { display:grid; grid-template-columns:auto minmax(0,1fr); grid-template-rows:auto auto; align-items:center; column-gap:4px; row-gap:6px; width:100%; max-width:632px; }
+.vl-plot canvas { grid-column:2; grid-row:1; }
+.vl-axis { font-size:12px; font-weight:600; color:var(--ink-2); white-space:nowrap; }
+.vl-axis-y { grid-column:1; grid-row:1; writing-mode:vertical-rl; text-orientation:sideways; transform:rotate(180deg); justify-self:center; }
+.vl-axis-x { grid-column:2; grid-row:2; text-align:center; }
 
 /* 학습 진행 오버레이 — 차트 위를 덮는 유일한 레이어다(경고는 차트 아래 배너로 내렸다).
    .dash-badge 처럼 display 를 author 규칙으로 정하는 요소는 [hidden] 이 UA 규칙이라
@@ -78,6 +85,16 @@
 /* 수치·라벨을 한 열에 세로로 쌓아 가운데 맞춘다(절대배치로 끌어내지 않는다). */
 .vl-res-left { flex:0 0 200px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; border-right:1px solid var(--line); padding-right:24px; }
 .vl-res-right { flex:1; font-size:14px; color:var(--ink-2); line-height:1.6; }
+.vl-res-title { margin:0 0 8px; font-size:15px; font-weight:700; color:var(--ink); line-height:1.45; }
+.vl-res-lead { margin:0 0 10px; }
+.vl-res-next { margin:12px 0 0; padding-top:10px; border-top:1px solid var(--line); font-size:13px; color:var(--ink-3); }
+/* 개념 정리 퀴즈 해설 — 정답 문단 + 오답 노트.
+   .qz-feedback 은 shared/components.css 소유(5개 모듈 공용)라 안쪽에서만 얹는다. */
+#vl-quiz-feedback .qz-lead { display:block; }
+#vl-quiz-feedback .qz-why { display:block; margin-top:10px; }
+#vl-quiz-feedback .qz-why > span { display:list-item; margin-left:18px; margin-top:6px; }
+.vl-res-list { margin:0; padding-left:18px; display:grid; gap:5px; }
+.vl-res-list li { font-size:13px; line-height:1.55; }
 .vl-res-rate { font-size:40px; font-weight:800; color:var(--primary-ink); line-height:1.2; font-family:var(--mono); margin-bottom:8px; }
 .vl-res-cap { font-size:14px; color:var(--ink-2); font-weight:600; margin-bottom:4px; }
 .vl-res-sub { font-size:12px; color:var(--ink-3); }
