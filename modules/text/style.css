@@ -133,7 +133,7 @@
 
 /* 직접 입력 체험 */
 .rv-try-input { width:100%; box-sizing:border-box; font-family:var(--sans); font-size:14px; line-height:1.6; color:var(--ink); padding:12px 14px; border:1px solid var(--line-2); border-radius:10px; background:#fff; resize:vertical; margin:12px 0; }
-.rv-try-input:focus { outline:none; border-color:var(--primary-line); box-shadow:0 0 0 3px var(--primary-soft); }
+.rv-try-input:focus { outline:none; border-color:var(--ink-4); box-shadow:none; }
 .rv-try-out { margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
 .rv-try-verdict { display:flex; align-items:baseline; gap:12px; }
 .rv-try-score { font-family:var(--mono); font-size:30px; font-weight:800; }
