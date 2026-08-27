@@ -152,7 +152,10 @@ function renderRvTuning() {
 
   const mEl = $('rv-metrics');
   mEl.hidden = false;
-  const chip = (k, v, tone) => '<span style="font-family:var(--mono); font-size:12px; font-weight:700; padding:6px 12px; border-radius:999px; background:' + tone + ';">' + k + ' ' + v + '</span>';
+  // 재분류 전 자리표시 칩과 같은 부품(.rv-chip)을 쓴다. 색조만 결과에 따라 얹는다.
+  const hint = $('rv-metrics-hint');
+  if (hint) hint.hidden = true;
+  const chip = (k, v, tone) => '<span class="rv-chip" style="background:' + tone + ';">' + k + ' ' + v + '</span>';
   mEl.innerHTML =
     chip('정밀도', res.precision === null ? '—' : res.precision + '%', 'var(--card-2)') +
     chip('재현율', res.recall + '%', 'var(--card-2)') +
