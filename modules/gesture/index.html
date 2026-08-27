@@ -55,7 +55,7 @@
         </button>
         <button class="step" data-step="demo">
           <div class="n">3</div>
-          <div class="t"><b>내 제스처로 도구 만들기</b><span>심화 · 학습한 동작을 컴퓨터 기능에 연결</span></div>
+          <div class="t"><b>심화 · 응용</b><span>학습한 동작을 컴퓨터 기능에 연결</span></div>
         </button>
       </div>
 
@@ -205,14 +205,20 @@
         <div class="flow" id="flow-demo">
           <button class="fstep active" data-dw="1"><span class="fn">1</span><span class="ft"><b>기능 선택</b><span>매핑할 도구 고르기</span></span></button>
           <span class="farrow">→</span>
-          <button class="fstep" data-dw="2"><span class="fn">2</span><span class="ft"><b>임계값 조정</b><span>오작동 vs 미반응</span></span></button>
+          <button class="fstep" data-dw="2"><span class="fn">2</span><span class="ft"><b>임계값 튜닝·검증</b><span>슬라이더와 결과를 한 화면에서</span></span></button>
           <span class="farrow">→</span>
-          <button class="fstep" data-dw="3"><span class="fn">3</span><span class="ft"><b>혼동행렬 확인</b><span>헷갈리는 원인 분석</span></span></button>
-          <span class="farrow">→</span>
-          <button class="fstep" data-dw="4"><span class="fn">4</span><span class="ft"><b>최종 매핑</b><span>커스텀 데모 실행</span></span></button>
+          <button class="fstep" data-dw="3"><span class="fn">3</span><span class="ft"><b>최종 매핑</b><span>커스텀 데모 실행</span></span></button>
         </div>
 
-        <div class="card" style="padding:40px 24px; min-height:460px;">
+        <div class="card" id="dm-main-card" style="padding:40px 24px; min-height:460px;">
+          
+          <!-- 학습 전에는 들어올 수 없다 -->
+          <div class="ms-gate" id="dm-gate">
+            <span class="ms-gate-ic" data-ic="alert"></span>
+            <h2>먼저 제스처 분류기를 학습시켜 주세요</h2>
+            <p>이 코스는 <b>여러분이 직접 학습시킨 제스처 분류기</b>를 제어 인터페이스로 활용하는 단계입니다.<br>중급 · 제작 탭에서 학습을 마치면 자동으로 열립니다.</p>
+            <button class="btn primary lg" id="dm-to-train">중급 · 제작으로 가기</button>
+          </div>
           
           <!-- Step 1: 기능 선택 -->
           <div class="dstep" data-dw="1">
@@ -239,91 +245,94 @@
           <!-- Step 2: 임계값 조정 -->
           <div class="dstep" data-dw="2" hidden>
             <div class="dm-thres-layout">
-              <div class="dm-cam-box">
-                <div class="dm-cam-hand" id="dm-cam-hand" data-ic="fist"></div>
-                <div class="dm-cam-bar-wrap">
-                  <div class="dm-cam-bar" id="dm-cam-bar"></div>
+              <!-- 좌측 패널 (실시간 라이브 테스트) -->
+              <div class="dm-thres-left">
+                <div class="dm-cam-box">
+                  <div class="dm-cam-hand" id="dm-cam-hand" data-ic="fist"></div>
+                  <div class="dm-cam-bar-wrap">
+                    <div class="dm-cam-bar" id="dm-cam-bar"></div>
+                  </div>
+                  <div class="dm-cam-text" id="dm-cam-text">AI 확신도: 45% (애매함)</div>
                 </div>
-                <div class="dm-cam-text" id="dm-cam-text">AI 확신도: 45% (애매함)</div>
               </div>
-              <div class="dm-ctrl-box">
+              
+              <!-- 우측 패널 (통계 튜닝 & 혼동행렬) -->
+              <div class="dm-thres-right dm-ctrl-box" style="padding:0;">
                 <h3>신뢰도 임계값 조절</h3>
                 <p>몇 % 이상 확신할 때만 기능을 실행할까요?<br>낮추면 오작동이 늘고, 높이면 반응이 둔해집니다.</p>
                 <div class="dm-slider-card">
                   <input type="range" class="ui-slider" id="dm-slider" min="0" max="100" value="86">
                   <div class="dm-slider-val" id="dm-slider-val">86%</div>
-                  <div class="dm-alert-warn" id="dm-alert-warn">
-                    <span><span class="ic-inline" data-ic="alert"></span></span> 동작을 완벽하게 해야만 넘어갑니다 (미반응)
-                  </div>
                 </div>
-                <button class="btn primary lg block" style="width:100%; margin-top:24px;" onclick="goToDmStep(3)">테스트 완료, 상세 분석하기</button>
+
+                <div class="dm-cm-wrap">
+                  <p style="font-size:14px; margin:20px 0 10px; line-height:1.6;">
+                    <b>📊 테스트 샘플 적용 결과</b>
+                  </p>
+                  <table class="dm-cm-table">
+                    <thead>
+                      <tr>
+                        <th>실제 동작 \ AI 예측</th>
+                        <th><span class="ic-inline" data-ic="fist"></span> 주먹</th>
+                        <th><span class="ic-inline" data-ic="palm"></span> 손바닥</th>
+                        <th>미반응</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th><span class="ic-inline" data-ic="fist"></span> 주먹</th>
+                        <td class="succ" id="dm-cm-00">—</td>
+                        <td class="err" id="dm-cm-01">—</td>
+                        <td id="dm-cm-0n">—</td>
+                      </tr>
+                      <tr>
+                        <th><span class="ic-inline" data-ic="palm"></span> 손바닥</th>
+                        <td class="err" id="dm-cm-10">—</td>
+                        <td class="succ" id="dm-cm-11">—</td>
+                        <td id="dm-cm-1n">—</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <button class="btn primary lg block" style="width:100%; margin-top:8px;" onclick="goToDmStep(3)">최종 매핑 완료하기</button>
               </div>
             </div>
           </div>
 
-          <!-- Step 3: 혼동행렬 확인 -->
-          <div class="dstep" data-dw="3" hidden>
-            <h2>혼동행렬(Confusion Matrix) 분석</h2>
-            <div class="dm-cm-wrap">
-              <p style="font-size:13.5px; color:var(--ink-2); margin:0 0 14px; line-height:1.6;">
-                앞 단계에서 정한 임계값 <b id="dm-cm-thres">86%</b>로 각 동작을 100번씩 시도한 결과입니다.
-                임계값을 바꾸면 아래 숫자도 함께 달라집니다.
-              </p>
-              <table class="dm-cm-table">
-                <thead>
-                  <tr>
-                    <th>실제 동작 \ AI 예측</th>
-                    <th><span class="ic-inline" data-ic="victory"></span> 가위</th>
-                    <th><span class="ic-inline" data-ic="palm"></span> 보</th>
-                    <th>미반응</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th><span class="ic-inline" data-ic="victory"></span> 가위</th>
-                    <td class="succ" id="dm-cm-00">—</td>
-                    <td class="err" id="dm-cm-01">—</td>
-                    <td id="dm-cm-0n">—</td>
-                  </tr>
-                  <tr>
-                    <th><span class="ic-inline" data-ic="palm"></span> 보</th>
-                    <td class="err" id="dm-cm-10">—</td>
-                    <td class="succ" id="dm-cm-11">—</td>
-                    <td id="dm-cm-1n">—</td>
-                  </tr>
-                </tbody>
-              </table>
-              <p id="dm-cm-note" style="font-size:13px; color:var(--ink-2); margin:14px 0 0; line-height:1.6;"></p>
+        </div>
 
-              <!-- 정오답 판정은 advanced.js 가 붙인다(concept 개념 정리 퀴즈와 같은 규칙). -->
-              <div class="qz-card" id="dm-quiz">
-                <h3><span class="ic-inline" data-ic="help"></span> 분석 퀴즈</h3>
-                <p>AI가 유독 <b>가위와 보</b>를 헷갈리는 이유로 가장 타당한 것은?</p>
-                <button class="qz-btn" data-i="0">A. 가위와 보는 펴진 손가락 수가 같아 규칙으로 구분할 수 없어서</button>
-                <button class="qz-btn" data-i="1">B. 컴퓨터 사양이 낮아 좌표 계산이 밀려서</button>
-                <button class="qz-btn" data-i="2">C. 각도에 따라 접은 손가락이 편 손가락에 가려져 좌표가 잘못 잡혀서</button>
-                <button class="qz-btn" data-i="3">D. 보는 손가락이 많아 학습 데이터가 그만큼 더 필요해서</button>
-                <div class="qz-feedback" id="dm-quiz-feedback" hidden></div>
+        <!-- Step 3: 최종 매핑 -->
+        <div class="dstep layout" data-dw="3" hidden>
+          <div class="left">
+            <div class="card camera-card">
+              <h2>데모 카메라 <span class="cam-state" id="demo-cam-state">대기</span></h2>
+              <div class="stage">
+                <video id="v-demo" playsinline muted></video>
+                <canvas id="c-demo"></canvas>
+                <div class="ph" id="ph-demo"><span class="ic-inline" data-ic="camera"></span> [데모 카메라 켜기]를 누르고<br>제스처를 취해보세요</div>
               </div>
-
-              <div style="text-align:center; margin-top:24px;">
-                <button class="btn primary lg" id="btn-dm-final" style="width:240px;" hidden onclick="goToDmStep(4)">최종 매핑 완료하기</button>
+              <div class="cam-ctrl" style="display:flex; gap:8px;">
+                <button class="btn primary lg block" id="btn-demo-cam" style="flex:1;">데모 카메라 켜기</button>
+                <button class="btn lg block" id="btn-demo-cam-off" style="flex:1; display:none; border:1px solid var(--line); background:#fff; color:var(--ink-2);">카메라 끄기</button>
               </div>
             </div>
           </div>
-
-          <!-- Step 4: 최종 매핑 -->
-          <div class="dstep" data-dw="4" hidden>
-            <div class="dm-success-wrap centered">
-              <div class="dm-success-icon">✓</div>
-              <h2 style="font-size:24px; margin:0;">매핑 완료! 데모가 준비되었습니다.</h2>
-              <div class="dm-success-box">
-                주먹(<span class="ic-inline" data-ic="fist"></span>)을 쥐면 <b id="dm-res-func">[다음 슬라이드]</b>가 실행되도록 연결되었습니다.<br>
-                최적 임계값 <b id="dm-res-thres">86%</b>가 적용되어 부드럽게 작동합니다.
+          <div class="right">
+            <div class="card" style="display:flex; flex-direction:column; min-height:460px;">
+              <h2>기능 테스트</h2>
+              <div class="dm-success-box" style="margin:0 0 12px 0; flex:none;">
+                <b id="dm-res-target-gesture">[제스처]</b> 동작을 취하면 <b id="dm-res-func">[선택한 기능]</b>이(가) 실행됩니다.<br>
+                최적 임계값 <b id="dm-res-thres">86%</b>가 적용되어 작동합니다.
+              </div>
+              <div id="dm-feedback-view" class="dm-feedback-view" style="margin-top:0;">
+                <div id="dm-feedback-idle" class="dm-feedback-idle">제스처 대기 중...</div>
+                <div id="dm-feedback-active" class="dm-feedback-active" hidden>
+                  <!-- JavaScript dynamically injects animation UI here -->
+                </div>
               </div>
             </div>
           </div>
-
         </div>
       </section>
 

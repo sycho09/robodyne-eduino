@@ -328,6 +328,7 @@ document.querySelectorAll('.step').forEach(btn => {
     $('panel-play').style.display = s === 'play' ? 'grid' : 'none';
     $('panel-train').style.display = s === 'train' ? 'block' : 'none';
     const pd = $('panel-demo'); if (pd) pd.hidden = s !== 'demo';
+    if (s === 'demo' && typeof window.gestureDemoEnter === 'function') window.gestureDemoEnter();
     if (s === 'play') { recording = null; train.stop(); inferring = false; $('rec-dot').classList.remove('on'); $('train-cam').textContent = '카메라 켜기'; $('cam-state').textContent = '대기'; $('cam-state').classList.remove('on'); gestureSetCapEnabled(false); }
     else { play.stop(); $('play-cam').textContent = '카메라 켜기'; }
     setStatus('대기 중');

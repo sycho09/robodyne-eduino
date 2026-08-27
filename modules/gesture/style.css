@@ -189,6 +189,17 @@
   @media (max-width:880px){ .layout{ grid-template-columns:1fr; } .metrics.big{ grid-template-columns:repeat(3,1fr); } }
 /* ---- 고급-응용 (제스처 제어 데모) 커스텀 CSS ---- */
 
+#flow-demo .fstep:disabled { opacity:.4; cursor:not-allowed; }
+
+/* 학습 전 잠금 화면 (.ms-gate) */
+.ms-gate { max-width:520px; margin:0 auto; text-align:center; padding:30px 0; }
+.ms-gate[hidden] { display:none; }
+.ms-gate-ic { display:inline-flex; width:64px; height:64px; align-items:center; justify-content:center;
+  font-size:30px; color:var(--amber); background:var(--amber-soft); border-radius:50%; margin-bottom:18px; }
+.ms-gate h2 { justify-content:center; margin-bottom:10px; }
+.ms-gate h2::before { display:none; }
+.ms-gate p { font-size:13.5px; color:var(--ink-2); line-height:1.7; margin:0 0 24px; }
+
 /* Step 1: 기능 선택 */
 .dm-funcs { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin:0 auto; max-width:680px; }
 .dm-func-card { background:#fff; border:2px solid var(--line); border-radius:12px; padding:32px 16px; text-align:center; cursor:pointer; transition:0.2s; display:flex; flex-direction:column; align-items:center; }
@@ -200,7 +211,8 @@
 .dm-func-card.active .dm-func-name { color:var(--ink); }
 
 /* Step 2: 임계값 조정 */
-.dm-thres-layout { display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:center; max-width:800px; margin:0 auto; }
+/* 우측이 슬라이더 + 혼동행렬로 길어져 가운데 정렬은 어긋난다. 표가 들어갈 폭도 필요하다. */
+.dm-thres-layout { display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start; max-width:1040px; margin:0 auto; }
 .dm-cam-box { background:var(--ink); border-radius:12px; padding:40px 20px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; min-height:280px; }
 .dm-cam-hand { font-size:80px; filter:drop-shadow(0 4px 12px rgba(0,0,0,0.5)); transform:scale(1); transition:transform 0.1s; }
 .dm-cam-hand.pulse { transform:scale(1.1); }
@@ -216,10 +228,12 @@
 .dm-slider-val { font-size:28px; font-weight:800; color:var(--primary-ink); font-family:var(--mono); margin-bottom:16px; }
 .dm-alert-warn { background:#fef3c7; border:1px solid #fde68a; border-radius:8px; padding:12px; color:#92400e; font-size:13px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; }
 
-/* Step 3: 혼동행렬 표 */
-.dm-cm-wrap { max-width:600px; margin:0 auto; }
-.dm-cm-table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; text-align:center; margin-bottom:24px; font-size:14px; }
-.dm-cm-table th, .dm-cm-table td { padding:16px; border:1px solid var(--line); }
+/* 혼동행렬 표 — 2단계(임계값 튜닝·검증) 우측 컬럼에 들어간다. */
+/* 폭은 이제 감싸는 컬럼이 정한다(전용 화면이 아니라 우측 절반에 들어간다). */
+.dm-cm-wrap { margin:0; }
+.dm-cm-table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; text-align:center; margin-bottom:16px; font-size:13px; }
+/* 4열이 절반 컬럼에 들어가야 해서 셀을 조인다(전용 화면일 때는 16px 였다). */
+.dm-cm-table th, .dm-cm-table td { padding:10px 8px; border:1px solid var(--line); }
 .dm-cm-table th { background:var(--card-2); font-weight:700; color:var(--ink-2); }
 .dm-cm-table .succ { color:var(--green); font-weight:700; background:var(--green-soft); }
 .dm-cm-table .err { color:var(--primary-ink); font-weight:700; background:var(--primary-soft); }
@@ -231,6 +245,28 @@
 .dm-success-icon { display:inline-flex; width:80px; height:80px; background:var(--green-soft); color:var(--green); border-radius:50%; align-items:center; justify-content:center; font-size:40px; margin-bottom:24px; border:4px solid #fff; box-shadow:var(--shadow-sm); }
 .dm-success-box { background:var(--card-2); border:1px solid var(--line); border-radius:12px; padding:24px; margin:24px 0 32px; font-size:14px; color:var(--ink-2); line-height:1.6; }
 .dm-success-box b { color:var(--ink); }
+
+.dm-feedback-view { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--bg-soft); border-radius:12px; min-height:260px; position:relative; overflow:hidden; border:1px solid var(--line); }
+.dm-feedback-idle { color:var(--ink-3); font-size:16px; font-weight:600; }
+.dm-feedback-active { display:flex; flex-direction:column; align-items:center; gap:16px; }
+
+/* 1. PPT 애니메이션 */
+.demo-ppt-wrap { width:200px; height:120px; background:#fff; border:2px solid var(--line); border-radius:8px; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-sm); overflow:hidden; position:relative; }
+.demo-ppt-slide { font-weight:800; color:var(--primary); font-size:18px; animation: pptSlide 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+@keyframes pptSlide { 0% { transform: translateX(150px); opacity:0; } 100% { transform: translateX(0); opacity:1; } }
+
+/* 2. 볼륨 애니메이션 */
+.demo-vol-wrap { display:flex; align-items:center; gap:12px; background:#fff; padding:16px 24px; border-radius:32px; box-shadow:var(--shadow-sm); border:1px solid var(--line); }
+.demo-vol-bar-bg { width:120px; height:8px; background:var(--line-2); border-radius:4px; overflow:hidden; }
+.demo-vol-bar-fg { height:100%; background:var(--primary); width:0%; animation: volFill 0.5s ease-out forwards; }
+@keyframes volFill { 0% { width:30%; } 100% { width:80%; } }
+
+/* 3. 줌 애니메이션 */
+.demo-zoom-target { display:flex; align-items:center; justify-content:center; width:120px; height:120px; background:#fff; border-radius:12px; border:1px solid var(--line); box-shadow:var(--shadow-sm); animation: zoomPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+@keyframes zoomPop { 0% { transform: scale(1); } 100% { transform: scale(1.6); box-shadow:var(--shadow); border-color:var(--primary-line); } }
+
+.dm-feedback-text { font-size:20px; color:var(--ink); font-weight:800; animation: popIn 0.3s forwards; }
+@keyframes popIn { 0% { transform:scale(0.8); opacity:0; } 100% { transform:scale(1); opacity:1; } }
 
 /* 이모지 → SVG 전환에 따른 색 지정 (크기는 .eic 가 font-size 를 승계한다) */
 .rps-emoji { color:var(--primary); }

@@ -1,9 +1,37 @@
-/* gesture 코스 3번째 탭(고급·응용 — 제스처 제어 데모) 로직.
+  /* gesture 코스 3번째 탭(고급·응용 — 제스처 제어 데모) 로직.
    app.js 뒤에 로드되며, app.js 가 정의한 전역($ · setStatus 등)을 그대로 쓴다. */
 /* ════ 고급-응용: 제스처 제어 데모 ════ */
 let dmStep = 1;
 let dmFunc = 'vol';
 const dmFuncNames = { ppt: '[다음 슬라이드]', vol: '[시스템 볼륨 조절]', zoom: '[화면 확대/축소]' };
+
+function demoEnter() {
+  const ready = !!(typeof head !== 'undefined' && head);
+  
+  const gate = $('dm-gate');
+  if (gate) gate.hidden = ready;
+  
+  document.querySelectorAll('#flow-demo .fstep').forEach(el => {
+    el.disabled = !ready;
+  });
+
+  if (!ready) {
+    document.querySelectorAll('#panel-demo .dstep').forEach(el => {
+      el.hidden = true;
+    });
+    return;
+  }
+  
+  goToDmStep(dmStep);
+}
+if (typeof window !== 'undefined') window.gestureDemoEnter = demoEnter;
+
+const btnDmToTrain = $('dm-to-train');
+if (btnDmToTrain) {
+  btnDmToTrain.onclick = () => {
+    document.querySelector('.step[data-step="train"]').click();
+  };
+}
 
 function selectDemoFunc(el, func) {
   document.querySelectorAll('.dm-func-card').forEach(c => c.classList.remove('active'));
@@ -26,7 +54,17 @@ function goToDmStep(w) {
     el.hidden = (+el.dataset.dw !== w);
   });
   
+  /* 최종 매핑 단계는 이 카드 바깥에 있으므로(index.html 에서 카드가 먼저 닫힌다)
+     그 단계에서는 빈 카드가 남지 않게 통째로 숨긴다. 단계 병합으로 4 → 3 이 되었다. */
+  const mainCard = $('dm-main-card');
+  if (mainCard) mainCard.hidden = (w === 3);
+  
   if (dmAnimTimer) { clearInterval(dmAnimTimer); dmAnimTimer = null; }
+  
+  // 최종 매핑(3단계)을 떠나면 데모 카메라를 끈다
+  if (w !== 3 && typeof stopDemoCam !== 'undefined') {
+    stopDemoCam();
+  }
   
   if (w === 2) {
     const hand = $('dm-cam-hand');
@@ -36,9 +74,9 @@ function goToDmStep(w) {
     if (!m) {
       if (bar) { bar.style.width = '0%'; bar.style.background = 'var(--amber)'; }
       if (hand) hand.classList.remove('pulse');
-      if (txt) { txt.style.color = 'var(--amber)'; txt.textContent = '②단계에서 학습을 먼저 마쳐 주세요'; }
+      if (txt) { txt.style.color = 'var(--amber)'; txt.textContent = '[2. 중급 · 제작] 코스에서 학습을 먼저 마쳐 주세요'; }
     } else {
-      /* 지어낸 sin 파형 대신, ②단계에서 모은 샘플의 실제 확신도를 차례로 재생한다.
+      /* 지어낸 sin 파형 대신, [2. 중급 · 제작] 코스에서 모은 샘플의 실제 확신도를 차례로 재생한다.
          자기 데이터가 애매하면 막대도 실제로 낮게 흔들린다. */
       const conf = m.rows.map(r => Math.max.apply(null, r.p) * 100);
       let i = 0;
@@ -59,25 +97,37 @@ function goToDmStep(w) {
     }
   }
 
-  if (w === 3) { dmMeasure(true); paintConfusion(); }
+  /* 표를 슬라이더와 같은 화면에 두었으므로 진입 시 한 번 그려 둔다.
+     dmMeasure(true) 는 위 w === 2 블록이 이미 호출했다. */
+  if (w === 2) paintConfusion();
 
-  if (w === 4) {
+  if (w === 3) {
     window.CourseDashboard && CourseDashboard.markDone('demo');
     const resFunc = $('dm-res-func');
     if (resFunc) resFunc.textContent = dmFuncNames[dmFunc];
     const resThres = $('dm-res-thres');
     if (resThres) resThres.textContent = $('dm-slider').value + '%';
+    
+    // Set target gesture name (class 0)
+    const tgtGest = $('dm-res-target-gesture');
+    if (tgtGest) {
+      if (typeof classes !== 'undefined' && classes.length > 0) {
+        tgtGest.textContent = classes[0].name;
+      } else {
+        tgtGest.textContent = '등록된 제스처';
+      }
+    }
   }
 }
 
-/* ②단계에서 학생이 직접 모은 샘플을, 그 데이터로 학습한 head 에 되돌려 넣어
+/* [2. 중급 · 제작] 코스에서 학생이 직접 모은 샘플을, 그 데이터로 학습한 head 에 되돌려 넣어
    실제 확신도를 잰다.
 
    예전에는 임계값에서 숫자를 만들어 내는 공식을 썼다(지어낸 값). 학습 결과와
    아무 관계가 없어서, 데이터를 아무리 더 모아도 혼동행렬이 늘 똑같았다.
    이제는 자기 데이터가 나쁘면 숫자도 나쁘게 나온다.
 
-   한계: 학습에 쓴 데이터를 그대로 되재는 self-prediction 이다(②단계 혼동행렬과
+   한계: 학습에 쓴 데이터를 그대로 되재는 self-prediction 이다([2. 중급 · 제작] 코스의 혼동행렬과
    같은 방식). 따로 떼어 둔 검증 세트가 없으므로 실제 현장 성능보다 후하게 나온다. */
 let dmRows = null;   // { names, rows:[{ truth, p }] } — 임계값과 무관하므로 단계 진입 때 한 번만 잰다
 function dmMeasure(force) {
@@ -148,15 +198,14 @@ function paintConfusion() {
 
   if (!c) {
     cells.forEach(id => set(id, '—'));
-    if (lead) lead.innerHTML = '임계값 <b id="dm-cm-thres">' + thres + '%</b> — 아직 잴 것이 없습니다.';
-    if (note) note.innerHTML = '이 표는 <b>②단계에서 직접 모은 데이터</b>로 채워집니다. 제스처 2가지를 각각 <b>8개 이상</b> 모아 학습을 마친 뒤 다시 오세요.';
+    if (lead) lead.innerHTML = '<b>📊 테스트 샘플 <span id="dm-cm-total">0</span>개 적용 결과</b><br><span style="color:var(--ink-3); font-size:12.5px;">아직 잴 것이 없습니다.</span>';
+    if (note) note.innerHTML = '이 표는 <b>[2. 중급 · 제작] 코스에서 직접 모은 데이터</b>로 채워집니다. 제스처 2가지를 각각 <b>8개 이상</b> 모아 학습을 마친 뒤 다시 오세요.';
     return;
   }
 
   const a = c.per[0], b = c.per[1];
   if (lead) {
-    lead.innerHTML = '임계값 <b id="dm-cm-thres">' + thres + '%</b> 로, ②단계에서 모은 샘플 <b>' + c.total +
-      '개</b>를 학습한 모델에 되돌려 넣어 실제로 센 결과입니다. 임계값을 바꾸면 아래 숫자도 함께 달라집니다.';
+    lead.innerHTML = '<b>📊 테스트 샘플 <span id="dm-cm-total">' + c.total + '</span>개 적용 결과</b><br><span style="color:var(--ink-3); font-size:12.5px;">슬라이더를 움직이면 결과가 실시간으로 바뀝니다.</span>';
   }
   set('dm-cm-00', a.right + ' (성공)');
   set('dm-cm-01', a.wrong + ' (오인)');
@@ -199,58 +248,137 @@ function paintThresWarn() {
   const valEl = $('dm-slider-val');
   if (valEl) valEl.textContent = v + '%';
   dSlider.style.setProperty('--p', v + '%');
-  const warn = $('dm-alert-warn');
-  if (!warn) return;
-  const c = confusionAt(v);
-  if (!c) {
-    warn.innerHTML = EduinoIcons.svg('alert') + ' ②단계에서 학습을 마치면 이 임계값의 실제 결과가 표시됩니다';
-    warn.style.color = '#92400e'; warn.style.border = '1px solid #fde68a'; warn.style.background = '#fef3c7';
-  } else if (c.verdict === 'miss') {
-    warn.innerHTML = EduinoIcons.svg('alert') + ' 동작을 완벽하게 해야만 넘어갑니다 — ' + c.total + '개 중 ' + c.miss + '개 미반응';
-    warn.style.color = '#92400e'; warn.style.border = '1px solid #fde68a'; warn.style.background = '#fef3c7';
-  } else if (c.verdict === 'wrong') {
-    warn.innerHTML = EduinoIcons.svg('alert') + ' 엉뚱한 동작에도 반응합니다 — ' + c.total + '개 중 ' + c.wrong + '개 오작동';
-    warn.style.color = '#991b1b'; warn.style.border = '1px solid #fecaca'; warn.style.background = '#fee2e2';
-  } else {
-    warn.innerHTML = EduinoIcons.svg('check-circle') + ' 균형 잡힌 임계값입니다 — 오작동 ' + c.wrong + '개 / 미반응 ' + c.miss + '개';
-    warn.style.color = '#065f46'; warn.style.border = '1px solid #a7f3d0'; warn.style.background = '#d1fae5';
-  }
 }
+/* 경고 박스와 혼동행렬은 같은 confusionAt() 결과의 두 얼굴이라 항상 함께 갱신한다.
+   confusionAt() 은 미리 잰 예측을 재집계만 하므로 드래그 중 매 입력마다 불러도 싸다. */
+function paintThres() { paintThresWarn(); paintConfusion(); }
 if (dSlider) {
-  dSlider.oninput = paintThresWarn;
-  paintThresWarn(); // 초기 표시가 슬라이더 기본값과 어긋나지 않도록 한 번 그려 둔다
+  dSlider.oninput = paintThres;
+  paintThres(); // 초기 표시가 슬라이더 기본값과 어긋나지 않도록 한 번 그려 둔다
 }
-/* 분석 퀴즈 — 고른 보기에 정오답을 표시하고, 틀리면 정답 보기도 함께 밝힌다.
-   (concept 코스의 개념 정리 퀴즈와 같은 규칙) */
-const DM_QUIZ_ANSWER = 2;
-const DM_QUIZ_EXPLAIN =
-  '가위(2개)와 보(5개)는 <b>펴진 손가락 수가 다르므로</b> 규칙만으로도 원래는 구분됩니다. ' +
-  '문제는 그 앞 단계입니다 — 손을 기울이면 접은 손가락이 편 손가락 뒤에 가려져 ' +
-  '<b>21개 관절 좌표 자체가 잘못 잡히고</b>, 그러면 손가락을 세는 규칙도 함께 틀립니다. ' +
-  '컴퓨터 속도나 학습 데이터 양의 문제가 아니라 <b>입력 좌표의 품질</b> 문제입니다.';
-
-const dmQuiz = $('dm-quiz');
-if (dmQuiz) {
-  const opts = dmQuiz.querySelectorAll('.qz-btn');
-  opts.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const right = +btn.dataset.i === DM_QUIZ_ANSWER;
-      opts.forEach(b => { b.disabled = true; });
-      btn.classList.add(right ? 'correct' : 'wrong');
-      if (!right) opts[DM_QUIZ_ANSWER].classList.add('correct');
-
-      const fb = $('dm-quiz-feedback');
-      fb.hidden = false;
-      fb.className = 'qz-feedback ' + (right ? 'right' : 'miss');
-      fb.innerHTML = '<b>' + (right ? '정답입니다' : '오답입니다') + '</b><span>' + DM_QUIZ_EXPLAIN + '</span>';
-
-      // 해설을 보여주므로 정답 여부와 무관하게 다음 단계를 연다(4단계 자유 이동과 같은 맥락).
-      const next = $('btn-dm-final');
-      if (next) next.hidden = false;
-    });
-  });
-}
+/* 분석 퀴즈 코드는 사용자 피드백에 따라 해설 박스로 대체되어 제거되었습니다. */
 /* goToDmStep 으로 넘어갈 때 말고는 스스로 멈추지 않는 데모 타이머 — 실습을 떠날 때 끈다. */
 (window.CoursePracticeLeave = window.CoursePracticeLeave || []).push(() => {
   if (dmAnimTimer) { clearInterval(dmAnimTimer); dmAnimTimer = null; }
+  if (typeof demoCam !== 'undefined' && demoCam && demoCam.stream) demoCam.stop();
+  if (typeof demoRaf !== 'undefined' && demoRaf) cancelAnimationFrame(demoRaf);
 });
+
+/* 데모 카메라 및 실시간 예측 루프 */
+let demoCam = null;
+let demoRaf = null;
+let demoLastTriggerTime = 0;
+
+function stopDemoCam() {
+  if (typeof demoCam !== 'undefined' && demoCam && demoCam.stream) {
+    demoCam.stop();
+  }
+  if (typeof demoRaf !== 'undefined' && demoRaf) {
+    cancelAnimationFrame(demoRaf);
+  }
+  const state = $('demo-cam-state'); 
+  if (state) state.textContent = '대기';
+  
+  const btn = $('btn-demo-cam');
+  const btnOff = $('btn-demo-cam-off');
+  if (btn) {
+    btn.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = '데모 카메라 켜기';
+  }
+  if (btnOff) {
+    btnOff.style.display = 'none';
+  }
+}
+
+if ($('v-demo')) {
+  demoCam = mkCam($('v-demo'), $('c-demo'), $('ph-demo'));
+}
+
+const btnDemoCam = $('btn-demo-cam');
+const btnDemoCamOff = $('btn-demo-cam-off');
+
+if (btnDemoCam) {
+  btnDemoCam.onclick = async () => {
+    btnDemoCam.disabled = true; btnDemoCam.textContent = '연결 중…';
+    try {
+      await demoCam.start();
+      $('demo-cam-state').textContent = '활성';
+      btnDemoCam.style.display = 'none';
+      if (btnDemoCamOff) btnDemoCamOff.style.display = 'block';
+      demoLoop();
+    } catch (e) {
+      btnDemoCam.textContent = '카메라 오류';
+    }
+  };
+}
+if (btnDemoCamOff) {
+  btnDemoCamOff.onclick = stopDemoCam;
+}
+
+async function demoLoop() {
+  if (!demoCam || !demoCam.stream) return;
+  const kp = await estimate(demoCam);
+  if (kp) {
+    drawHand(demoCam.canvas.getContext('2d'), kp, '#7c6cff');
+    if (typeof head !== 'undefined' && typeof classes !== 'undefined' && head) {
+      const usable = classes.filter(c => c.samples.length >= 8);
+      if (usable.length >= 2) {
+        const feat = handFeature(kp);
+        const probs = tf.tidy(() => head.predict(tf.tensor2d([feat])).arraySync()[0]);
+        const prob0 = probs[0] * 100;
+        const thres = +$('dm-slider').value;
+        if (prob0 >= thres) {
+          const now = Date.now();
+          if (now - demoLastTriggerTime > 1500) {
+            demoLastTriggerTime = now;
+            triggerDemoAction();
+          }
+        }
+      }
+    }
+  }
+  demoRaf = requestAnimationFrame(demoLoop);
+}
+
+function triggerDemoAction() {
+  const idle = $('dm-feedback-idle');
+  const active = $('dm-feedback-active');
+  if (!idle || !active) return;
+  
+  idle.hidden = true;
+  active.hidden = false;
+  
+  if (dmFunc === 'ppt') {
+    active.innerHTML = `
+      <div class="demo-ppt-wrap">
+        <div class="demo-ppt-slide">다음 슬라이드 ➔</div>
+      </div>
+      <div class="dm-feedback-text" style="margin-top:16px;">슬라이드 넘김!</div>
+    `;
+  } else if (dmFunc === 'vol') {
+    active.innerHTML = `
+      <div class="demo-vol-wrap">
+        <span class="ic-inline" style="font-size:24px; color:var(--ink-2)">${EduinoIcons.svg('trending-up')}</span>
+        <div class="demo-vol-bar-bg">
+          <div class="demo-vol-bar-fg"></div>
+        </div>
+      </div>
+      <div class="dm-feedback-text" style="margin-top:16px;">시스템 볼륨 조절!</div>
+    `;
+  } else if (dmFunc === 'zoom') {
+    active.innerHTML = `
+      <div class="demo-zoom-wrap">
+        <div class="demo-zoom-target">
+          <span class="ic-inline" style="font-size:48px; color:var(--ink-3)">${EduinoIcons.svg('search')}</span>
+        </div>
+      </div>
+      <div class="dm-feedback-text" style="margin-top:16px;">화면 확대!</div>
+    `;
+  }
+  
+  setTimeout(() => {
+    idle.hidden = false;
+    active.hidden = true;
+  }, 1200); // 1.2s to let animation finish before hiding
+}
