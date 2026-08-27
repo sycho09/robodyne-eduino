@@ -82,6 +82,9 @@
 /* 우측 기둥 — 성적 카드 / 판정 경고 / CTA 세 층.
    경고를 카드 안에 넣지 않는다: .rv-alert 가 이미 테두리 있는 상자라 상자 안 상자가 된다. */
 .rv-side { display:grid; gap:16px; align-content:start; }
+/* 연습(4건) → 실전(200건) 다리. 리포트 숫자를 읽기 전에 먼저 눈에 들어와야 한다. */
+.rv-report-bridge { margin:14px 0 0; font-size:13px; line-height:1.7; color:var(--ink-2); background:var(--card-2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; text-align:left; }
+.rv-report-bridge b { color:var(--primary-ink); }
 /* 성적 칩 — 예전에는 advanced.js 안 인라인 스타일이었다.
    재분류 전 자리표시 칩과 실제 결과 칩이 같은 부품을 써야 모양이 안 튄다. */
 .rv-chip { font-family:var(--mono); font-size:12px; font-weight:700; padding:6px 12px; border-radius:999px; background:var(--card-2); white-space:nowrap; }
@@ -90,12 +93,28 @@
 .rv-rows { display:flex; flex-direction:column; gap:8px; margin:16px 0 0; }
 /* 네 행이 사다리처럼 쌓여 보이지 않게 세로 여백을 조인다. 배지가 한 줄로 정렬돼야
    "0% / 0% / 31% / 0%" 를 눈으로 훑어 3건이 틀렸다는 게 잡히므로 가로 구조는 그대로 둔다. */
-.rv-test-row { padding:10px 14px; border:1px solid var(--line); border-left-width:3px; background:#fff; border-radius:10px; display:flex; justify-content:space-between; align-items:center; gap:14px; }
-.rv-test-row.ok { border-left-color:var(--green); }
-.rv-test-row.miss { border-left-color:var(--primary); }
-.rv-test-badge { font-weight:700; font-size:13.5px; white-space:nowrap; display:inline-flex; align-items:center; gap:6px; }
-.rv-test-row.ok .rv-test-badge { color:var(--green); }
-.rv-test-row.miss .rv-test-badge { color:var(--primary-ink); }
+/* 테두리는 회색 하나로. 판정은 오른쪽 칩이 색으로 말하므로 왼쪽 색 막대는 같은 말을 두 번 하고,
+   4행 중 3행이 오분류라 화면이 붉게 물든다. */
+.rv-test-row { padding:10px 14px; border:1px solid var(--line); background:#fff; border-radius:10px; display:flex; justify-content:space-between; align-items:center; gap:14px; }
+.rv-test-text { min-width:0; }
+.rv-test-meta { display:inline-flex; align-items:center; gap:10px; white-space:nowrap; flex:none; }
+.rv-test-score { font-size:12.5px; color:var(--ink-3); font-variant-numeric:tabular-nums; }
+
+/* AI 의 시선을 문장 위에 그린다 —
+   노랑: AI 가 실제로 걸린 글자 조각(계산값) · 빨강: 사람이 읽는 진짜 불만 신호.
+   Step 3 에서는 노랑이 사라진다. 거기서는 글자가 아니라 뜻으로 판정하기 때문이고,
+   그 사라짐 자체가 "이제 뜻을 본다"의 증거다. */
+.rv-seen { background:#fff2a8; border-radius:3px; padding:0 2px; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
+.rv-cue { border-bottom:2px solid var(--primary); color:var(--primary-ink); font-weight:700; }
+
+.rv-verdict { display:inline-flex; align-items:center; gap:5px; }
+.rv-test-row.ok .rv-verdict { background:var(--green-soft); color:var(--green); }
+.rv-test-row.miss .rv-verdict { background:var(--primary-soft); color:var(--primary-ink); }
+
+/* 마스코트 말풍선 — 단순 에러가 아니라 AI 가 변명하는 장면으로 읽히게 한다. */
+.rv-bot { color:var(--primary-ink); }
+.rv-bubble { position:relative; margin-top:8px; background:#fff; border:1px solid var(--line); border-radius:12px; padding:11px 14px; }
+.rv-bubble::before { content:''; position:absolute; top:-7px; left:18px; width:12px; height:12px; background:#fff; border-left:1px solid var(--line); border-top:1px solid var(--line); transform:rotate(45deg); }
 .rv-ic { width:16px; height:16px; flex:none; }
 
 /* 판정 카드 — 어두운 남색 대신 상태별 soft 배경 + 같은 계열 테두리.

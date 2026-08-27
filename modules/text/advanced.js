@@ -8,6 +8,7 @@ const svgIcon = (inner, cls) =>
   'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>';
 const SVG_OK = svgIcon('<polyline points="20 6 9 17 4 12"/>');
 const SVG_NG = svgIcon('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>');
+const SVG_BOT = svgIcon('<rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/>');
 const SVG_WARN = svgIcon('<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>');
 
 let rvStep = 1;
@@ -47,10 +48,10 @@ if ($('btn-tuning-start')) $('btn-tuning-start').onclick = () => goToRvStep(3);
    '빠른 배송 감사'는 '배송'을 공유하지만 칭찬이라 41%로 두어
    키워드가 아니라 의미로 갈린다는 점이 임계값 조작으로 드러나게 했다. */
 const RV_REVIEWS = [
-  { text: '옷은 예쁜데 택배 상자가 다 구겨져서 왔어요.', sim: 62, want: true },
-  { text: '주문한 지 일주일째인데 아직도 안 왔네요.', sim: 88, want: true },
-  { text: '빠른 배송 정말 감사합니다! 또 살게요.', sim: 41, want: false },
-  { text: '사이즈가 생각보다 작아요. 반품할게요.', sim: 23, want: false }
+  { text: '옷은 예쁜데 택배 상자가 다 구겨져서 왔어요.', sim: 62, want: true, cue: ['택배 상자'] },
+  { text: '주문한 지 일주일째인데 아직도 안 왔네요.', sim: 88, want: true, cue: ['안 왔네요'] },
+  { text: '빠른 배송 정말 감사합니다! 또 살게요.', sim: 41, want: false, cue: [] },
+  { text: '사이즈가 생각보다 작아요. 반품할게요.', sim: 23, want: false, cue: [] }
 ];
 
 /* ── Step 2: 의도된 실패 ──────────────────────────────────────────────
@@ -67,11 +68,56 @@ function rvKeywordScore(text) {
   return Math.round(cosine(RV_BASE_REF, text) * 100);
 }
 
-function rvRowHtml(text, verdictLabel, ok, scoreLabel) {
+var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+
+/* AI 눈에 걸린 글자 조각. RV_BASE_REF 와 실제로 겹치는 토큰만 돌려주므로
+   판정(rvKeywordScore)과 어긋날 수 없다 — 하드코딩이 아니라 계산값이다. */
+function rvSeen(text) {
+  var ref = {}, out = {};
+  tokens(RV_BASE_REF).forEach(function (t) { ref[t] = 1; });
+  tokens(text).forEach(function (t) { if (ref[t]) out[t] = 1; });
+  return Object.keys(out);
+}
+
+/* 문장 위에 두 가지를 칠한다 — 노랑은 "AI가 본 글자", 빨강은 "사람이 읽는 진짜 신호".
+   둘이 겹치면 빨강을 살린다(학습자가 봐야 할 쪽). */
+function rvMarkup(text, seen, cue) {
+  var cand = [];
+  var add = function (list, cls) {
+    (list || []).forEach(function (needle) {
+      if (!needle) return;
+      var from = 0, i;
+      while ((i = text.indexOf(needle, from)) >= 0) {
+        cand.push({ s: i, e: i + needle.length, cls: cls });
+        from = i + needle.length;
+      }
+    });
+  };
+  add(cue, 'rv-cue');
+  add(seen, 'rv-seen');
+  cand.sort(function (a, b) {
+    return a.s - b.s || (b.e - b.s) - (a.e - a.s) || (a.cls === 'rv-cue' ? -1 : 1);
+  });
+
+  var html = '', at = 0;
+  cand.forEach(function (c) {
+    if (c.s < at) return; // 앞 표시와 포개지면 버린다
+    html += esc(text.slice(at, c.s)) + '<span class="' + c.cls + '">' + esc(text.slice(c.s, c.e)) + '</span>';
+    at = c.e;
+  });
+  return html + esc(text.slice(at));
+}
+
+/* seen 은 Step 2 에서만 넘긴다. Step 3 은 글자가 아니라 뜻(sim)으로 판정하므로
+   거기서 노란 형광펜을 칠하면 거짓말이 된다 — 그리고 형광펜이 사라지는 것 자체가
+   "이제 글자가 아니라 뜻을 본다"의 증거다. */
+function rvRowHtml(r, verdictLabel, ok, scoreLabel, seen) {
   return '<div class="rv-test-row ' + (ok ? 'ok' : 'miss') + '">' +
-    '<span>"' + text + '"</span>' +
-    '<span class="rv-test-badge">' + scoreLabel + ' → ' + verdictLabel + ' ' +
-      (ok ? SVG_OK : SVG_NG) + '</span>' +
+    '<span class="rv-test-text">"' + rvMarkup(r.text, seen, r.cue) + '"</span>' +
+    '<span class="rv-test-meta">' +
+      '<span class="rv-test-score">' + scoreLabel + ' · ' + verdictLabel + '</span>' +
+      '<span class="rv-chip rv-verdict">' + (ok ? '정답' : '오분류') + (ok ? SVG_OK : SVG_NG) + '</span>' +
+    '</span>' +
   '</div>';
 }
 
@@ -84,20 +130,23 @@ function renderRvBase() {
     var hit = score >= RV_BASE_THRES;
     var ok = hit === r.want;
     if (!ok) miss++;
-    return rvRowHtml(r.text, hit ? '배송 불만' : '정상 리뷰', ok, '겹침 ' + score + '%');
+    return rvRowHtml(r, hit ? '배송 불만' : '정상 리뷰', ok, '겹침 ' + score + '%', rvSeen(r.text));
   }).join('');
 
   var v = $('rv-base-verdict');
   v.className = 'rv-alert ' + (miss ? 'fail' : 'success');
+  /* 단순 에러가 아니라 'AI 의 변명' 으로 적는다 — 실패가 주제인 단계라 1인칭이 산다.
+     건수(miss)는 계산값이지만, 어느 리뷰를 놓쳤는지 지목하는 문장은 RV_REVIEWS 에 매인다.
+     리뷰를 바꾸면 이 카피도 함께 손봐야 한다. */
   v.innerHTML =
-    '<span class="rv-alert-ic">' + (miss ? SVG_WARN : SVG_OK) + '</span>' +
+    '<span class="rv-alert-ic rv-bot">' + SVG_BOT + '</span>' +
     '<div><strong class="rv-alert-title">' +
       (miss ? '4건 중 ' + miss + '건 오분류' : '전부 맞혔습니다') + '</strong>' +
-    '<span class="rv-alert-desc">' +
+    '<span class="rv-alert-desc rv-bubble">' +
       (miss
-        ? 'AI가 문장의 의미가 아니라 <b>\'배송\'이라는 글자가 들어 있는지</b>만 보고 있습니다. ' +
-          '그래서 \'택배\'라고 쓴 진짜 불만은 놓치고, \'빠른 배송 감사합니다\'라는 칭찬은 불만으로 잡습니다.'
-        : '기준 문장과 글자가 잘 겹쳤습니다.') +
+        ? '앗! 저는 <b>배송</b>이라는 글자만 찾을 줄 알아요.<br>' +
+          '진짜 불만(택배)은 놓치고, 칭찬(빠른 배송)을 불만으로 잡아버렸네요.'
+        : '기준 문장과 글자가 잘 겹쳤어요.') +
     '</span></div>';
 }
 
@@ -147,7 +196,7 @@ function renderRvTuning() {
   const rowsEl = $('rv-result-rows');
   rowsEl.hidden = false;
   rowsEl.innerHTML = res.rows.map(r =>
-    rvRowHtml(r.text, r.hit ? '배송 불만' : '정상 리뷰', r.ok, '유사도 ' + r.sim + '%')
+    rvRowHtml(r, r.hit ? '배송 불만' : '정상 리뷰', r.ok, '유사도 ' + r.sim + '%')
   ).join('');
 
   const mEl = $('rv-metrics');
@@ -168,7 +217,8 @@ function renderRvTuning() {
   const next = $('btn-report-start');
   const perfect = res.fp === 0 && res.fn === 0;
   card.className = 'rv-alert ' + (perfect ? 'success' : 'warn');
-  icon.innerHTML = perfect ? SVG_OK : SVG_WARN;
+  // 같은 마스코트를 쓰되 말풍선은 쓰지 않는다 — 여기는 변명이 아니라 성적표이고, 상자 안에 CTA 가 있다.
+  icon.innerHTML = SVG_BOT;
   next.hidden = !perfect;
   if (perfect) {
     title.textContent = '튜닝 성공!';
