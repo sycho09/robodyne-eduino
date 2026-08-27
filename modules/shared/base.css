@@ -46,7 +46,9 @@ button { font-family:inherit; cursor:pointer; }
 main { max-width:1140px; margin:0 auto; padding:26px 22px 22px; }
 .cintro { text-align:center; padding:6px 0 16px; display:flex; flex-direction:column; align-items:center; }
 .cintro .eyebrow { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:.06em; color:var(--primary-ink); background:var(--primary-soft); border:1px solid var(--primary-line); border-radius:999px; padding:5px 12px; margin-bottom:12px; }
-.cintro h1 { margin:0 0 7px; font-size:26px; font-weight:800; letter-spacing:-.02em; }
+/* 대시보드 셸의 .dash-head h1 과 같은 값으로 맞춘다 — 한 화면 안에서 실습 퀘스트만
+   제목이 커 보이던 원인이었다(26 vs 24). 굵기·자간·아래 여백은 원래부터 같았다. */
+.cintro h1 { margin:0 0 7px; font-size:24px; font-weight:800; letter-spacing:-.02em; }
 .cintro p b { color:var(--primary-ink); }
 .steps { display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
 .step .t b { font-size:14.5px; font-weight:700; display:block; }
