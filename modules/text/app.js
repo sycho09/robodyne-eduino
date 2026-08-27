@@ -23,15 +23,31 @@ const REFS = [
   '비가 와서 우산을 챙겼어요', '수학 시험 공부를 열심히 했어요', '친구랑 축구를 하며 놀았어요',
 ];
 $('sim-refs').innerHTML = REFS.map((r, i) => `<div class="ex-s"><span class="tag">${i + 1}</span>${r}</div>`).join('');
+/* 막대 그리기는 네 상태(빈 입력 · 한 글자 · 전부 0% · 정상)가 함께 쓴다.
+   어느 경우에도 보기 여섯 줄을 세워 둔다 — 오른쪽 칸이 비지 않고
+   "여기에 결과가 나오겠구나"가 먼저 보여야 하기 때문이다. */
+function renderBars(scored, note, ranked) {
+  $('sim-bars').innerHTML = (note ? `<div class="empty">${note}</div>` : '') + scored.map((o, i) => {
+    // 1등은 막대 색으로만 구분한다 (전부 0% 인 상태에서는 그 색도 붙이지 않는다).
+    const pct = Math.round(o.s * 100), lead = ranked && i === 0;
+    return `<div class="bar"><div class="top"><span class="nm">${o.r}</span><span class="pc">${pct}%</span></div><div class="track"><div class="fill" style="width:${pct}%;background:${lead ? '#f0473a' : '#4d8dff'}"></div></div></div>`;
+  }).join('');
+}
+const zeroBars = () => REFS.map(r => ({ r, s: 0 }));
+
 function runSimilar() {
   const q = $('sim-input').value.trim();
-  if (!q) { $('sim-bars').innerHTML = '<div class="empty">문장을 입력해 주세요.</div>'; return; }
+  if (!q) { renderBars(zeroBars(), '왼쪽에 문장을 쓰고 [비슷한 말 찾기]를 눌러보세요.', false); return; }
+  /* 글자 2-gram 으로 견주므로(tokens 참고) 한 글자는 어느 보기와도 겹칠 조각이 없다.
+     그대로 두면 전부 0% 만 뜨고 왜 그런지 알 수 없으므로, 이유를 말해 준다. */
+  if (q.length < 2) { renderBars(zeroBars(), '한 글자로는 견줄 수 없어요. 두 글자 이상 써보세요.', false); return; }
+
   const scored = REFS.map(r => ({ r, s: cosine(q, r) })).sort((a, b) => b.s - a.s);
-  $('sim-bars').innerHTML = scored.map((o, i) => {
-    const pct = Math.round(o.s * 100), col = i === 0 ? '#f0473a' : '#4d8dff';
-    return `<div class="bar"><div class="top"><span class="nm">${i === 0 ? EduinoIcons.svg('medal') + ' ' : ''}${o.r}</span><span class="pc">${pct}%</span></div><div class="track"><div class="fill" style="width:${pct}%;background:${col}"></div></div></div>`;
-  }).join('');
-  setStatus('가장 비슷: ' + Math.round(scored[0].s * 100) + '%', 'ready');
+  /* 겹치는 조각이 하나도 없으면 여섯 줄이 모두 0% 다. 그대로 두면 고장처럼 보이므로 이유를 위에 적어
+     결과와 까닭을 함께 읽게 한다 — "뜻이 아니라 글자를 센다"가 바로 여기서 드러난다. */
+  const allZero = scored[0].s === 0;
+  renderBars(scored, allZero ? '보기 문장과 겹치는 글자가 하나도 없어서 전부 0%입니다. 보기에 나온 낱말을 섞어 보세요.' : '', !allZero);
+  setStatus(allZero ? '겹치는 글자 없음' : '가장 비슷: ' + Math.round(scored[0].s * 100) + '%', 'ready');
   window.CourseDashboard && CourseDashboard.markDone('similar');
 }
 $('sim-go').onclick = runSimilar;
