@@ -16,15 +16,16 @@
 
   .chart-wrap { position:relative; width:100%; border:1px solid var(--line); border-radius:13px; background:var(--card-2); overflow:hidden; }
   canvas.chart { width:100%; height:auto; display:block; cursor:crosshair; touch-action:none; }
-  /* 축 라벨 — 가로/세로를 기호로 구분한다.
-     세로쓰기(writing-mode) + 회전은 한글이 뒤집혀 나오므로 쓰지 않는다. */
-  .axis-x, .axis-y { text-align:center; font-size:12px; color:var(--ink-3); }
-  .axis-x { margin-top:6px; }
-  .axis-y { margin-top:2px; }
-  .axis-x::before { content:'↔ '; color:var(--ink-4); }
-  .axis-y::before { content:'↕ '; color:var(--ink-4); }
-  /* 통제 단계 차트 — 전폭이면 너무 커서 슬라이더·점수와 한눈에 안 들어온다. */
-  .chart-figure { max-width:520px; margin:16px auto 0; }
+  /* 축 이름은 플롯 오른쪽 위 태그 하나로 모은다 — 무리 짓기 탭이 쓰던 방식을 모듈 전체 규칙으로 올렸다.
+     두 축을 한 줄에 적어 두므로 제목이 있든 없든 어느 값이 어느 축인지 늘 분명하고,
+     차트 위아래로 텍스트가 흩어지지 않아 세로 공간도 덜 먹는다. */
+  .chart-head { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  .chart-head h2, .chart-head h3 { margin:0; }
+  /* margin-left:auto — 제목이 없거나 줄바꿈으로 밀려도 태그는 늘 오른쪽에 붙는다. */
+  .axis-tag { margin-left:auto; background:var(--bg); border-radius:6px; padding:4px 10px; font-size:12px; color:var(--ink-3); white-space:nowrap; }
+  /* 통제 단계 차트 — 전폭이면 너무 커서 슬라이더·점수와 한눈에 안 들어온다.
+     조작 패널을 88px 로 눕힌 뒤에도 아래 리포트 버튼이 화면 밖이라 한 번 더 조였다. */
+  .chart-figure { max-width:420px; margin:10px auto 0; }
   .tip { font-size:12px; color:var(--ink-4); margin-top:4px; text-align:center; }
 
   .ctrl { display:flex; gap:9px; margin-top:12px; flex-wrap:wrap; align-items:center; }
@@ -49,40 +50,107 @@
   .var-chips button:disabled { opacity:0.4; cursor:not-allowed; }
   .var-status { font-size:13px; color:var(--ink-3); background:var(--bg-soft); padding:8px 12px; border-radius:8px; display:inline-block; }
 
-  .ex-charts { display:flex; gap:16px; margin-top:16px; flex-wrap:wrap; align-items:stretch; }
-  .chart-box { flex:1; min-width:300px; background:var(--card-2); border:1px solid var(--line); border-radius:12px; padding:16px; text-align:center; display:flex; flex-direction:column; }
+  /* ── Step 1·2 가 공유하는 카드 ─────────────────────────────────────────
+     Step 1: 좌(변수 선택) / 우(산점도 1개) 좌우 분할 — 두 박스를 위아래로 쌓던 것을 하나로 합쳤다.
+     좌측을 %가 아니라 260px 고정으로 두는 이유: 폭이 줄 때 칩이 아니라 차트가 줄어야 하고,
+     260px 는 가장 긴 칩("아이스크림 판매량")이 한 줄에 들어가는 폭이다.
+     Step 2: .solo 로 좌측을 접고 카드 전폭을 차트에 넘긴다. */
+  .card.ex-card { display:grid; grid-template-columns:260px minmax(0,1fr); gap:22px; align-items:start; }
+  .card.ex-card.solo { grid-template-columns:minmax(0,1fr); }
+  .ex-side h2, .ex-head h2 { margin-top:0; }
+  .ex-main { min-width:0; display:flex; flex-direction:column; }
+  .ex-side[hidden], .ex-head[hidden], .var-summary[hidden], .chart-empty[hidden], .ex-charts[hidden], .ex-actions[hidden], .btn[hidden] { display:none; }
+  .ex-actions { text-align:center; margin-top:16px; }
+  /* 칩은 글자 길이만큼만 차지하고 줄바꿈으로 알아서 두 줄이 된다 (기본 .var-chips 규칙 그대로).
+     폭을 100%로 늘리면 칩이 아니라 목록 항목처럼 보인다.
+     반대로 아래 상태 바는 전폭으로 깔아, 동글한 칩들과 단단한 막대의 대비를 만든다. */
+  .ex-side .var-chips { align-items:flex-start; margin:14px 0 12px; }
+  .ex-side .var-status { display:block; }
+
+  /* Step 2 로 넘어가면 Step 1 박스 전체가 이 한 줄로 접힌다 — 접기가 스크롤을 줄이는 실제 장치다.
+     지금 화면의 차트(기온과의 비교)와 헷갈리지 않도록 반드시 과거형으로 적는다. */
+  .var-summary { grid-column:1 / -1; display:flex; align-items:center; gap:10px; flex-wrap:wrap; background:var(--bg-soft); border:1px solid var(--line); border-radius:11px; padding:9px 14px; font-size:13px; color:var(--ink-2); }
+  .var-summary b { color:var(--primary-ink); }
+  .var-summary .vs-back { margin-left:auto; border:1px solid var(--line-2); background:#fff; color:var(--ink-2); border-radius:8px; padding:5px 11px; font-size:12px; font-weight:600; }
+  .var-summary .vs-back:hover { border-color:var(--primary-line); color:var(--primary-ink); }
+
+  /* 칩을 다 고르기 전 자리. 차트와 같은 비율·같은 상한이라 채워지는 순간 자리 이동이 없다.
+     px 고정 높이로 잡으면 창 폭이 바뀔 때 오히려 어긋난다. */
+  .chart-empty { width:100%; max-width:520px; margin:0 auto; aspect-ratio:600 / 430; border:1px dashed var(--line-2); border-radius:13px; background:var(--card-2); display:grid; place-items:center; text-align:center; padding:16px; font-size:13.5px; color:var(--ink-4); }
+
+  /* 함정 공개는 버튼을 눌렀을 때만 연출한다 — 단계를 되짚어 다시 그릴 때는 조용히 나타나야 한다.
+     fill-mode 를 주지 않는다: 애니메이션이 (백그라운드 탭 등으로) 돌지 않으면
+     시작 프레임(opacity:0)이 그대로 눌러앉아 차트가 안 보이는 채로 남는다. */
+  .chart-box.reveal-in { animation:revealIn .32s ease; }
+  @keyframes revealIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  @media (prefers-reduced-motion:reduce){ .chart-box.reveal-in { animation:none; } }
+
+  /* 단계마다 열 수가 달라진다 — p1(1개) · p2(2개) · p3(3개 + 전폭 결론 배너).
+     열 수를 컨테이너 클래스로 잡아야 카드가 접히고 펴질 때 배치가 한 번에 따라온다. */
+  .ex-charts { display:grid; gap:16px; margin-top:16px; align-items:stretch; }
+  .ex-charts.p1 { grid-template-columns:minmax(0,1fr); margin-top:0; }
+  .ex-charts.p2 { grid-template-columns:repeat(2, minmax(0,1fr)); }
+  .ex-charts.p3 { grid-template-columns:repeat(3, minmax(0,1fr)); }
+  .chart-box { min-width:0; background:var(--card-2); border:1px solid var(--line); border-radius:12px; padding:16px; text-align:center; display:flex; flex-direction:column; }
+  .chart-box[hidden] { display:none; }
   .chart-box h3 { font-size:14px; margin:0 0 12px; }
+  .chart-box .chart-head { margin-bottom:10px; }
+  .chart-box .chart-head h3 { margin:0; }
   .chart-box .chart-wrap { margin:auto; width:100%; max-width:400px; }
+  /* p1 은 카드 안의 유일한 차트다 — 액자(테두리·배경)를 한 겹 걷어내고 크게 띄운다.
+     쌍 이름은 왼쪽 칩과 축 라벨이 이미 말하고 있어서 h3 가 세 번째 중복이 된다. */
+  .ex-charts.p1 .chart-box { background:none; border:none; padding:0; }
+  .ex-charts.p1 .chart-box h3 { display:none; }
+  .ex-charts.p1 .chart-wrap { max-width:520px; }
+  .ex-charts.p1 .chart-head { width:100%; max-width:520px; margin-inline:auto; }
+  /* 결론 배너는 차트가 아니다. 차트 크기의 칸을 주면 절반이 빈 여백이 되므로 한 줄을 통째로 쓴다. */
+  .ex-charts .answer-box { grid-column:1 / -1; }
   /* 옆의 차트 카드들 사이에서 "여기를 눌러라"를 드러내야 하는 자리다.
      명도(검정)로 튀우지 않고 아래 .pred-out 과 같은 브랜드 tint 그라데이션으로 강조한다. */
   .answer-box { display:flex; flex-direction:column; justify-content:center; align-items:center; background:linear-gradient(180deg, var(--primary-soft), #fff); border-color:var(--primary-line); position:relative; overflow:hidden; }
   .answer-content { position:relative; z-index:2; text-align:center; padding:20px; }
   .answer-box h3 { font-size:17px; margin-bottom:20px; color:var(--ink); }
+  /* 전폭 배너에서는 제목과 버튼을 가로로 놓는다 — 세로로 쌓으면 높이만 60px 더 먹는다. */
+  .ex-charts .answer-content { display:flex; align-items:center; justify-content:center; gap:22px; flex-wrap:wrap; padding:14px 20px; }
+  .ex-charts .answer-box h3 { margin:0; text-align:left; }
 
   /* 슬라이더 + 수치를 담는 조작 패널. gesture 의 .dm-slider-card 와 같은 부품이라 같은 흰 카드로 둔다.
      슬라이더 자체는 공통 .ui-slider (shared/components.css)를 쓴다. */
-  .ctrl-panel { background:#fff; border:1px solid var(--line); border-radius:16px; padding:20px; margin-top:16px; position:relative; box-shadow:var(--shadow-sm); }
-  .dp-header { display:flex; justify-content:space-between; margin-bottom:12px; font-size:14px; font-weight:600; }
-  .slider-wrap { position:relative; padding:10px 0; }
-  .dp-score { text-align:center; margin-top:20px; }
-  .dp-score .dp-rel { font-size:13px; color:var(--ink-3); display:block; margin-bottom:2px; }
-  .dp-score .dp-title { font-size:15px; color:var(--ink-2); margin-right:8px; }
+  /* 조작(슬라이더)과 결과(점수)를 가로로 나란히 둔다.
+     라벨·슬라이더·점수제목·숫자를 층층이 쌓으면 그것만 230px 를 먹고,
+     아래 차트와 '리포트 보기' 버튼이 한 화면에서 밀려난다. */
+  .ctrl-panel { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:24px; background:#fff; border:1px solid var(--line); border-radius:16px; padding:12px 20px; margin-top:14px; position:relative; box-shadow:var(--shadow-sm); }
+  /* 슬라이더 위 한 줄이 지금 상태를 말한다 — 값 칩이 이 화면의 핵심 피드백이다.
+     "내가 기온 폭을 이만큼 좁히고 있다"가 숫자로 보여야 조작이 손끝에 잡힌다. */
+  .dp-header { display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:2px; }
+  .dp-header .dp-lab { font-size:12.5px; color:var(--ink-3); font-weight:600; }
+  .dp-header .dp-now { display:flex; align-items:baseline; gap:8px; }
+  .dp-header .dp-now b { font-family:var(--mono); font-size:15px; font-weight:700; color:var(--ink); background:var(--bg); border-radius:6px; padding:3px 9px; }
+  .dp-header .dp-now span { font-size:11.5px; color:var(--ink-4); }
+  .slider-wrap { position:relative; padding:6px 0 2px; }
+  .dp-score { text-align:right; margin:0; padding-left:24px; border-left:1px solid var(--line); }
+  .dp-score .dp-title { display:block; font-size:12.5px; color:var(--ink-3); margin:0 0 1px; }
+  /* 점수가 내려가는 것이 곧 성공인데 학습자 직관은 그 반대다 — 그 간극을 이 한 줄이 메운다. */
+  .dp-score .dp-cap { display:block; font-size:12px; color:var(--ink-3); margin-top:3px; }
+  .dp-score .dp-cap.done { color:var(--primary-ink); font-weight:700; }
   /* 기본값은 중립 먹색, 상관이 강할 때만 브랜드색으로 띄운다 —
      이 단계에서 학습자가 봐야 할 것이 "기온을 통제하면 점수가 무너진다"이기 때문이다.
      (초록=좋음으로 읽히면 안 되므로 .stat 의 pos/neg 색 규칙은 쓰지 않는다) */
-  .dp-score .dp-val { font-family:var(--mono); font-size:32px; font-weight:800; color:var(--ink); }
+  .dp-score .dp-val { font-family:var(--mono); font-size:32px; font-weight:800; color:var(--ink); line-height:1.05; }
   .dp-score .dp-val.pos { color:var(--primary-ink); }
 
   .causal-diagram { display:flex; flex-direction:column; align-items:center; background:var(--card-2); border:1px solid var(--line); border-radius:16px; padding:30px 20px; margin:20px 0; }
   .node { padding:14px 24px; border-radius:12px; background:#fff; border:2px solid var(--line); box-shadow:var(--shadow-sm); text-align:center; position:relative; z-index:2; }
   .node.origin { border-color:var(--amber); background:var(--amber-soft); display:flex; align-items:center; gap:8px; font-size:16px; }
-  .node.result { width:140px; }
-  .node b { display:block; font-size:15px; }
+  /* 두 결과 상자는 늘 같은 폭·같은 높이여야 한다 — 좌우가 어긋나면 '나란한 두 결과'로 안 읽힌다. */
+  .node.result { width:172px; display:flex; flex-direction:column; justify-content:center; }
+  .node b { display:block; font-size:15px; line-height:1.35; }
   .node span { font-size:12px; color:var(--ink-3); }
   .arrows { margin:-15px 0; position:relative; z-index:1; }
-  .nodes-row { display:flex; align-items:center; gap:20px; }
-  .fake-link { display:flex; align-items:center; justify-content:center; width:120px; height:2px; border-bottom:2px dashed var(--primary-line); position:relative; }
-  .fake-link span { position:absolute; top:-12px; background:var(--primary-soft); color:var(--primary-ink); font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; }
+  .nodes-row { display:flex; align-items:stretch; gap:20px; }
+  .fake-link { align-self:center; display:flex; align-items:center; justify-content:center; width:120px; height:2px; border-bottom:2px dashed var(--primary-line); position:relative; }
+  .fake-link span { position:absolute; top:-19px; background:var(--primary-soft); color:var(--primary-ink); font-size:11px; font-weight:700; padding:3px 9px; border-radius:10px; text-align:center; line-height:1.3; white-space:nowrap; }
+  .fake-link span small { display:block; font-size:10px; font-weight:600; opacity:.75; }
 
   .insight-box { background:var(--blue-soft); border:1px solid rgba(77,141,255,.2); border-radius:12px; padding:16px 20px; display:flex; gap:12px; align-items:flex-start; margin-top:16px; }
   .insight-box .ic { font-size:22px; flex:none; }
@@ -146,12 +214,27 @@
   .learn .ex { display:block; margin-top:7px; color:var(--ink-3); }
 
   /* New Clustering UI Styles */
+  /* 무리 짓기 오른쪽 기둥 — 1단계 조작 패널과 2단계 진행 패널이 같은 칸을 나눠 쓴다.
+     자동 배치에 맡기면 숨긴 쪽이 자리를 차지해 다음 줄로 밀리므로 칸을 못 박는다. */
+  .cl-side { grid-column:2; grid-row:1; }
+  /* 340px 기둥에서는 질문과 2·3·4 버튼이 한 줄에 안 들어간다 — 세로로 쌓고 버튼을 전폭으로 벌린다. */
+  .k-pick { background:var(--bg); border-radius:var(--r); padding:14px 16px; display:flex; flex-direction:column; gap:11px; }
+  .k-pick b { color:var(--ink-2); font-size:14.5px; line-height:1.45; }
+  .k-pick .seg { display:flex; }
+  .k-pick .seg button { flex:1; padding:10px 0; font-size:14px; }
+
   .segment-card { display:flex; align-items:center; gap:16px; background:#fff; border:1px solid var(--line); border-radius:var(--r); padding:16px; margin-bottom:12px; transition:0.2s; box-shadow:var(--shadow-sm); }
   .segment-card:hover { border-color:var(--primary-line); box-shadow:var(--shadow); }
   .segment-color { width:16px; height:16px; border-radius:50%; flex-shrink:0; }
   .segment-info { font-size:14px; color:var(--ink); font-weight:700; width:180px; }
-  .segment-card input { flex:1; padding:12px; border:1px solid var(--line-2); border-radius:8px; font-size:14px; outline:none; transition:0.2s; font-family:inherit; }
-  .segment-card input:focus { border-color:var(--primary); background:var(--bg); }
+  /* 입력칸 테두리 — 평소에는 연한 회색으로 조용히 두고, 닿았을 때만 한 단계씩 짙어진다.
+     브라우저 기본 포커스 링(노랑)은 이 플랫폼의 붉은/주황 액센트와 따로 놀아서 끄되,
+     테두리색+회색 링으로 확실히 대체하므로 포커스는 여전히 눈에 보인다. */
+  .segment-card input, .reason-input { border:1px solid var(--line-2); border-radius:8px; font-size:14px; outline:none; transition:.15s; font-family:inherit; color:var(--ink); background:#fff; }
+  .segment-card input:hover:not(:focus), .reason-input:hover:not(:focus) { border-color:var(--ink-4); }
+  .segment-card input:focus, .reason-input:focus { border-color:var(--ink-3); box-shadow:0 0 0 3px var(--line); background:#fff; }
+  .segment-card input { flex:1; padding:12px; }
+  .reason-input { width:100%; height:80px; padding:16px; border-radius:var(--r); resize:none; }
   
   .decision-btn { flex:1; padding:20px; text-align:center; background:#fff; border:2px solid transparent; border-radius:12px; cursor:pointer; transition:0.2s; box-shadow:var(--shadow-sm); }
   .decision-btn:hover { transform:translateY(-2px); box-shadow:var(--shadow); }
@@ -159,6 +242,17 @@
   .decision-btn-title { font-size:18px; font-weight:800; color:var(--primary-ink); margin-top:8px; }
   .decision-btn-desc { font-size:13px; color:var(--ink-2); font-weight:600; margin-top:4px; }
 
+  /* 1024px 아래에서는 좌우 분할을 풀고 위아래로 쌓는다.
+     사이드바(240px)까지 낀 폭에서 차트가 지금(400px)보다 작아지면 개편의 의미가 없기 때문이다. */
+  @media (max-width:1024px){
+    .card.ex-card { grid-template-columns:minmax(0,1fr); gap:14px; }
+    .ex-charts.p3 { grid-template-columns:repeat(2, minmax(0,1fr)); }
+  }
+  @media (max-width:720px){
+    .ex-charts.p2, .ex-charts.p3 { grid-template-columns:minmax(0,1fr); }
+    .ctrl-panel { grid-template-columns:minmax(0,1fr); gap:10px; }
+    .dp-score { text-align:center; padding:10px 0 0; border-left:none; border-top:1px solid var(--line); }
+  }
   @media (max-width:880px){ .layout{ grid-template-columns:1fr; align-items:start; } }
 
 /* 이모지 → SVG 전환에 따른 색 지정 */

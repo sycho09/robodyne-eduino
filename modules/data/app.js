@@ -51,20 +51,55 @@ let exStep = 1;
 let ex2Phase = 1; // Step 2 진행: 1=기온과의 두 산점도 비교, 2=두 결과끼리 비교 공개
 let selVars = [];
 const VAR_LABELS = { temp: '기온', ice: '아이스크림 판매량', acc: '물놀이 사고', ac: '에어컨 판매량' };
-// Step 3에서 기온을 좁은 구간으로 통제하면 표본이 크게 줄어든다.
-// 표본이 작으면 우연만으로 상관이 높게 나와 "통제하면 상관이 사라진다"는 결론이 뒤집히므로,
-// 통제 후에도 30개 이상 남도록 넉넉히 생성하고 산점도에는 앞의 60개만 그린다.
+// 축 순서를 클릭 순서에 맡기면 같은 쌍도 눌린 차례에 따라 뒤집혀 나온다.
+// 그래서 항상 이 차례로 정렬해 가로·세로를 정한다. "원인이 가로축"이라는 뜻이 아니다 —
+// 아이스크림 × 물놀이 사고처럼 어느 쪽도 원인이 아닌 쌍이 절반이고, 그걸 가르치는 게 이 단계다.
+const VAR_ORDER = ['temp', 'ice', 'acc', 'ac'];
+const orderPair = (vs) => [...vs].sort((a, b) => VAR_ORDER.indexOf(a) - VAR_ORDER.indexOf(b));
+// 축 이름은 플롯 오른쪽 위 태그 하나로 적는다 (모듈 공통 형식).
+const axisTag = (x, y) => `X축: ${x} / Y축: ${y}`;
+/* 변수 이름이 쌍마다 달라지므로 조사를 고정해 둘 수 없다 (판매'량'과 / 사'고'와).
+   마지막 글자의 받침 유무로 고른다. */
+function particle(word, withBatchim, withoutBatchim) {
+  const c = word.charCodeAt(word.length - 1) - 0xAC00;
+  const has = c >= 0 && c <= 11171 && c % 28 !== 0;
+  return has ? withBatchim : withoutBatchim;
+}
+let revealAnim = false; // 함정 공개 연출은 버튼을 누른 그 순간에만
+// 폭염이 각 결과를 밀어 올리는 경로 — 4단계 리포트의 "결과 N · …" 에 쓴다.
+const VAR_WHY = { ice: '더위 회피 소비', acc: '피서객 증가', ac: '냉방 수요 증가' };
+
+/* 2~4단계가 다룰 쌍. 1단계에서 고른 것을 그대로 이어받되, 기온이 낀 쌍만 예외다.
+   기온 쌍은 진짜 인과라서 함정 실습이 성립하지 않는다 — 기온을 고정하면 원인 자체의
+   분산이 사라져 상관이 무너지고, 그걸 "가짜였다"로 읽히게 하면 정반대를 가르치게 된다.
+   그때만 대표 쌍으로 갈아타고, 고른 쌍은 "진짜 관계였다"는 대조군으로 쓴다. */
+function trapPair() {
+  const [a, b] = orderPair(selVars);
+  const own = selVars.length === 2 && a !== 'temp';
+  return { v1: own ? a : 'ice', v2: own ? b : 'acc', own };
+}
+/* Step 3에서 기온을 좁은 구간으로 통제하면 표본이 크게 줄어든다.
+   표본이 작으면 우연만으로 상관이 높게 나와 "통제하면 상관이 사라진다"는 결론이 뒤집히므로,
+   기온을 ±0.3 으로 붙잡으면 전체의 7.5% 만 남는데, 그게 수십 개뿐이면 상관 표준오차가 0.15 를
+   넘어 "0 근처로 무너진다"가 실행마다 흔들린다(+0.28 이 나오면 교훈이 안 선다).
+   그래서 4000개를 만들어 통제 후에도 300개쯤 남게 한다 — 그리는 점 수는 아래에서 따로 줄인다.
+
+   계수는 "기온 최대(9) × 계수 + 잡음 최대 ≤ 10" 을 지키도록 잡았다.
+   예전 값(1.1/1.0/1.2)은 통제 구간(기온 8~9)에서 세 값이 모두 상한 10 에 눌렸고
+   — 특히 ac 는 12.3 까지 갔다 — 두 변수가 같은 천장에 잘리면 그 자체로 상관이 남아
+   기온을 통제해도 점수가 안 무너졌다. */
 let baseData = [];
-for(let i=0; i<300; i++) {
+for(let i=0; i<4000; i++) {
   const temp = clamp(1 + Math.random()*8); // 1~9
   baseData.push({
     temp: temp,
-    ice: clamp(temp * 1.1 + (Math.random()-0.5)*2),
-    acc: clamp(temp * 1.0 + (Math.random()-0.5)*2.5),
-    ac: clamp(temp * 1.2 + (Math.random()-0.5)*3)
+    ice: clamp(temp * 0.95 + (Math.random()-0.5)*2),   // 최대 9.55
+    acc: clamp(temp * 0.90 + (Math.random()-0.5)*2.4), // 최대 9.30
+    ac:  clamp(temp * 0.98 + (Math.random()-0.5)*2)    // 최대 9.82
   });
 }
-const plotData = baseData.slice(0, 60); // 산점도 표시용 (점이 뭉치지 않도록)
+const plotData = baseData.slice(0, 60);   // 산점도 표시용 (점이 뭉치지 않도록)
+const ctrlBgData = baseData.slice(0, 260); // 통제 차트의 회색 배경 — 전부 그리면 화면이 뭉갠다
 
 const exCtxMain = $('c-explore-main').getContext('2d');
 const exCtxSub = $('c-explore-sub').getContext('2d');
@@ -84,7 +119,7 @@ function updateExNav() {
   $('ex-view-4').style.display = exStep === 4 ? 'block' : 'none';
   /* 완료 신호는 '리포트에 도달' 에 건다. 예전에는 btn-ex-report 버튼에만 걸려 있어서,
      상단 단계 버튼으로 4단계에 바로 가면 완료로 잡히지 않았다(그 버튼은 특정 조건에서만 나타난다). */
-  if (exStep === 4) window.CourseDashboard && CourseDashboard.markDone('explore');
+  if (exStep === 4) { renderCausalReport(); window.CourseDashboard && CourseDashboard.markDone('explore'); }
   
   if(exStep === 1 || exStep === 2) renderVarCharts();
   if(exStep === 3) renderCtrlStep();
@@ -97,76 +132,131 @@ document.querySelectorAll('.fstep[data-ex-step]').forEach(btn => {
   };
 });
 
+/* 단계에 따라 카드 모양이 세 가지로 바뀐다.
+   p1 = Step 1 · 좌우 분할 + 큰 산점도 1개
+   p2 = Step 2 전반 · 좌측을 요약 바로 접고 기온과의 비교 차트 2개
+   p3 = Step 2 후반 · 함정 차트까지 3개 + 전폭 결론 배너 */
+function setExLayout(phase) {
+  $('ex-card-explore').classList.toggle('solo', phase !== 'p1');
+  $('ex-side').hidden = phase !== 'p1';
+  $('ex-var-summary').hidden = phase === 'p1';
+  $('ex-head').hidden = phase === 'p1';
+  $('ex-charts-container').className = 'ex-charts ' + phase;
+}
+
+// Step 2 로 접힐 때 남는 한 줄.
+// 1단계를 건너뛰고 바로 들어올 수 있으므로 빈 상태가 필요하고,
+// 지금 화면의 차트(기온과의 비교)와 헷갈리지 않게 반드시 과거형으로 적는다.
+function renderVarSummary() {
+  const [v1, v2] = orderPair(selVars);
+  $('ex-var-summary-txt').innerHTML = selVars.length === 2
+    ? `1단계에서 고른 조합: <b>${VAR_LABELS[v1]}</b> × <b>${VAR_LABELS[v2]}</b>`
+    : '준비된 데이터로 함정을 살펴봅니다.';
+}
+
+/* 4단계 리포트. 폭염(공통 원인)과 '서로 원인이 아님'은 어느 쌍이든 그대로고,
+   두 결과 상자의 이름과 경로만 바뀐다. */
+function renderCausalReport() {
+  const { v1, v2 } = trapPair();
+  $('node-r1').textContent = `${VAR_LABELS[v1]} 증가`;
+  $('node-r1-why').textContent = `결과 1 · ${VAR_WHY[v1]}`;
+  $('node-r2').textContent = `${VAR_LABELS[v2]} 증가`;
+  $('node-r2-why').textContent = `결과 2 · ${VAR_WHY[v2]}`;
+}
+
 function renderVarCharts() {
   // Step 2는 준비된 시나리오라 변수 선택 없이도(서브탭 직접 이동) 볼 수 있어야 한다.
   if (exStep === 2) {
-    $('ex-card-chart').style.display = 'flex';
+    renderVarSummary();
     renderTrapStep();
     return;
   }
-  if (selVars.length < 2) {
-    $('ex-card-chart').style.display = 'none';
-    return;
-  }
-  $('ex-card-chart').style.display = 'flex';
-  const v1 = selVars[0], v2 = selVars[1];
 
-  if (exStep === 1) {
-    $('ex-chart-main-title').textContent = '데이터의 경향성(상관관계) 확인하기';
-    $('ex-chart-desc').textContent = '두 데이터가 함께 움직이는지 확인합니다.';
-    $('cbox-main').style.display = 'flex';
-    $('cbox-sub').style.display = 'none';
-    $('cbox-reveal').style.display = 'none';
-    $('cbox-answer').style.display = 'none';
-    $('btn-next-step1').style.display = 'inline-flex';
-    $('btn-reveal-pair').style.display = 'none';
+  const ready = selVars.length === 2;
+  setExLayout('p1');
+  ['cbox-reveal', 'cbox-answer'].forEach(id => $(id).classList.remove('reveal-in'));
+  $('ex-chart-empty').hidden = ready;
+  $('ex-charts-container').hidden = !ready;
+  $('ex-actions').hidden = !ready;
+  $('btn-next-step1').hidden = !ready;
+  $('btn-reveal-pair').hidden = true;
+  $('cbox-main').hidden = false;
+  $('cbox-sub').hidden = true;
+  $('cbox-reveal').hidden = true;
+  $('cbox-answer').hidden = true;
+  if (!ready) return;
 
-    $('cbox-main-title').textContent = `${VAR_LABELS[v1]} ↔ ${VAR_LABELS[v2]}`;
-    $('ax-main-x').textContent = VAR_LABELS[v1];
-    $('ax-main-y').textContent = VAR_LABELS[v2];
+  // 축은 클릭 순서가 아니라 고정 차례로 정한다 — 같은 쌍이 매번 같은 모양으로 나오게.
+  const [v1, v2] = orderPair(selVars);
+  $('ax-main').textContent = axisTag(VAR_LABELS[v1], VAR_LABELS[v2]);
 
-    drawAxes(exCtxMain);
-    const pts = plotData.map(d => ({x: d[v1], y: d[v2]}));
-    drawPoints(exCtxMain, pts, '#11a06f');
-  }
+  drawAxes(exCtxMain);
+  drawPoints(exCtxMain, plotData.map(d => ({x: d[v1], y: d[v2]})), '#11a06f');
 }
 
-// Step 2: 기온↔아이스크림 / 기온↔사고를 먼저 비교시킨 뒤,
+// Step 2: 두 값과 기온의 관계를 각각 보여준 뒤,
 // 두 결과끼리의 가짜 상관을 공개하는 순서로 진행한다.
 function renderTrapStep() {
+  const { v1, v2, own } = trapPair();
+  const L1 = VAR_LABELS[v1], L2 = VAR_LABELS[v2];
+
+  setExLayout(ex2Phase === 1 ? 'p2' : 'p3');
   $('ex-chart-main-title').textContent = '함정에 빠지기';
-  $('cbox-main').style.display = 'flex';
-  $('cbox-sub').style.display = 'flex';
-  $('btn-next-step1').style.display = 'none';
+  $('ex-chart-empty').hidden = true;
+  $('ex-charts-container').hidden = false;
+  $('cbox-main').hidden = false;
+  $('cbox-sub').hidden = false;
+  $('btn-next-step1').hidden = true;
 
-  $('cbox-main-title').textContent = `기온 ↔ 아이스크림`;
-  $('ax-main-x').textContent = '기온';
-  $('ax-main-y').textContent = '아이스크림';
+  // 제목이 쌍 이름을 말해도 축 이름은 항상 함께 적는다 — 어느 값이 어느 축인지는 제목이 알려주지 못한다.
+  $('cbox-main-title').textContent = `기온 ↔ ${L1}`;
+  $('ax-main').textContent = axisTag('기온', L1);
   drawAxes(exCtxMain);
-  drawPoints(exCtxMain, plotData.map(d => ({x: d.temp, y: d.ice})), '#11a06f');
+  drawPoints(exCtxMain, plotData.map(d => ({x: d.temp, y: d[v1]})), '#11a06f');
 
-  $('cbox-sub-title').textContent = `기온 ↔ 물놀이 사고`;
-  $('ax-sub-x').textContent = '기온';
-  $('ax-sub-y').textContent = '물놀이 사고';
+  $('cbox-sub-title').textContent = `기온 ↔ ${L2}`;
+  $('ax-sub').textContent = axisTag('기온', L2);
   drawAxes(exCtxSub);
-  drawPoints(exCtxSub, plotData.map(d => ({x: d.temp, y: d.acc})), '#4d8dff');
+  drawPoints(exCtxSub, plotData.map(d => ({x: d.temp, y: d[v2]})), '#4d8dff');
 
-  const picked = selVars.length === 2
-    ? `방금 <b>${VAR_LABELS[selVars[0]]} ↔ ${VAR_LABELS[selVars[1]]}</b>를 살펴봤죠. 이번엔 준비된 데이터로 함정을 하나 보겠습니다.<br>`
-    : '준비된 데이터로 함정을 하나 보겠습니다.<br>';
+  /* 1단계에서 고른 쌍을 받아 넘기는 첫 문장.
+     기온을 골랐다면 그건 진짜 인과였다는 사실을 분명히 말해 준다 — 그래야 그 선택도 헛되지 않는다. */
+  const [s1, s2] = orderPair(selVars);
+  let picked;
+  if (own) {
+    picked = `방금 고른 <b>${L1} ↔ ${L2}</b>, 둘 다 기온과도 관계가 있습니다.<br>`;
+  } else if (selVars.length === 2) {
+    picked = `방금 고른 <b>${VAR_LABELS[s1]} ↔ ${VAR_LABELS[s2]}</b>${particle(VAR_LABELS[s2], '은', '는')} <b>진짜 관계</b>입니다 — 기온이 원인이니까요.<br>그럼 어느 쪽도 원인이 아닌 쌍은 어떨까요?<br>`;
+  } else {
+    picked = '준비된 데이터로 함정을 하나 보겠습니다.<br>';
+  }
 
   if (ex2Phase === 1) {
-    $('ex-chart-desc').innerHTML = picked + '기온이 오르면 <b>아이스크림 판매량</b>도, <b>물놀이 사고</b>도 함께 늘어납니다. 둘 다 기온과 관계가 있네요.';
-    $('cbox-reveal').style.display = 'none';
-    $('cbox-answer').style.display = 'none';
-    $('btn-reveal-pair').style.display = 'inline-flex';
+    $('ex-chart-desc').innerHTML = picked + `기온이 오르면 <b>${L1}</b>도, <b>${L2}</b>도 함께 늘어납니다. 둘 다 기온과 관계가 있네요.`;
+    $('cbox-reveal').hidden = true;
+    $('cbox-answer').hidden = true;
+    $('ex-actions').hidden = false;
+    $('btn-reveal-pair').hidden = false;
   } else {
-    $('ex-chart-desc').innerHTML = picked + '그래서 <b>아이스크림 판매량</b>과 <b>물놀이 사고</b>를 직접 비교해도 <b>강한 상관관계</b>가 나타납니다.<br>그렇다면 아이스크림이 사고의 원인일까요?';
-    $('cbox-reveal').style.display = 'flex';
-    $('cbox-answer').style.display = 'flex';
-    $('btn-reveal-pair').style.display = 'none';
+    $('ex-chart-desc').innerHTML = picked
+      + `그래서 <b>${L1}</b>${particle(L1, '과', '와')} <b>${L2}</b>${particle(L2, '을', '를')} 직접 비교해도 <b>강한 상관관계</b>가 나타납니다.`
+      + `<br>그렇다면 ${L1}${particle(L1, '이', '가')} ${L2}의 원인일까요?`;
+    $('cbox-reveal-title').textContent = `${L1} ↔ ${L2}`;
+    $('ax-reveal').textContent = axisTag(L1, L2);
+    $('cbox-reveal').hidden = false;
+    $('cbox-answer').hidden = false;
+    // 징검다리였던 버튼은 사라진다 — 새로 나타난 두 칸까지의 스크롤을 그만큼 줄인다.
+    $('ex-actions').hidden = true;
+    $('btn-reveal-pair').hidden = true;
     drawAxes(exCtxReveal);
-    drawPoints(exCtxReveal, plotData.map(d => ({x: d.ice, y: d.acc})), '#f0473a');
+    drawPoints(exCtxReveal, plotData.map(d => ({x: d[v1], y: d[v2]})), '#f0473a');
+    // 연출은 버튼을 눌러 공개한 그 순간에만. 단계를 되짚어 다시 그릴 때는 조용히 나타나야 한다.
+    ['cbox-reveal', 'cbox-answer'].forEach(id => {
+      const el = $(id);
+      el.classList.remove('reveal-in');
+      if (revealAnim) { void el.offsetWidth; el.classList.add('reveal-in'); }
+    });
+    revealAnim = false;
   }
 }
 
@@ -182,47 +272,80 @@ $('var-chips').addEventListener('click', (e) => {
     b.classList.toggle('selected', selVars.includes(b.dataset.var));
   });
   
-  $('var-status').textContent = selVars.length === 2 ? `선택 완료: ${VAR_LABELS[selVars[0]]} × ${VAR_LABELS[selVars[1]]}` : `변수를 2개 선택해주세요. (현재 ${selVars.length}개 선택)`;
+  const [s1, s2] = orderPair(selVars);
+  $('var-status').textContent = selVars.length === 2 ? `선택 완료: ${VAR_LABELS[s1]} × ${VAR_LABELS[s2]}` : `변수를 2개 선택해주세요. (현재 ${selVars.length}개 선택)`;
   
-  if(selVars.length === 2) renderVarCharts();
-  else $('ex-card-chart').style.display = 'none';
+  renderVarCharts();
 });
 
 $('btn-next-step1').onclick = () => { exStep = 2; ex2Phase = 1; updateExNav(); };
-$('btn-reveal-pair').onclick = () => { ex2Phase = 2; renderVarCharts(); };
+$('btn-reveal-pair').onclick = () => { ex2Phase = 2; revealAnim = true; renderVarCharts(); };
+// 접힌 요약 바에서 1단계로 되돌아가는 길 (상단 흐름 탭과 같은 동작)
+$('btn-back-vars').onclick = () => { exStep = 1; updateExNav(); };
 $('btn-cause-infer').onclick = () => { exStep = 3; updateExNav(); };
 
 function renderCtrlStep() {
   const tempThresh = +$('temp-slider').value; // 0 to 100
   $('temp-slider').style.setProperty('--p', tempThresh + '%'); // 공통 .ui-slider 의 채움 비율
   let filtered = baseData;
-  
+  const targetTemp = 8.5; // 폭염 구간에 고정
+  let narrow = 8;         // 남은 기온 창의 폭 — 아래 판독값이 이 최종값을 쓴다
+
   if (tempThresh > 0) {
-     const targetTemp = 8.5; // 폭염 구간에 고정 (슬라이더 라벨과 일치)
-     let narrow = 8 - (tempThresh/100)*7; // window narrows from 8 to 1
+     // 창을 ±0.3 까지 좁힌다 — 기온이 거의 고정돼야 남은 상관이 0 근처로 떨어진다.
+     narrow = 8 - (tempThresh/100)*7.4; // 8 → 0.6
      const inWindow = (w) => baseData.filter(d => Math.abs(d.temp - targetTemp) <= w/2);
      filtered = inWindow(narrow);
      // 표본이 너무 적으면 창을 조금씩 넓혀 채운다.
      // (원본 무작위 표본으로 대체하면 기온 통제가 풀려 상관이 되살아난다)
-     while (filtered.length < 30 && narrow < 8) {
+     while (filtered.length < 60 && narrow < 8) {
        narrow = Math.min(8, narrow + 0.5);
        filtered = inWindow(narrow);
      }
   }
 
-  drawAxes(exCtxCtrl);
-  const pts = filtered.map(d => ({x: d.ice, y: d.acc}));
+  /* 지금 붙잡고 있는 기온 구간을 화면 단위(°C)로 적는다.
+     데이터 기온 1~9 를 20~35°C 에 대응시킨다 — 슬라이더 끝(8.2~8.8)이 34~35°C 로 떨어져
+     예전 붙박이 라벨 "폭염일 고정(34도~35도)" 과 그대로 맞는다. */
+  // 자를 때는 공통 clamp(0~10)가 아니라 기온이 실제로 존재하는 범위(1~9)를 써야 한다.
+  // clamp 를 쓰면 전체 구간이 18~37°C 로 나와 데이터에 없는 온도를 보여주게 된다.
+  const inTempRange = (t) => Math.max(1, Math.min(9, t));
+  const toCelsius = (t) => 20 + (t - 1) / 8 * 15;
+  const lo = tempThresh > 0 ? inTempRange(targetTemp - narrow/2) : 1;
+  const hi = tempThresh > 0 ? inTempRange(targetTemp + narrow/2) : 9;
+  $('temp-range').textContent = `${Math.round(toCelsius(lo))} ~ ${Math.round(toCelsius(hi))}°C`;
+  $('temp-kept').textContent = tempThresh > 0
+    ? `전체의 ${Math.max(1, Math.round(filtered.length / baseData.length * 100))}%`
+    : '전체 데이터';
 
-  // Highlight filtered data in color, others in gray
-  const allPts = baseData.map(d => ({x: d.ice, y: d.acc}));
-  drawPoints(exCtxCtrl, allPts, '#aeb4c6', null, 3); // 통제 밖 표본 — 흐린 회색(--ink-4)으로 뒤로 물린다
-  drawPoints(exCtxCtrl, pts, '#f0473a'); // foreground dots
-  
+  const { v1, v2 } = trapPair();
+  const L1 = VAR_LABELS[v1], L2 = VAR_LABELS[v2];
+  $('ax-ctrl').textContent = axisTag(L1, L2);
+  $('ctrl-score-title').textContent = `${L1} ↔ ${L2} 상관 점수`;
+  $('mc-confound-body').textContent =
+    `두 변수(${L1}·${L2}) 양쪽 모두에 영향을 주어, 마치 둘 사이에 인과관계가 있는 것처럼 착각하게 만드는 숨은 공통 원인(더위)을 뜻합니다.`;
+
+  drawAxes(exCtxCtrl);
+  // 상관은 남은 표본 전체로 계산하고, 그리는 점만 줄인다 — 통계는 정확하게, 화면은 읽히게.
+  const pts = filtered.map(d => ({x: d[v1], y: d[v2]}));
+  const bgPts = ctrlBgData.map(d => ({x: d[v1], y: d[v2]}));
+  drawPoints(exCtxCtrl, bgPts, '#aeb4c6', null, 3); // 통제 밖 표본 — 흐린 회색(--ink-4)으로 뒤로 물린다
+  drawPoints(exCtxCtrl, pts.slice(0, 110), '#f0473a'); // foreground dots
+
   const r = linreg(pts);
   const score = r ? r.r : 0;
   const sEl = $('ctrl-score');
   sEl.textContent = (score >= 0 ? '+' : '') + score.toFixed(2);
   sEl.className = 'dp-val ' + (score > 0.3 ? 'pos' : '');
+
+  /* 문구는 슬라이더 위치가 아니라 실제 점수로 고른다 — 측정값이 말하는 것을 그대로 옮겨야 정직하다. */
+  const done = score < 0.35;
+  const cEl = $('ctrl-caption');
+  cEl.textContent = score >= 0.7 ? '기온이 제각각이라 둘이 함께 움직입니다'
+                  : done         ? '기온을 붙잡으니 관계가 거의 사라졌습니다'
+                                 : '기온 폭을 좁힐수록 관계가 흐려집니다';
+  cEl.className = 'dp-cap' + (done ? ' done' : '');
+
   
   if (tempThresh > 80) $('btn-ex-report').style.display = 'inline-flex';
 }
@@ -341,7 +464,7 @@ function updateClNav() {
   $('cl-view-4').style.display = clStep === 4 ? 'block' : 'none';
 
   if (clStep === 1) {
-    $('cl-step1-ctrl').style.display = 'flex';
+    $('cl-step1-ctrl').style.display = 'flex';  // .card 가 flex 세로 쌓기다
     $('cl-step2-res').style.display = 'none';
     renderCluster();
   } else if (clStep === 2) {
