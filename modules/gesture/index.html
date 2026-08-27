@@ -251,22 +251,26 @@
                   <div class="dm-cam-hand" id="dm-cam-hand" data-ic="fist"></div>
                   <div class="dm-cam-bar-wrap">
                     <div class="dm-cam-bar" id="dm-cam-bar"></div>
+                    <div class="dm-cam-thres-marker" id="dm-cam-thres-marker"></div>
                   </div>
                   <div class="dm-cam-text" id="dm-cam-text">AI 확신도: 45% (애매함)</div>
                 </div>
               </div>
               
               <!-- 우측 패널 (통계 튜닝 & 혼동행렬) -->
-              <div class="dm-thres-right dm-ctrl-box" style="padding:0;">
-                <h3>신뢰도 임계값 조절</h3>
-                <p>몇 % 이상 확신할 때만 기능을 실행할까요?<br>낮추면 오작동이 늘고, 높이면 반응이 둔해집니다.</p>
+              <div class="dm-thres-right dm-ctrl-box" style="padding:0; display:flex; flex-direction:column; justify-content:flex-start; gap:20px; height:100%;">
+                <div>
+                  <h3 style="margin:0 0 8px 0; font-size:18px;">신뢰도 임계값 조절</h3>
+                  <p style="margin:0; font-size:13px; color:var(--ink-2); line-height:1.6;">몇 % 이상 확신할 때만 기능을 실행할까요?<br>낮추면 오작동이 늘고, 높이면 반응이 둔해집니다.</p>
+                </div>
+                
                 <div class="dm-slider-card">
                   <input type="range" class="ui-slider" id="dm-slider" min="0" max="100" value="86">
                   <div class="dm-slider-val" id="dm-slider-val">86%</div>
                 </div>
 
-                <div class="dm-cm-wrap">
-                  <p style="font-size:14px; margin:20px 0 10px; line-height:1.6;">
+                <div class="dm-cm-wrap" style="margin:0;">
+                  <p style="font-size:14px; margin:0 0 10px; line-height:1.6;">
                     <b>📊 테스트 샘플 적용 결과</b>
                   </p>
                   <table class="dm-cm-table">
@@ -295,7 +299,7 @@
                   </table>
                 </div>
 
-                <button class="btn primary lg block" style="width:100%; margin-top:8px;" onclick="goToDmStep(3)">최종 매핑 완료하기</button>
+                <button class="btn primary lg block" style="width:100%;" onclick="goToDmStep(3)">최종 매핑 완료하기</button>
               </div>
             </div>
           </div>

@@ -83,6 +83,9 @@ function goToDmStep(w) {
       dmAnimTimer = setInterval(() => {
         const val = conf[i++ % conf.length];
         const thres = +$('dm-slider').value;
+        const marker = $('dm-cam-thres-marker');
+        if (marker) marker.style.left = thres + '%';
+        
         if (bar) bar.style.width = val.toFixed(1) + '%';
         if (val >= thres) {
           if (bar) bar.style.background = 'var(--green)';
