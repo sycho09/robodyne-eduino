@@ -160,7 +160,6 @@
   .insight-box.warn { background:var(--amber-soft); border-color:rgba(217,138,31,.4); }
   .insight-box.warn .in-txt b { color:var(--amber); }
 
-  .btn-sm { padding:6px 10px; font-size:12px; }
   
   .modal-card { position:absolute; top:20px; right:20px; width:280px; background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow); z-index:100; overflow:hidden; animation:slideIn 0.3s ease; }
   @keyframes slideIn { from { transform:translateY(10px); opacity:0; } to { transform:translateY(0); opacity:1; } }

@@ -69,7 +69,11 @@ main { max-width:1140px; margin:0 auto; padding:26px 22px 22px; }
      .btn.quiet    투명      힌트·부가.
 
    .block(전폭)과 .lg(크게)도 강조 신호다. .primary 에만 곁들이고 남용하지 않는다.
-   전부 강조하면 아무것도 강조되지 않는다. */
+   전부 강조하면 아무것도 강조되지 않는다.
+
+   .btn-sm 은 반대쪽 — 카드 머리에 붙는 '태그형' 보조 버튼(힌트·용어 설명)이다.
+   흰 배경 + 얇은 테두리 알약 하나로 통일한다. 코스마다 다른 크기·투명도를 쓰면
+   같은 역할의 버튼이 화면마다 달라 보인다. */
 .btn:hover { border-color:var(--primary-line); color:var(--primary-ink); }
 .btn:disabled { opacity:.45; cursor:not-allowed; box-shadow:none; }
 .btn.primary { background:linear-gradient(150deg,var(--primary-2),var(--primary)); border-color:transparent; color:#fff; box-shadow:0 5px 16px rgba(240,71,58,.32); }
@@ -81,6 +85,10 @@ main { max-width:1140px; margin:0 auto; padding:26px 22px 22px; }
 .btn.block { width:100%; }
 /* 지금까지 gesture·life 에만 있어 나머지 3개 코스에서는 아무 효과가 없던 크기 수식자. */
 .btn.lg { padding:13px 20px; font-size:15px; }
+/* 카드 머리의 태그형 힌트 버튼 — 예전에는 data/style.css 안에만 있었다.
+   .btn 이 아니라 .btn.btn-sm 으로 적는다: 코스별 style.css 가 base.css 뒤에 실리면서
+   같은 특이성의 .btn 으로 크기를 다시 정하기 때문에, 한 단계 높여야 수식자가 살아남는다. */
+.btn.btn-sm { padding:6px 10px; font-size:12px; }
 /* 버튼 하나를 가운데 두는 래퍼. .btn 이 inline-flex 라 margin:auto 로는 가운데로 오지 않는다. */
 .btn-row { display:flex; justify-content:center; margin-top:16px; }
 .learn b { color:var(--primary-ink); }
