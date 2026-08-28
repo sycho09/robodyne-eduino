@@ -1,8 +1,48 @@
-/* Gesture 심화 미션 로직: 제스처 제어 데모 및 실제 모델 기반 혼동행렬 시뮬레이션. */
-/* ════ 고급-응용: 제스처 제어 데모 ════ */
+/* Gesture 심화 미션 로직: 학습한 모델로 하는 가위바위보 대결 및 실제 모델 기반 혼동행렬 시뮬레이션. */
+/* ════ 고급-응용: 가위바위보 대결 ════ */
 let dmStep = 1;
-let dmFunc = 'vol';
-const dmFuncNames = { ppt: '[다음 슬라이드]', vol: '[시스템 볼륨 조절]', zoom: '[화면 확대/축소]' };
+
+/* 학습시킨 클래스를 순서대로 여기에 잇는다 (0=바위, 1=보, 2=가위).
+   초급의 classifyRPS() 는 펴진 손가락 개수를 세는 규칙이고, 여기서는 학생이 학습시킨
+   모델이 판정한다 — 같은 손을 두 방식이 어떻게 다르게 읽는지가 이 단계의 핵심이다. */
+const RPS_MOVES = [
+  { name: '바위', ic: 'fist' },
+  { name: '보', ic: 'palm' },
+  { name: '가위', ic: 'victory' }
+];
+/* a 가 b 를 이기면 1. 바위>가위, 보>바위, 가위>보 가 모두 (a-b+3)%3===1 로 떨어진다. */
+function rpsBeats(a, b) { return (a - b + 3) % 3 === 1; }
+
+function dmEsc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+/* 학습에 실제로 쓰인 클래스만 — trainHead 와 같은 기준(8장 이상)이라 인덱스가 어긋나지 않는다. */
+function dmUsable() {
+  if (typeof classes === 'undefined') return [];
+  return classes.filter(c => c.samples.length >= 8);
+}
+
+/* 1단계: 내 제스처가 무엇에 연결되는지 보여준다. */
+function renderRpsMap() {
+  const box = $('dm-map');
+  if (!box) return;
+  const usable = dmUsable();
+  box.innerHTML = RPS_MOVES.map((mv, i) => {
+    /* 학습에 쓰인 클래스가 모자라면 그 자리의 원래 클래스를 보여 주고 왜 빠졌는지 알린다. */
+    const c = usable[i];
+    const raw = (typeof classes !== 'undefined') ? classes[i] : null;
+    const name = c ? c.name : (raw ? raw.name : '아직 없음');
+    const sub = c ? c.samples.length + '장 학습됨'
+      : raw ? '데이터 ' + raw.samples.length + '장 — 8장 이상 모아야 합니다'
+        : '중급에서 제스처를 하나 더 만들어 주세요';
+    return '<div class="dm-map-row' + (c ? '' : ' missing') + '">' +
+      '<span class="dm-map-cls">' + dmEsc(name) + '<small>' + sub + '</small></span>' +
+      '<span class="dm-map-arrow">→</span>' +
+      '<span class="dm-map-mv"><span class="ic-inline" data-ic="' + mv.ic + '"></span>' + mv.name + '</span>' +
+      '</div>';
+  }).join('');
+  if (window.EduinoIcons) EduinoIcons.mount(box);
+}
 
 function demoEnter() {
   const ready = !!(typeof head !== 'undefined' && head);
@@ -32,13 +72,6 @@ if (btnDmToTrain) {
   };
 }
 
-function selectDemoFunc(el, func) {
-  document.querySelectorAll('.dm-func-card').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  dmFunc = func;
-}
-if (typeof window !== 'undefined') window.selectDemoFunc = selectDemoFunc;
-
 let dmAnimTimer = null;
 function goToDmStep(w) {
   dmStep = w;
@@ -59,12 +92,15 @@ function goToDmStep(w) {
   if (mainCard) mainCard.hidden = (w === 3);
   
   if (dmAnimTimer) { clearInterval(dmAnimTimer); dmAnimTimer = null; }
-  
-  // 최종 매핑(3단계)을 떠나면 데모 카메라를 끈다
-  if (w !== 3 && typeof stopDemoCam !== 'undefined') {
-    stopDemoCam();
+
+  // 대결(3단계)을 떠나면 데모 카메라를 끄고 진행 중인 카운트다운도 접는다
+  if (w !== 3) {
+    rpsAbort();
+    if (typeof stopDemoCam !== 'undefined') stopDemoCam();
   }
-  
+
+  if (w === 1) renderRpsMap();
+
   if (w === 2) {
     const hand = $('dm-cam-hand');
     const bar = $('dm-cam-bar');
@@ -105,20 +141,9 @@ function goToDmStep(w) {
 
   if (w === 3) {
     window.CourseDashboard && CourseDashboard.markDone('demo');
-    const resFunc = $('dm-res-func');
-    if (resFunc) resFunc.textContent = dmFuncNames[dmFunc];
     const resThres = $('dm-res-thres');
     if (resThres) resThres.textContent = $('dm-slider').value + '%';
-    
-    // Set target gesture name (class 0)
-    const tgtGest = $('dm-res-target-gesture');
-    if (tgtGest) {
-      if (typeof classes !== 'undefined' && classes.length > 0) {
-        tgtGest.textContent = classes[0].name;
-      } else {
-        tgtGest.textContent = '등록된 제스처';
-      }
-    }
+    rpsReset();
   }
 }
 
@@ -154,75 +179,67 @@ function confusionAt(thres) {
   const m = dmMeasure();
   if (!m) return null;
   const cut = thres / 100;
+  const n = m.names.length;
   const per = m.names.map(() => ({ right: 0, wrong: 0, miss: 0 }));
+  /* mat[실제][예측] · missPer[실제] — 합계만으로는 표를 클래스 수만큼 그릴 수 없다. */
+  const mat = m.names.map(() => new Array(n).fill(0));
+  const missPer = m.names.map(() => 0);
   m.rows.forEach(r => {
     let top = 0;
     for (let i = 1; i < r.p.length; i++) if (r.p[i] > r.p[top]) top = i;
-    if (r.p[top] < cut) per[r.truth].miss++;
-    else if (top === r.truth) per[r.truth].right++;
-    else per[r.truth].wrong++;
+    if (r.p[top] < cut) { per[r.truth].miss++; missPer[r.truth]++; }
+    else {
+      mat[r.truth][top]++;
+      if (top === r.truth) per[r.truth].right++;
+      else per[r.truth].wrong++;
+    }
   });
   const wrong = per.reduce((s, x) => s + x.wrong, 0);
   const miss = per.reduce((s, x) => s + x.miss, 0);
   const verdict = miss > wrong * 1.8 ? 'miss' : wrong > miss * 1.8 ? 'wrong' : 'balanced';
-  return { per, names: m.names, wrong, miss, total: m.rows.length, verdict };
-}
-
-/* 표의 라벨을 학생이 직접 만든 클래스 이름에 맞춰 동적으로 업데이트합니다. 기존 DOM 아이콘은 보존합니다. */
-function dmSetLabel(el, name) {
-  if (!el || !name) return;
-  const ic = el.querySelector('.ic-inline');
-  el.textContent = '';
-  if (ic) { el.appendChild(ic); el.appendChild(document.createTextNode(' ' + name)); }
-  else el.appendChild(document.createTextNode(name));
+  return { per, mat, missPer, names: m.names, wrong, miss, total: m.rows.length, verdict };
 }
 
 function paintConfusion() {
   const slider = $('dm-slider');
-  if (!slider) return;
-  const thres = +slider.value;
-  const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
-  const cells = ['dm-cm-00', 'dm-cm-01', 'dm-cm-0n', 'dm-cm-10', 'dm-cm-11', 'dm-cm-1n'];
+  const tbl = $('dm-cm-table');
+  const lead = $('dm-cm-lead');
   const note = $('dm-cm-note');
-  /* 표 위 안내문에는 id 가 없다 — 임계값 <b> 의 부모가 그 문단이다. */
-  const lead = $('dm-cm-thres') ? $('dm-cm-thres').parentElement : null;
-  const c = confusionAt(thres);
+  if (!slider || !tbl) return;
+  const c = confusionAt(+slider.value);
 
   if (!c) {
-    cells.forEach(id => set(id, '—'));
-    if (lead) lead.innerHTML = '<b>📊 테스트 샘플 <span id="dm-cm-total">0</span>개 적용 결과</b><br><span style="color:var(--ink-3); font-size:12.5px;">아직 잴 것이 없습니다.</span>';
-    if (note) note.innerHTML = '이 표는 <b>[2. 중급 · 제작] 코스에서 직접 모은 데이터</b>로 채워집니다. 제스처 2가지를 각각 <b>8개 이상</b> 모아 학습을 마친 뒤 다시 오세요.';
+    tbl.innerHTML = '';
+    if (lead) lead.innerHTML = '<b>테스트 샘플 적용 결과</b>';
+    if (note) note.innerHTML = '이 표는 <b>[2. 중급 · 제작] 코스에서 직접 모은 데이터</b>로 채워집니다. 제스처를 각각 <b>8장 이상</b> 모아 학습을 마친 뒤 다시 오세요.';
     return;
   }
 
-  const a = c.per[0], b = c.per[1];
-  if (lead) {
-    lead.innerHTML = '<b>📊 테스트 샘플 <span id="dm-cm-total">' + c.total + '</span>개 적용 결과</b><br><span style="color:var(--ink-3); font-size:12.5px;">슬라이더를 움직이면 결과가 실시간으로 바뀝니다.</span>';
-  }
-  set('dm-cm-00', a.right + ' (성공)');
-  set('dm-cm-01', a.wrong + ' (오인)');
-  set('dm-cm-0n', a.miss + ' (무시)');
-  set('dm-cm-10', b.wrong + ' (오인)');
-  set('dm-cm-11', b.right + ' (성공)');
-  set('dm-cm-1n', b.miss + ' (무시)');
+  /* 표는 학습시킨 클래스 수를 그대로 따른다 — 2개든 4개든 빠지는 클래스가 없다. */
+  const ic = (i) => (RPS_MOVES[i] ? '<span class="ic-inline" data-ic="' + RPS_MOVES[i].ic + '"></span> ' : '');
+  let html = '<thead><tr><th>실제 동작 \ AI 예측</th>';
+  c.names.forEach((n, i) => { html += '<th>' + ic(i) + dmEsc(n) + '</th>'; });
+  html += '<th>미반응</th></tr></thead><tbody>';
+  c.names.forEach((n, r) => {
+    html += '<tr><th>' + ic(r) + dmEsc(n) + '</th>';
+    c.names.forEach((_, p) => {
+      const v = c.mat[r][p];
+      const cls = r === p ? ' class="succ"' : (v ? ' class="err"' : '');
+      html += '<td' + cls + '>' + v + (r === p ? ' (성공)' : v ? ' (오인)' : '') + '</td>';
+    });
+    html += '<td>' + c.missPer[r] + (c.missPer[r] ? ' (무시)' : '') + '</td></tr>';
+  });
+  tbl.innerHTML = html + '</tbody>';
+  if (window.EduinoIcons) EduinoIcons.mount(tbl);
 
-  const tbl = document.querySelector('.dm-cm-table');
-  if (tbl) {
-    const hs = tbl.querySelectorAll('thead th');
-    dmSetLabel(hs[1], c.names[0]); dmSetLabel(hs[2], c.names[1]);
-    const rs = tbl.querySelectorAll('tbody tr');
-    if (rs[0]) dmSetLabel(rs[0].querySelector('th'), c.names[0]);
-    if (rs[1]) dmSetLabel(rs[1].querySelector('th'), c.names[1]);
-  }
-
+  if (lead) lead.innerHTML = '<b>테스트 샘플 ' + c.total + '개 적용 결과</b><br><span class="dm-cm-sub">슬라이더를 움직이면 결과가 실시간으로 바뀝니다.</span>';
   if (!note) return;
-  const extra = c.names.length > 2 ? ' (클래스 ' + c.names.length + '개 중 앞의 2개만 표에 나옵니다)' : '';
   if (c.verdict === 'miss') {
-    note.innerHTML = '임계값이 높아 <b>오인은 거의 없지만</b> ' + c.total + '개 중 ' + c.miss + '개가 아예 무시됐습니다. 안전하지만 답답한 설정입니다.' + extra;
+    note.innerHTML = '임계값이 높아 <b>오인은 거의 없지만</b> ' + c.total + '개 중 ' + c.miss + '개가 아예 무시됐습니다. 안전하지만 답답한 설정입니다.';
   } else if (c.verdict === 'wrong') {
-    note.innerHTML = '임계값이 낮아 <b>반응은 잘 하지만</b> ' + c.total + '개 중 ' + c.wrong + '개를 엉뚱한 동작으로 실행했습니다. 오작동이 잦은 설정입니다.' + extra;
+    note.innerHTML = '임계값이 낮아 <b>반응은 잘 하지만</b> ' + c.total + '개 중 ' + c.wrong + '개를 엉뚱한 동작으로 읽었습니다. 오작동이 잦은 설정입니다.';
   } else {
-    note.innerHTML = '오인 ' + c.wrong + '개, 무시 ' + c.miss + '개로 균형이 잡힌 설정입니다. 어느 쪽 실수가 더 치명적인지에 따라 임계값을 옮기면 됩니다.' + extra;
+    note.innerHTML = '오인 ' + c.wrong + '개, 무시 ' + c.miss + '개로 균형이 잡힌 설정입니다. 어느 쪽 실수가 더 치명적인지에 따라 임계값을 옮기면 됩니다.';
   }
 }
 if (typeof window !== 'undefined') window.paintConfusion = paintConfusion;
@@ -259,11 +276,9 @@ if (dSlider) {
 /* 데모 카메라 및 실시간 예측 루프 */
 let demoCam = null;
 let demoRaf = null;
-let demoLastTriggerTime = 0;
-let demoPptSlide = 1;
-let demoVolLevel = 30;
-let demoZoomLevel = 1.0;
-
+/* 매 프레임의 최신 판정을 담아 둔다 — 카운트다운이 끝나는 순간 이 값을 집는다.
+   { mv, conf, ruleMv } · 손이 없으면 null */
+let rpsLatest = null;
 
 function stopDemoCam() {
   if (typeof demoCam !== 'undefined' && demoCam && demoCam.stream) {
@@ -272,9 +287,15 @@ function stopDemoCam() {
   if (typeof demoRaf !== 'undefined' && demoRaf) {
     cancelAnimationFrame(demoRaf);
   }
-  const state = $('demo-cam-state'); 
+  const state = $('demo-cam-state');
   if (state) state.textContent = '대기';
-  
+
+  /* 카메라가 없으면 낼 손도 없다 — 진행 중인 카운트다운을 접고 버튼을 잠근다. */
+  rpsAbort();
+  rpsLatest = null;
+  rpsPaintLive(null);
+  rpsSetGo(false);
+
   const btn = $('btn-demo-cam');
   const btnOff = $('btn-demo-cam-off');
   if (btn) {
@@ -302,6 +323,7 @@ if (btnDemoCam) {
       $('demo-cam-state').textContent = '활성';
       btnDemoCam.style.display = 'none';
       if (btnDemoCamOff) btnDemoCamOff.style.display = 'block';
+      rpsSetGo(true);
       demoLoop();
     } catch (e) {
       btnDemoCam.textContent = '카메라 오류';
@@ -312,85 +334,199 @@ if (btnDemoCamOff) {
   btnDemoCamOff.onclick = stopDemoCam;
 }
 
+
+/* ── 매 프레임 판정 ────────────────────────────────────────────────────
+   승부는 학습 모델로 내고, 초급의 규칙 기반 판정(classifyRPS)을 같이 실어 둔다.
+   손을 눕히거나 반쯤 접으면 규칙 쪽이 먼저 무너지는데, 그 대비가 이 단계의 볼거리다. */
 async function demoLoop() {
   if (!demoCam || !demoCam.stream) return;
   const kp = await estimate(demoCam);
-  if (kp) {
+  if (!kp) {
+    rpsLatest = null;
+    rpsPaintLive(null);
+  } else {
     drawHand(demoCam.canvas.getContext('2d'), kp, '#7c6cff');
-    if (typeof head !== 'undefined' && typeof classes !== 'undefined' && head) {
-      const usable = classes.filter(c => c.samples.length >= 8);
-      if (usable.length >= 2) {
-        const feat = handFeature(kp);
-        const probs = tf.tidy(() => head.predict(tf.tensor2d([feat])).arraySync()[0]);
-        const prob0 = probs[0] * 100;
-        const thres = +$('dm-slider').value;
-        if (prob0 >= thres) {
-          const now = Date.now();
-          if (now - demoLastTriggerTime > 1500) {
-            demoLastTriggerTime = now;
-            triggerDemoAction();
-          }
-        }
-      }
+    if (typeof head !== 'undefined' && head && dmUsable().length >= 2) {
+      const probs = tf.tidy(() => head.predict(tf.tensor2d([handFeature(kp)])).arraySync()[0]);
+      let top = 0;
+      for (let i = 1; i < probs.length; i++) if (probs[i] > probs[top]) top = i;
+      const rule = classifyRPS(kp);
+      const ri = RPS_MOVES.findIndex(m => m.name === rule.label);
+      rpsLatest = {
+        /* 4번째 이후 클래스는 가위바위보에 연결되지 않는다 — null 로 두고 무효 처리한다. */
+        mv: top < RPS_MOVES.length ? top : null,
+        conf: probs[top],
+        ruleMv: ri < 0 ? null : ri
+      };
+      rpsPaintLive(rpsLatest);
     }
   }
   demoRaf = requestAnimationFrame(demoLoop);
 }
 
-function triggerDemoAction() {
-  const idle = $('dm-feedback-idle');
-  const active = $('dm-feedback-active');
-  if (!idle || !active) return;
-  
-  idle.hidden = true;
-  active.hidden = false;
-  
-  if (dmFunc === 'ppt') {
-    demoPptSlide++;
-    if (demoPptSlide > 5) demoPptSlide = 1;
-    active.innerHTML = `
-      <div class="demo-ppt-wrap">
-        <div class="demo-ppt-slide">슬라이드 ${demoPptSlide} ➔</div>
-      </div>
-      <div class="dm-feedback-text" style="margin-top:16px;">슬라이드 넘김! (${demoPptSlide}페이지)</div>
-    `;
-  } else if (dmFunc === 'vol') {
-    let prevVol = demoVolLevel;
-    demoVolLevel += 15;
-    if (demoVolLevel > 100) { demoVolLevel = 30; prevVol = 15; }
-    active.innerHTML = `
-      <style>
-        @keyframes volFillDyn { 0% { width: ${prevVol}%; } 100% { width: ${demoVolLevel}%; } }
-        .demo-vol-bar-fg-dyn { height:100%; background:var(--primary); width:${demoVolLevel}%; animation: volFillDyn 0.5s ease-out forwards; }
-      </style>
-      <div class="demo-vol-wrap">
-        <span class="ic-inline" style="font-size:24px; color:var(--ink-2)">${EduinoIcons.svg('trending-up')}</span>
-        <div class="demo-vol-bar-bg">
-          <div class="demo-vol-bar-fg-dyn"></div>
-        </div>
-      </div>
-      <div class="dm-feedback-text" style="margin-top:16px;">시스템 볼륨 조절! (${demoVolLevel}%)</div>
-    `;
-  } else if (dmFunc === 'zoom') {
-    let prevZoom = demoZoomLevel;
-    demoZoomLevel += 0.3;
-    if (demoZoomLevel > 2.5) { demoZoomLevel = 1.0; prevZoom = 0.7; }
-    active.innerHTML = `
-      <style>
-        @keyframes zoomPopDyn { 0% { transform: scale(${prevZoom}); } 100% { transform: scale(${demoZoomLevel}); box-shadow:var(--shadow); border-color:var(--primary-line); } }
-        .demo-zoom-target-dyn { display:flex; align-items:center; justify-content:center; width:120px; height:120px; background:#fff; border-radius:12px; border:1px solid var(--line); box-shadow:var(--shadow-sm); animation: zoomPopDyn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-      </style>
-      <div class="demo-zoom-wrap">
-        <div class="demo-zoom-target-dyn">
-          <span class="ic-inline" style="font-size:48px; color:var(--ink-3)">${EduinoIcons.svg('search')}</span>
-        </div>
-      </div>
-      <div class="dm-feedback-text" style="margin-top:16px;">화면 확대! (${Math.round(demoZoomLevel * 100)}%)</div>
-    `;
+/* ── 가위바위보 대결 ──────────────────────────────────────────────── */
+let rpsTimer = null;
+let rpsScore = { win: 0, draw: 0, lose: 0, invalid: 0, disagree: 0 };
+
+const rpsIc = (n) => (window.EduinoIcons ? EduinoIcons.svg(n) : '');
+const rpsIcon = (i) => (RPS_MOVES[i] ? rpsIc(RPS_MOVES[i].ic) : rpsIc('hand-raised'));
+const rpsThres = () => (+($('dm-slider') || { value: 0 }).value);
+
+/* 카운트다운 중에도 계속 갱신된다 — 막대가 흔들리는 걸 봐야 "AI가 지금 나를 이렇게
+   보고 있다"가 전달된다. 지금까지 이 피드백은 2단계에만 있었다. */
+function rpsPaintLive(s) {
+  const bar = $('rps-live-bar'), t = $('rps-live-t'), cut = $('rps-live-cut');
+  const thres = rpsThres();
+  if (cut) cut.style.left = thres + '%';
+  if (!bar || !t) return;
+  if (!s) {
+    bar.style.width = '0%';
+    bar.className = 'rps-live-bar';
+    t.className = 'rps-live-t off';
+    t.textContent = '손이 보이지 않습니다';
+    return;
   }
-  
-  setTimeout(() => {
-    idle.hidden = false;
-    active.hidden = true;
-  }, 1200); // 1.2s to let animation finish before hiding
+  const pct = s.conf * 100;
+  const ok = pct >= thres && s.mv != null;
+  bar.style.width = pct.toFixed(1) + '%';
+  bar.className = 'rps-live-bar' + (ok ? ' ok' : '');
+  t.className = 'rps-live-t' + (ok ? ' ok' : '');
+  t.textContent = s.mv == null
+    ? '가위바위보에 연결되지 않은 제스처'
+    : RPS_MOVES[s.mv].name + ' · ' + Math.round(pct) + '%' + (ok ? '' : ' · 커트라인 미달');
+}
+
+function rpsPaintScore() {
+  const el = $('rps-score');
+  if (!el) return;
+  const s = rpsScore;
+  el.innerHTML =
+    '<span class="rps-sc win">' + s.win + '승</span>' +
+    '<span class="rps-sc draw">' + s.draw + '무</span>' +
+    '<span class="rps-sc lose">' + s.lose + '패</span>' +
+    (s.invalid ? '<span class="rps-sc void">무효 ' + s.invalid + '</span>' : '') +
+    (s.disagree ? '<span class="rps-sc dis">규칙과 엇갈림 ' + s.disagree + '</span>' : '');
+}
+
+function rpsSetHands(me, ai) {
+  const m = $('rps-me'), a = $('rps-ai'), mn = $('rps-me-n'), an = $('rps-ai-n');
+  if (m) m.innerHTML = rpsIcon(me == null ? -1 : me);
+  if (a) a.innerHTML = rpsIcon(ai == null ? -1 : ai);
+  if (mn) mn.textContent = me == null ? '—' : RPS_MOVES[me].name;
+  if (an) an.textContent = ai == null ? '—' : RPS_MOVES[ai].name;
+}
+
+function rpsSetGo(on, label) {
+  const b = $('rps-go');
+  if (!b) return;
+  b.disabled = !on;
+  b.textContent = label || '대결 시작';
+}
+
+function rpsAbort() {
+  if (rpsTimer) { clearInterval(rpsTimer); rpsTimer = null; }
+  const vs = $('rps-vs');
+  if (vs) { vs.textContent = 'VS'; vs.classList.remove('count'); }
+}
+
+function rpsReset() {
+  rpsAbort();
+  rpsScore = { win: 0, draw: 0, lose: 0, invalid: 0, disagree: 0 };
+  rpsPaintScore();
+  rpsSetHands(null, null);
+  const res = $('rps-result');
+  if (res) res.innerHTML = '';
+  rpsPaintLive(null);
+  rpsSetGo(!!(demoCam && demoCam.stream));
+}
+
+function rpsStart() {
+  if (rpsTimer) return;
+  const res = $('rps-result');
+  if (res) res.innerHTML = '';
+  rpsSetHands(null, null);
+  rpsSetGo(false, '준비…');
+  const vs = $('rps-vs');
+  let n = 3;
+  if (vs) { vs.classList.add('count'); vs.textContent = n; }
+  rpsTimer = setInterval(() => {
+    n--;
+    if (n > 0) { if (vs) vs.textContent = n; return; }
+    clearInterval(rpsTimer); rpsTimer = null;
+    if (vs) vs.textContent = '냈!';
+    rpsJudge();
+    setTimeout(() => { if (vs) { vs.textContent = 'VS'; vs.classList.remove('count'); } }, 700);
+  }, 800);
+}
+
+/* 규칙 기반(초급)이 같은 손을 뭐라고 읽었는지 — 표시만 한다. */
+function rpsRuleLine(shot, modelMv) {
+  if (shot.ruleMv == null) {
+    return '<div class="rps-line rule diff">규칙 기반 <b>판정 실패</b> · 손가락 개수 규칙으로는 읽히지 않는 자세입니다</div>';
+  }
+  const diff = modelMv != null && shot.ruleMv !== modelMv;
+  const tail = modelMv == null ? '' : (diff ? ' · 학습 모델과 엇갈렸습니다' : ' · 학습 모델과 같은 판정');
+  return '<div class="rps-line rule' + (diff ? ' diff' : '') + '">규칙 기반 <b>' +
+    RPS_MOVES[shot.ruleMv].name + '</b>' + tail + '</div>';
+}
+
+function rpsJudge() {
+  const res = $('rps-result');
+  const shot = rpsLatest;
+  const thres = rpsThres();
+  rpsSetGo(true, '다시 대결');
+
+  if (!shot) {
+    rpsScore.invalid++;
+    if (res) res.innerHTML = '<div class="rps-line void"><b>무효</b> · 손이 보이지 않았습니다</div>';
+    rpsPaintScore();
+    return;
+  }
+
+  const ai = Math.floor(Math.random() * RPS_MOVES.length);
+  const pct = Math.round(shot.conf * 100);
+
+  if (shot.mv == null) {
+    rpsScore.invalid++;
+    rpsSetHands(null, ai);
+    if (res) res.innerHTML =
+      '<div class="rps-line void"><b>무효</b> · 가위바위보에 연결되지 않은 제스처입니다</div>' + rpsRuleLine(shot, null);
+    rpsPaintScore();
+    return;
+  }
+  if (pct < thres) {
+    rpsScore.invalid++;
+    rpsSetHands(null, ai);
+    if (res) res.innerHTML =
+      '<div class="rps-line void"><b>무효</b> · 확신도 ' + pct + '% 가 커트라인 ' + thres + '% 에 못 미쳤습니다</div>' +
+      rpsRuleLine(shot, null);
+    rpsPaintScore();
+    return;
+  }
+
+  if (shot.ruleMv !== null && shot.ruleMv !== shot.mv) rpsScore.disagree++;
+  let cls, verdict;
+  if (shot.mv === ai) { cls = 'draw'; verdict = '비김'; rpsScore.draw++; }
+  else if (rpsBeats(shot.mv, ai)) { cls = 'win'; verdict = '이김'; rpsScore.win++; }
+  else { cls = 'lose'; verdict = '짐'; rpsScore.lose++; }
+
+  rpsSetHands(shot.mv, ai);
+  if (res) res.innerHTML =
+    '<div class="rps-line model">학습 모델 <b>' + RPS_MOVES[shot.mv].name + '</b> · 확신도 ' + pct + '%</div>' +
+    rpsRuleLine(shot, shot.mv) +
+    '<div class="rps-line ' + cls + '">승부 <b>AI ' + RPS_MOVES[ai].name + ' → ' + verdict + '</b></div>';
+  rpsPaintScore();
+}
+
+const btnRpsGo = $('rps-go');
+if (btnRpsGo) btnRpsGo.onclick = rpsStart;
+
+/* 슬라이더를 움직이면 3단계의 커트라인 표시도 같이 따라간다. */
+if (dSlider) {
+  dSlider.addEventListener('input', () => {
+    const cut = $('rps-live-cut');
+    if (cut) cut.style.left = dSlider.value + '%';
+    const rt = $('dm-res-thres');
+    if (rt) rt.textContent = dSlider.value + '%';
+  });
 }

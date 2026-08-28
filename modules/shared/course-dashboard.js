@@ -182,7 +182,7 @@
         return itemHtml;
       }).join('');
       
-      sb.innerHTML = '<div class="dash-nav-group"><div class="dash-nav-group-title">기본 학습 커리큘럼</div>' + courseItems + '</div>';
+      sb.innerHTML = '<div class="dash-nav-group"><div class="dash-nav-group-title">학습 커리큘럼</div>' + courseItems + '</div>';
 
       if (backBtn) {
         backBtn.className = 'dash-home-btn';
@@ -200,11 +200,11 @@
       sb.querySelectorAll('.course-active').forEach(function (elm) {
         elm.addEventListener('click', function (e) {
           e.preventDefault();
+          // 메뉴만 접는다 — 단계 이동은 하지 않는다. 보던 패널이 그대로 남아야 빈 화면이 되지 않는다.
           var sub = elm.nextElementSibling;
           if (sub && sub.classList.contains('dash-nav-sub')) {
             sub.style.display = (sub.style.display === 'none') ? 'flex' : 'none';
           }
-          goTo(-1); // 홈 화면(아무 탭도 선택되지 않은 상태)으로 이동
         });
       });
       applySidebarLocks(sb);
