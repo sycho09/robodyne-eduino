@@ -204,6 +204,7 @@
           if (sub && sub.classList.contains('dash-nav-sub')) {
             sub.style.display = (sub.style.display === 'none') ? 'flex' : 'none';
           }
+          goTo(-1); // 홈 화면(아무 탭도 선택되지 않은 상태)으로 이동
         });
       });
       applySidebarLocks(sb);
