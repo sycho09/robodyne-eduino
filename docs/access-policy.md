@@ -43,25 +43,19 @@
 전 코스 단일 규칙 — 실습 ③ 탭만 잠금
 
 ### 제스처 · 동작 AI (/modules/gesture/)
-| 패널 | 내용 | 접근 |
-|---|---|---|
-| panel-play | 손 관절 21점 추적 + 가위바위보 (규칙 기반) | 무료 |
-| panel-train | 데이터 수집 → 학습 → 추론 | 무료 |
-| panel-demo | 기능 선택 → 임계값 → 혼동행렬 → 최종 매핑 | 잠금 |
+- `panel-play` (손 관절 기반 체험): 무료
+- `panel-train` (제스처 수집 및 학습): 무료
+- `panel-demo` (가상 버튼 매핑 및 제어, 3단계 구조): **잠금 (유료)**
 
 ### 텍스트 · 언어 AI (/modules/text/)
-| 패널 | 내용 | 접근 |
-|---|---|---|
-| panel-similar | 문장 유사도 비교 | 무료 |
-| panel-classify | 예문 수집 → 학습 → 분류 | 무료 |
-| panel-review | 고객 리뷰 분류기 4스텝 미션 | 잠금 |
+- `panel-similar` (문장 유사도): 무료
+- `panel-classify` (분류기 학습): 무료
+- `panel-review` (200건 실전 고객 리뷰 분류기): **잠금 (유료)**
 
 ### 생활 속 인식 AI (/modules/life/)
-| 패널 | 내용 | 접근 |
-|---|---|---|
-| panel-scan | QR·바코드 스캔 | 무료 |
-| panel-ocr | OCR 글자 인식 | 무료 |
-| panel-limit | 한계 실험 → 원인 분석 → 일괄 처리 → 지출 증빙 리포트 | 잠금 |
+- `panel-scan` (QR/바코드 인식): 무료
+- `panel-ocr` (글자 인식): 무료
+- `panel-limit` (영수증 문서 처리 자동화, 3단계 구조): **잠금 (유료)**
 
 ### 머신러닝 개념 실험실 (/modules/concept/)
 | 패널 | 내용 | 접근 |

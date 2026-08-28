@@ -1,10 +1,6 @@
-/* 4단계 학습 대시보드 공유 셸 (사전진단 → 이론 → 실습 → 평가)
-   각 모듈 index.html은 <div id="practice-content"> 안에 기존 콘텐츠를 두고,
-   CourseDashboard.init({ courseKey, diagnosis, quiz, resultCopy, hint })만 호출하면 됨.
-   tf.js 등 특정 모듈 전용 전역에 의존하지 않는 순수 DOM 코드 (life 모듈은 tf.js를 쓰지 않음). */
+/* 4단계 학습 대시보드(진단-이론-실습-평가) 공통 로직. 각 모듈은 CourseDashboard.init() 만 호출합니다. */
 (function () {
-  // 사이드바 "코스 목록" 순서 — 플랫폼 카탈로그(platform/index.html MODULES)와 같은 순서를 유지한다.
-  // 두 곳이 어긋나면 학생이 카탈로그에서 고른 자리와 코스 안에서 보는 자리가 달라진다.
+  // 사이드바 "코스 목록" 순서 (platform/index.html 카탈로그와 일치해야 함)
   var COURSES = [
     { key: 'concept', name: '머신러닝 개념 실험실', href: '/modules/concept/index.html', icon: '<circle cx="6" cy="6" r="2"/><circle cx="18" cy="7" r="2"/><circle cx="9" cy="17" r="2"/><path d="M8 7l8 0M8 16l8-8"/>' },
     { key: 'data', name: '데이터 · 예측 AI (AIoT)', href: '/modules/data/index.html', icon: '<path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 4-5"/>' },
@@ -14,8 +10,7 @@
     { key: 'life', name: '생활 속 인식 AI', href: '/modules/life/index.html', icon: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h2v2H8zM14 8h2v2h-2zM8 14h2v2H8zM14 14h2v2h-2z"/>' }
   ];
   var STEP_LABELS = ['사전 진단', '이론 학습', '실습 퀘스트', '최종 평가'];
-  // 이론 상세 페이지의 줄글 구성 (정의 → 예시 → 실무 활용).
-  // 각 코스 course-config.js의 theory 항목에서 key에 해당하는 필드를 읽는다.
+  // 이론 상세 페이지 구성 (정의 → 예시 → 실무 활용)
   var THEORY_SECTIONS = [
     { key: 'definition', label: '정의', fallback: 'desc', icon: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>' },
     { key: 'example', label: '예시', icon: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>' },
@@ -38,27 +33,20 @@
     var practiceContent = document.getElementById('practice-content');
     if (!practiceContent) { console.error('[CourseDashboard] #practice-content 요소를 찾을 수 없습니다.'); return; }
 
-    /* Step 1(사전 진단)과 Step 4(최종 평가)는 목적이 달라 문항 형식도 다르다.
-       - PreCheckOX  : 선별(screening)용. 개념당 O/X 단문 진술. 점수·등급을 매기지 않고,
-                       결과를 이론 학습의 "이미 아는 개념 / 취약 개념" 표시에만 사용한다.
-       - PreCheckMCQ : precheck 없이 기존 diagnosis(4지선다)만 가진 코스를 위한 폴백.
-       - FinalQuizMCQ: 변별(discrimination)용. 4지선다 + 혼동 유발 오답 보기. 여기서만 점수를 표기한다. */
+    /* 사전 진단(PreCheckOX/MCQ)은 선별용, 최종 평가(FinalQuizMCQ)는 변별용으로 목적과 형식이 다릅니다. */
     var PRE_ITEMS = config.precheck || config.diagnosis || [];
     var PRE_MODE = config.precheck ? 'ox' : 'mcq';
 
     var THEORY_LEN = (config.theory || []).length;
 
-    /* 무료/유료 판단은 shared/access.js 한 곳에서만 한다. 그 레이어가 없는 환경
-       (단위 테스트 등)에서는 잠그지 않는다 — 없다고 학습을 막을 이유가 없다. */
+    /* 무료/유료 접근 제한 로직 (단위 테스트 등 Access 객체가 없으면 잠금 해제) */
     function paid() { return !window.Access || window.Access.isPaid(config.courseKey); }
     /* 화면 전체가 잠긴 자리(최종 평가)는 lockScreen, 무료 내용이 이미 있는 자리는 noticeStrip. */
     function lockScreen(info) { return window.Access ? window.Access.screen(info) : ''; }
     function noticeStrip(key, info, text) {
       return window.Access ? window.Access.notice(key, info, text) : '';
     }
-    /* 사전 진단의 개념별 분석은 유료다. 이론 카드·상세에 그대로 내보이면 잠금이
-       무의미해지므로, 표시에 쓰는 값은 이 함수로만 읽는다.
-       진도는 state.progress 에 있다(프런트 저장 제거 후의 구조). */
+    /* 사전 진단 분석 결과는 유료 기능이므로 화면 표시에만 이 함수를 사용합니다. */
     function shownStatus(i) { return paid() ? (state.progress.conceptStatus[i] || '') : ''; }
 
     // 이전 버전이 남긴 저장 키 청소 — 프런트에는 더 이상 아무것도 저장하지 않는다.
@@ -76,9 +64,7 @@
       };
     }
 
-    /* 실습 탭 완료 상태. appendPracticeControls() 가 init 앞쪽에서 채우므로
-       선언도 그보다 앞에 둔다 — 뒤에 두면 var 초기화가 나중에 실행되어
-       이미 채운 값을 다시 비운다. */
+    /* 실습 탭 상태 변수 선언 (초기화 덮어쓰기 방지를 위해 앞쪽에 선언) */
     var practiceTabs = [];
     var practiceControls = null;
 
@@ -89,17 +75,13 @@
         completedSteps: [false, false, false, false],   // 사이드바 초록 체크
         conceptStatus: new Array(THEORY_LEN).fill(''),  // '' | 'weak' | 'known' — 취약/스킵 태그
         theoryRead: new Array(THEORY_LEN).fill(false),  // 읽음 태그
-        /* 최종 평가 점수. draft 는 단계를 떠날 때 비워지므로 여기에 남긴다 —
-           리포트가 draft 를 읽으면 두 번째 방문부터 0점이 된다. */
+        /* 최종 평가 점수 보존 (화면 이동 시 초기화되지 않도록 유지) */
         quizScore: null                                 // null | { correct, total }
       },
       draft: freshDraft()
     };
 
-    /* ── DB 연동 지점 ─────────────────────────────────────────────────────
-       서버와 오갈 것은 state.progress 가 전부다. init 전에 서버 값을 config.progress 로 넣고,
-       config.onProgress 에서 PUT 한다. 배열 길이가 다르면(course-config 에서 개념을 늘리거나
-       줄이면) 인덱스가 어긋나 엉뚱한 개념이 "취약"으로 뜨므로 통째로 무시한다. */
+    /* 서버 DB 연동 페이로드: state.progress. 항목 수 변경 시 인덱스 어긋남 방지를 위해 통째로 무시합니다. */
     var saved = config.progress;
     if (saved && saved.completedSteps && saved.conceptStatus && saved.theoryRead &&
         saved.completedSteps.length === 4 &&
@@ -165,12 +147,10 @@
     paintQuizQuestion();
     goTo(state.step);
 
-    /* 실습 퀘스트 탭(실습 ③) 잠금 — 다섯 코스가 같은 탭 마크업을 쓰므로 호출 한 줄로 끝난다. */
+    /* 실습 퀘스트 탭 잠금 처리 (Access 모듈 연동) */
     if (window.Access) window.Access.applyCourseGate({ scope: config.courseKey });
 
-    /* 네 단계 모두 언제든 이동할 수 있다. 학습 순서를 강제하지 않고, 어디까지 했는지는
-       사이드바의 초록 체크로만 알린다(진행 상황 표시 ≠ 접근 제한).
-       순서 안내가 필요하면 각 단계의 설명 문구로 다룬다. */
+    /* 네 단계 간의 자유로운 이동을 지원합니다. (진행 상황은 사이드바에 표시) */
     function goTo(i) {
       var from = state.step;
       state.step = i;
@@ -181,11 +161,7 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    /* 단계를 떠날 때의 뒷정리. state.progress 는 건드리지 않는다 — 초록 체크·취약/스킵·읽음 태그는 남는다.
-       한 번에 한 단계만 진행 중이므로 draft 를 통째로 새로 만들어도 다른 단계에 영향이 없다.
-       DB 연동 후 답안을 서버에 남기려면 이 초기화를 빼면 된다.
-       실습(2)은 결과를 지우지 않고 켜 둔 카메라·타이머만 끈다 — 패널을 hidden 처리하는 것만으로는
-       스트림이 멈추지 않아 카메라가 켜진 채 남기 때문이다. 각 코스 app.js 가 훅을 등록한다. */
+    /* 단계 이동 시 초기화: 임시 작성 중인 답안(draft) 리셋 및 실습 타이머/카메라 종료 등 뒷정리를 수행합니다. */
     function leaveStep(i) {
       state.draft = freshDraft();
       if (i === 0) paintPreCheck();
@@ -203,10 +179,7 @@
       var courseItems = COURSES.map(function (c) {
         return '<a class="dash-nav-item linkable' + (c.key === config.courseKey ? ' active' : '') + '" href="' + c.href + '">' + icon(c.icon) + '<span>' + esc(c.name) + '</span></a>';
       }).join('');
-      /* 4단계 진행률·성취를 한 화면에 모아 보는 통합 대시보드는 유료 기능이고, 화면은 아직 없다.
-         무료 기준이 "없음" 이므로 화면을 지어내지 않고 무엇이 잠겼는지 알리는 진입점만 둔다.
-         유료 화면을 만들 때 이 항목을 그 화면으로 연결하면 된다(그래서 유료에서는 아직 감춘다). */
-      /* 유료/무료 관계없이 학습 현황 종합 뷰 제공 (유저 피드백 반영) */
+      /* 학습 현황 종합 뷰 진입점 제공 (유료/무료 공통 피드백 반영) */
       var summaryItem = '<div class="dash-nav-item linkable" data-goto-step="4" id="dash-nav-summary">' +
         icon('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 16v-4M12 16V8M16 16v-6"/>') +
         '<span>학습 현황 종합</span></div>';
@@ -230,8 +203,7 @@
       syncSidebar();
     }
 
-    /* 사이드바 잠금 표시 (기준서 1-3) — 최종 평가는 표시만 붙여 들어갈 수 있게 두고
-       (그 자리에서 무엇이 잠겼는지 보여준다) */
+    /* 사이드바 진입 잠금 표시 (최종 평가 등) */
     function applySidebarLocks(sb) {
       if (paid() || !window.Access) return;
       var evalItem = sb.querySelector('[data-goto-step="3"]');
@@ -242,8 +214,7 @@
     function syncSidebar() {
       shell.querySelectorAll('#dash-sidebar [data-goto-step]').forEach(function (elm, i) {
         var isActive = i === state.step;
-        // 완료 표시는 "지금 보고 있는 단계"여도 유지한다. 현재 위치는 행 배경(active)이,
-        // 완료 여부는 번호 자리의 초록 체크가 각각 나타내야 되짚어 볼 때 진도를 읽을 수 있다.
+        // 현재 위치(active) 및 완료 상태(done)를 동기화합니다.
         var isDone = !!state.progress.completedSteps[i];
         elm.classList.toggle('active', isActive);
         elm.classList.toggle('done', isDone);
@@ -277,7 +248,6 @@
     }
 
     // ---- Step 1: 사전 진단 (선별용) ----
-    // 형식만 분기하고 카드/피드백/진행 표시 등 공통 UI 컴포넌트는 그대로 재사용한다.
     function paintPreCheck() {
       var panel = shell.querySelector('#dash-panel-0');
       if (state.draft.preIndex >= PRE_ITEMS.length) { paintPreCheckResult(panel); return; }
@@ -576,16 +546,7 @@
     }
 
     /* ---- Step 3: 실습 ----------------------------------------------------
-       실습 탭을 다 거쳐야 평가로 넘어간다. 예전에는 어느 탭에 있든 '평가로 이동'이
-       늘 활성이라, 탭 하나만 보고도 그냥 넘어갈 수 있었다.
-
-       완료 판정은 각 모듈이 알린다 — 탭마다 "의미 있는 결과가 한 번 나온 시점"이
-       다르므로 셸이 짐작하지 않는다(방문만으로는 완료로 보지 않는다).
-         모듈 쪽:  CourseDashboard.markDone('탭키')
-
-       탭 6종이 모두 같은 .steps .step[data-step] 마크업을 쓰므로 코스별 분기가 없다.
-       완료 표시는 사이드바(.dash-nav-item.done)와 같은 언어 — 번호 자리를 초록
-       체크로 바꾼다. 유료 잠금 배지는 탭 오른쪽 끝이라 자리가 겹치지 않는다. */
+       모든 실습 탭을 완료해야 평가로 넘어갑니다. 탭 완료 판정은 각 모듈이 CourseDashboard.markDone('탭키')를 호출해 알립니다. */
 
     function collectPracticeTabs() {
       var btns = practiceContent.querySelectorAll('.steps .step');
@@ -613,9 +574,7 @@
       });
     }
 
-    /* 무료 사용자에게는 아예 그리지 않는다. 실습 ③ 이 잠겨 3/3 을 만들 수 없고
-       최종 평가도 잠겨 있어, 눌러도 잠금 화면으로 가는 막다른 길이다.
-       그 자리에는 access.js 의 잔여 분량 안내 띠가 이미 놓여 있다. */
+    /* 무료 사용자: 최종 평가 미제공으로 인해 실습 컨트롤 UI를 렌더링하지 않습니다. */
     function paintPracticeControls() {
       if (!practiceControls) return;
       if (!paid()) { practiceControls.hidden = true; return; }
@@ -626,8 +585,7 @@
         btn.className = 'btn accent';
         btn.setAttribute('aria-disabled', 'true');
         btn.textContent = '실습 진행도 ' + (practiceTabs.length - left.length) + '/' + practiceTabs.length +
-          /* 탭 이름 자체에 ' · ' 가 들어가는 코스가 있어(초급 · 체험) 같은 문자로
-             이으면 경계가 사라진다. 쉼표로 끊는다. */
+          /* 탭 이름의 ' · ' 와 혼동되지 않도록 쉼표로 연결합니다. */
           ' — 남은 실습: ' + left.map(function (t) { return t.label; }).join(', ');
       } else {
         btn.className = 'btn primary lg';
@@ -668,8 +626,7 @@
       paintPracticeControls();
     }
 
-    /* 게이트를 여기 한 곳에 둔다 — 모듈이 각자 두고 있는 완료 버튼
-       (CourseDashboard.finish())도 같은 규칙을 그대로 따르게 된다. */
+    /* 게이트웨이: 각 모듈의 완료 버튼(CourseDashboard.finish())도 이 검사 로직을 통과해야 합니다. */
     function finishPractice() {
       if (tabsLeft().length) { pointAtLeftovers(); return; }
       state.progress.completedSteps[2] = true;
@@ -679,8 +636,7 @@
     }
 
     // ---- Step 4: 최종 평가 (FinalQuizMCQ · 변별용) ----
-    // 사전 진단(O/X 선별)과 달리 4지선다를 유지한다. 오답 보기에 정답과 혼동하기 쉬운
-    // 유사 개념을 섞어 두어, 이론+실습을 마친 뒤의 실제 이해도를 가른다.
+    // 오답 보기에 유사 개념을 섞어 4지선다로 이론+실습 종합 이해도를 평가합니다.
     function paintQuizQuestion() {
       var panel = shell.querySelector('#dash-panel-3');
       var total = config.quiz.length;
@@ -775,8 +731,7 @@
     }
 
     /* ---- Step 5: 학습 현황 종합 ---------------------------------------
-       "어디까지 왔나" 를 보는 화면이라, 숫자를 늘어놓기보다 남은 것과 다음 행동이
-       바로 보여야 한다. 카드·칩은 다른 단계에서 쓰던 것을 그대로 재사용한다. */
+       학습 진행 상태와 다음 액션을 직관적으로 안내합니다. 기존 UI 컴포넌트를 재사용합니다. */
     function paintSummary() {
       var panel = shell.querySelector('#dash-panel-4');
       var courseName = COURSES.find(function (c) { return c.key === config.courseKey; });
@@ -804,8 +759,7 @@
 
       /* 이론 — 셋 다 0 이면 "0 0 0" 세 개가 고장처럼 보인다. 시작 전에는 한 줄로 말한다. */
       var theories = theoryList();
-      /* 개념별 취약/스킵 분석은 유료 구간이다(기준서 2-1). 여기서 conceptStatus 를
-         직접 읽으면 잠금을 우회하게 되므로 표시용 값은 shownStatus() 로만 읽는다. */
+      /* 개념별 취약/스킵 분석은 유료 기능이므로 우회 방지를 위해 shownStatus()로만 접근합니다. */
       var n = { weak: 0, known: 0, read: 0 };
       theories.forEach(function (t, i) {
         var st = shownStatus(i);
@@ -819,7 +773,7 @@
       if (!theories.length) {
         conceptHtml = '<p class="dash-status-empty">이 코스에는 이론 개념이 등록되어 있지 않습니다.</p>';
       } else if (!paid()) {
-        /* 무료 — 읽은 개수까지만. 취약/스킵 분석이 잠겨 있다는 것도 함께 알린다. */
+        /* 무료 사용자: 읽은 개수만 노출하고, 상세 분석은 유료 기능임을 안내합니다. */
         conceptHtml = '<div class="dash-status-chips">' + readChip + '</div>' +
           noticeStrip('summary-concept', {
             title: '개념별 이해도 분석',
@@ -890,13 +844,11 @@
     }
   }
 
-  // finish(): 모듈 실습 안에 자체 완료 버튼을 둘 때 호출한다.
-  // (예: data 코스의 "실습 완료, 최종 평가로 넘어가기") — 실습 단계를 완료 처리하고 평가로 넘어간다.
+  // finish(): 실습 단계를 완료 처리하고 다음 단계(평가)로 넘어갑니다. (각 모듈 실습 내 자체 완료 버튼용)
   window.CourseDashboard = {
     init: init,
     finish: function () { if (activeFinish) activeFinish(); },
-    /* 실습 탭 하나를 끝냈다고 알린다. 각 모듈이 그 탭의 '의미 있는 결과가
-       나온 시점'에 한 번 부른다 — 탭 키는 .steps .step 의 data-step 값이다. */
+    /* 개별 실습 탭 완료 마킹 (모듈에서 유의미한 결과 도출 시 1회 호출, tabKey = data-step) */
     markDone: function (tabKey) { if (activeMarkDone) activeMarkDone(tabKey); },
     progress: function () { return activeProgress ? activeProgress() : null; }
   };

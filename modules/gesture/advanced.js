@@ -1,5 +1,4 @@
-  /* gesture 코스 3번째 탭(고급·응용 — 제스처 제어 데모) 로직.
-   app.js 뒤에 로드되며, app.js 가 정의한 전역($ · setStatus 등)을 그대로 쓴다. */
+/* Gesture 심화 미션 로직: 제스처 제어 데모 및 실제 모델 기반 혼동행렬 시뮬레이션. */
 /* ════ 고급-응용: 제스처 제어 데모 ════ */
 let dmStep = 1;
 let dmFunc = 'vol';
@@ -123,15 +122,7 @@ function goToDmStep(w) {
   }
 }
 
-/* [2. 중급 · 제작] 코스에서 학생이 직접 모은 샘플을, 그 데이터로 학습한 head 에 되돌려 넣어
-   실제 확신도를 잰다.
-
-   예전에는 임계값에서 숫자를 만들어 내는 공식을 썼다(지어낸 값). 학습 결과와
-   아무 관계가 없어서, 데이터를 아무리 더 모아도 혼동행렬이 늘 똑같았다.
-   이제는 자기 데이터가 나쁘면 숫자도 나쁘게 나온다.
-
-   한계: 학습에 쓴 데이터를 그대로 되재는 self-prediction 이다([2. 중급 · 제작] 코스의 혼동행렬과
-   같은 방식). 따로 떼어 둔 검증 세트가 없으므로 실제 현장 성능보다 후하게 나온다. */
+/* 학습된 모델에 학생이 수집한 원본 데이터를 다시 넣어 실제 확신도를 측정합니다 (Self-prediction 방식). */
 let dmRows = null;   // { names, rows:[{ truth, p }] } — 임계값과 무관하므로 단계 진입 때 한 번만 잰다
 function dmMeasure(force) {
   if (dmRows && !force) return dmRows;
@@ -177,9 +168,7 @@ function confusionAt(thres) {
   return { per, names: m.names, wrong, miss, total: m.rows.length, verdict };
 }
 
-/* 표의 라벨을 학생이 실제로 만든 클래스 이름에 맞춘다.
-   (HTML 기본값은 '가위/보' 인데 이 코스의 기본 클래스는 '주먹/손바닥' 이라 어긋나 있었다)
-   이미 그려진 아이콘 노드는 지우지 않고 되돌려 놓아 표 모양은 그대로 둔다. */
+/* 표의 라벨을 학생이 직접 만든 클래스 이름에 맞춰 동적으로 업데이트합니다. 기존 DOM 아이콘은 보존합니다. */
 function dmSetLabel(el, name) {
   if (!el || !name) return;
   const ic = el.querySelector('.ic-inline');

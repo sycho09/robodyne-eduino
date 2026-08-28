@@ -51,15 +51,12 @@ let exStep = 1;
 let ex2Phase = 1; // Step 2 진행: 1=기온과의 두 산점도 비교, 2=두 결과끼리 비교 공개
 let selVars = [];
 const VAR_LABELS = { temp: '기온', ice: '아이스크림 판매량', acc: '물놀이 사고', ac: '에어컨 판매량' };
-// 축 순서를 클릭 순서에 맡기면 같은 쌍도 눌린 차례에 따라 뒤집혀 나온다.
-// 그래서 항상 이 차례로 정렬해 가로·세로를 정한다. "원인이 가로축"이라는 뜻이 아니다 —
-// 아이스크림 × 물놀이 사고처럼 어느 쪽도 원인이 아닌 쌍이 절반이고, 그걸 가르치는 게 이 단계다.
+// 축 순서를 고정해 쌍이 바뀌어도 일관된 레이아웃(가로/세로)을 유지합니다.
 const VAR_ORDER = ['temp', 'ice', 'acc', 'ac'];
 const orderPair = (vs) => [...vs].sort((a, b) => VAR_ORDER.indexOf(a) - VAR_ORDER.indexOf(b));
 // 축 이름은 플롯 오른쪽 위 태그 하나로 적는다 (모듈 공통 형식).
 const axisTag = (x, y) => `X축: ${x} / Y축: ${y}`;
-/* 변수 이름이 쌍마다 달라지므로 조사를 고정해 둘 수 없다 (판매'량'과 / 사'고'와).
-   마지막 글자의 받침 유무로 고른다. */
+/* 변수명 마지막 글자의 종성(받침) 유무에 따라 조사를 선택합니다. */
 function particle(word, withBatchim, withoutBatchim) {
   const c = word.charCodeAt(word.length - 1) - 0xAC00;
   const has = c >= 0 && c <= 11171 && c % 28 !== 0;
@@ -69,25 +66,13 @@ let revealAnim = false; // 함정 공개 연출은 버튼을 누른 그 순간�
 // 폭염이 각 결과를 밀어 올리는 경로 — 4단계 리포트의 "결과 N · …" 에 쓴다.
 const VAR_WHY = { ice: '더위 회피 소비', acc: '피서객 증가', ac: '냉방 수요 증가' };
 
-/* 2~4단계가 다룰 쌍. 1단계에서 고른 것을 그대로 이어받되, 기온이 낀 쌍만 예외다.
-   기온 쌍은 진짜 인과라서 함정 실습이 성립하지 않는다 — 기온을 고정하면 원인 자체의
-   분산이 사라져 상관이 무너지고, 그걸 "가짜였다"로 읽히게 하면 정반대를 가르치게 된다.
-   그때만 대표 쌍으로 갈아타고, 고른 쌍은 "진짜 관계였다"는 대조군으로 쓴다. */
+/* '기온'이 포함된 진짜 인과관계 쌍은 제3변수 통제(함정 실습) 시 성립하지 않으므로, 이때는 임의의 가짜 인과 쌍으로 교체하여 진행합니다. */
 function trapPair() {
   const [a, b] = orderPair(selVars);
   const own = selVars.length === 2 && a !== 'temp';
   return { v1: own ? a : 'ice', v2: own ? b : 'acc', own };
 }
-/* Step 3에서 기온을 좁은 구간으로 통제하면 표본이 크게 줄어든다.
-   표본이 작으면 우연만으로 상관이 높게 나와 "통제하면 상관이 사라진다"는 결론이 뒤집히므로,
-   기온을 ±0.3 으로 붙잡으면 전체의 7.5% 만 남는데, 그게 수십 개뿐이면 상관 표준오차가 0.15 를
-   넘어 "0 근처로 무너진다"가 실행마다 흔들린다(+0.28 이 나오면 교훈이 안 선다).
-   그래서 4000개를 만들어 통제 후에도 300개쯤 남게 한다 — 그리는 점 수는 아래에서 따로 줄인다.
-
-   계수는 "기온 최대(9) × 계수 + 잡음 최대 ≤ 10" 을 지키도록 잡았다.
-   예전 값(1.1/1.0/1.2)은 통제 구간(기온 8~9)에서 세 값이 모두 상한 10 에 눌렸고
-   — 특히 ac 는 12.3 까지 갔다 — 두 변수가 같은 천장에 잘리면 그 자체로 상관이 남아
-   기온을 통제해도 점수가 안 무너졌다. */
+/* 제3변수(기온) 통제 시 표본 수가 줄어들어 상관관계가 우연히 높게 나오는 현상을 막기 위해, 초기 데이터를 4000개 생성해 통제 후에도 충분한 표본을 남깁니다. (값 상한 10 초과 방지) */
 let baseData = [];
 for(let i=0; i<4000; i++) {
   const temp = clamp(1 + Math.random()*8); // 1~9
@@ -117,8 +102,7 @@ function updateExNav() {
   $('ex-view-12').style.display = (exStep === 1 || exStep === 2) ? 'grid' : 'none';
   $('ex-view-3').style.display = exStep === 3 ? 'block' : 'none';
   $('ex-view-4').style.display = exStep === 4 ? 'block' : 'none';
-  /* 완료 신호는 '리포트에 도달' 에 건다. 예전에는 btn-ex-report 버튼에만 걸려 있어서,
-     상단 단계 버튼으로 4단계에 바로 가면 완료로 잡히지 않았다(그 버튼은 특정 조건에서만 나타난다). */
+  /* 완료 신호는 단계 버튼을 통한 4단계 진입 시에도 정상 처리되도록 '리포트에 도달'할 때 보냅니다. */
   if (exStep === 4) { renderCausalReport(); window.CourseDashboard && CourseDashboard.markDone('explore'); }
   
   if(exStep === 1 || exStep === 2) renderVarCharts();
@@ -132,10 +116,7 @@ document.querySelectorAll('.fstep[data-ex-step]').forEach(btn => {
   };
 });
 
-/* 단계에 따라 카드 모양이 세 가지로 바뀐다.
-   p1 = Step 1 · 좌우 분할 + 큰 산점도 1개
-   p2 = Step 2 전반 · 좌측을 요약 바로 접고 기온과의 비교 차트 2개
-   p3 = Step 2 후반 · 함정 차트까지 3개 + 전폭 결론 배너 */
+/* 단계(p1~p3)에 따라 카드의 레이아웃과 노출 차트 수를 변경합니다. */
 function setExLayout(phase) {
   $('ex-card-explore').classList.toggle('solo', phase !== 'p1');
   $('ex-side').hidden = phase !== 'p1';
@@ -144,9 +125,7 @@ function setExLayout(phase) {
   $('ex-charts-container').className = 'ex-charts ' + phase;
 }
 
-// Step 2 로 접힐 때 남는 한 줄.
-// 1단계를 건너뛰고 바로 들어올 수 있으므로 빈 상태가 필요하고,
-// 지금 화면의 차트(기온과의 비교)와 헷갈리지 않게 반드시 과거형으로 적는다.
+// Step 2 진입 시, 1단계에서 고른 내용을 과거형으로 요약해 상단에 남깁니다.
 function renderVarSummary() {
   const [v1, v2] = orderPair(selVars);
   $('ex-var-summary-txt').innerHTML = selVars.length === 2
@@ -154,8 +133,7 @@ function renderVarSummary() {
     : '준비된 데이터로 함정을 살펴봅니다.';
 }
 
-/* 4단계 리포트. 폭염(공통 원인)과 '서로 원인이 아님'은 어느 쌍이든 그대로고,
-   두 결과 상자의 이름과 경로만 바뀐다. */
+/* 4단계 리포트: 공통 원인(폭염)은 고정하고, 두 결과 상자의 텍스트만 쌍에 맞게 교체합니다. */
 function renderCausalReport() {
   const { v1, v2 } = trapPair();
   $('node-r1').textContent = `${VAR_LABELS[v1]} 증가`;
@@ -219,8 +197,7 @@ function renderTrapStep() {
   drawAxes(exCtxSub);
   drawPoints(exCtxSub, plotData.map(d => ({x: d.temp, y: d[v2]})), '#4d8dff');
 
-  /* 1단계에서 고른 쌍을 받아 넘기는 첫 문장.
-     기온을 골랐다면 그건 진짜 인과였다는 사실을 분명히 말해 준다 — 그래야 그 선택도 헛되지 않는다. */
+  /* 1단계에서 기온이 낀 쌍을 골랐다면 그것은 '진짜 인과'였음을 안내해 줍니다. */
   const [s1, s2] = orderPair(selVars);
   let picked;
   if (own) {
@@ -280,8 +257,7 @@ $('var-chips').addEventListener('click', (e) => {
 
 $('btn-next-step1').onclick = () => { exStep = 2; ex2Phase = 1; updateExNav(); };
 $('btn-reveal-pair').onclick = () => { ex2Phase = 2; revealAnim = true; renderVarCharts(); };
-// 접힌 요약 바에서 1단계로 되돌아가는 길 (상단 흐름 탭과 같은 동작)
-$('btn-back-vars').onclick = () => { exStep = 1; updateExNav(); };
+// 요약 바에서 1단계로 돌아가기
 $('btn-cause-infer').onclick = () => { exStep = 3; updateExNav(); };
 
 function renderCtrlStep() {
@@ -304,11 +280,7 @@ function renderCtrlStep() {
      }
   }
 
-  /* 지금 붙잡고 있는 기온 구간을 화면 단위(°C)로 적는다.
-     데이터 기온 1~9 를 20~35°C 에 대응시킨다 — 슬라이더 끝(8.2~8.8)이 34~35°C 로 떨어져
-     예전 붙박이 라벨 "폭염일 고정(34도~35도)" 과 그대로 맞는다. */
-  // 자를 때는 공통 clamp(0~10)가 아니라 기온이 실제로 존재하는 범위(1~9)를 써야 한다.
-  // clamp 를 쓰면 전체 구간이 18~37°C 로 나와 데이터에 없는 온도를 보여주게 된다.
+  /* 기온 구간(1~9)을 화면 표시용 섭씨(20~35°C)로 변환합니다. 데이터에 없는 범위 노출을 막기 위해 1~9로 제한합니다. */
   const inTempRange = (t) => Math.max(1, Math.min(9, t));
   const toCelsius = (t) => 20 + (t - 1) / 8 * 15;
   const lo = tempThresh > 0 ? inTempRange(targetTemp - narrow/2) : 1;
@@ -338,7 +310,7 @@ function renderCtrlStep() {
   sEl.textContent = (score >= 0 ? '+' : '') + score.toFixed(2);
   sEl.className = 'dp-val ' + (score > 0.3 ? 'pos' : '');
 
-  /* 문구는 슬라이더 위치가 아니라 실제 점수로 고른다 — 측정값이 말하는 것을 그대로 옮겨야 정직하다. */
+  /* 안내 문구는 슬라이더 위치가 아닌 실제 상관 점수 기준으로 정직하게 출력합니다. */
   const done = score < 0.35;
   const cEl = $('ctrl-caption');
   cEl.textContent = score >= 0.7 ? '기온이 제각각이라 둘이 함께 움직입니다'
@@ -595,9 +567,7 @@ window.selectDecision = function(k, el) {
 
 $('decision-reason').addEventListener('input', checkDecisionReady);
 
-/* 예전에는 이 조건이 '실습 완료' 버튼의 disabled 를 풀었다. 그 버튼은 하단 공통
-   컨트롤과 겹쳐 지웠고, 대신 같은 조건을 이 탭의 완료 조건으로 삼는다 —
-   군집을 돌린 것만으로는 부족하고 어떤 판단을 내렸는지까지 적어야 끝난 것이다. */
+/* '실습 완료' 조건: 군집화뿐만 아니라 판단 근거까지 5자 이상 작성해야 완료로 인정됩니다. */
 function checkDecisionReady() {
   const reason = $('decision-reason').value.trim();
   if (selectedDecision !== -1 && reason.length >= 5) {

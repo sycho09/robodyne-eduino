@@ -1,13 +1,5 @@
-/* vision 코스 3번째 탭(심화 · 제작 — 전이학습 4단계 위저드) 로직.
-   app.js 뒤에 로드되며, app.js 가 정의한 전역($ · setStatus · mkCam · donutSet)을 그대로 쓴다.
-
-   구조는 gesture 코스의 위저드와 같고 특징 추출기만 다르다.
-     gesture : 손 관절 좌표 42개  →  작은 분류기
-     vision  : MobileNet 임베딩   →  작은 분류기
-   MobileNet 은 얼려 둔 채 특징 추출기로만 쓴다(학습되는 건 아래 head 뿐).
-
-   ④단계 혼동행렬은 지어낸 숫자가 아니라 학습에 쓰지 않고 떼어 둔 검증 데이터로
-   실제 추론해 만든다. 그래야 임계값을 움직였을 때 나오는 저울질도 진짜가 된다. */
+/* Vision 심화 미션(전이학습 4단계) 로직. MobileNet으로 특징을 추출하고 커스텀 Head 모델을 학습합니다.
+   검증 데이터(Validation)로 혼동행렬을 그려 3단계 미션의 실제 평가지표(재현율/정밀도)로 연동합니다. */
 
 const esc = (v) => String(v).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
 const PALETTE = ['#f0473a', '#4d8dff', '#11a06f', '#d98a1f', '#7c6cff', '#ff6ab5'];
@@ -31,8 +23,7 @@ async function loadMobilenet() {
   return mnet;
 }
 
-/* 미션 ③단계 필름스트립이 보여 줄 썸네일. 가운데를 정사각으로 잘라 64px 로 줄인다.
-   임베딩(숫자 1024개)만으로는 "내가 찍은 그 사진"을 화면에 되돌릴 수 없다. */
+/* 3단계 미션 기록용 썸네일(64px 사각형 캡처). 임베딩 숫자만으로는 원본 복원이 불가능하므로 따로 저장합니다. */
 const THUMB = 64;
 const thumbCv = document.createElement('canvas');
 thumbCv.width = THUMB; thumbCv.height = THUMB;
@@ -49,7 +40,7 @@ function grabThumb() {
   try { return thumbCv.toDataURL('image/jpeg', 0.6) || ''; } catch (e) { return ''; }
 }
 
-/* 사진 한 장 → 숫자 embDim 개. 이 압축이 전이학습의 전부다. */
+/* 이미지를 embDim(1024) 차원 벡터로 압축(특징 추출)합니다. */
 function embed(source) {
   return tf.tidy(() => {
     const t = mnet.infer(source, true);
@@ -120,10 +111,8 @@ $('cls-list').addEventListener('click', (e) => {
     if (c) { c.samples = []; c.thumbs = []; updateCount(c); }
   }
 });
-/* 꾹 누르는 동안만 수집한다(마우스·터치 공통).
-   누른 상태를 renderClasses() 로 다시 그리면 눌린 버튼이 사라져 누름이 취소된다.
-   그래서 여기서는 클래스 카드의 class 만 직접 토글한다. */
-/* 한 장 담는다. 버튼을 누른 순간과 연속 수집 루프가 함께 부른다. */
+/* 버튼을 꾹 누르는 동안 이미지를 연속 수집하며, DOM 클래스를 토글해 시각적 피드백을 줍니다. */
+/* 한 장 수집(캡처) - 버튼 클릭 및 연속 루프에서 호출됨 */
 function captureOne() {
   if (!trainCam.stream || !mnet || trainCam.video.readyState < 2) return;
   const c = classes.find((x) => x.id === recording);
