@@ -168,16 +168,21 @@
 
     function renderSidebar() {
       var sb = shell.querySelector('#dash-sidebar');
-      var flowItems = STEP_LABELS.map(function (label, i) {
-        return '<div class="dash-nav-item" data-goto-step="' + i + '"><span class="dash-nav-num">' + (i + 1) + '</span><span>' + label + '</span></div>';
-      }).join('');
+      var flowItems = '<div class="dash-nav-sub">' + STEP_LABELS.map(function (label, i) {
+        return '<div class="dash-nav-item dash-nav-sub-item" data-goto-step="' + i + '"><span class="dash-nav-num">' + (i + 1) + '</span><span>' + label + '</span></div>';
+      }).join('') + '</div>';
+      
       // 코스 목록에는 잠금 표시를 두지 않는다 — 코스별 개별 판매 구조라 목록이 곧 상품 목록이다.
       var courseItems = COURSES.map(function (c) {
-        return '<a class="dash-nav-item linkable' + (c.key === config.courseKey ? ' active' : '') + '" href="' + c.href + '">' + icon(c.icon) + '<span>' + esc(c.name) + '</span></a>';
+        var isActive = c.key === config.courseKey;
+        var itemHtml = '<a class="dash-nav-item linkable' + (isActive ? ' active course-active' : '') + '" href="' + c.href + '">' + icon(c.icon) + '<span>' + esc(c.name) + '</span></a>';
+        if (isActive) {
+          itemHtml += flowItems;
+        }
+        return itemHtml;
       }).join('');
-      sb.innerHTML =
-        '<div class="dash-nav-group"><div class="dash-nav-group-title">학습 흐름</div>' + flowItems + '</div>' +
-        '<div class="dash-nav-group"><div class="dash-nav-group-title">코스 목록</div>' + courseItems + '</div>';
+      
+      sb.innerHTML = '<div class="dash-nav-group"><div class="dash-nav-group-title">기본 학습 커리큘럼</div>' + courseItems + '</div>';
 
       if (backBtn) {
         backBtn.className = 'dash-home-btn';
