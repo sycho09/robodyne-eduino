@@ -1,4 +1,4 @@
-/* 4단계 학습 대시보드 공유 셸 (사전진단 → 이론 → 실습 → 평가)
+﻿/* 4단계 학습 대시보드 공유 셸 (사전진단 → 이론 → 실습 → 평가)
    모듈 자체 style.css의 CSS 변수(--card, --primary, --r 등)를 그대로 사용해
    모듈별 라이트 카드 테마와 일관되게 맞춘다. .step/.steps 등 모듈 기존 클래스와는
    겹치지 않도록 dash- 접두사만 사용. */
@@ -281,7 +281,7 @@
 .dash-status-group .ax-inline-more { margin: 0; padding: 4px 10px; font-size: 11.5px; }
 
 /* Nested Navigation Styling */
-.dash-nav-sub { display: flex; flex-direction: column; gap: 4px; padding-left: 12px; margin-top: 4px; border-left: 2px solid var(--line); margin-left: 16px; margin-bottom: 8px; }
+.dash-nav-sub { display: flex; flex-direction: column; gap: 4px; padding-left: 12px; margin-top: 4px; margin-left: 16px; margin-bottom: 8px; }
 .dash-nav-item.dash-nav-sub-item { padding: 6px 10px; font-size: 12px; font-weight: 500; border-radius: 6px; }
 .dash-nav-item.dash-nav-sub-item.active { background: #fff; border: 1px solid var(--primary); color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 

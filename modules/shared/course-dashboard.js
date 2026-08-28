@@ -191,9 +191,19 @@
         sb.insertBefore(backBtn, sb.firstChild);
       }
       sb.querySelectorAll('[data-goto-step]').forEach(function (elm) {
-        elm.addEventListener('click', function () {
+        elm.addEventListener('click', function (e) {
+          e.stopPropagation(); // prevent triggering parent clicks
           var i = +elm.dataset.gotoStep;
           goTo(i);
+        });
+      });
+      sb.querySelectorAll('.course-active').forEach(function (elm) {
+        elm.addEventListener('click', function (e) {
+          e.preventDefault();
+          var sub = elm.nextElementSibling;
+          if (sub && sub.classList.contains('dash-nav-sub')) {
+            sub.style.display = (sub.style.display === 'none') ? 'flex' : 'none';
+          }
         });
       });
       applySidebarLocks(sb);
