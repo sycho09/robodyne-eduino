@@ -7,6 +7,8 @@ const svgIcon = (inner, cls) =>
 const SVG_OK = svgIcon('<polyline points="20 6 9 17 4 12"/>');
 const SVG_NG = svgIcon('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>');
 const SVG_BOT = svgIcon('<rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/>');
+const SVG_THINK = svgIcon('<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>');
+const SVG_SAD = svgIcon('<circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>');
 
 function goToRvStep(w) {
   document.querySelectorAll('#flow-review .fstep').forEach(el => {
@@ -155,22 +157,29 @@ function rvMarkup(text, seen, cue) {
 /* seen 은 Step 2 에서만 넘긴다. Step 3 은 글자가 아니라 뜻(sim)으로 판정하므로
    거기서 노란 형광펜을 칠하면 거짓말이 된다 — 그리고 형광펜이 사라지는 것 자체가
    "이제 글자가 아니라 뜻을 본다"의 증거다. */
-function rvRowHtml(r, hit, scoreLabel, seen) {
+function rvRowHtml(r, hit, scoreLabel) {
   var ok = (hit === r.want);
-  /* 맞은 행은 AI 가 내린 결정을 같은 동사로 적는다 — '처리'와 '판정'을 섞어 쓰면
-     같은 일인데 다른 종류의 결과처럼 읽힌다. 옳고 그름은 앞의 ✓/✗ 와 행 색이 말한다.
-     틀린 행만 '누락'·'오분류' 로 적어 오른쪽 성적 칩(누락된 불만 / 오분류된 정상)과 잇는다. */
   var chipText = '';
-  if (hit && r.want) chipText = '배송 불만으로 분류';
-  else if (!hit && r.want) chipText = '배송 불만 누락';
-  else if (hit && !r.want) chipText = '정상 리뷰 오분류';
-  else chipText = '정상 리뷰로 분류';
+  var iconHtml = ok ? SVG_OK : '';
+  
+  if (hit && r.want) { 
+    chipText = '배송 불만으로 분류'; 
+  } else if (!hit && r.want) { 
+    chipText = 'AI의 실수: 텍스트는 다르지만 뜻은 불만인데, AI가 놓쳤어요.'; 
+    iconHtml = SVG_SAD; 
+  } else if (hit && !r.want) { 
+    chipText = 'AI의 실수: "빠른 배송"이라는 단어만 보고 불만으로 오해했어요!'; 
+    iconHtml = SVG_THINK; 
+  } else { 
+    chipText = '정상 리뷰로 분류'; 
+  }
 
   return '<div class="rv-test-row ' + (ok ? 'ok' : 'miss') + '">' +
-    '<span class="rv-test-text">"' + rvMarkup(r.text, seen, r.cue) + '"</span>' +
+    '<span class="rv-test-text">"' + esc(r.text) + '"</span>' +
     '<span class="rv-test-meta">' +
       '<span class="rv-test-score">' + scoreLabel + ' → </span>' +
-      '<span class="rv-chip rv-verdict" style="display:inline-flex; align-items:center; gap:4px;">' + (ok ? SVG_OK : SVG_NG) + chipText + '</span>' +
+      '<span class="rv-chip rv-verdict" style="display:inline-flex; align-items:center; gap:4px; max-width:320px; line-height:1.4;">' + 
+      iconHtml + '<span style="white-space:normal; text-align:left;">' + chipText + '</span></span>' +
     '</span>' +
   '</div>';
 }
@@ -184,24 +193,22 @@ function renderRvBase() {
     var hit = score >= RV_BASE_THRES;
     var ok = hit === r.want;
     if (!ok) miss++;
-    return rvRowHtml(r, hit, '겹침 ' + score + '%', rvSeen(r.text));
+    return rvRowHtml(r, hit, '겹침 ' + score + '%');
   }).join('');
 
   var v = $('rv-base-verdict');
-  v.className = 'rv-alert ' + (miss ? 'fail' : 'success');
-  /* 단순 에러가 아니라 'AI 의 변명' 으로 적는다 — 실패가 주제인 단계라 1인칭이 산다.
-     건수(miss)는 계산값이지만, 어느 리뷰를 놓쳤는지 지목하는 문장은 RV_REVIEWS 에 매인다.
-     리뷰를 바꾸면 이 카피도 함께 손봐야 한다. */
+  v.className = 'rv-alert warn';
+  v.style.display = 'flex';
+  v.style.flexDirection = 'column';
+  v.style.alignItems = 'center';
+  v.style.padding = '32px 24px';
+  v.style.gap = '20px';
+  v.style.background = 'var(--surface-1)';
+  v.style.border = '1px solid var(--primary-soft)';
   v.innerHTML =
-    '<span class="rv-alert-ic rv-bot">' + SVG_BOT + '</span>' +
-    '<div><strong class="rv-alert-title">' +
-      (miss ? '4건 중 ' + miss + '건 오분류' : '전부 맞혔습니다') + '</strong>' +
-    '<span class="rv-alert-desc rv-bubble">' +
-      (miss
-        ? '앗! 저는 <b>배송 불만</b>이라는 글자만 찾을 줄 알아요.<br>' +
-          '진짜 불만(택배)은 놓치고, 칭찬(빠른 배송)을 불만으로 잡아버렸네요.'
-        : '기준 문장과 글자가 잘 겹쳤어요.') +
-    '</span></div>';
+    '<div style="font-size:18px; font-weight:700; color:var(--ink-1); text-align:center;">' +
+    '앗! AI가 \'배송\'이라는 글자만 보고 칭찬을 불만으로 착각했어요.</div>' +
+    '<button class="btn primary" onclick="goToRvStep(3)" style="padding:12px 32px; font-size:16px;">왜 이런 실수를 했을까? 원인 알아보기</button>';
 }
 
 function renderRvTry() {

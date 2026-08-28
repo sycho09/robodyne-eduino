@@ -188,7 +188,7 @@ function renderClasses() {
         <button class="cls-del" data-del="${c.id}" title="삭제">×</button>
       </div>
       <div class="cls-actions">
-        <button class="cap-btn ${recording === c.id ? 'rec' : ''}" data-collect="${c.id}" ${train.stream ? '' : 'disabled'}><span class="ci" data-ic="camera"></span><span>촬영</span><span class="cap-count" data-capcount="${c.id}">${c.samples.length}</span></button>
+        <button class="cap-btn ${recording === c.id ? 'rec' : ''}" data-collect="${c.id}" ${train.stream ? '' : 'disabled'}><span class="ci" data-ic="camera" style="color:inherit;"></span><span>촬영</span><span class="cap-count" data-capcount="${c.id}">${c.samples.length}</span></button>
         <button class="clear" data-clear="${c.id}">비우기</button>
       </div>
       <div class="samp-bar"><i data-fill="${c.id}" style="width:${Math.min(100, c.samples.length * 2.5)}%"></i></div>
@@ -361,7 +361,8 @@ document.querySelectorAll('.step').forEach(btn => {
   };
 });
 
-addClass('주먹'); addClass('손바닥');
+/* 심화 탭의 가위바위보 대결이 클래스 3개를 순서대로 바위·보·가위에 잇는다. */
+addClass('주먹'); addClass('손바닥'); addClass('가위');
 setStatus('대기 중'); showIdle();
 if (!window.isSecureContext) { const b = $('banner'); b.classList.add('on'); b.innerHTML = EduinoIcons.svg('alert') + ' 카메라는 <b>localhost</b> 또는 <b>https</b> 에서만 켜집니다. 배포된 https 주소로 접속해 주세요.'; }
 /* 실습 단계를 떠날 때 켜 둔 카메라를 끈다. 등록한 동작과 수집한 샘플은 건드리지 않는다. */
