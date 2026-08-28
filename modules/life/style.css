@@ -86,10 +86,10 @@
 
 /* Step 1: 조건별 인식 실험 */
 .lm-tabs { display:flex; gap:16px; justify-content:center; margin-bottom:24px; }
-.lm-tab { background:#fff; border:2px solid var(--line); border-radius:12px; padding:20px 24px; text-align:center; cursor:pointer; transition:0.2s; min-width:140px; }
+.lm-tab { background:#fff; border:2px solid var(--line); border-radius:12px; padding:12px 24px; text-align:center; cursor:pointer; transition:0.2s; min-width:140px; }
 .lm-tab:hover { border-color:var(--primary-line); transform:translateY(-2px); box-shadow:var(--shadow-sm); }
 .lm-tab.active { border-color:var(--primary); background:#fff; box-shadow:0 0 0 3px var(--primary-soft), var(--shadow); }
-.lm-tab-icon { font-size:24px; color:var(--ink-4); display:block; margin-bottom:8px; }
+.lm-tab-icon { font-size:24px; color:var(--ink-4); display:block; margin-bottom:4px; }
 .lm-tab.active .lm-tab-icon { color:var(--primary); }
 .lm-tab-name { font-size:15px; font-weight:700; color:var(--ink-2); }
 .lm-tab.active .lm-tab-name { color:var(--ink); }

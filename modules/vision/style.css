@@ -302,7 +302,8 @@ a { color:inherit; text-decoration:none; }
 .ms-line-note b { color:var(--ink-2); }
 
 .ms-alert { border-radius:12px; padding:13px 15px; font-size:13px; line-height:1.7; border:1px solid; }
-.ms-alert b { display:block; font-size:14px; font-weight:800; margin-bottom:4px; }
+.ms-alert b:first-child { display:block; font-size:14px; font-weight:800; margin-bottom:4px; }
+.ms-alert b:not(:first-child) { font-weight:700; color:inherit; }
 .ms-alert.fail { color:var(--ink-2); background:var(--primary-soft); border-color:var(--primary-line); }
 .ms-alert.fail b { color:var(--primary-ink); }
 .ms-alert.pass { color:var(--ink-2); background:var(--green-soft); border-color:rgba(17,160,111,.3); }
@@ -312,7 +313,11 @@ a { color:inherit; text-decoration:none; }
 
 /* ③ 게이지 */
 .ms-tune { margin-top:6px; }
-.ms-gauges { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:18px 0 6px; }
+.ms-tune-split { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:stretch; min-height: 400px; }
+.ms-tune-left { display:flex; flex-direction:column; }
+.ms-tune-right { display:flex; flex-direction:column; }
+.ms-tune-right .ms-line { margin:0; height:100%; display:flex; flex-direction:column; justify-content:center; }
+.ms-gauges { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:18px 0 16px; }
 .ms-g { background:var(--card-2); border:1px solid var(--line); border-radius:12px; padding:13px 15px; }
 .ms-g-lab { display:block; font-size:12.5px; font-weight:700; color:var(--ink-2); margin-bottom:9px; }
 .ms-g-lab em { font-style:normal; font-weight:600; color:var(--ink-4); font-size:11px; margin-left:5px; }
@@ -363,6 +368,7 @@ a { color:inherit; text-decoration:none; }
   .work { grid-template-columns:1fr; align-items:start; }
   .wstep > .card { height:auto; }
   .ms-kpis { grid-template-columns:1fr 1fr; }
+  .ms-tune-split { grid-template-columns:1fr; }
 }
 @media (max-width:560px){
   .wnav { grid-template-columns:1fr; }

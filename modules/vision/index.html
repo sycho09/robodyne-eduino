@@ -241,11 +241,9 @@
         <div class="flow" id="flow-ms">
           <button class="fstep active" data-m="1"><span class="fn">1</span><span class="ft"><b>미션 수령</b><span>놓치면 안 되는 쪽 정하기</span></span></button>
           <span class="farrow">→</span>
-          <button class="fstep" data-m="2"><span class="fn">2</span><span class="ft"><b>일단 돌려보기</b><span>기본 설정의 한계 확인</span></span></button>
+          <button class="fstep" data-m="2"><span class="fn">2</span><span class="ft"><b>실시간 라인 가동</b><span>기준선 딜레마 체험</span></span></button>
           <span class="farrow">→</span>
-          <button class="fstep" data-m="3"><span class="fn">3</span><span class="ft"><b>기준선 조정</b><span>재현율 ↔ 정밀도 저울질</span></span></button>
-          <span class="farrow">→</span>
-          <button class="fstep" data-m="4"><span class="fn">4</span><span class="ft"><b>도입 리포트</b><span>실무 지표로 결론 내기</span></span></button>
+          <button class="fstep" data-m="3"><span class="fn">3</span><span class="ft"><b>도입 리포트</b><span>실무 지표(재현율/정밀도) 확인</span></span></button>
         </div>
 
         <div class="card wizard" id="ms-host">
@@ -264,85 +262,94 @@
             <p class="ms-lead">②단계에서 만든 분류기를 <b>자동 판정 라인</b>에 투입합니다. 라인 끝에는 통이 두 개 있고, <b>어느 쪽으로 잘못 보내든 대가가 따릅니다.</b></p>
 
             <!-- 두 종류의 실수를 글 대신 통 두 개로 보여 준다 — ②③의 라인과 같은 그림 -->
-            <div class="ms-bins static">
-              <div class="ms-bin reject">
-                <div class="ms-bin-head"><b>폐기함</b><em>로봇 팔이 쳐냄</em></div>
-                <div class="ms-bin-cost"><span class="ms-e-tag wrong">헛짚음</span> 멀쩡한 제품까지 쳐내면 <b>사람이 일일이 재확인</b>해야 합니다</div>
-              </div>
-              <div class="ms-bin ship">
-                <div class="ms-bin-head"><b>출하구</b><em>그냥 통과</em></div>
-                <div class="ms-bin-cost"><span class="ms-e-tag miss">놓침</span> 불량이 섞여 나가면 <b>고객에게 그대로 갑니다 — 리콜</b></div>
-              </div>
+            <div style="background:var(--bg-soft); border-radius:8px; padding:12px 16px; display:flex; gap:20px; font-size:13px; color:var(--ink-2); margin-bottom: 24px;">
+              <div style="display:flex; align-items:center; gap:6px;"><span class="ic-inline" data-ic="trash"></span><b>폐기함</b>: 로봇 팔이 쳐냄</div>
+              <div style="display:flex; align-items:center; gap:6px;"><span class="ic-inline" data-ic="box"></span><b>출하구</b>: 그대로 통과시킴</div>
             </div>
 
-            <div class="ms-pick-lab">둘 중 <b>불량품</b>으로 삼을 쪽은 어느 쪽인가요? — 놓치면 더 곤란한 쪽입니다</div>
-            <div class="ms-pick" id="ms-pick"></div>
-            <div class="ms-goal" id="ms-goal" hidden></div>
-            <div class="btn-row"><button class="btn primary lg" id="ms-go2" disabled>라인 시운전 하러 가기 →</button></div>
+            <div>
+              <b style="display:block; font-size:14px; color:var(--ink); margin-bottom:12px;">놓치면 안 되는 타겟(불량품)을 선택하세요</b>
+              <div class="ms-pick" id="ms-pick"></div>
+            </div>
+            
+            <div class="ms-goal" id="ms-goal" style="margin-top:16px;" hidden></div>
+
+            <div class="btn-row" style="margin-top:24px;">
+              <button class="btn primary lg" id="ms-go2" disabled>라인 가동하러 가기 →</button>
+            </div>
           </div>
 
-          <!-- ② 라인 시운전 — 기준선 80% 고정 · 전량 1회 가동 -->
+          <!-- ② 실시간 라인 가동 -->
           <div class="msstep" data-m="2" hidden>
-            <h2>라인 시운전</h2>
-            <p class="sub">채점용으로 남겨 둔 <b>내 사진</b>이 제품이 되어 흐릅니다. 기준선은 기본값 <b>80%</b> 고정입니다.</p>
-            <div class="ms-line" id="ms-line-2"></div>
-            <div class="ms-alert" id="ms-alert-2"></div>
-            <div class="btn-row"><button class="btn primary lg" id="ms-go3" disabled>기준선 조정하러 가기 →</button></div>
-          </div>
-
-          <!-- ③ 기준선 조정 — 라인은 연속 순환 · 게이지는 검증 전량 실측 -->
-          <div class="msstep" data-m="3" hidden>
-            <h2>기준선을 움직여 목표를 맞춰 보세요</h2>
-            <p class="sub">재현율과 정밀도는 <b>같이 오르지 않습니다.</b> 하나를 올리면 다른 하나가 내려가요.</p>
+            <h2>실시간 기준선 조정</h2>
+            <p class="sub">웹캠에 물건을 비춰보세요. 기준선을 내리면 불량을 꽉 잡지만 정상품이 버려집니다. 두 마리 토끼를 잡는 최적의 선을 찾아보세요.</p>
 
             <div class="ms-tune">
-              <div class="row"><span>판정 기준선</span><input type="range" id="ms-thres" min="5" max="95" value="80"
-                  step="5"><span class="val" id="ms-thres-val">80%</span></div>
+              <div class="ms-tune-split">
+                <div class="ms-tune-left">
+                  <div class="stage" style="margin-bottom: 24px; width: 100%; min-height: 240px; border-radius: 12px; background: #0d1016;">
+                    <video id="v-mission" playsinline muted></video>
+                    <canvas id="c-mission" style="display:none;"></canvas>
+                    <div class="ph" id="ph-mission"><span class="ic-inline" data-ic="camera"></span> 카메라 대기중...</div>
+                  </div>
 
-              <div class="ms-line" id="ms-line-3"></div>
-              <div class="ms-line-note">벨트는 지금 기준선이 <b>어떻게 도는지</b> 보여 줍니다. 한 바퀴가 끝나면 통을 비우고 다시 채워요. 아래 게이지는 검증 <b>전량</b> 기준 실측값입니다.</div>
-
-              <div class="ms-gauges">
-                <div class="ms-g">
-                  <span class="ms-g-lab">재현율 <em>놓치지 않은 비율</em></span>
-                  <div class="ms-g-bar"><i id="ms-rec-bar"></i><span class="ms-g-target" title="목표 90%"></span></div>
-                  <b id="ms-rec-val">—</b>
+                  <div style="margin-top:auto;">
+                    <div class="row thres-row" style="margin-bottom: 16px;">
+                      <span>로봇 팔 예민도</span>
+                      <input type="range" id="ms-thres" min="5" max="95" value="80" step="5">
+                      <span class="val" id="ms-thres-val">80%</span>
+                    </div>
+                    
+                    <div class="btn-row"><button class="btn primary lg block" id="ms-go3" style="width:100%">이 설정으로 결정하기 →</button></div>
+                  </div>
                 </div>
-                <div class="ms-g">
-                  <span class="ms-g-lab">정밀도 <em>골라낸 것 중 진짜 비율</em></span>
-                  <div class="ms-g-bar"><i id="ms-prec-bar"></i></div>
-                  <b id="ms-prec-val">—</b>
+
+                <div class="ms-tune-right">
+                  <div class="ms-line" id="ms-line-3">
+                      <div class="ms-line-hdr">
+                        <span>LINE 01 · 실시간 판정</span>
+                        <div style="margin-left:auto; display:flex; gap:10px; align-items:center;">
+                          <b style="font-size:12px; color:var(--ink-2)">예민도 <span id="ms-line-cut" style="color:var(--ink)">80%</span></b>
+                        </div>
+                      </div>
+                    </div>
                 </div>
               </div>
-
-              <div class="ms-alert" id="ms-alert-3"></div>
             </div>
-            <div class="btn-row"><button class="btn primary lg" id="ms-go4">이 설정으로 리포트 만들기 →</button></div>
           </div>
 
-          <!-- ④ 도입 리포트 -->
-          <div class="msstep" data-m="4" hidden>
-            <h2>자동 판정 도입 리포트</h2>
+          <!-- ③ 도입 리포트 -->
+          <div class="msstep" data-m="3" hidden>
+            <h2>자동 판정 도입 리포트 (테스트 완료)</h2>
             <div class="ms-report" id="ms-report"></div>
 
-            <!-- 개념 보충 — 필요한 학생만 펼친다 -->
-            <details class="ms-fold">
-              <summary>정확도(전체 중 맞힌 비율)를 쓰지 않은 이유</summary>
-              <div>정확도는 <b>두 종류의 실수를 한 덩어리로 뭉갭니다.</b> 놓친 것과 헛짚은 것 중 무엇이 문제인지 알 수 없어, 어느 쪽을 고쳐야 할지 판단할 수가 없어요. 그래서 현장에서는 정밀도와 재현율을 <b>따로</b> 봅니다.</div>
+            <details class="ms-fold" style="margin-top:16px;">
+              <summary>실무 지표: 재현율과 정밀도란?</summary>
+              <div style="padding: 0 15px 14px;">
+                2단계에서 치열하게 고민했던 그 딜레마가 바로 현장에서 말하는 <b>재현율(Recall)</b>과 <b>정밀도(Precision)</b>입니다.
+                <ul style="margin-top: 8px; margin-bottom: 12px;">
+                  <li><b>재현율(Recall)</b>: 놓치지 않으려는 노력. 불량을 맞게 골라낸 비율입니다.</li>
+                  <li><b>정밀도(Precision)</b>: 억울하게 버리지 않으려는 노력. 골라낸 것 중 진짜 불량인 비율입니다.</li>
+                </ul>
+                이 둘은 동시에 오르지 않기 때문에, 상황에 맞게 <b>예민도(Threshold)</b>를 조절해야 합니다.
+              </div>
             </details>
+
+            <!-- 실무에서는 어떻게 쓰이나 -->
             <details class="ms-fold">
               <summary>실무에서는 어떻게 쓰이나</summary>
               <div>
                 <ul>
-                  <li><b>제조 품질 검사</b> — 불량을 놓치면 리콜. 재현율을 지키고 헛짚은 건 사람이 재확인합니다.</li>
-                  <li><b>의료 영상 판독 보조</b> — 병변 미탐이 치명적이라 기준선을 낮게 잡습니다.</li>
-                  <li><b>콘텐츠 자동 심사</b> — 반대로 오탐(정상 게시물 차단)이 더 큰 항의를 부르는 경우엔 기준선을 높입니다.</li>
+                  <li><b>제조 품질 검사</b> — 불량을 놓치면 리콜. 재현율을 지키고 헛짚은 건 사람이 재확인합니다. (예민도 낮춤)</li>
+                  <li><b>의료 영상 판독 보조</b> — 병변 미탐이 치명적이라 기준선을 낮게 잡습니다. (예민도 낮춤)</li>
+                  <li><b>콘텐츠 자동 심사</b> — 오탐(정상 게시물 차단)이 더 큰 항의를 부르는 경우엔 기준선을 높입니다. (예민도 높임)</li>
                 </ul>
               </div>
             </details>
 
-            <div class="wnav">
-              <button class="btn block" id="ms-back3">← 기준선 다시 조정</button>
+            <div class="btn-row" style="margin-top:32px; display:flex; gap:12px;">
+              <button class="btn border lg" onclick="msSetStep(2)" style="flex:1;">← 기준선 다시 조정</button>
+              <button class="btn primary lg" onclick="CourseDashboard.finish();" style="flex:1;">코스 완료하기 →</button>
             </div>
           </div>
         </div>
