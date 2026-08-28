@@ -41,8 +41,6 @@
 
     /* 무료/유료 접근 제한 로직 (단위 테스트 등 Access 객체가 없으면 잠금 해제) */
     function paid() { return !window.Access || window.Access.isPaid(config.courseKey); }
-    /* 화면 전체가 잠긴 자리(최종 평가)는 lockScreen, 무료 내용이 이미 있는 자리는 noticeStrip. */
-    function lockScreen(info) { return window.Access ? window.Access.screen(info) : ''; }
     function noticeStrip(key, info, text) {
       return window.Access ? window.Access.notice(key, info, text) : '';
     }

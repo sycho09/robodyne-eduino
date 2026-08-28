@@ -1,0 +1,1 @@
+export default [{ languageOptions: { globals: { window: "readonly", document: "readonly", console: "readonly", setTimeout: "readonly", clearTimeout: "readonly", alert: "readonly" } }, rules: { "no-unused-vars": "error" } }];

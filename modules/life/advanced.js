@@ -7,7 +7,6 @@ let lmCapturedCv = null;   // Step 1에서 촬영한 원본 캔버스
 let lmDegradedCv = null;   // Step 2에서 조건(환경)이 적용된 캔버스
 let lmFinalText = '';
 
-const lmEsc = (v) => String(v).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
 
 const LM_ENV_NAME = { orig: '원본', hide: '일부 가림', crumple: '구겨진 종이' };
 
