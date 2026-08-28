@@ -146,6 +146,42 @@ function lmReadDate(text) {
   const m = text.match(/\d{4}\s*-\s*\d{2}\s*-\s*\d{2}/);
   return m ? m[0].replace(/\s+/g, '') : null;
 }
+function lmReadQty(text) {
+  const m = text.match(/QTY\s*(\d+)/i);
+  return m ? parseInt(m[1], 10) : 1;
+}
+function lmReadItem(text) {
+  const m = text.match(/\d{4}\s*-\s*\d{2}\s*-\s*\d{2}\s+(.*?)\s+QTY/i);
+  return m ? m[1].trim() : 'Unknown Item';
+}
+
+/* ── [추가됨] 오츠 이진화(Otsu) 전처리 함수 ── */
+function lmApplyPreprocess(cv) {
+  const ctx = cv.getContext('2d');
+  const img = ctx.getImageData(0, 0, cv.width, cv.height);
+  const d = img.data, n = d.length / 4;
+  const gray = new Uint8Array(n), hist = new Array(256).fill(0);
+  for (let i = 0, j = 0; i < d.length; i += 4, j++) { 
+    const g = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) | 0; 
+    gray[j] = g; hist[g]++; 
+  }
+  let sum = 0; for (let t = 0; t < 256; t++) sum += t * hist[t];
+  let sumB = 0, wB = 0, maxVar = 0, thr = 127;
+  for (let t = 0; t < 256; t++) { 
+    wB += hist[t]; if (!wB) continue; 
+    const wF = n - wB; if (!wF) break; 
+    sumB += t * hist[t]; 
+    const mB = sumB / wB, mF = (sum - sumB) / wF;
+    const between = wB * wF * (mB - mF) * (mB - mF); 
+    if (between > maxVar) { maxVar = between; thr = t; } 
+  }
+  for (let i = 0, j = 0; i < d.length; i += 4, j++) { 
+    const v = gray[j] > thr ? 255 : 0; 
+    d[i] = d[i + 1] = d[i + 2] = v; 
+  }
+  ctx.putImageData(img, 0, 0);
+  return cv;
+}
 
 /* ── ①단계: 조건 하나를 실제로 테스트한다 ── */
 async function lmTest(env) {
@@ -267,8 +303,24 @@ async function startLmBatch() {
     for (let i = 0; i < LM_RECEIPTS.length; i++) {
       txt.textContent = LM_RECEIPTS.length + '장 중 ' + (i + 1) + '번째 인식 중…';
       const r = LM_RECEIPTS[i];
-      const out = await lmRecognize(lmDrawReceipt(r));   // 전처리를 마친 깨끗한 이미지
-      lmBatch.push({ r, text: out.text, conf: out.conf, amount: lmReadAmount(out.text), date: lmReadDate(out.text) });
+      
+      // 시뮬레이션을 위해 원본이 아닌 악조건(어두움, 구겨짐)을 부여
+      const envs = ['orig', 'dark', 'crumple'];
+      const degradedCv = lmDegrade(lmDrawReceipt(r), envs[i % envs.length]);
+      
+      // 제안된 전처리(오츠 이진화)를 적용하여 이미지 품질을 복구
+      const preprocessedCv = lmApplyPreprocess(degradedCv);
+      
+      const out = await lmRecognize(preprocessedCv);
+      lmBatch.push({ 
+        r, 
+        text: out.text, 
+        conf: out.conf, 
+        amount: lmReadAmount(out.text), 
+        date: lmReadDate(out.text),
+        item: lmReadItem(out.text),
+        qty: lmReadQty(out.text)
+      });
       if (receipts[i]) receipts[i].classList.add('done');
       bar.style.width = Math.round(((i + 1) / LM_RECEIPTS.length) * 100) + '%';
     }
@@ -291,8 +343,8 @@ function paintLmReport() {
   const rows = lmBatch.map((b) => {
     const amt = b.amount;
     if (amt == null) missed++; else sum += amt;
-    return '<tr><td>' + lmEsc(b.date || '—') + '</td><td>' + lmEsc(b.r.item) +
-      '</td><td>' + lmEsc(String(b.r.qty)) + '</td><td class="num">' +
+    return '<tr><td>' + lmEsc(b.date || '—') + '</td><td>' + lmEsc(b.item || '—') +
+      '</td><td>' + lmEsc(String(b.qty || 1)) + '</td><td class="num">' +
       (amt == null ? '읽지 못함' : lmEsc(lmWon(amt))) + '</td></tr>';
   });
   rows.push('<tr class="total-row"><td colspan="3" style="text-align:right">총 합계' +

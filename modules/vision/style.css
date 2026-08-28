@@ -193,12 +193,8 @@ a { color:inherit; text-decoration:none; }
 .ms-badge { display:inline-flex; align-items:center; font-family:var(--mono); font-size:11px; font-weight:700;
   letter-spacing:.1em; color:var(--primary-ink); background:var(--primary-soft);
   border:1px solid var(--primary-line); border-radius:999px; padding:4px 12px; margin-bottom:10px; }
-.ms-brief { font-size:13.5px; color:var(--ink-2); line-height:1.75; margin:10px 0 18px; }
-.ms-brief p { margin:0 0 10px; }
-.ms-brief b { color:var(--ink); }
-.ms-err { list-style:none; margin:12px 0; padding:0; display:flex; flex-direction:column; gap:8px; }
-.ms-err li { display:flex; align-items:center; gap:10px; background:var(--card-2); border:1px solid var(--line);
-  border-radius:10px; padding:10px 12px; font-size:13px; }
+.ms-lead { font-size:13.5px; color:var(--ink-2); line-height:1.75; margin:10px 0 16px; }
+.ms-lead b { color:var(--ink); }
 .ms-e-tag { flex:none; font-size:11.5px; font-weight:800; border-radius:6px; padding:3px 9px; }
 .ms-e-tag.miss { color:var(--primary-ink); background:var(--primary-soft); border:1px solid var(--primary-line); }
 .ms-e-tag.wrong { color:#92400e; background:var(--amber-soft); border:1px solid rgba(217,138,31,.4); }
@@ -216,22 +212,94 @@ a { color:inherit; text-decoration:none; }
   border-radius:11px; padding:12px 14px; font-size:13px; color:var(--ink-2); line-height:1.7; }
 .ms-goal b { color:var(--green); }
 
-/* ②③ 판정 필름스트립 — 채점에 쓴 내 사진에 도장을 찍는다 */
-.ms-film { display:grid; grid-template-columns:repeat(auto-fill,minmax(84px,1fr)); gap:10px; margin:16px 0; }
-.ms-shot { margin:0; border:2px solid var(--line); border-radius:11px; overflow:hidden; background:var(--card-2);
-  transition:border-color .15s, background-color .15s; }
-.ms-shot img { display:block; width:100%; aspect-ratio:1; object-fit:cover; }
-.ms-noimg { display:grid; place-items:center; width:100%; aspect-ratio:1; color:var(--ink-4); font-size:20px; font-weight:800; }
-.ms-shot figcaption { padding:5px 6px; text-align:center; line-height:1.35; }
-.ms-shot figcaption b { display:block; font-size:11.5px; font-weight:800; }
-.ms-shot figcaption span { font-family:var(--mono); font-size:10.5px; color:var(--ink-4); }
-.ms-shot.ok    { border-color:var(--green); background:var(--green-soft); }
-.ms-shot.ok    figcaption b { color:var(--green); }
-.ms-shot.miss  { border-color:var(--primary); background:var(--primary-soft); }
-.ms-shot.miss  figcaption b { color:var(--primary-ink); }
-.ms-shot.wrong { border-color:rgba(217,138,31,.55); background:var(--amber-soft); }
-.ms-shot.wrong figcaption b { color:#92400e; }
-.ms-shot.pass  figcaption b { color:var(--ink-3); }
+/* ══════════════════════════════════════════════════════════
+   ②③ 자동 판정 라인 — 검증 사진 한 장이 벨트 위 제품 한 개다.
+   판정 4종의 색은 기존 토큰을 그대로 쓴다.
+     ok(진짜 불량 쳐냄) --green · wrong(헛짚음) --amber
+     miss(불량 출하)   --primary · pass(정상 통과) --ink-3
+   ══════════════════════════════════════════════════════════ */
+.ms-line { border:1px solid var(--line); border-radius:14px; background:var(--card-2); padding:12px; margin:16px 0; }
+.ms-line-top { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.ms-line-tag { font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:.08em; color:var(--ink-3);
+  border:1px solid var(--line-2); border-radius:999px; padding:3px 10px; background:#fff; }
+.ms-line-cut { margin-left:auto; font-size:12px; font-weight:700; color:var(--ink-3); }
+.ms-line-cut b { font-family:var(--mono); font-size:13px; color:var(--ink); }
+.ms-mute { border:1px solid var(--line-2); background:#fff; color:var(--ink-3); border-radius:9px;
+  padding:5px 10px; font-size:11.5px; font-weight:700; }
+.ms-mute[aria-pressed="true"] { color:var(--ink-4); background:var(--bg-soft); }
+
+/* 벨트 — 어두운 바닥에 줄무늬가 흘러 라인이 돌고 있음을 알린다 */
+.ms-belt { position:relative; height:134px; border-radius:12px; overflow:hidden;
+  background:#2a2f3a; border:1px solid #1c2029; }
+.ms-belt::after { content:''; position:absolute; left:0; right:0; bottom:0; height:26px;
+  background:repeating-linear-gradient(90deg,#3a4150 0 14px,#2f3542 14px 28px);
+  animation:ms-roll .7s linear infinite; }
+@keyframes ms-roll { to { background-position:28px 0; } }
+.ms-belt.stopped::after { animation-play-state:paused; }
+.ms-line.noanim .ms-belt { display:none; }
+
+.ms-track { position:absolute; left:5px; right:5px; bottom:26px; height:80px; }
+.ms-prod { position:absolute; left:0; bottom:0; margin:0; width:54px; will-change:transform; }
+.ms-prod img, .ms-prod .ms-noimg { display:block; width:54px; height:54px; object-fit:cover;
+  border-radius:9px; border:2px solid #59616f; background:#3a4150; }
+.ms-prod .ms-prod-p { display:block; text-align:center; font-family:var(--mono);
+  font-size:10px; color:#aab3c2; margin-top:3px; }
+.ms-prod.ok    img, .ms-prod.ok    .ms-noimg { border-color:var(--green); }
+.ms-prod.wrong img, .ms-prod.wrong .ms-noimg { border-color:var(--amber); }
+.ms-prod.miss  img, .ms-prod.miss  .ms-noimg { border-color:var(--primary); box-shadow:0 0 0 3px rgba(240,71,58,.35); }
+.ms-prod.miss  .ms-prod-p { color:#ff9c93; font-weight:700; }
+.ms-prod.dropping { transition:transform .28s cubic-bezier(.4,.7,.6,1), opacity .28s; opacity:0; }
+.ms-noimg { display:grid; place-items:center; color:var(--ink-4); font-size:17px; font-weight:800; }
+
+/* 스캐너 + 로봇 팔 — 벨트 폭의 62% 지점에 함께 선다.
+   이름을 ms-scan 으로 둔다: .ms-gate 는 학습 전 잠금 화면이 이미 쓰고 있다. */
+.ms-scan { position:absolute; top:0; bottom:0; left:62%; width:0; z-index:2; }
+.ms-scan-beam { position:absolute; top:26px; bottom:26px; left:-1px; width:2px; border-radius:1px;
+  background:linear-gradient(180deg,rgba(240,71,58,0),rgba(240,71,58,.85),rgba(240,71,58,0)); }
+/* 팔이 게이트 선 위에 서므로 이름표는 선 왼쪽으로 뺀다 (겹치면 둘 다 안 읽힌다) */
+.ms-scan-lab { position:absolute; top:7px; right:10px; font-family:var(--mono); font-size:9.5px;
+  color:#8b93a3; white-space:nowrap; }
+.ms-arm { position:absolute; left:62%; top:0; width:12px; height:58px; z-index:3;
+  transform-origin:50% 0; transform:rotate(-26deg); transition:transform .13s ease-out; }
+.ms-arm i { position:absolute; top:0; left:3px; width:6px; height:46px; border-radius:3px;
+  background:linear-gradient(180deg,#9aa3b3,#666f80); }
+.ms-arm::after { content:''; position:absolute; top:44px; left:-5px; width:22px; height:12px;
+  border-radius:3px; background:#f0473a; box-shadow:0 2px 0 rgba(0,0,0,.28); }
+.ms-arm.hit { transform:rotate(8deg); transition:transform .07s ease-in; }
+
+/* 라인 끝의 통 두 개 — ①④의 정지 그림도 같은 스타일을 쓴다 */
+.ms-bins { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+.ms-bin { border:1px solid var(--line); border-radius:12px; background:#fff; padding:11px 12px; }
+.ms-bin.reject { border-color:var(--primary-line); }
+.ms-bin.ship { border-color:rgba(17,160,111,.32); }
+.ms-bins.static .ms-bin { background:var(--card-2); }
+.ms-bin-head { display:flex; align-items:baseline; gap:8px; }
+.ms-bin-head b { font-size:13.5px; font-weight:800; }
+.ms-bin-head em { font-style:normal; font-size:11px; color:var(--ink-4); }
+.ms-bin-n { margin-left:auto; font-family:var(--mono); font-size:19px; font-weight:700; color:var(--ink); }
+.ms-bin-cost { margin-top:9px; font-size:12.5px; color:var(--ink-2); line-height:1.7; }
+.ms-bin-cost b { color:var(--ink); }
+.ms-bin-pile { display:flex; flex-wrap:wrap; align-content:flex-start; gap:3px; min-height:34px;
+  margin:9px 0 8px; padding:6px; border-radius:9px; background:var(--bg-soft); }
+.ms-chip { width:18px; height:18px; border-radius:4px; background-size:cover; background-position:center;
+  background-color:var(--card-2); border:1.5px solid var(--line-2); }
+.ms-chip.ok { border-color:var(--green); }
+.ms-chip.wrong { border-color:var(--amber); }
+.ms-chip.miss { border-color:var(--primary); }
+.ms-chip.pass { opacity:.5; }
+.ms-pile-more { align-self:center; padding-left:4px; font-family:var(--mono); font-size:11px; color:var(--ink-3); }
+.ms-bin-split { display:flex; gap:12px; flex-wrap:wrap; font-size:11.5px; color:var(--ink-3); }
+.ms-bin-split em { font-style:normal; }
+.ms-bin-split b { font-family:var(--mono); font-weight:700; }
+.ms-bin-split .ok b { color:var(--green); }
+.ms-bin-split .wrong b { color:#92400e; }
+.ms-bin-split .miss b { color:var(--primary-ink); }
+.ms-bin-split .pass b { color:var(--ink-2); }
+
+.ms-line-ctrl { margin-top:12px; }
+/* 벨트와 게이지가 서로 다른 것을 재고 있다는 점을 한 줄로 못 박는다 */
+.ms-line-note { font-size:12px; color:var(--ink-3); line-height:1.7; margin:-6px 0 4px; }
+.ms-line-note b { color:var(--ink-2); }
 
 .ms-alert { border-radius:12px; padding:13px 15px; font-size:13px; line-height:1.7; border:1px solid; }
 .ms-alert b { display:block; font-size:14px; font-weight:800; margin-bottom:4px; }
@@ -239,6 +307,8 @@ a { color:inherit; text-decoration:none; }
 .ms-alert.fail b { color:var(--primary-ink); }
 .ms-alert.pass { color:var(--ink-2); background:var(--green-soft); border-color:rgba(17,160,111,.3); }
 .ms-alert.pass b { color:var(--green); }
+.ms-alert.idle { color:var(--ink-2); background:var(--card-2); border-color:var(--line); }
+.ms-alert.idle b { color:var(--ink); }
 
 /* ③ 게이지 */
 .ms-tune { margin-top:6px; }
@@ -274,23 +344,36 @@ a { color:inherit; text-decoration:none; }
 .ms-summary { margin-top:12px; font-size:12.5px; color:var(--ink-3); text-align:center; }
 .ms-summary b { font-family:var(--mono); color:var(--ink-2); }
 
-.ms-note, .ms-real { background:var(--card-2); border:1px solid var(--line); border-radius:12px;
-  padding:13px 15px; margin-top:14px; font-size:12.5px; color:var(--ink-2); line-height:1.7; }
-.ms-note b, .ms-real b { color:var(--primary-ink); }
-.ms-real ul { margin:8px 0 0; padding-left:18px; }
-.ms-real li { margin-bottom:5px; }
-.ms-real li b { color:var(--ink); }
+/* ④ 개념 보충 — 기본은 접어 두고 필요한 학생만 펼친다 */
+.ms-fold { background:var(--card-2); border:1px solid var(--line); border-radius:12px; margin-top:12px; }
+.ms-fold > summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px;
+  padding:12px 15px; font-size:13px; font-weight:700; color:var(--ink-2); }
+.ms-fold > summary::-webkit-details-marker { display:none; }
+.ms-fold > summary::after { content:'+'; margin-left:auto; font-family:var(--mono); font-size:16px; color:var(--ink-4); }
+.ms-fold[open] > summary::after { content:'\2212'; }
+.ms-fold > summary:hover { color:var(--primary-ink); }
+.ms-fold > div { padding:0 15px 14px; font-size:12.5px; color:var(--ink-2); line-height:1.7; }
+.ms-fold > div b { color:var(--ink); }
+.ms-fold ul { margin:0; padding-left:18px; }
+.ms-fold li { margin-bottom:5px; }
 
 /* 좁은 화면 */
 @media (max-width:880px){
   .layout { grid-template-columns:1fr; }
   .work { grid-template-columns:1fr; align-items:start; }
   .wstep > .card { height:auto; }
-  .ms-tally { grid-template-columns:1fr 1fr; }
   .ms-kpis { grid-template-columns:1fr 1fr; }
 }
 @media (max-width:560px){
   .wnav { grid-template-columns:1fr; }
+  .ms-bins { grid-template-columns:1fr; }
   .ms-gauges { grid-template-columns:1fr; }
   .ms-kpis { grid-template-columns:1fr; }
+}
+
+/* 동작 줄이기 — 라인 연출만 끄고 결과는 그대로 보여 준다 */
+@media (prefers-reduced-motion: reduce){
+  .ms-belt::after { animation:none; }
+  .ms-arm { transition:none; }
+  .ms-prod, .ms-prod.dropping { transition:none; }
 }

@@ -271,6 +271,10 @@ if (dSlider) {
 let demoCam = null;
 let demoRaf = null;
 let demoLastTriggerTime = 0;
+let demoPptSlide = 1;
+let demoVolLevel = 30;
+let demoZoomLevel = 1.0;
+
 
 function stopDemoCam() {
   if (typeof demoCam !== 'undefined' && demoCam && demoCam.stream) {
@@ -353,30 +357,46 @@ function triggerDemoAction() {
   active.hidden = false;
   
   if (dmFunc === 'ppt') {
+    demoPptSlide++;
+    if (demoPptSlide > 5) demoPptSlide = 1;
     active.innerHTML = `
       <div class="demo-ppt-wrap">
-        <div class="demo-ppt-slide">다음 슬라이드 ➔</div>
+        <div class="demo-ppt-slide">슬라이드 ${demoPptSlide} ➔</div>
       </div>
-      <div class="dm-feedback-text" style="margin-top:16px;">슬라이드 넘김!</div>
+      <div class="dm-feedback-text" style="margin-top:16px;">슬라이드 넘김! (${demoPptSlide}페이지)</div>
     `;
   } else if (dmFunc === 'vol') {
+    let prevVol = demoVolLevel;
+    demoVolLevel += 15;
+    if (demoVolLevel > 100) { demoVolLevel = 30; prevVol = 15; }
     active.innerHTML = `
+      <style>
+        @keyframes volFillDyn { 0% { width: ${prevVol}%; } 100% { width: ${demoVolLevel}%; } }
+        .demo-vol-bar-fg-dyn { height:100%; background:var(--primary); width:${demoVolLevel}%; animation: volFillDyn 0.5s ease-out forwards; }
+      </style>
       <div class="demo-vol-wrap">
         <span class="ic-inline" style="font-size:24px; color:var(--ink-2)">${EduinoIcons.svg('trending-up')}</span>
         <div class="demo-vol-bar-bg">
-          <div class="demo-vol-bar-fg"></div>
+          <div class="demo-vol-bar-fg-dyn"></div>
         </div>
       </div>
-      <div class="dm-feedback-text" style="margin-top:16px;">시스템 볼륨 조절!</div>
+      <div class="dm-feedback-text" style="margin-top:16px;">시스템 볼륨 조절! (${demoVolLevel}%)</div>
     `;
   } else if (dmFunc === 'zoom') {
+    let prevZoom = demoZoomLevel;
+    demoZoomLevel += 0.3;
+    if (demoZoomLevel > 2.5) { demoZoomLevel = 1.0; prevZoom = 0.7; }
     active.innerHTML = `
+      <style>
+        @keyframes zoomPopDyn { 0% { transform: scale(${prevZoom}); } 100% { transform: scale(${demoZoomLevel}); box-shadow:var(--shadow); border-color:var(--primary-line); } }
+        .demo-zoom-target-dyn { display:flex; align-items:center; justify-content:center; width:120px; height:120px; background:#fff; border-radius:12px; border:1px solid var(--line); box-shadow:var(--shadow-sm); animation: zoomPopDyn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+      </style>
       <div class="demo-zoom-wrap">
-        <div class="demo-zoom-target">
+        <div class="demo-zoom-target-dyn">
           <span class="ic-inline" style="font-size:48px; color:var(--ink-3)">${EduinoIcons.svg('search')}</span>
         </div>
       </div>
-      <div class="dm-feedback-text" style="margin-top:16px;">화면 확대!</div>
+      <div class="dm-feedback-text" style="margin-top:16px;">화면 확대! (${Math.round(demoZoomLevel * 100)}%)</div>
     `;
   }
   

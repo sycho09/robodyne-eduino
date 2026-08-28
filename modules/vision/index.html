@@ -260,24 +260,37 @@
           <!-- ① 미션 수령 -->
           <div class="msstep" data-m="1" hidden>
             <span class="ms-badge">MISSION</span>
-            <h2>자동 판정 시스템 도입 심사</h2>
-            <div class="ms-brief" id="ms-brief"></div>
-            <div class="ms-pick-lab">둘 중 <b>놓치면 더 곤란한 쪽</b>은 어느 쪽인가요?</div>
+            <h2>자동 판정 라인 감독관 배정</h2>
+            <p class="ms-lead">②단계에서 만든 분류기를 <b>자동 판정 라인</b>에 투입합니다. 라인 끝에는 통이 두 개 있고, <b>어느 쪽으로 잘못 보내든 대가가 따릅니다.</b></p>
+
+            <!-- 두 종류의 실수를 글 대신 통 두 개로 보여 준다 — ②③의 라인과 같은 그림 -->
+            <div class="ms-bins static">
+              <div class="ms-bin reject">
+                <div class="ms-bin-head"><b>폐기함</b><em>로봇 팔이 쳐냄</em></div>
+                <div class="ms-bin-cost"><span class="ms-e-tag wrong">헛짚음</span> 멀쩡한 제품까지 쳐내면 <b>사람이 일일이 재확인</b>해야 합니다</div>
+              </div>
+              <div class="ms-bin ship">
+                <div class="ms-bin-head"><b>출하구</b><em>그냥 통과</em></div>
+                <div class="ms-bin-cost"><span class="ms-e-tag miss">놓침</span> 불량이 섞여 나가면 <b>고객에게 그대로 갑니다 — 리콜</b></div>
+              </div>
+            </div>
+
+            <div class="ms-pick-lab">둘 중 <b>불량품</b>으로 삼을 쪽은 어느 쪽인가요? — 놓치면 더 곤란한 쪽입니다</div>
             <div class="ms-pick" id="ms-pick"></div>
             <div class="ms-goal" id="ms-goal" hidden></div>
-            <div class="btn-row"><button class="btn primary lg" id="ms-go2" disabled>기본 설정으로 돌려보기 →</button></div>
+            <div class="btn-row"><button class="btn primary lg" id="ms-go2" disabled>라인 시운전 하러 가기 →</button></div>
           </div>
 
-          <!-- ② 일단 돌려보기 -->
+          <!-- ② 라인 시운전 — 기준선 80% 고정 · 전량 1회 가동 -->
           <div class="msstep" data-m="2" hidden>
-            <h2>기본 설정으로 판정해 봤습니다</h2>
-            <p class="sub">채점용으로 남겨 둔 <b>내 사진</b>을 기준선 80%로 판정했습니다.</p>
-            <div id="ms-film-2"></div>
+            <h2>라인 시운전</h2>
+            <p class="sub">채점용으로 남겨 둔 <b>내 사진</b>이 제품이 되어 흐릅니다. 기준선은 기본값 <b>80%</b> 고정입니다.</p>
+            <div class="ms-line" id="ms-line-2"></div>
             <div class="ms-alert" id="ms-alert-2"></div>
-            <div class="btn-row"><button class="btn primary lg" id="ms-go3">기준선 조정하러 가기 →</button></div>
+            <div class="btn-row"><button class="btn primary lg" id="ms-go3" disabled>기준선 조정하러 가기 →</button></div>
           </div>
 
-          <!-- ③ 기준선 조정 -->
+          <!-- ③ 기준선 조정 — 라인은 연속 순환 · 게이지는 검증 전량 실측 -->
           <div class="msstep" data-m="3" hidden>
             <h2>기준선을 움직여 목표를 맞춰 보세요</h2>
             <p class="sub">재현율과 정밀도는 <b>같이 오르지 않습니다.</b> 하나를 올리면 다른 하나가 내려가요.</p>
@@ -285,6 +298,9 @@
             <div class="ms-tune">
               <div class="row"><span>판정 기준선</span><input type="range" id="ms-thres" min="5" max="95" value="80"
                   step="5"><span class="val" id="ms-thres-val">80%</span></div>
+
+              <div class="ms-line" id="ms-line-3"></div>
+              <div class="ms-line-note">벨트는 지금 기준선이 <b>어떻게 도는지</b> 보여 줍니다. 한 바퀴가 끝나면 통을 비우고 다시 채워요. 아래 게이지는 검증 <b>전량</b> 기준 실측값입니다.</div>
 
               <div class="ms-gauges">
                 <div class="ms-g">
@@ -299,7 +315,6 @@
                 </div>
               </div>
 
-              <div id="ms-film-3"></div>
               <div class="ms-alert" id="ms-alert-3"></div>
             </div>
             <div class="btn-row"><button class="btn primary lg" id="ms-go4">이 설정으로 리포트 만들기 →</button></div>
@@ -309,18 +324,23 @@
           <div class="msstep" data-m="4" hidden>
             <h2>자동 판정 도입 리포트</h2>
             <div class="ms-report" id="ms-report"></div>
-            <div class="ms-note">
-              <b>정확도(전체 중 맞힌 비율)를 쓰지 않은 이유</b><br>
-              정확도는 <b>두 종류의 실수를 한 덩어리로 뭉갭니다.</b> 놓친 것과 헛짚은 것 중 무엇이 문제인지 알 수 없어, 어느 쪽을 고쳐야 할지 판단할 수가 없어요. 그래서 현장에서는 정밀도와 재현율을 <b>따로</b> 봅니다.
-            </div>
-            <div class="ms-real">
-              <b>실무 연결 포인트</b>
-              <ul>
-                <li><b>제조 품질 검사</b> — 불량을 놓치면 리콜. 재현율을 지키고 헛짚은 건 사람이 재확인합니다.</li>
-                <li><b>의료 영상 판독 보조</b> — 병변 미탐이 치명적이라 기준선을 낮게 잡습니다.</li>
-                <li><b>콘텐츠 자동 심사</b> — 반대로 오탐(정상 게시물 차단)이 더 큰 항의를 부르는 경우엔 기준선을 높입니다.</li>
-              </ul>
-            </div>
+
+            <!-- 개념 보충 — 필요한 학생만 펼친다 -->
+            <details class="ms-fold">
+              <summary>정확도(전체 중 맞힌 비율)를 쓰지 않은 이유</summary>
+              <div>정확도는 <b>두 종류의 실수를 한 덩어리로 뭉갭니다.</b> 놓친 것과 헛짚은 것 중 무엇이 문제인지 알 수 없어, 어느 쪽을 고쳐야 할지 판단할 수가 없어요. 그래서 현장에서는 정밀도와 재현율을 <b>따로</b> 봅니다.</div>
+            </details>
+            <details class="ms-fold">
+              <summary>실무에서는 어떻게 쓰이나</summary>
+              <div>
+                <ul>
+                  <li><b>제조 품질 검사</b> — 불량을 놓치면 리콜. 재현율을 지키고 헛짚은 건 사람이 재확인합니다.</li>
+                  <li><b>의료 영상 판독 보조</b> — 병변 미탐이 치명적이라 기준선을 낮게 잡습니다.</li>
+                  <li><b>콘텐츠 자동 심사</b> — 반대로 오탐(정상 게시물 차단)이 더 큰 항의를 부르는 경우엔 기준선을 높입니다.</li>
+                </ul>
+              </div>
+            </details>
+
             <div class="wnav">
               <button class="btn block" id="ms-back3">← 기준선 다시 조정</button>
             </div>

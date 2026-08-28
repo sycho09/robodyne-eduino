@@ -16,6 +16,29 @@ const DONUT_C = 251.3;
 function setStatus(t, c) {
   const s = $('status');
   if (s) { s.textContent = t; s.className = 'status' + (c ? ' ' + c : ''); }
+  document.querySelectorAll('.stage').forEach(stage => {
+    if (stage.offsetParent !== null) {
+      let loader = stage.querySelector('.stage-loader');
+      if (!loader) {
+        loader = document.createElement('div');
+        loader.className = 'stage-loader';
+        loader.style.cssText = 'position:absolute; inset:0; background:#0d1016; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; font-size:15px; font-weight:700; z-index:20;';
+        stage.appendChild(loader);
+      }
+      if (c === 'busy') {
+        loader.style.display = 'flex';
+        loader.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite; margin-bottom:12px; color:var(--primary);"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>` + t;
+        if (!document.getElementById('spin-anim')) {
+          const style = document.createElement('style');
+          style.id = 'spin-anim';
+          style.textContent = '@keyframes spin { 100% { transform: rotate(360deg); } }';
+          document.head.appendChild(style);
+        }
+      } else {
+        loader.style.display = 'none';
+      }
+    }
+  });
 }
 function donutSet(arc, pctEl, frac, color) {
   if (!arc) return;
