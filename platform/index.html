@@ -672,7 +672,7 @@ const MODULES = [
   { key:'life', name:'생활 속 인식 AI', live:true, href:'../modules/life/index.html',
     icon: IC('<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h2v2H8zM14 8h2v2h-2zM8 14h2v2H8zM14 14h2v2h-2z"/>'),
     desc:'QR·바코드와 글자 인식(OCR)을 체험하고, 인식이 실패하는 조건까지 분석.',
-    lv:{초급:'QR·바코드 찾기',중급:'글자 인식(OCR)',심화:'인식 한계 분석·영수증 정리'}, aud:'초등~중등' },
+    lv:{초급:'QR·바코드 찾기',중급:'글자 인식(OCR)',심화:'인식 한계 분석·문서 처리 자동화'}, aud:'초등~중등' },
 ];
 document.getElementById('catalog').innerHTML = MODULES.map(m=>{
   const tag=m.live?'a':'div', href=m.live?` href="/platform/course.html?c=${m.key}"`:'';
