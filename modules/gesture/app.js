@@ -303,9 +303,24 @@ $('btn-train').onclick = async () => {
   inferring = false; $('btn-infer').textContent = '추론 시작';
   setStatus('학습 중…', 'busy'); $('btn-train').disabled = true; $('btn-infer').disabled = true;
 
-  const xsArr = [], ysArr = [];
-  usable.forEach((c, idx) => c.samples.forEach(s => { if (s.length !== 42 || s.some(v => !isFinite(v))) return; xsArr.push(s); const oh = new Array(usable.length).fill(0); oh[idx] = 1; ysArr.push(oh); }));
+  /* 제스처마다 일부를 학습에서 빼 둔다(홀드아웃).
+     [3. 심화]의 커트라인 조절은 "처음 보는 손에서 얼마나 흔들리나"를 재는 화면인데,
+     학습에 쓴 데이터로 재면 확신도가 전부 높게 나와 커트라인을 내려도 오인이 생기지 않는다.
+     그러면 슬라이더가 대부분 구간에서 아무 일도 하지 않는 죽은 손잡이가 된다. */
+  const HOLDOUT_RATIO = 0.25, MIN_TRAIN_PER_CLASS = 6;
+  const xsArr = [], ysArr = [], holdRows = [];
+  usable.forEach((c, idx) => {
+    const valid = c.samples.filter(s => s.length === 42 && s.every(v => isFinite(v)));
+    const pool = valid.slice();
+    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = pool[i]; pool[i] = pool[j]; pool[j] = t; }
+    /* 학습 쪽이 MIN_TRAIN_PER_CLASS 밑으로 내려가지 않는 선에서만 뗀다 */
+    const nHold = Math.max(0, Math.min(Math.round(valid.length * HOLDOUT_RATIO), pool.length - MIN_TRAIN_PER_CLASS));
+    pool.slice(0, nHold).forEach(s => holdRows.push({ truth: idx, feat: s }));
+    pool.slice(nHold).forEach(s => { xsArr.push(s); const oh = new Array(usable.length).fill(0); oh[idx] = 1; ysArr.push(oh); });
+  });
   if (xsArr.length < 8) { setStatus('샘플 부족', 'busy'); $('btn-train').disabled = false; return; }
+  /* 뗀 게 너무 적으면 통계가 무의미하니 아예 넘기지 않는다 — advanced.js 가 알아서 되돌아간다. */
+  window.gestureHoldout = holdRows.length >= 4 ? { names: usable.map(c => c.name), rows: holdRows } : null;
   const xs = tf.tensor2d(xsArr), ys = tf.tensor2d(ysArr);
 
   if (head) head.dispose();
@@ -361,8 +376,8 @@ document.querySelectorAll('.step').forEach(btn => {
   };
 });
 
-/* 심화 탭의 가위바위보 대결이 클래스 3개를 순서대로 바위·보·가위에 잇는다. */
-addClass('주먹'); addClass('손바닥'); addClass('가위');
+/* 심화 탭의 가위바위보 대결이 클래스 3개를 순서대로 가위·바위·보에 잇는다. */
+addClass('가위'); addClass('바위'); addClass('보');
 setStatus('대기 중'); showIdle();
 if (!window.isSecureContext) { const b = $('banner'); b.classList.add('on'); b.innerHTML = EduinoIcons.svg('alert') + ' 카메라는 <b>localhost</b> 또는 <b>https</b> 에서만 켜집니다. 배포된 https 주소로 접속해 주세요.'; }
 /* 실습 단계를 떠날 때 켜 둔 카메라를 끈다. 등록한 동작과 수집한 샘플은 건드리지 않는다. */

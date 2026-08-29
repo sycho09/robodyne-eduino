@@ -80,7 +80,7 @@
             <div class="rps-big">
               <div class="rps-emoji" id="rps-emoji" data-ic="palm"></div>
               <div class="rps-name" id="rps-name">손을 비춰주세요</div>
-              <div class="rps-hint" id="rps-hint">바위 <span class="ic-inline" data-ic="fist"></span> · 보 <span class="ic-inline" data-ic="palm"></span> · 가위 <span class="ic-inline" data-ic="victory"></span></div>
+              <div class="rps-hint" id="rps-hint">가위 <span class="ic-inline" data-ic="victory"></span> · 바위 <span class="ic-inline" data-ic="fist"></span> · 보 <span class="ic-inline" data-ic="palm"></span></div>
             </div>
             <div class="fingers" id="fingers"></div>
             <div class="donut-wrap">
@@ -209,7 +209,7 @@
           <button class="fstep" data-dw="3"><span class="fn">3</span><span class="ft"><b>가위바위보 대결</b><span>학습한 모델로 직접 승부</span></span></button>
         </div>
 
-        <div class="card" id="dm-main-card" style="padding:40px 24px; min-height:460px;">
+        <div class="card" id="dm-main-card" style="padding:40px 24px;">
           
           <!-- 학습 전에는 들어올 수 없다 -->
           <div class="ms-gate" id="dm-gate">
@@ -223,48 +223,41 @@
           <div class="dstep" data-dw="1">
             <h2>내 제스처를 가위바위보에 잇습니다</h2>
             <p style="text-align:center; color:var(--ink-2); font-size:14px; margin-bottom:30px;">
-              중급에서 학습시킨 제스처를 순서대로 <b>바위 · 보 · 가위</b>에 연결합니다. 초급의 가위바위보는 <b>펴진 손가락 개수를 세는 규칙</b>이었지만, 여기서는 <b>여러분이 직접 학습시킨 모델</b>이 판정합니다.
+              중급에서 학습시킨 제스처를 순서대로 <b>가위 · 바위 · 보</b>에 연결합니다. 초급의 가위바위보는 <b>펴진 손가락 개수를 세는 규칙</b>이었지만, 여기서는 <b>여러분이 직접 학습시킨 모델</b>이 판정합니다.
             </p>
             <div class="dm-map" id="dm-map"></div>
-            <button class="btn primary lg block" style="max-width:240px; margin:40px auto 0;" onclick="goToDmStep(2)">다음 단계로</button>
+            <div class="btn-row lg">
+              <button class="btn primary lg block" style="max-width:240px;" onclick="goToDmStep(2)">다음 단계로</button>
+            </div>
           </div>
 
-          <!-- Step 2: 임계값 조정 -->
+          <!-- Step 2: 커트라인 정하기 -->
+          <!-- 라이브 손 피드백은 3단계(대결)의 진짜 카메라가 맡는다 — 여기는 숫자만 본다. -->
           <div class="dstep" data-dw="2" hidden>
+            <!-- 좌=조작 · 우=결과. 중급(카메라|패널)·3단계(카메라|대결)와 같은 축이다. -->
             <div class="dm-thres-layout">
-              <!-- 좌측 패널 (실시간 라이브 테스트) -->
-              <div class="dm-thres-left" style="display:flex; flex-direction:column; gap:16px;">
-                <div class="dm-cam-box">
-                  <div class="dm-cam-hand" id="dm-cam-hand" data-ic="fist"></div>
-                  <div class="dm-cam-bar-wrap">
-                    <div class="dm-cam-bar" id="dm-cam-bar"></div>
-                    <div class="dm-cam-thres-marker" id="dm-cam-thres-marker"></div>
-                  </div>
-                  <div class="dm-cam-text" id="dm-cam-text">AI 확신도: 45% (애매함)</div>
-                </div>
-                
-                <div class="dm-ctrl-box" style="padding:0;">
-                  <h3 style="margin:0 0 8px 0; font-size:16px;">신뢰도 임계값 조절</h3>
-                  <p style="margin:0 0 14px; font-size:12.5px; color:var(--ink-2); line-height:1.5;">몇 % 이상 확신할 때만 기능을 실행할까요?<br>낮추면 오작동이 늘고, 높이면 반응이 둔해집니다.</p>
-                  <div class="dm-slider-card">
-                    <input type="range" class="ui-slider" id="dm-slider" min="0" max="100" value="86">
-                    <div class="dm-slider-val" id="dm-slider-val">86%</div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- 우측 패널 (통계 튜닝 & 혼동행렬) -->
-              <div class="dm-thres-right dm-ctrl-box" style="padding:0; display:flex; flex-direction:column; justify-content:flex-start; gap:20px; height:100%;">
-                
-                <div class="dm-cm-wrap" style="margin:0;">
-                  <p class="dm-cm-lead" id="dm-cm-lead"><b>테스트 샘플 적용 결과</b></p>
-                  <!-- 표는 학습시킨 클래스 수에 맞춰 paintConfusion() 이 그린다 (2개든 4개든). -->
-                  <table class="dm-cm-table" id="dm-cm-table"></table>
-                  <p class="dm-cm-note" id="dm-cm-note"></p>
+              <div class="dm-thres-ctrl">
+                <h2 class="dm-thres-h">커트라인을 어디에 둘까요?</h2>
+                <p class="dm-thres-sub">AI가 몇 % 이상 확신할 때만 동작으로 인정할지 정합니다.</p>
+
+                <div class="dm-slider-card">
+                  <input type="range" class="ui-slider" id="dm-slider" min="0" max="100" value="86">
+                  <div class="dm-slider-val" id="dm-slider-val">86%</div>
                 </div>
 
-                <button class="btn primary lg block" style="width:100%;" onclick="goToDmStep(3)">최종 매핑 완료하기</button>
               </div>
+
+              <!-- 표와 판정 모두 paintConfusion() 이 채운다 (클래스 2개든 4개든).
+                   [2. 중급] 학습 화면에서 본 그 표에 '미반응' 열이 하나 붙은 형태 —
+                   커트라인을 올릴수록 성공이 그 열로 옮겨 가는 것이 이 화면의 전부다. -->
+              <div class="dm-thres-res">
+                <p class="dm-cm-lead" id="dm-cm-lead"></p>
+                <table class="dm-cm-table" id="dm-cm-table"></table>
+                <p class="dm-cm-note" id="dm-cm-note"></p>
+              </div>
+
+              <!-- 완료는 결과 패널이 아니라 이 단계 전체의 행동이라 두 칸 아래 가운데에 둔다. -->
+              <button class="btn primary lg dm-thres-next" onclick="goToDmStep(3)">최종 매핑 완료하기</button>
             </div>
           </div>
         </div>
@@ -314,7 +307,7 @@
                 <div class="rps-live-t" id="rps-live-t">손이 보이지 않습니다</div>
               </div>
               <div class="rps-result" id="rps-result"></div>
-              <button class="btn primary lg block" id="rps-go" style="margin-top:20px;" disabled>대결 시작</button>
+              <button class="btn primary lg block" id="rps-go" disabled>대결 시작</button>
             </div>
           </div>
         </div>

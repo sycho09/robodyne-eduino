@@ -2,13 +2,13 @@
 /* ════ 고급-응용: 가위바위보 대결 ════ */
 let dmStep = 1;
 
-/* 학습시킨 클래스를 순서대로 여기에 잇는다 (0=바위, 1=보, 2=가위).
+/* 학습시킨 클래스를 순서대로 여기에 잇는다 (0=가위, 1=바위, 2=보).
    초급의 classifyRPS() 는 펴진 손가락 개수를 세는 규칙이고, 여기서는 학생이 학습시킨
    모델이 판정한다 — 같은 손을 두 방식이 어떻게 다르게 읽는지가 이 단계의 핵심이다. */
 const RPS_MOVES = [
+  { name: '가위', ic: 'victory' },
   { name: '바위', ic: 'fist' },
-  { name: '보', ic: 'palm' },
-  { name: '가위', ic: 'victory' }
+  { name: '보', ic: 'palm' }
 ];
 /* a 가 b 를 이기면 1. 바위>가위, 보>바위, 가위>보 가 모두 (a-b+3)%3===1 로 떨어진다. */
 function rpsBeats(a, b) { return (a - b + 3) % 3 === 1; }
@@ -35,10 +35,11 @@ function renderRpsMap() {
     const sub = c ? c.samples.length + '장 학습됨'
       : raw ? '데이터 ' + raw.samples.length + '장 — 8장 이상 모아야 합니다'
         : '중급에서 제스처를 하나 더 만들어 주세요';
+    const nameColorStyle = c ? ' style="color:' + c.color + '"' : '';
     return '<div class="dm-map-row' + (c ? '' : ' missing') + '">' +
-      '<span class="dm-map-cls">' + dmEsc(name) + '<small>' + sub + '</small></span>' +
+      '<span class="dm-map-cls"' + nameColorStyle + '>' + dmEsc(name) + '<small>' + sub + '</small></span>' +
       '<span class="dm-map-arrow">→</span>' +
-      '<span class="dm-map-mv"><span class="ic-inline" data-ic="' + mv.ic + '"></span>' + mv.name + '</span>' +
+      '<span class="dm-map-mv"><span class="ic-inline" data-ic="' + mv.ic + '"></span></span>' +
       '</div>';
   }).join('');
   if (window.EduinoIcons) EduinoIcons.mount(box);
@@ -72,7 +73,6 @@ if (btnDmToTrain) {
   };
 }
 
-let dmAnimTimer = null;
 function goToDmStep(w) {
   dmStep = w;
   document.querySelectorAll('#flow-demo .fstep').forEach(el => {
@@ -91,8 +91,6 @@ function goToDmStep(w) {
   const mainCard = $('dm-main-card');
   if (mainCard) mainCard.hidden = (w === 3);
   
-  if (dmAnimTimer) { clearInterval(dmAnimTimer); dmAnimTimer = null; }
-
   // 대결(3단계)을 떠나면 데모 카메라를 끄고 진행 중인 카운트다운도 접는다
   if (w !== 3) {
     rpsAbort();
@@ -101,43 +99,10 @@ function goToDmStep(w) {
 
   if (w === 1) renderRpsMap();
 
-  if (w === 2) {
-    const hand = $('dm-cam-hand');
-    const bar = $('dm-cam-bar');
-    const txt = $('dm-cam-text');
-    const m = dmMeasure(true);
-    if (!m) {
-      if (bar) { bar.style.width = '0%'; bar.style.background = 'var(--amber)'; }
-      if (hand) hand.classList.remove('pulse');
-      if (txt) { txt.style.color = 'var(--amber)'; txt.textContent = '[2. 중급 · 제작] 코스에서 학습을 먼저 마쳐 주세요'; }
-    } else {
-      /* 지어낸 sin 파형 대신, [2. 중급 · 제작] 코스에서 모은 샘플의 실제 확신도를 차례로 재생한다.
-         자기 데이터가 애매하면 막대도 실제로 낮게 흔들린다. */
-      const conf = m.rows.map(r => Math.max.apply(null, r.p) * 100);
-      let i = 0;
-      dmAnimTimer = setInterval(() => {
-        const val = conf[i++ % conf.length];
-        const thres = +$('dm-slider').value;
-        const marker = $('dm-cam-thres-marker');
-        if (marker) marker.style.left = thres + '%';
-        
-        if (bar) bar.style.width = val.toFixed(1) + '%';
-        if (val >= thres) {
-          if (bar) bar.style.background = 'var(--green)';
-          if (txt) { txt.style.color = 'var(--green)'; txt.textContent = 'AI 확신도: ' + Math.round(val) + '% (작동)'; }
-          if (hand) hand.classList.add('pulse');
-        } else {
-          if (bar) bar.style.background = 'var(--amber)';
-          if (txt) { txt.style.color = 'var(--amber)'; txt.textContent = 'AI 확신도: ' + Math.round(val) + '% (미반응)'; }
-          if (hand) hand.classList.remove('pulse');
-        }
-      }, 150);
-    }
-  }
-
-  /* 표를 슬라이더와 같은 화면에 두었으므로 진입 시 한 번 그려 둔다.
-     dmMeasure(true) 는 위 w === 2 블록이 이미 호출했다. */
-  if (w === 2) paintConfusion();
+  /* 라이브 손 피드백은 3단계(대결)가 진짜 카메라로 맡는다. 2단계는 코스에서 유일하게
+     카메라를 끄고 숫자만 보는 화면 — 커트라인을 옮기면 무엇을 잃는지는 표본 하나가 아니라
+     모아 놓은 결과에서만 보인다. 새로 학습했을 수 있으니 진입할 때 다시 잰다. */
+  if (w === 2) { dmMeasure(true); paintThres(); }
 
   if (w === 3) {
     window.CourseDashboard && CourseDashboard.markDone('demo');
@@ -147,8 +112,11 @@ function goToDmStep(w) {
   }
 }
 
-/* 학습된 모델에 학생이 수집한 원본 데이터를 다시 넣어 실제 확신도를 측정합니다 (Self-prediction 방식). */
-let dmRows = null;   // { names, rows:[{ truth, p }] } — 임계값과 무관하므로 단계 진입 때 한 번만 잰다
+/* 학습한 모델에 데이터를 넣어 실제 확신도를 잰다.
+   [2. 중급]이 학습에서 떼어 둔 홀드아웃(window.gestureHoldout)이 있으면 그것을 쓴다 —
+   학습에 쓴 데이터로 재면 확신도가 전부 높게 나와 커트라인을 내려도 오인이 생기지 않는다.
+   홀드아웃이 없을 때만(옛 세션 등) 학습 데이터로 되돌아간다. */
+let dmRows = null;   // { names, rows:[{ truth, p }], held } — 임계값과 무관하므로 단계 진입 때 한 번만 잰다
 function dmMeasure(force) {
   if (dmRows && !force) return dmRows;
   dmRows = null;
@@ -156,6 +124,15 @@ function dmMeasure(force) {
   if (!head) return null;
   const usable = classes.filter(c => c.samples.length >= 8);
   if (usable.length < 2) return null;
+
+  const held = (typeof window !== 'undefined' && window.gestureHoldout) || null;
+  if (held && held.rows.length >= 4) {
+    const feats = held.rows.map(r => r.feat);
+    const probs = tf.tidy(() => head.predict(tf.tensor2d(feats)).arraySync());
+    dmRows = { names: held.names, rows: probs.map((p, i) => ({ truth: held.rows[i].truth, p })), held: true };
+    return dmRows;
+  }
+
   const rows = [];
   usable.forEach((c, idx) => {
     const valid = c.samples.filter(s => s.length === 42 && s.every(v => isFinite(v)));
@@ -164,7 +141,7 @@ function dmMeasure(force) {
     probs.forEach(p => rows.push({ truth: idx, p }));
   });
   if (rows.length < 2) return null;
-  dmRows = { names: usable.map(c => c.name), rows };
+  dmRows = { names: usable.map(c => c.name), rows, held: false };
   return dmRows;
 }
 /* 다시 학습하면 앞서 잰 값은 버린다(새 head 로 다시 재야 한다). */
@@ -196,10 +173,16 @@ function confusionAt(thres) {
   });
   const wrong = per.reduce((s, x) => s + x.wrong, 0);
   const miss = per.reduce((s, x) => s + x.miss, 0);
-  const verdict = miss > wrong * 1.8 ? 'miss' : wrong > miss * 1.8 ? 'wrong' : 'balanced';
-  return { per, mat, missPer, names: m.names, wrong, miss, total: m.rows.length, verdict };
+  /* 둘 다 0 이면 '균형'이 아니라 실수가 아예 없는 것이다 — 따로 가른다. */
+  const verdict = (wrong === 0 && miss === 0) ? 'clean'
+    : miss > wrong * 1.8 ? 'miss' : wrong > miss * 1.8 ? 'wrong' : 'balanced';
+  return { per, mat, missPer, names: m.names, wrong, miss, total: m.rows.length, verdict, held: !!m.held };
 }
 
+/* 혼동행렬 하나만 둔다 — 성공·오인·무반응 합계는 모두 이 표에서 나오는 값이라
+   따로 뽑아 두면 같은 숫자를 한 화면에 두 번 두는 셈이 된다.
+   [2. 중급] 학습 화면에서 본 그 표에 '미반응' 열이 붙은 형태이고,
+   커트라인을 올릴수록 성공이 그 열로 옮겨 가는 것이 이 화면이 가르치는 전부다. */
 function paintConfusion() {
   const slider = $('dm-slider');
   const tbl = $('dm-cm-table');
@@ -210,14 +193,21 @@ function paintConfusion() {
 
   if (!c) {
     tbl.innerHTML = '';
-    if (lead) lead.innerHTML = '<b>테스트 샘플 적용 결과</b>';
-    if (note) note.innerHTML = '이 표는 <b>[2. 중급 · 제작] 코스에서 직접 모은 데이터</b>로 채워집니다. 제스처를 각각 <b>8장 이상</b> 모아 학습을 마친 뒤 다시 오세요.';
+    if (lead) lead.innerHTML = '';
+    if (note) note.innerHTML = '이 표는 <b>[2. 중급 · 제작]에서 직접 모은 데이터</b>로 채워집니다. 제스처를 각각 <b>8장 이상</b> 모아 학습을 마친 뒤 다시 오세요.';
     return;
+  }
+
+  if (lead) {
+    lead.innerHTML = c.held
+      ? '학습에 쓰지 않고 남겨 둔 <b>' + c.total + '개</b>로 확인했습니다.'
+      : '내가 모은 <b>' + c.total + '개</b>로 확인했습니다.';
   }
 
   /* 표는 학습시킨 클래스 수를 그대로 따른다 — 2개든 4개든 빠지는 클래스가 없다. */
   const ic = (i) => (RPS_MOVES[i] ? '<span class="ic-inline" data-ic="' + RPS_MOVES[i].ic + '"></span> ' : '');
-  let html = '<thead><tr><th>실제 동작 \ AI 예측</th>';
+  /* 역슬래시는 문자열 escape 로 먹히므로 전각 ＼ 를 쓴다 ([2. 중급]의 표와 같은 표기). */
+  let html = '<thead><tr><th>실제 동작 ＼ AI 예측</th>';
   c.names.forEach((n, i) => { html += '<th>' + ic(i) + dmEsc(n) + '</th>'; });
   html += '<th>미반응</th></tr></thead><tbody>';
   c.names.forEach((n, r) => {
@@ -227,19 +217,20 @@ function paintConfusion() {
       const cls = r === p ? ' class="succ"' : (v ? ' class="err"' : '');
       html += '<td' + cls + '>' + v + (r === p ? ' (성공)' : v ? ' (오인)' : '') + '</td>';
     });
-    html += '<td>' + c.missPer[r] + (c.missPer[r] ? ' (무시)' : '') + '</td></tr>';
+    html += '<td' + (c.missPer[r] ? ' class="dim"' : '') + '>' + c.missPer[r] + (c.missPer[r] ? ' (무반응)' : '') + '</td></tr>';
   });
   tbl.innerHTML = html + '</tbody>';
   if (window.EduinoIcons) EduinoIcons.mount(tbl);
 
-  if (lead) lead.innerHTML = '<b>테스트 샘플 ' + c.total + '개 적용 결과</b><br><span class="dm-cm-sub">슬라이더를 움직이면 결과가 실시간으로 바뀝니다.</span>';
   if (!note) return;
-  if (c.verdict === 'miss') {
-    note.innerHTML = '임계값이 높아 <b>오인은 거의 없지만</b> ' + c.total + '개 중 ' + c.miss + '개가 아예 무시됐습니다. 안전하지만 답답한 설정입니다.';
+  if (c.verdict === 'clean') {
+    note.innerHTML = '<b>전부 제대로 인식했습니다.</b> 커트라인을 올리면 무시되는 동작이 생깁니다.';
+  } else if (c.verdict === 'miss') {
+    note.innerHTML = '커트라인이 높아 <b>' + c.miss + '개를 놓쳤습니다.</b> 잘못 반응하진 않지만 답답합니다.';
   } else if (c.verdict === 'wrong') {
-    note.innerHTML = '임계값이 낮아 <b>반응은 잘 하지만</b> ' + c.total + '개 중 ' + c.wrong + '개를 엉뚱한 동작으로 읽었습니다. 오작동이 잦은 설정입니다.';
+    note.innerHTML = '커트라인이 낮아 <b>' + c.wrong + '개를 엉뚱하게 읽었습니다.</b> 잘 반응하지만 오작동이 잦습니다.';
   } else {
-    note.innerHTML = '오인 ' + c.wrong + '개, 무시 ' + c.miss + '개로 균형이 잡힌 설정입니다. 어느 쪽 실수가 더 치명적인지에 따라 임계값을 옮기면 됩니다.';
+    note.innerHTML = '오인 <b>' + c.wrong + '개</b>, 무반응 <b>' + c.miss + '개</b>입니다.';
   }
 }
 if (typeof window !== 'undefined') window.paintConfusion = paintConfusion;
@@ -266,9 +257,8 @@ if (dSlider) {
   paintThres(); // 초기 표시가 슬라이더 기본값과 어긋나지 않도록 한 번 그려 둔다
 }
 /* 분석 퀴즈 코드는 사용자 피드백에 따라 해설 박스로 대체되어 제거되었습니다. */
-/* goToDmStep 으로 넘어갈 때 말고는 스스로 멈추지 않는 데모 타이머 — 실습을 떠날 때 끈다. */
+/* 스스로 멈추지 않는 데모 카메라 루프 — 실습을 떠날 때 끈다. */
 (window.CoursePracticeLeave = window.CoursePracticeLeave || []).push(() => {
-  if (dmAnimTimer) { clearInterval(dmAnimTimer); dmAnimTimer = null; }
   if (typeof demoCam !== 'undefined' && demoCam && demoCam.stream) demoCam.stop();
   if (typeof demoRaf !== 'undefined' && demoRaf) cancelAnimationFrame(demoRaf);
 });
@@ -366,7 +356,7 @@ async function demoLoop() {
 
 /* ── 가위바위보 대결 ──────────────────────────────────────────────── */
 let rpsTimer = null;
-let rpsScore = { win: 0, draw: 0, lose: 0, invalid: 0, disagree: 0 };
+let rpsScore = { win: 0, draw: 0, lose: 0, invalid: 0 };
 
 const rpsIc = (n) => (window.EduinoIcons ? EduinoIcons.svg(n) : '');
 const rpsIcon = (i) => (RPS_MOVES[i] ? rpsIc(RPS_MOVES[i].ic) : rpsIc('hand-raised'));
@@ -404,8 +394,7 @@ function rpsPaintScore() {
     '<span class="rps-sc win">' + s.win + '승</span>' +
     '<span class="rps-sc draw">' + s.draw + '무</span>' +
     '<span class="rps-sc lose">' + s.lose + '패</span>' +
-    (s.invalid ? '<span class="rps-sc void">무효 ' + s.invalid + '</span>' : '') +
-    (s.disagree ? '<span class="rps-sc dis">규칙과 엇갈림 ' + s.disagree + '</span>' : '');
+    (s.invalid ? '<span class="rps-sc void">무효 ' + s.invalid + '</span>' : '');
 }
 
 function rpsSetHands(me, ai) {
@@ -431,7 +420,7 @@ function rpsAbort() {
 
 function rpsReset() {
   rpsAbort();
-  rpsScore = { win: 0, draw: 0, lose: 0, invalid: 0, disagree: 0 };
+  rpsScore = { win: 0, draw: 0, lose: 0, invalid: 0 };
   rpsPaintScore();
   rpsSetHands(null, null);
   const res = $('rps-result');
@@ -459,17 +448,6 @@ function rpsStart() {
   }, 800);
 }
 
-/* 규칙 기반(초급)이 같은 손을 뭐라고 읽었는지 — 표시만 한다. */
-function rpsRuleLine(shot, modelMv) {
-  if (shot.ruleMv == null) {
-    return '<div class="rps-line rule diff">규칙 기반 <b>판정 실패</b> · 손가락 개수 규칙으로는 읽히지 않는 자세입니다</div>';
-  }
-  const diff = modelMv != null && shot.ruleMv !== modelMv;
-  const tail = modelMv == null ? '' : (diff ? ' · 학습 모델과 엇갈렸습니다' : ' · 학습 모델과 같은 판정');
-  return '<div class="rps-line rule' + (diff ? ' diff' : '') + '">규칙 기반 <b>' +
-    RPS_MOVES[shot.ruleMv].name + '</b>' + tail + '</div>';
-}
-
 function rpsJudge() {
   const res = $('rps-result');
   const shot = rpsLatest;
@@ -490,7 +468,7 @@ function rpsJudge() {
     rpsScore.invalid++;
     rpsSetHands(null, ai);
     if (res) res.innerHTML =
-      '<div class="rps-line void"><b>무효</b> · 가위바위보에 연결되지 않은 제스처입니다</div>' + rpsRuleLine(shot, null);
+      '<div class="rps-line void"><b>무효</b> · 가위바위보에 연결되지 않은 제스처입니다</div>';
     rpsPaintScore();
     return;
   }
@@ -498,22 +476,21 @@ function rpsJudge() {
     rpsScore.invalid++;
     rpsSetHands(null, ai);
     if (res) res.innerHTML =
-      '<div class="rps-line void"><b>무효</b> · 확신도 ' + pct + '% 가 커트라인 ' + thres + '% 에 못 미쳤습니다</div>' +
-      rpsRuleLine(shot, null);
+      '<div class="rps-line void"><b>무효</b> · 확신도 ' + pct + '% 가 커트라인 ' + thres + '% 에 못 미쳤습니다</div>';
     rpsPaintScore();
     return;
   }
 
-  if (shot.ruleMv !== null && shot.ruleMv !== shot.mv) rpsScore.disagree++;
   let cls, verdict;
   if (shot.mv === ai) { cls = 'draw'; verdict = '비김'; rpsScore.draw++; }
   else if (rpsBeats(shot.mv, ai)) { cls = 'win'; verdict = '이김'; rpsScore.win++; }
   else { cls = 'lose'; verdict = '짐'; rpsScore.lose++; }
 
   rpsSetHands(shot.mv, ai);
+  
   if (res) res.innerHTML =
-    '<div class="rps-line model">학습 모델 <b>' + RPS_MOVES[shot.mv].name + '</b> · 확신도 ' + pct + '%</div>' +
-    rpsRuleLine(shot, shot.mv) +
+    '<div class="rps-line model">학습 모델 <b>' + RPS_MOVES[shot.mv].name +
+    '</b> · 확신도 ' + pct + '%</div>' +
     '<div class="rps-line ' + cls + '">승부 <b>AI ' + RPS_MOVES[ai].name + ' → ' + verdict + '</b></div>';
   rpsPaintScore();
 }

@@ -203,46 +203,46 @@
 /* Step 1: 제스처 매핑 — 학습시킨 클래스를 순서대로 바위·보·가위에 잇는다. */
 .dm-lead { max-width:640px; margin:0 auto 28px; text-align:center; font-size:13.5px; color:var(--ink-2); line-height:1.75; }
 .dm-map { display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin:0 auto; }
-.dm-map-row { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
-  background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px 14px; box-shadow:var(--shadow-sm); text-align:center; }
+.dm-map-row { display:flex; flex-direction:row; align-items:center; gap:12px;
+  background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px 20px; box-shadow:var(--shadow-sm); text-align:left; }
 .dm-map-row.missing { background:var(--amber-soft); border-color:var(--amber); box-shadow:none; }
-.dm-map-cls { display:flex; flex-direction:column; gap:2px; font-size:15px; font-weight:700; color:var(--ink); }
-.dm-map-cls small { font-size:11.5px; font-weight:500; color:var(--ink-3); }
+.dm-map-cls { flex:1; display:flex; flex-direction:column; align-items:flex-start; gap:4px; font-size:15px; font-weight:800; color:var(--ink); }
+.dm-map-cls small { font-size:12px; font-weight:500; color:var(--ink-3); }
 .dm-map-row.missing .dm-map-cls { color:var(--amber); }
-.dm-map-arrow { color:var(--ink-4); font-size:18px; transform:rotate(90deg); margin:4px 0; }
-.dm-map-mv { display:flex; flex-direction:column; align-items:center; gap:6px; font-size:15px; font-weight:700; color:var(--primary-ink); }
-.dm-map-mv .ic-inline { font-size:22px; }
+.dm-map-arrow { color:var(--ink-4); font-size:16px; margin:0 4px; }
+.dm-map-mv { display:flex; align-items:center; color:var(--primary-ink); }
+.dm-map-mv .ic-inline { font-size:24px; }
 
-/* Step 2: 임계값 조정 */
-/* 우측이 슬라이더 + 혼동행렬로 길어져 가운데 정렬은 어긋난다. 표가 들어갈 폭도 필요하다. */
-.dm-thres-layout { display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start; max-width:1040px; margin:0 auto; }
-.dm-cam-box { background:var(--ink); border-radius:12px; padding:40px 20px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; min-height:280px; }
-.dm-cam-hand { font-size:80px; filter:drop-shadow(0 4px 12px rgba(0,0,0,0.5)); transform:scale(1); transition:transform 0.1s; }
-.dm-cam-hand.pulse { transform:scale(1.1); }
-.dm-cam-bar-wrap { width:80%; height:8px; background:rgba(255,255,255,0.2); border-radius:4px; margin-top:24px; position:relative; }
-.dm-cam-bar { position:absolute; left:0; top:0; height:100%; background:var(--green); width:45%; transition:width 0.2s, background-color 0.2s; border-radius:4px; }
-.dm-cam-thres-marker { position:absolute; top:-6px; bottom:-6px; width:2px; background:#ff4d4f; z-index:2; transition:left 0.1s; box-shadow:0 0 4px rgba(0,0,0,0.5); border-radius:1px; }
-.dm-cam-thres-marker::after { content:"커트라인"; position:absolute; top:-20px; left:50%; transform:translateX(-50%); color:#ff4d4f; font-size:11px; font-weight:700; opacity:0.9; white-space:nowrap; }
-.dm-cam-text { color:var(--green); font-size:13px; font-family:var(--mono); margin-top:28px; font-weight:600; }
-.dm-ctrl-box { padding:16px; }
-.dm-ctrl-box h3 { margin:0 0 8px 0; font-size:18px; }
-.dm-ctrl-box p { font-size:13px; color:var(--ink-2); line-height:1.6; margin-bottom:24px; }
+/* Step 2: 커트라인 정하기 */
+/* 좌=조작(슬라이더) · 우=결과(표). 중급의 카메라|패널, 3단계의 카메라|대결과 같은 축이라
+   학생이 코스 내내 같은 방향으로 읽는다. 표가 4~5열까지 늘어날 수 있어 오른쪽을 넓게 준다. */
+.dm-thres-layout { display:grid; grid-template-columns:0.85fr 1.15fr; gap:28px; max-width:1000px; margin:0 auto; }
+/* 왼쪽은 제목·부제·슬라이더뿐이라 표보다 짧다. 빈자리를 무엇으로 채우는 대신
+   표 높이에 맞춰 세로 가운데에 세운다 — 여백을 구성으로 처리한다. */
+.dm-thres-ctrl { display:flex; flex-direction:column; justify-content:center; gap:14px; }
+.dm-thres-res { display:flex; flex-direction:column; gap:14px; }
+/* 완료 버튼은 두 칸 아래 전체 폭에 걸쳐 가운데. 결과 패널이 아니라 단계 전체의 행동이다. */
+.dm-thres-next { grid-column:1 / -1; justify-self:center; width:100%; max-width:320px; margin-top:8px; }
+.dm-thres-h { margin:0; font-size:21px; }
+.dm-thres-sub { margin:0; font-size:13.5px; color:var(--ink-2); line-height:1.6; }
 .dm-slider-card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 24px; box-shadow:var(--shadow-sm); display:flex; align-items:center; gap:24px; }
 /* 임계값 슬라이더는 공통 .ui-slider (shared/components.css)를 쓴다 — 여백만 여기서 준다. */
 .dm-slider-card .ui-slider { margin:0; flex:1; }
 .dm-slider-val { font-size:28px; font-weight:800; color:var(--primary-ink); font-family:var(--mono); margin:0; min-width:64px; text-align:right; }
 
-/* 혼동행렬 표 — 2단계(임계값 튜닝·검증) 우측 컬럼에 들어간다. */
-/* 폭은 이제 감싸는 컬럼이 정한다(전용 화면이 아니라 우측 절반에 들어간다). */
-.dm-cm-wrap { margin:0; }
-.dm-cm-lead { font-size:14px; margin:0 0 10px; line-height:1.6; }
-.dm-cm-sub { color:var(--ink-3); font-size:12.5px; font-weight:500; }
-/* 임계값 판정 해설 — 지금까지 이 자리가 마크업에 없어 한 번도 렌더되지 않았다. */
-.dm-cm-note { font-size:12.5px; line-height:1.65; color:var(--ink-2); margin:0 0 16px; }
+@media (max-width: 860px) {
+  .dm-thres-layout { grid-template-columns:1fr; gap:18px; max-width:620px; }
+}
+
+/* 혼동행렬이 이 화면의 주인공 — 성공·오인·무반응 합계가 모두 여기서 읽힌다. */
+.dm-cm-lead { font-size:13.5px; color:var(--ink-2); margin:0; line-height:1.6; }
+.dm-cm-lead b { color:var(--ink); }
+.dm-cm-note { font-size:13px; line-height:1.65; color:var(--ink-2); margin:0; }
 .dm-cm-note b { color:var(--ink); }
-.dm-cm-table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; text-align:center; margin-bottom:16px; font-size:13px; }
-/* 4열이 절반 컬럼에 들어가야 해서 셀을 조인다(전용 화면일 때는 16px 였다). */
-.dm-cm-table th, .dm-cm-table td { padding:10px 8px; border:1px solid var(--line); }
+.dm-cm-table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; text-align:center; font-size:13.5px; }
+.dm-cm-table th, .dm-cm-table td { padding:12px 8px; border:1px solid var(--line); }
+/* 커트라인을 올릴수록 차오르는 열 — 성공이 이리로 옮겨 가는 게 눈에 보여야 한다. */
+.dm-cm-table .dim { color:var(--ink-2); font-weight:700; background:var(--card-2); }
 .dm-cm-table th { background:var(--card-2); font-weight:700; color:var(--ink-2); }
 .dm-cm-table .succ { color:var(--green); font-weight:700; background:var(--green-soft); }
 .dm-cm-table .err { color:var(--primary-ink); font-weight:700; background:var(--primary-soft); }
@@ -282,8 +282,10 @@
 .rps-live-t.ok { color:var(--green); }
 .rps-live-t.off { color:var(--ink-3); }
 
-.rps-result { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; transition:min-height 0.2s; }
-.rps-result:empty { margin-bottom: 0; }
+.rps-result { display:flex; flex-direction:column; gap:6px; margin-bottom:8px; }
+.rps-result:empty { margin-bottom:0; }
+/* 결과와 [다시 대결] 사이는 좁게 — 방금 나온 판정을 보고 바로 누르는 흐름이다. */
+#rps-go { margin-top:10px; }
 .rps-line { font-size:13px; line-height:1.5; padding:8px 12px; border-radius:8px; background:var(--bg-soft); color:var(--ink-2); animation:rpsPop .25s ease-out; }
 .rps-line b { color:var(--ink); }
 .rps-line.rule { color:var(--ink-3); }
@@ -299,5 +301,4 @@
 
 /* 이모지 → SVG 전환에 따른 색 지정 (크기는 .eic 가 font-size 를 승계한다) */
 .rps-emoji { color:var(--primary); }
-.dm-cam-hand { color:#fff; }
 .cap-btn .ci { color:var(--ink-3); }
