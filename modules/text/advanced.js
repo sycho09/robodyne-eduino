@@ -1,4 +1,4 @@
-/* Text 심화 미션 로직: 고객 리뷰 자동 분류기 및 실전 200건 시뮬레이션. */
+/* Text 심화 미션 로직: 고객 리뷰 자동 분류기 및 실전 100건 시뮬레이션. */
 /* ════ 고급-응용: 고객 리뷰 자동 분류기 ════ */
 /* 판정 SVG 아이콘 (currentColor 상속) */
 const svgIcon = (inner, cls) =>
@@ -44,8 +44,8 @@ const RV_REVIEWS = [
   { text: '사이즈가 생각보다 작아요. 반품할게요.', sim: 23, want: false, cue: [] }
 ];
 
-/* ── 실전 200건 코퍼스 시뮬레이션 ─────────────────────────────────────
-   난수(시드 고정)로 192건의 더미 데이터를 생성해 총 200건의 예측 결과를 만듭니다.
+/* ── 실전 100건 코퍼스 시뮬레이션 ─────────────────────────────────────
+   난수(시드 고정)로 92건의 더미 데이터를 생성해 총 100건의 예측 결과를 만듭니다.
    정상 리뷰와 불만 리뷰의 유사도 분포를 의도적으로 겹치게 설계하여, 
    학습자가 설정한 임계값에 따라 재현율과 정밀도 딜레마를 체험하도록 유도합니다. */
 
@@ -75,12 +75,12 @@ const RV_CORPUS = (function () {
   var clamp = function (x, lo, hi) { return Math.max(lo, Math.min(hi, Math.round(x))); };
 
   /* 이름 붙은 8건이 먼저 들어가고 난수는 쓰지 않는다 —
-     생성 순서(불만 34건 → 정상 158건)를 바꾸면 시드가 어긋나 숫자가 달라진다. */
+     생성 순서(불만 16건 → 정상 76건)를 바꾸면 시드가 어긋나 숫자가 달라진다. */
   var out = RV_REVIEWS.concat(RV_EDGE).map(function (r) {
     return { text: r.text, sim: r.sim, want: r.want };
   });
-  for (var i = 0; i < 34; i++) out.push({ sim: clamp(normal(72, 17), 25, 98), want: true });
-  for (var j = 0; j < 158; j++) out.push({ sim: clamp(normal(29, 12), 2, 78), want: false });
+  for (var i = 0; i < 16; i++) out.push({ sim: clamp(normal(72, 17), 25, 98), want: true });
+  for (var j = 0; j < 76; j++) out.push({ sim: clamp(normal(29, 12), 2, 78), want: false });
   return out;
 })();
 
@@ -165,10 +165,10 @@ function rvRowHtml(r, hit, scoreLabel) {
   if (hit && r.want) { 
     chipText = '배송 불만으로 분류'; 
   } else if (!hit && r.want) { 
-    chipText = 'AI의 실수: 텍스트는 다르지만 뜻은 불만인데, AI가 놓쳤어요.'; 
+    chipText = 'AI의 실수: 텍스트는 다르지만 뜻은 불만인데 놓쳤어요.'; 
     iconHtml = SVG_SAD; 
   } else if (hit && !r.want) { 
-    chipText = 'AI의 실수: "빠른 배송"이라는 단어만 보고 불만으로 오해했어요!'; 
+    chipText = 'AI의 실수: "빠른 배송"이란 단어만 보고 오해했어요!'; 
     iconHtml = SVG_THINK; 
   } else { 
     chipText = '정상 리뷰로 분류'; 
@@ -178,7 +178,7 @@ function rvRowHtml(r, hit, scoreLabel) {
     '<span class="rv-test-text">"' + esc(r.text) + '"</span>' +
     '<span class="rv-test-meta">' +
       '<span class="rv-test-score">' + scoreLabel + ' → </span>' +
-      '<span class="rv-chip rv-verdict" style="display:inline-flex; align-items:center; gap:4px; max-width:320px; line-height:1.4;">' + 
+      '<span class="rv-chip rv-verdict" style="display:inline-flex; align-items:center; gap:4px; line-height:1.4;">' + 
       iconHtml + '<span style="white-space:normal; text-align:left;">' + chipText + '</span></span>' +
     '</span>' +
   '</div>';
@@ -234,7 +234,7 @@ function renderRvTry() {
         : '뜻이 아니라 글자 겹침만 센 결과입니다.') + '</p>';
 }
 
-/* 목록을 인자로 받는다 — 연습 4건(RV_REVIEWS)과 실전 200건(RV_CORPUS)이
+/* 목록을 인자로 받는다 — 연습 4건(RV_REVIEWS)과 실전 100건(RV_CORPUS)이
    같은 판정 규칙을 쓴다는 것이 4단계의 논지이므로 함수도 하나여야 한다. */
 function rvClassify(thres, list) {
   let tp = 0, fp = 0, fn = 0;
@@ -255,7 +255,7 @@ function renderRvTuning() {
   if (!slider) return;
   const thres = +slider.value;
   const res = rvClassify(thres);
-  /* 4단계 리포트는 여기서 확정한 값을 그대로 200건에 돌린다. */
+  /* 4단계 리포트는 여기서 확정한 값을 그대로 100건에 돌린다. */
   rvThres = thres;
   rvTuned = true;
 
@@ -304,7 +304,7 @@ function renderRvTuning() {
   }
 }
 
-/* ── Step 4: 실전 200건 리포트 ────────────────────────────────────
+/* ── Step 4: 실전 100건 리포트 ────────────────────────────────────
    숫자를 하나도 적지 않는다 — 전부 학습자가 3단계에서 정한 임계값을
    RV_CORPUS 에 돌린 결과다. 임계값을 바꿔 다시 오면 리포트도 바뀐다. */
 function renderRvReport() {
@@ -349,31 +349,7 @@ function renderRvReport() {
       '<b>재현율 ' + res.recall + '%</b> — 실제 불만 ' + real + '건 중 ' + res.tp + '건을 잡음';
   }
 
-  /* 성적이 왜 그 숫자인지 문장으로 보여 준다. RV_EDGE 중 이 임계값에서 실제로
-     틀린 것만 고르므로, 화면의 예시와 위의 집계가 어긋날 수 없다. */
-  var edge = $('rv-report-edge');
-  if (edge) {
-    var missed = RV_EDGE.filter(function (r) { return r.want && r.sim < rvThres; });
-    var wrong = RV_EDGE.filter(function (r) { return !r.want && r.sim >= rvThres; });
-    var quote = function (r, why) {
-      return '<div style="margin-top:5px;">"' + esc(r.text) + '" ' +
-        '<span style="color:var(--ink-3);">뜻 ' + r.sim + '% · ' + why + '</span></div>';
-    };
-    var html = '';
-    if (missed.length) {
-      html += '<div style="margin-top:10px;"><b>놓친 불만 ' + res.fn + '건</b> 중</div>' +
-        missed.slice(0, 1).map(function (r) { return quote(r, '임계값 아래'); }).join('');
-    }
-    if (wrong.length) {
-      html += '<div style="margin-top:10px;"><b>잘못 잡은 정상 ' + res.fp + '건</b> 중</div>' +
-        wrong.slice(0, 1).map(function (r) { return quote(r, '임계값 위'); }).join('');
-    }
-    edge.hidden = !html;
-    /* 제목을 마크업에 두면 예시가 없는 임계값에서 제목만 덩그러니 남는다. */
-    edge.innerHTML = html
-      ? '<b style="color:var(--blue-ink);">왜 100%가 아닐까</b>' + html
-      : '';
-  }
+
 
 }
 
