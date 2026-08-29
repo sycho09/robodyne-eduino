@@ -51,18 +51,18 @@
   @media (max-width:720px){ .flow{ flex-direction:column; align-items:stretch; padding:6px; } .flow .farrow{ display:none; } .flow .fstep .ft span{ display:none; } }
 
   /* 작업 영역: 카메라 + 단계 패널 (높이 정렬) */
-  .work { display:grid; grid-template-columns:1.04fr .96fr; gap:18px; align-items:stretch; }
+  .work { display:grid; grid-template-columns:1.04fr .96fr; gap:18px; align-items:start; }
   .camera-card { align-self:start; display:flex; flex-direction:column; }
   .cam-state { margin-left:auto; font-family:var(--mono); font-size:10.5px; font-weight:700; color:var(--ink-3); background:var(--bg-soft); border:1px solid var(--line); border-radius:999px; padding:3px 9px; }
   .cam-state.on { color:var(--primary-ink); background:var(--primary-soft); border-color:var(--primary-line); }
-  .phost { min-width:0; height:100%; }
-  .wstep { height:100%; }
+  .phost { min-width:0; }
+  .wstep { }
   .wstep[hidden] { display:none; }
-  .wstep > .card { height:100%; display:flex; flex-direction:column; }
+  .wstep > .card { display:flex; flex-direction:column; }
   @media (max-width:880px){ .work{ grid-template-columns:1fr; align-items:start; } .wstep>.card{ height:auto; } }
 
   /* 레이아웃(초급) */
-  .layout { display:grid; grid-template-columns:1.12fr .88fr; gap:18px; align-items:stretch; }
+  .layout { display:grid; grid-template-columns:1.12fr .88fr; gap:18px; align-items:start; }
   /* 가위바위보 판정 카드: 카메라 카드와 같은 높이로 맞추고 내용 균등 배치 */
   .rps-body { flex:1; display:flex; flex-direction:column; justify-content:space-evenly; align-items:center; gap:10px; margin-top:6px; }
   .rps-body .fingers, .rps-body .donut-wrap { margin:0; }

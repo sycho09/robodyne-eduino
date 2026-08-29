@@ -144,6 +144,7 @@
             <div class="cam-ctrl">
               <button class="btn lg block" id="train-cam" style="width:100%">카메라 켜기</button>
             </div>
+            <div class="learn fill" style="margin-top:16px;"><b>좋은 데이터 모으는 법</b><br>· 대상의 <b>각도, 조명, 거리</b>를 바꿔가며 다양하게 모아요.<br>· <b>배경을 꼭 바꿔 주세요.</b> 한 배경에서만 모으면 AI 가 물체 대신 배경을 외웁니다.</div>
           </div>
 
           <!-- 단계별 패널 -->
@@ -157,7 +158,6 @@
                 <button class="add-cls" id="add-cls">+ 클래스 추가</button>
                 <div class="hint" id="train-hint">클래스 2종 이상 + 각 10장 이상 샘플이 필요합니다.</div>
                 <button class="btn primary block lg" id="go-train" disabled style="margin-top:14px">학습하기 →</button>
-                <div class="learn fill"><b>좋은 데이터 모으는 법</b><br>· 대상의 <b>각도, 조명, 거리</b>를 바꿔가며 다양하게 모아요.<br>· <b>배경을 꼭 바꿔 주세요.</b> 한 배경에서만 모으면 AI 가 물체 대신 배경을 외웁니다.</div>
               </div>
             </div>
 
@@ -246,7 +246,7 @@
           <button class="fstep" data-m="3"><span class="fn">3</span><span class="ft"><b>도입 리포트</b><span>실무 지표(재현율/정밀도) 확인</span></span></button>
         </div>
 
-        <div class="card wizard" id="ms-host">
+        <div class="card" id="ms-host">
           <!-- 학습 전에는 들어올 수 없다 -->
           <div class="ms-gate" id="ms-gate">
             <span class="ms-gate-ic" data-ic="alert"></span>
@@ -320,23 +320,12 @@
 
           <!-- ③ 도입 리포트 -->
           <div class="msstep" data-m="3" hidden>
-            <h2>자동 판정 도입 리포트 (테스트 완료)</h2>
+            <h2>자동 판정 도입 리포트</h2>
             <div class="ms-report" id="ms-report"></div>
 
+            <!-- 실무에서는 어떻게 쓰이나 — 이 코스에서 유일하게 교실 밖을 보여주는 내용이라 남긴다.
+                 재현율·정밀도 정의 폴드는 1단계 목표 문장과 KPI 부제가 이미 하던 말이라 걷어냈다. -->
             <details class="ms-fold" style="margin-top:16px;">
-              <summary>실무 지표: 재현율과 정밀도란?</summary>
-              <div style="padding: 0 15px 14px;">
-                2단계에서 치열하게 고민했던 그 딜레마가 바로 현장에서 말하는 <b>재현율(Recall)</b>과 <b>정밀도(Precision)</b>입니다.
-                <ul style="margin-top: 8px; margin-bottom: 12px;">
-                  <li><b>재현율(Recall)</b>: 놓치지 않으려는 노력. 불량을 맞게 골라낸 비율입니다.</li>
-                  <li><b>정밀도(Precision)</b>: 억울하게 버리지 않으려는 노력. 골라낸 것 중 진짜 불량인 비율입니다.</li>
-                </ul>
-                이 둘은 동시에 오르지 않기 때문에, 상황에 맞게 <b>예민도(Threshold)</b>를 조절해야 합니다.
-              </div>
-            </details>
-
-            <!-- 실무에서는 어떻게 쓰이나 -->
-            <details class="ms-fold">
               <summary>실무에서는 어떻게 쓰이나</summary>
               <div>
                 <ul>
@@ -347,9 +336,8 @@
               </div>
             </details>
 
-            <div class="btn-row" style="margin-top:32px; display:flex; gap:12px;">
-              <button class="btn border lg" onclick="msSetStep(2)" style="flex:1;">← 기준선 다시 조정</button>
-              <button class="btn primary lg" onclick="CourseDashboard.finish();" style="flex:1;">코스 완료하기 →</button>
+            <div class="btn-row" style="margin-top:16px; display:flex; justify-content:center;">
+              <button class="btn border lg" onclick="msSetStep(2)" style="padding:12px 32px;">← 기준선 다시 조정</button>
             </div>
           </div>
         </div>

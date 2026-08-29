@@ -88,11 +88,6 @@
 .vl-res-title { margin:0 0 8px; font-size:15px; font-weight:700; color:var(--ink); line-height:1.45; }
 .vl-res-lead { margin:0 0 10px; }
 .vl-res-next { margin:12px 0 0; padding-top:10px; border-top:1px solid var(--line); font-size:13px; color:var(--ink-3); }
-/* 개념 정리 퀴즈 해설 — 정답 문단 + 오답 노트.
-   .qz-feedback 은 shared/components.css 소유(5개 모듈 공용)라 안쪽에서만 얹는다. */
-#vl-quiz-feedback .qz-lead { display:block; }
-#vl-quiz-feedback .qz-why { display:block; margin-top:10px; }
-#vl-quiz-feedback .qz-why > span { display:list-item; margin-left:18px; margin-top:6px; }
 .vl-res-list { margin:0; padding-left:18px; display:grid; gap:5px; }
 .vl-res-list li { font-size:13px; line-height:1.55; }
 .vl-res-rate { font-size:40px; font-weight:800; color:var(--primary-ink); line-height:1.2; font-family:var(--mono); margin-bottom:8px; }
@@ -127,7 +122,3 @@
 .vl-cx-row .val { min-width:60px; }
 #vl-cx-readout { max-width:600px; margin:8px auto 0; text-align:right; font-size:12px; color:var(--ink-3); font-family:var(--mono); }
 
-/* 개념 정리 완료 배지 — 모양은 공용 .dash-badge 를 그대로 쓴다.
-   그 규칙이 display:inline-flex 라 [hidden] (UA 규칙)이 먹지 않아 여기서 눌러 준다. */
-#vl-done-badge { margin:16px 0 0; }
-#vl-done-badge[hidden] { display:none; }

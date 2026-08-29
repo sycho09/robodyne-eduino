@@ -396,14 +396,14 @@ function paintConfusion() {
     }
   }
   if (leak) {
-    note += '<br><span class="cm-fix"><b>' + esc(names[leak.i].name) + '</b> → <b>' +
+    note += '<span class="cm-fix"><b>' + esc(names[leak.i].name) + '</b> → <b>' +
       esc(names[leak.j].name) + '</b> 로 ' + leak.n + '번 샜습니다. 그 경계(비슷한 배경·각도·거리)의 <b>' +
       esc(names[leak.i].name) + '</b> 데이터를 더 모아 보세요.</span>';
   } else if (answered) {
-    note += '<br><span class="cm-fix">새는 방향이 없습니다. 배경·각도를 크게 바꿔 더 모아 보세요.</span>';
+    note += '<span class="cm-fix">새는 방향이 없습니다. 배경·각도를 크게 바꿔 더 모아 보세요.</span>';
   }
   if (lastEval.valCount < 12) {
-    note += '<br><span class="cm-caveat">채점 표본 ' + lastEval.valCount + '장 — 숫자가 크게 출렁입니다.</span>';
+    note += '<span class="cm-caveat">채점 표본 ' + lastEval.valCount + '장 — 숫자가 크게 출렁입니다.</span>';
   }
   $('cm-verdict').innerHTML = note;
 }
@@ -423,6 +423,9 @@ function setStep(n) {
     if (fn) fn.textContent = sw < n ? '✓' : sw;
   });
   document.querySelectorAll('#panel-train .wstep').forEach((el) => { el.hidden = +el.dataset.w !== n; });
+  const learnBox = document.querySelector('.camera-card .learn.fill');
+  if (learnBox) learnBox.style.display = n === 1 ? '' : 'none';
+
 
   // 추론은 ③단계에서만 돈다 — 다른 단계에서 MobileNet 을 계속 돌릴 이유가 없다.
   if (n === 3 && head && trainCam.stream) {
@@ -442,7 +445,7 @@ $('go-back-infer').onclick = () => setStep(3);
 $('go-mission').onclick = () => window.visionShowTab('mission');
 
 /* 시작 상태 — 클래스 두 개를 미리 깔아 둔다(무엇을 해야 하는지 바로 보이게). */
-addClass('클래스 1');
-addClass('클래스 2');
+addClass('물체 1 (예: 컵)');
+addClass('물체 2 (예: 볼펜)');
 setCapEnabled(false);
 donutSet($('r-arc'), $('r-pct'), 0, 'var(--primary)');

@@ -296,7 +296,6 @@ const pctText = (v) => (v == null ? '—' : Math.round(v * 100) + '%');
 
 /* ── ③ 도입 리포트 ── */
 function paintReport() {
-  const K = msEsc(msNames()[msKey].name);
   const r = prfAt(msCut, msKey);
 
   let verdictClass, verdictTitle, verdictDesc;
@@ -320,16 +319,15 @@ function paintReport() {
       '<span style="font-size:13px;">' + verdictDesc + '</span>' +
     '</div>' +
 
-    '<h3 style="font-size:15px; margin-bottom:12px;">핵심 실무 지표</h3>' +
-    '<div class="ms-kpis" style="grid-template-columns:1fr 1fr; margin-bottom:24px;">' +
-      '<div class="ms-kpi" style="padding:16px 20px; display:flex; flex-direction:column; justify-content:center;">' +
+    '<div class="ms-kpis" style="grid-template-columns:1fr 1fr;">' +
+      '<div class="ms-kpi" style="padding:12px 16px; border:1px solid var(--primary); display:flex; flex-direction:column; justify-content:center;">' +
         '<div style="display:flex; justify-content:space-between; align-items:center;">' +
           '<span style="font-size:13px; margin:0;">달성한 재현율</span>' +
           '<b style="font-size:24px; color:' + (r.rec >= 0.7 ? 'var(--green)' : 'var(--primary-ink)') + ';">' + pctText(r.rec) + '</b>' +
         '</div>' +
         '<div style="font-size:11px; color:var(--ink-3); text-align:right; margin-top:4px;">(놓친 불량: ' + r.fn + '개)</div>' +
       '</div>' +
-      '<div class="ms-kpi" style="padding:16px 20px; display:flex; flex-direction:column; justify-content:center;">' +
+      '<div class="ms-kpi" style="padding:12px 16px; border:1px solid var(--primary); display:flex; flex-direction:column; justify-content:center;">' +
         '<div style="display:flex; justify-content:space-between; align-items:center;">' +
           '<span style="font-size:13px; margin:0;">달성한 정밀도</span>' +
           '<b style="font-size:24px; color:' + (r.prec >= 0.3 ? 'var(--ink)' : 'var(--primary-ink)') + ';">' + pctText(r.prec) + '</b>' +
@@ -338,11 +336,9 @@ function paintReport() {
       '</div>' +
     '</div>' +
 
-    '<h3 style="font-size:14px; margin-bottom:12px;">테스트 환경 <span style="font-size:12px; color:var(--ink-3); font-weight:400; margin-left:6px;">(2단계 수집 데이터 ' + r.total + '장 기준)</span></h3>' +
-    '<div style="background:var(--bg-soft); border-radius:12px; padding:16px 20px; display:flex; gap:32px; font-size:13px; color:var(--ink-2);">' +
-      '<div>▪️ 지킨 대상: <b>' + K + '</b></div>' +
-      '<div>▪️ 판정 예민도: <b>' + Math.round(msCut * 100) + '%</b></div>' +
-    '</div>';
+    /* 지킨 대상·예민도는 학생이 1·2단계에서 직접 정한 값이라 여기서 되풀이하지 않는다.
+       표본 수만 남긴다 — 위 두 숫자를 얼마나 믿을지 판단하는 데 필요하다. */
+    '<p style="font-size:12px; color:var(--ink-3); margin:10px 0 0; text-align:right;">2단계에서 모은 ' + r.total + '장으로 확인했습니다.</p>';
 }
 
 /* ── 단계 이동 ── */

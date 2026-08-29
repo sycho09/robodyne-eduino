@@ -75,24 +75,8 @@ function updateOverfitWarning() {
   }
   if (caught) warn.classList.add('show');
   else warn.classList.remove('show');
-  paintVlQuizStem(caught);
 }
 
-/* 섬이 안 생긴 판에서도 "섬처럼 휘었습니다"라고 단정하면 바로 위 판정 문구
-   ("예외 학생 놓침 → 일반화")와 정면으로 어긋난다. 복잡도 3은 초기화에 따라 갈려서
-   VL_MAX_TRIES 로 재시도해도 실패할 수 있으므로, 문제 문장도 실측을 따라간다 —
-   경고 배너를 지어내지 않는 것과 같은 규칙이다. 보기·정답·해설은 그대로다. */
-function paintVlQuizStem(caught) {
-  var stem = $('vl-quiz-stem');
-  if (!stem) return;
-  var who = '<b>공부시간·수면시간이 모두 적당한데도 불합격한 학생 1명</b>';
-  stem.innerHTML = caught
-    ? '지금 위 그래프에서 경계가 ' + who + '을 감싸며 섬처럼 휘었습니다. ' +
-      '이 상태를 가장 정확히 설명한 것은?'
-    : '복잡도를 <b>높음</b>으로 올리면, 경계가 ' + who + '까지 감싸며 섬처럼 휘는 일이 생깁니다 ' +
-      '— 초기값에 따라 갈려서 안 나오는 판도 있습니다. 그런 섬이 생겼다면, ' +
-      '그 상태를 가장 정확히 설명한 것은?';
-}
 
 /* app.js 의 frame() 은 세 탭이 함께 쓴다 — 1번 탭 캔버스는 사용자가 아무 데나 점을 찍는
    자유 좌표라 눈금에 뜻이 없다. 축이 실제 값(공부시간·수면시간)을 가리키는 건 이 탭뿐이라
@@ -383,42 +367,6 @@ if (vlSlider) {
     clearTimeout(vlCxTimer);
     vlCxTimer = setTimeout(trainVlModel, 250);
   };
-}
-
-/* 개념 정리 퀴즈: 카드 내에서 정답 및 해설을 바로 표시합니다. */
-const VL_QUIZ_ANSWER = 1;
-/* 퀴즈 해설: 과적합의 핵심(실력이 아닌 외운 것)과 나머지 오답 노트를 간결하게 분리하여 제시합니다. */
-const VL_QUIZ_EXPLAIN =
-  '<span class="qz-lead">예외 1명까지 맞히려고 경계가 뒤틀리면 학습 데이터는 100% 맞지만, ' +
-  '그건 실력이 아니라 <b>외운 것</b>입니다. 학습 점수가 오르는 동안 새 학생에게는 더 자주 ' +
-  '틀리게 되는 이 상태가 <b>과적합</b>이고, 그래서 보기 A처럼 100%를 좋은 모델의 증거로 ' +
-  '읽으면 안 됩니다.</span>' +
-  '<span class="qz-why">' +
-    '<span><b>C. 과소적합</b> — 반대쪽 극단입니다. 복잡도가 모자라 학습 데이터에서조차 ' +
-      '성적이 나쁜 상태를 말합니다.</span>' +
-    '<span><b>D. 비지도학습</b> — 이 단계는 정답 라벨을 주고 학습시켰으니 지도학습입니다.</span>' +
-  '</span>';
-
-const vlQuiz = $('vl-quiz');
-if (vlQuiz) {
-  const opts = vlQuiz.querySelectorAll('.qz-btn');
-  opts.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const my = +btn.dataset.i;
-      const right = my === VL_QUIZ_ANSWER;
-      opts.forEach(b => { b.disabled = true; });
-      btn.classList.add(right ? 'correct' : 'wrong');
-      if (!right) opts[VL_QUIZ_ANSWER].classList.add('correct');
-      // 탭 완료 신호(markDone)와 별개로, 학습자에게 여기서 끝났음을 알린다.
-      const doneBadge = $('vl-done-badge');
-      if (right && doneBadge) doneBadge.hidden = false;
-
-      const fb = $('vl-quiz-feedback');
-      fb.hidden = false;
-      fb.className = 'qz-feedback ' + (right ? 'right' : 'miss');
-      fb.innerHTML = '<b>' + (right ? '정답입니다' : '오답입니다') + '</b>' + VL_QUIZ_EXPLAIN;
-    });
-  });
 }
 
 setStatus('준비됨');

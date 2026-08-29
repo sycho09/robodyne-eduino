@@ -225,6 +225,9 @@ function setStep(n) {
     b.classList.toggle('active', w === n);
     b.classList.toggle('done', w < n);
   });
+  const learnBox = document.querySelector('.camera-card .learn.fill');
+  if (learnBox) learnBox.style.display = n === 1 ? '' : 'none';
+
   if (n === 3 && head && train.stream && !inferring) { inferring = true; $('btn-infer').textContent = '추론 중지'; setStatus('추론 중 · LIVE', 'live'); }
   else if (n === 3) showIdle();
 }

@@ -201,14 +201,14 @@ function renderRvBase() {
   v.style.display = 'flex';
   v.style.flexDirection = 'column';
   v.style.alignItems = 'center';
-  v.style.padding = '32px 24px';
-  v.style.gap = '20px';
+  v.style.padding = '32px 24px 20px';
+  v.style.gap = '12px';
   v.style.background = 'var(--surface-1)';
   v.style.border = '1px solid var(--primary-soft)';
   v.innerHTML =
     '<div style="font-size:18px; font-weight:700; color:var(--ink-1); text-align:center;">' +
     '앗! AI가 \'배송\'이라는 글자만 보고 칭찬을 불만으로 착각했어요.</div>' +
-    '<button class="btn primary" onclick="goToRvStep(3)" style="padding:12px 32px; font-size:16px;">왜 이런 실수를 했을까? 원인 알아보기</button>';
+    '<button class="btn primary" onclick="goToRvStep(3)" style="padding:12px 32px; font-size:16px;">문맥을 이해하는 AI로 튜닝하기</button>';
 }
 
 function renderRvTry() {
@@ -268,26 +268,27 @@ function renderRvTuning() {
   ).join('');
 
   const mEl = $('rv-metrics');
-  mEl.hidden = false;
-  // 재분류 전 자리표시 칩과 같은 부품(.rv-chip)을 쓴다. 색조만 결과에 따라 얹는다.
-  const hint = $('rv-metrics-hint');
-  if (hint) hint.hidden = true;
-  const chip = (k, v, tone) => '<span class="rv-chip" style="background:' + tone + ';">' + k + ' ' + v + '</span>';
-  mEl.innerHTML =
-    chip('정밀도', res.precision === null ? '—' : res.precision + '%', 'var(--card-2)') +
-    chip('재현율', res.recall + '%', 'var(--card-2)') +
-    chip('누락된 불만', res.fn + '건', res.fn ? 'var(--primary-soft)' : 'var(--green-soft)') +
-    chip('오분류된 정상', res.fp + '건', res.fp ? 'var(--primary-soft)' : 'var(--green-soft)');
+  if (mEl) {
+    mEl.hidden = false;
+    const hint = $('rv-metrics-hint');
+    if (hint) hint.hidden = true;
+    const chip = (k, v, tone) => '<span class="rv-chip" style="background:' + tone + ';">' + k + ' ' + v + '</span>';
+    mEl.innerHTML =
+      chip('정밀도', res.precision === null ? '—' : res.precision + '%', 'var(--card-2)') +
+      chip('재현율', res.recall + '%', 'var(--card-2)') +
+      chip('누락된 불만', res.fn + '건', res.fn ? 'var(--primary-soft)' : 'var(--green-soft)') +
+      chip('오분류된 정상', res.fp + '건', res.fp ? 'var(--primary-soft)' : 'var(--green-soft)');
+  }
 
   const card = $('tuning-success-card');
   card.hidden = false;
   const icon = $('rv-verdict-icon'), title = $('rv-verdict-title'), desc = $('rv-verdict-desc');
-  const next = $('btn-report-start');
   const perfect = res.fp === 0 && res.fn === 0;
   card.className = 'rv-alert ' + (perfect ? 'success' : 'warn');
   // 같은 마스코트를 쓰되 말풍선은 쓰지 않는다 — 여기는 변명이 아니라 성적표이고, 상자 안에 CTA 가 있다.
   icon.innerHTML = SVG_BOT;
-  next.hidden = !perfect;
+  const nextWrap = $('btn-report-wrap');
+  if (nextWrap) nextWrap.hidden = !perfect;
   if (perfect) {
     title.textContent = '튜닝 성공!';
     desc.textContent = '"택배 상자 구겨짐"은 글자가 달라도 배송 불만으로 잡아냈고, "빠른 배송 감사"는 \'배송\'이 들어 있지만 칭찬으로 걸러냈습니다. 의미로 판단하고 있다는 증거입니다.';
@@ -384,7 +385,7 @@ if (slider) {
     // 값을 바꾸면 이전 판정은 지우고, [재분류 테스트]를 다시 누르게 한다.
     $('tuning-success-card').hidden = true;
     $('rv-result-rows').hidden = true;
-    $('rv-metrics').hidden = true;
+    if ($('rv-metrics')) $('rv-metrics').hidden = true;
   };
 }
 

@@ -124,75 +124,52 @@
                (실제 내용은 600px 뿐이라 남는 폭이 '설문 폼' 처럼 보인다), 세로도 그만큼 길어진다.
                폭 차이가 곧 위계다 — 이 단계의 주인공은 "3건이 틀렸다"는 결과이고,
                직접 넣어보기는 그것을 본 뒤의 선택지다. -->
-          <div class="rv-split">
-            <div class="card">
-              <h2>기본 AI로 분류해보기</h2>
-              <p class="sub">지금 AI는 <b>'배송 불만'이라는 말과 글자가 얼마나 겹치는지</b>만 봅니다. 오늘 들어온 <b>200건</b> 중 성격이 다른 <b>4건</b>을 샘플로 뽑아 그대로 돌려보겠습니다.</p>
-              <div id="rv-base-rows" class="rv-rows"></div>
-              <div id="rv-base-verdict" style="margin-top:8px;"></div>
-            </div>
-
-            <div class="card">
-              <h2>직접 넣어보기</h2>
-              <p class="sub">리뷰 문장을 직접 써 보세요. 위와 똑같은 기준으로 분류합니다.</p>
-              <textarea id="rv-try-input" class="rv-try-input" rows="2" placeholder="예: 택배 상자가 다 구겨져서 왔어요."></textarea>
-              <div class="btn-row" style="justify-content:flex-start; margin-top:12px;"><button class="btn accent" id="btn-rv-try">AI로 분류해보기</button></div>
-              <div id="rv-try-result" hidden></div>
-            </div>
+          <div class="card">
+            <h2>기본 AI로 분류해보기</h2>
+            <p class="sub">지금 AI는 <b>'배송 불만'이라는 말과 글자가 얼마나 겹치는지</b>만 봅니다. 오늘 들어온 <b>200건</b> 중 성격이 다른 <b>4건</b>을 샘플로 뽑아 그대로 돌려보겠습니다.</p>
+            <div id="rv-base-rows" class="rv-rows"></div>
+            <div id="rv-base-verdict" style="margin-top:8px;"></div>
           </div>
-
-          <div class="btn-row"><button class="btn primary lg" id="btn-tuning-start">개념 충전 및 튜닝하기</button></div>
         </div>
 
         <!-- Step 3: 개념 충전 및 튜닝 -->
         <div class="wstep" data-w="3" hidden>
           <!-- Step 2 와 같은 .rv-split 을 쓴다. 두 단계가 한 화면 안에서 구조가 갈리면
                같은 실습으로 안 읽힌다. 좌=조작과 결과, 우=성적과 판정. -->
-          <div class="rv-split">
-            <div class="card">
-              <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
-                <h2 style="margin:0;">임베딩(유사도) 임계값 튜닝</h2>
-                <button class="btn btn-sm" id="btn-embedding-hint"><span class="ic-inline" data-ic="lightbulb"></span> 힌트 보기</button>
-              </div>
-              <!-- 2단계와 기준 문장은 같고 재는 방법만 바뀌었다는 것을 여기서 말해 준다.
-                   이 줄이 없으면 "'배송 불만'이라는 말이 없는데 왜 62%냐"에서 막힌다 —
-                   행 라벨이 [겹침 %] 에서 [뜻 %] 로 바뀐 것만으로는 전환이 안 읽힌다.
-                   힌트 모달에 같은 설명이 있지만 대부분 열지 않으므로 본문에 세운다. -->
-              <p class="sub">기준은 <b>'배송 불만'</b> 그대로입니다. 달라진 건 재는 방법 — 글자가 겹치는지가 아니라 <b>뜻이 가까운지</b>를 봅니다. 그래서 '택배 상자가 구겨져서'는 겹치는 글자가 하나도 없어도 점수가 높습니다.</p>
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
+              <h2 style="margin:0;">임베딩(유사도) 임계값 튜닝</h2>
+              <button class="btn btn-sm" id="btn-embedding-hint"><span class="ic-inline" data-ic="lightbulb"></span> 힌트 보기</button>
+            </div>
+            <!-- 2단계와 기준 문장은 같고 재는 방법만 바뀌었다는 것을 여기서 말해 준다.
+                 이 줄이 없으면 "'배송 불만'이라는 말이 없는데 왜 62%냐"에서 막힌다 —
+                 행 라벨이 [겹침 %] 에서 [뜻 %] 로 바뀐 것만으로는 전환이 안 읽힌다.
+                 힌트 모달에 같은 설명이 있지만 대부분 열지 않으므로 본문에 세운다. -->
+            <p class="sub">기준은 <b>'배송 불만'</b> 그대로입니다. 달라진 건 재는 방법 — 글자가 겹치는지가 아니라 <b>뜻이 가까운지</b>를 봅니다. 그래서 '택배 상자가 구겨져서'는 겹치는 글자가 하나도 없어도 점수가 높습니다.</p>
 
-              <div class="rv-slider-wrap">
-                <input type="range" id="threshold-slider" class="rv-slider" min="0" max="100" value="30">
-                <div class="rv-slider-labels">
-                  <span>느슨하게 (조금만 비슷해도 잡음)</span>
-                  <strong class="rv-slider-val" id="threshold-val">임계값: 30%</strong>
-                  <span>엄격하게 (의미가 아주 가까울 때만)</span>
-                </div>
+            <div class="rv-slider-wrap">
+              <input type="range" id="threshold-slider" class="rv-slider" min="0" max="100" value="30">
+              <div class="rv-slider-labels">
+                <span>느슨하게 (조금만 비슷해도 잡음)</span>
+                <strong class="rv-slider-val" id="threshold-val">임계값: 30%</strong>
+                <span>엄격하게 (의미가 아주 가까울 때만)</span>
               </div>
-              <div class="btn-row"><button class="btn accent" id="btn-reclassify">이 설정으로 재분류 테스트</button></div>
+            </div>
+            <div class="btn-row"><button class="btn accent" id="btn-reclassify">이 설정으로 재분류 테스트</button></div>
 
-              <!-- 임계값에 따라 4개 리뷰의 판정이 실제로 바뀐다 -->
-              <div id="rv-result-rows" hidden class="rv-rows" style="margin-top:24px; padding-top:20px; border-top:1px solid var(--line);"></div>
+            <!-- 임계값에 따라 4개 리뷰의 판정이 실제로 바뀐다 -->
+            <div id="rv-result-rows" hidden class="rv-rows" style="margin-top:24px; padding-top:20px; border-top:1px solid var(--line);"></div>
+
+            <div class="rv-alert" id="tuning-success-card" hidden style="margin-top:24px;">
+              <span class="rv-alert-ic" id="rv-verdict-icon"></span>
+              <div style="flex:1">
+                <strong class="rv-alert-title" id="rv-verdict-title">튜닝 성공!</strong>
+                <span class="rv-alert-desc" id="rv-verdict-desc"></span>
+              </div>
             </div>
 
-            <div class="rv-side">
-              <!-- 재분류 전에도 세워 둔다. 숨기면 우측 기둥이 통째로 비어 고장처럼 보인다.
-                   칩의 '—' 는 renderRvTuning() 이 정밀도 없을 때 쓰는 표기와 같다. -->
-              <div class="card">
-                <h2>분류 성적</h2>
-                <div id="rv-metrics" style="display:flex; gap:10px; flex-wrap:wrap;">
-                  <span class="rv-chip">정밀도 —</span><span class="rv-chip">재현율 —</span>
-                </div>
-                <p class="sub rv-metrics-hint" id="rv-metrics-hint">재분류 테스트를 누르면 성적이 나옵니다.</p>
-              </div>
-
-              <div class="rv-alert" id="tuning-success-card" hidden>
-                <span class="rv-alert-ic" id="rv-verdict-icon"></span>
-                <div style="flex:1">
-                  <strong class="rv-alert-title" id="rv-verdict-title">튜닝 성공!</strong>
-                  <span class="rv-alert-desc" id="rv-verdict-desc"></span>
-                  <button class="btn primary" id="btn-report-start" style="margin-top:16px;" hidden>최종 리포트 산출</button>
-                </div>
-              </div>
+            <div class="btn-row" id="btn-report-wrap" hidden style="margin-top:24px; display:flex; justify-content:center;">
+              <button class="btn primary lg" id="btn-report-start">최종 리포트 산출</button>
             </div>
           </div>
         </div>
