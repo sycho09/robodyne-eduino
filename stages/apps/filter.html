@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/favicon.png" />
+<meta name="theme-color" content="#0a0b12" />
+<title>영상 효과 · VISION AI</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/stages/styles/stage.css" />
+</head>
+<body>
+
+<div class="ambient"></div>
+<div class="scanlines"></div>
+
+<header class="hud">
+  <div class="hud-l">
+    <a class="back" href="/studio.html" onclick="try{sessionStorage.setItem(String.fromCharCode(118,111,115,95,112,97,115,115),String(1))}catch(e){}" title="콘솔(모드 선택)"><img src="/platform/img/logo-mark.webp" alt="콘솔" style="height:18px;display:block" /></a>
+    <a class="back" href="/explore.html">← 스테이지</a>
+    <div class="title"><h1><i data-ic="filter"></i>영상 효과</h1><span class="tag">Canvas 필터 · 알고리즘</span></div>
+  </div>
+  <div class="hud-r">
+    <a class="back" href="/platform/index.html" title="플랫폼 홈"><i data-ic="home"></i> 홈</a>
+    <button class="back" data-board id="boardBtn" title="제출 게시판" style="display:none"><i data-ic="board"></i> 게시판</button>
+    <span class="chip idle" id="status">● IDLE</span>
+    <span class="chip" id="fps">FPS <b>—</b></span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="stagecol">
+  <div class="viewport mirror" id="viewport">
+    <video id="video" playsinline muted></video>
+    <canvas id="overlay"></canvas>
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <div class="cover" id="cover">
+      <div class="big"><i data-ic="filter"></i></div>
+      <p>픽셀 값을 바꾸면 화면이 어떻게 변하는지 직접 체험해요. 흑백·색반전·고대비·블러, 그리고 움직임 감지까지!</p>
+      <button class="startbtn" id="start">▶ 카메라 켜기 · 효과 시작</button>
+      <p style="font-size:11.5px;color:var(--ink-3)">카메라는 이 기기에서만 처리되고 어디에도 전송되지 않아요.</p>
+    </div>
+  </div>
+  </div>
+
+  <aside class="side">
+    <button class="theorybtn" id="codexBtn"><i data-ic="book"></i> 이론 학습하기</button>
+    <div class="card list-card" style="justify-content:flex-start">
+      <h2>효과 모드 <span class="cnt" id="modeName" style="font-size:14px">원본</span></h2>
+      <div class="modes" id="modes"></div>
+      <div id="motionRow" style="display:none;margin-top:16px">
+        <div class="metric"><div class="v" id="motion">0%</div><div class="u">움직인 영역</div></div>
+        <div class="gauge" style="margin-top:12px"><div class="gauge-fill" id="motionBar" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>실시간 수치</h2>
+      <div class="telem">
+        <div class="t"><span class="tl">현재 효과</span><span class="tv acc" id="tMode" style="font-size:15px">원본</span></div>
+        <div class="t"><span class="tl">FPS</span><span class="tv" id="tFps">—</span></div>
+        <div class="t"><span class="tl">밝기</span><span class="tv" id="tBright">100%</span></div>
+        <div class="t"><span class="tl">대비</span><span class="tv" id="tContrast">100%</span></div>
+        <div class="t"><span class="tl">블러</span><span class="tv" id="tBlur">0px</span></div>
+        <div class="t"><span class="tl">움직임</span><span class="tv acc" id="tMove">—</span></div>
+      </div>
+    </div>
+    <div class="card ctrl">
+      <label>밝기 <span id="brightv">100%</span></label>
+      <input type="range" id="bright" min="40" max="180" value="100" />
+      <label style="margin-top:14px">대비 <span id="contrastv">100%</span></label>
+      <input type="range" id="contrast" min="40" max="220" value="100" />
+      <label style="margin-top:14px">블러 <span id="blurv">0px</span></label>
+      <input type="range" id="blur" min="0" max="12" value="0" />
+      <div id="actionArea"></div>
+      <button class="stopbtn" id="stop">⏹ 카메라 끄기</button>
+    </div>
+  </aside>
+</main>
+
+<div class="codex" id="codex" aria-hidden="true">
+  <div class="codex-card">
+    <button class="codex-x" id="codexX" aria-label="닫기">✕</button>
+    <div class="codex-head">
+      <span class="codex-ic"><i data-ic="filter"></i></span>
+      <div><div class="codex-name">영상 효과</div><div class="codex-sub">Canvas · 프레임 차분 · 알고리즘</div></div>
+    </div>
+    <div class="codex-grid">
+      <div class="codex-sec">
+        <div class="codex-h">학습 정보</div>
+        <p>학습이 필요 없는 고전 영상처리예요. 목표는 <b>“픽셀 값을 바꾸면 화면이 어떻게 변하는가”</b>를 직접 체험하는 것. AI의 영상 처리도 이런 픽셀 계산에서 시작해요.</p>
+      </div>
+      <div class="codex-sec">
+        <div class="codex-h">알고리즘 정보</div>
+        <p>각 픽셀 색(R·G·B)을 규칙대로 바꿔요. 흑백=세 색의 평균, 색반전=255−값. <b>모션 감지</b>는 직전 프레임과의 차이로 ‘움직인 부분’을 찾아 표시해요.</p>
+      </div>
+    </div>
+    <div class="codex-use">이런 곳에 쓰여요 · 사진 보정 필터 · CCTV 움직임 알림 · 영상 전처리</div>
+  </div>
+</div>
+
+<script src="/stages/core/ui/icons.js"></script>
+<script src="/stages/core/session.js"></script>
+<script src="/stages/admin/cert.js"></script>
+<script src="/stages/submission/board.js"></script>
+<script src="/stages/submission/data/submit.store.js"></script>
+  <script src="/stages/submission/submit.core.js"></script>
+  <script src="/stages/submission/ui/submit.ui.js"></script>
+<script>
+  const $ = (id)=>document.getElementById(id);
+  const els = { video:$('video'), overlay:$('overlay'), cover:$('cover'), start:$('start'), stop:$('stop'),
+    status:$('status'), fps:$('fps'), modeName:$('modeName'), modes:$('modes'),
+    motion:$('motion'), motionBar:$('motionBar'), motionRow:$('motionRow'), viewport:$('viewport') };
+  const ff = { stream:null, raf:null, mode:'none', prev:null, lastT:0, params:{bright:100,contrast:100,blur:0} };
+  const FF_CSS = { none:'', gray:'grayscale(1)', invert:'invert(1)', contrast:'grayscale(1) contrast(4) brightness(1.1)', blur:'blur(6px)' };
+  const FF_LABEL = { none:'원본', gray:'흑백', invert:'색 반전', contrast:'고대비', blur:'블러', motion:'모션 감지' };
+  const MODES = ['none','gray','invert','contrast','blur','motion'];
+
+  function setStatus(t,cls){ els.status.textContent='● '+t; els.status.className='chip '+(cls||''); }
+  function setAR(){ const vw=els.video.videoWidth, vh=els.video.videoHeight; if(vw&&vh) els.viewport.style.setProperty('--ar', vw+' / '+vh); }
+
+  els.modes.innerHTML = MODES.map(m=>`<button class="modebtn${m==='none'?' active':''}" data-m="${m}">${FF_LABEL[m]}</button>`).join('');
+  [...els.modes.children].forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.m)));
+
+  function buildCSS(){ const p=ff.params; const preset=ff.mode==='motion'?'':(FF_CSS[ff.mode]||'');
+    return `${preset} brightness(${p.bright}%) contrast(${p.contrast}%) blur(${p.blur}px)`.trim(); }
+  function apply(){ if(ff.mode!=='motion') els.video.style.filter=buildCSS(); }
+  function clearCanvas(){ const c=els.overlay.getContext('2d'); c.clearRect(0,0,els.overlay.width,els.overlay.height); }
+  const TEL={bright:'tBright',contrast:'tContrast',blur:'tBlur'};
+  const bind=(id,key,unit)=>{ const el=$(id), v=$(id+'v'); el.addEventListener('input',()=>{ ff.params[key]=+el.value; if(v) v.textContent=el.value+unit; if(TEL[key]) $(TEL[key]).textContent=el.value+unit; apply(); }); };
+  bind('bright','bright','%'); bind('contrast','contrast','%'); bind('blur','blur','px');
+
+  function setMode(m){
+    if(!FF_LABEL[m]) return; ff.mode=m;
+    [...els.modes.children].forEach(b=>b.classList.toggle('active',b.dataset.m===m));
+    els.modeName.textContent=FF_LABEL[m]; $('tMode').textContent=FF_LABEL[m];
+    els.motionRow.style.display = (m==='motion')?'':'none';
+    if(m==='motion'){ els.video.style.filter=''; clearCanvas(); if(ff.stream){ if(ff.raf) cancelAnimationFrame(ff.raf); motionLoop(); } }
+    else { if(ff.raf) cancelAnimationFrame(ff.raf); ff.raf=null; els.video.style.filter=buildCSS(); clearCanvas(); ff.prev=null;
+      $('tFps').textContent='—'; $('tMove').textContent='—'; }
+  }
+
+  async function startCam(){
+    if(ff.stream) return;
+    els.start.classList.add('loading'); els.start.textContent='카메라 여는 중…'; setStatus('LOADING');
+    try{
+      ff.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}});
+      els.video.srcObject=ff.stream; await els.video.play().catch(()=>{});
+      setAR(); els.video.addEventListener('loadedmetadata', setAR, {once:true});
+      els.cover.classList.add('hide'); setStatus('LIVE','live'); ff.lastT=performance.now(); setMode(ff.mode);
+    }catch(e){ console.error('[ff]',e); setStatus('CAMERA DENIED','idle');
+      els.start.classList.remove('loading'); els.start.textContent='▶ 다시 시도'; }
+  }
+  function stopCam(){
+    if(ff.stream){ ff.stream.getTracks().forEach(t=>t.stop()); ff.stream=null; }
+    els.video.srcObject=null; if(ff.raf) cancelAnimationFrame(ff.raf); ff.raf=null;
+    els.video.style.filter=''; clearCanvas(); ff.prev=null;
+    els.cover.classList.remove('hide'); els.start.classList.remove('loading'); els.start.textContent='▶ 카메라 켜기 · 효과 시작';
+    setStatus('IDLE','idle'); els.fps.innerHTML='FPS <b>—</b>'; els.motion.textContent='0%'; els.motionBar.style.width='0%';
+    $('tFps').textContent='—'; $('tMove').textContent='—';
+  }
+  async function motionLoop(){
+    if(ff.mode!=='motion'||!ff.stream) return;
+    if(els.video.readyState>=2 && window.tf){
+      const W=160,H=120; setAR();
+      try{
+        const gray=tf.tidy(()=>tf.image.resizeBilinear(tf.browser.fromPixels(els.video),[H,W]).mean(2));
+        const cur=await gray.data(); gray.dispose();
+        if(ff.prev && ff.prev.length===cur.length){
+          els.overlay.width=W; els.overlay.height=H;
+          const ctx=els.overlay.getContext('2d'); const img=ctx.createImageData(W,H); let moved=0;
+          for(let i=0;i<cur.length;i++){ const o=i*4; if(Math.abs(cur[i]-ff.prev[i])>22){ moved++;
+            img.data[o]=255; img.data[o+1]=40; img.data[o+2]=70; img.data[o+3]=170; } }
+          ctx.putImageData(img,0,0);
+          const pct=moved*100/cur.length; els.motion.textContent=pct.toFixed(1)+'%'; els.motionBar.style.width=Math.min(100,pct*3).toFixed(0)+'%';
+          $('tMove').textContent=pct.toFixed(1)+'%';
+        }
+        ff.prev=cur;
+        const now=performance.now(), fps=1000/(now-ff.lastT); ff.lastT=now;
+        els.fps.innerHTML='FPS <b>'+fps.toFixed(1)+'</b>'; $('tFps').textContent=fps.toFixed(1);
+      }catch(e){ /* skip */ }
+    }
+    ff.raf=requestAnimationFrame(motionLoop);
+  }
+
+  els.start.addEventListener('click', startCam);
+  els.stop.addEventListener('click', stopCam);
+
+  /* 미션 제출 — 적용된 효과 그대로 스냅샷(미러+CSS필터 재현) */
+  function captureFrame(){
+    if(!ff.stream) return null;
+    const vw=els.video.videoWidth||640, vh=els.video.videoHeight||480;
+    const sc=Math.min(1,480/vw), W=Math.round(vw*sc), H=Math.round(vh*sc);
+    const c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d');
+    x.save(); x.filter = ff.mode==='motion'?'none':buildCSS(); x.translate(W,0); x.scale(-1,1); x.drawImage(els.video,0,0,W,H); x.restore();
+    if(ff.mode==='motion'){ x.save(); x.translate(W,0); x.scale(-1,1); x.imageSmoothingEnabled=false; x.drawImage(els.overlay,0,0,W,H); x.restore(); }
+    return c.toDataURL('image/jpeg',0.85);
+  }
+  function summary(){ const s=['효과 '+FF_LABEL[ff.mode]]; if(ff.mode==='motion') s.push('움직임 '+(els.motion.textContent||'0%')); return s; }
+  if(window.Submit) Submit.init({ feature:'filter', label:'영상 효과', capture:captureFrame, summary });
+
+  const codex=$('codex'); const openC=()=>codex.classList.add('on'), closeC=()=>codex.classList.remove('on');
+  $('codexBtn').addEventListener('click',openC); $('codexX').addEventListener('click',closeC);
+  codex.addEventListener('click',e=>{ if(e.target===codex) closeC(); });
+  window.addEventListener('keydown',e=>{ if(e.key==='Escape'){ codex.classList.contains('on')?closeC():location.href='/explore.html'; } });
+  window.addEventListener('pagehide', stopCam);
+  window.addEventListener('pageshow',()=>{ document.body.style.opacity='1'; });
+</script>
+</body>
+</html>

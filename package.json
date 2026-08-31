@@ -1,0 +1,41 @@
+{
+  "name": "eduino-console",
+  "version": "1.0.0",
+  "description": "Eduino AI 비전 콘솔 — 게임형 허브에서 5개 비전 스테이지 체험과 3개 직접제작 트랙(이미지·음성·동작)을 진행하는 수업 도구",
+  "private": true,
+  "main": "electron-main.js",
+  "scripts": {
+    "app": "electron .",
+    "dist": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^43.4.1",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.eduino.ailab.console",
+    "productName": "Eduino AI 비전 콘솔",
+    "files": [
+      "electron-main.js",
+      "platform/**",
+      "entry.html",
+      "index.html",
+      "studio.html",
+      "explore.html",
+      "create.html",
+      "console/**",
+      "stages/**",
+      "models/**",
+      "shared/**",
+      "favicon.png",
+      "apple-touch-icon.png",
+      "og-image.svg"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "portable"
+    }
+  }
+}

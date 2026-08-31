@@ -1,0 +1,1256 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.png" />
+    <meta name="theme-color" content="#0a0b12" />
+    <title>내 AI 캐릭터 만들기 · VISION AI</title>
+    <!--
+  VISION AI 내 AI 캐릭터 만들기 
+  - 모달 형태 뷰 (iframe 표시)
+  - 직접 제작 3트랙 공용 (?track=image|audio|pose)
+  - 구성: <style>(#card 전용) → 본문 → <script>(SC 의존)
+  - 스타일 구조는 docs/result-studio.md 5장
+-->
+    <link rel="stylesheet" href="/stages/styles/studio.css" />
+    <style>
+      /* 좌 컨트롤 */
+      .ctrl {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .q b {
+        color: var(--ink-2);
+      }
+      label.fl {
+        display: block;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--ink-3);
+        margin: 12px 0 6px;
+      }
+      label.fl:first-of-type {
+        margin-top: 0;
+      }
+      .id2 {
+        display: flex;
+        gap: 8px;
+      }
+      /* 특성 템플릿: 틀 켜기(.tpl) → 빈칸 채우기(.blk) */
+      .sec-h .cnt {
+        margin-left: auto;
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--ink-4);
+      }
+      .tpls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-bottom: 12px;
+      }
+      .tpl {
+        position: relative;
+        flex: 1 1 132px;
+        min-width: 132px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 1.45;
+        color: var(--ink-3);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 10px 11px;
+        box-shadow: none;
+      }
+      .tpl:hover {
+        color: var(--ink-2);
+        border-color: var(--accent-ink);
+        filter: none;
+      }
+      .tpl b {
+        display: block;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--ink-2);
+        margin-bottom: 2px;
+      }
+      .tpl b svg {
+        vertical-align: -2.5px;
+        margin-right: 4px;
+      }
+      .tpl .n {
+        display: none;
+        position: absolute;
+        top: 7px;
+        right: 7px;
+        width: 16px;
+        height: 16px;
+        border-radius: 99px;
+        background: var(--accent);
+        color: #fff;
+        font-size: 10px;
+        font-weight: 800;
+        place-items: center;
+      }
+      .tpl.on {
+        color: var(--ink-2);
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+      .tpl.on b {
+        color: var(--ink);
+      }
+      .tpl.on .n {
+        display: grid;
+      }
+      .blk {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 11px 12px;
+        margin-bottom: 9px;
+      }
+      .blk-h {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--ink-4);
+        margin-bottom: 8px;
+      }
+      .blk-h svg {
+        flex: none;
+      }
+      .blk-h .del {
+        margin-left: auto;
+        display: grid;
+        place-items: center;
+        width: 22px;
+        height: 22px;
+        padding: 0;
+        color: var(--ink-4);
+        background: none;
+        box-shadow: none;
+        border-radius: 7px;
+      }
+      .blk-h .del:hover {
+        color: var(--rose);
+        background: rgba(255, 122, 144, 0.12);
+        filter: none;
+      }
+      .fill {
+        font-size: 13.5px;
+        line-height: 2.3;
+        color: var(--ink-2);
+      }
+      /* 빈칸 인라인 처리 (짧은 값 뒤 조사/마침표 밀림 방지) */
+      .bl {
+        display: inline-block;
+        min-width: 22px;
+        padding: 1px 5px;
+        text-align: center;
+        font-weight: 700;
+        color: var(--accent-ink);
+        border-bottom: 2px dashed var(--ink-4);
+        outline: none;
+      }
+      .bl:focus {
+        border-bottom-color: var(--accent);
+        background: var(--accent-soft);
+        border-radius: 6px 6px 0 0;
+      }
+      .bl:empty::before {
+        content: attr(data-ph);
+        font-weight: 400;
+        color: var(--ink-4);
+      }
+      .fill [data-jo] {
+        margin-left: -4px;
+      }
+      /* 빈칸 오른쪽 여백만큼 조사를 당겨 붙임 */
+      textarea.free {
+        min-height: 84px;
+        line-height: 1.7;
+        resize: vertical;
+      }
+      .sug {
+        display: none;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 9px;
+        padding-top: 9px;
+        border-top: 1px dashed var(--border);
+      }
+      .sug.on {
+        display: flex;
+      }
+      .sug .sh {
+        width: 100%;
+        font-size: 11px;
+        font-weight: 400;
+        color: var(--ink-4);
+        margin-bottom: 1px;
+      }
+      .sgc {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--ink-3);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        border-radius: 99px;
+        padding: 5px 10px;
+        box-shadow: none;
+      }
+      .sgc:hover {
+        color: var(--ink);
+        border-color: var(--accent-ink);
+        filter: none;
+      }
+      .blk-empty {
+        border: 1px dashed var(--border);
+        border-radius: var(--radius);
+        padding: 18px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--ink-4);
+      }
+      .guide {
+        font-size: 12px;
+        color: var(--ink-3);
+        line-height: 1.6;
+        margin: 10px 0 0;
+      }
+      .guide b {
+        color: var(--accent-ink);
+      }
+      /* 우측: 카드 영역 (이미지 박스 높이 고정) */
+      .cardwrap {
+        overflow: auto;
+        padding-bottom: 8px;
+        display: flex;
+        justify-content: center;
+      }
+      #card {
+        width: 100%;
+        max-width: 460px;
+        min-width: 320px;
+        border-radius: 20px;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+        --cd-ink: #f2f4fb;
+        --cd-ink2: #cdb6bd;
+        --cd-ink3: #9c7d84;
+        --cd-frame: rgba(255, 255, 255, 0.05);
+        --cd-frameb: rgba(255, 255, 255, 0.1);
+        --cd-accent: #ff5747;
+        background: radial-gradient(130% 120% at 0% 0%, #1c151f, #0b0c14 62%);
+        color: var(--cd-ink);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+      }
+      #card .ch {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+      #card .ch .lbl {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        color: var(--cd-accent);
+        font-weight: 700;
+      }
+      #card .ch .trk {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--cd-ink2);
+        background: var(--cd-frame);
+        border: 1px solid var(--cd-frameb);
+        border-radius: 99px;
+        padding: 5px 11px;
+      }
+      #card .imgbox {
+        position: relative;
+        height: 300px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.42);
+        border: 1px solid var(--cd-frameb);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #card .imgbox canvas {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      #card .imgbox .ph {
+        color: var(--cd-ink3);
+        font-size: 12.5px;
+        text-align: center;
+        padding: 16px;
+        line-height: 1.6;
+      }
+      #card .imgbox .chips {
+        position: absolute;
+        right: 9px;
+        bottom: 9px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 5px;
+        max-width: 80%;
+      }
+      #card .imgbox .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 700;
+        color: #fff;
+        background: rgba(5, 6, 11, 0.72);
+        border-radius: 99px;
+        padding: 3px 8px 3px 7px;
+      }
+      #card .imgbox .chip i {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex: none;
+        display: block;
+      }
+      #card .cname {
+        font-size: 23px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        line-height: 1.25;
+        margin: 15px 0 0;
+        min-height: 29px;
+        word-break: break-all;
+      }
+      #card .ctraits {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        margin: 11px 0 0;
+      }
+      #card .tline {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 12.5px;
+        line-height: 1.7;
+        color: var(--cd-ink2);
+        background: rgba(0, 0, 0, 0.34);
+        border-left: 3px solid var(--cd-accent);
+        border-radius: 0 12px 12px 0;
+        padding: 10px 12px;
+      }
+      #card .tline .ic {
+        flex: none;
+        line-height: 0;
+        padding-top: 4px;
+      }
+      #card .tline .tx {
+        flex: 1;
+        word-break: break-all;
+      }
+      #card .tline.empty {
+        border-left-color: var(--cd-ink3);
+        color: var(--cd-ink3);
+      }
+      #card .cstats {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      #card .cstats .st {
+        flex: 1;
+        background: var(--cd-frame);
+        border: 1px solid var(--cd-frameb);
+        border-radius: 11px;
+        padding: 11px 12px;
+      }
+      #card .cstats .st .k {
+        font-family: var(--mono);
+        font-size: 9.5px;
+        letter-spacing: 0.08em;
+        color: var(--cd-ink3);
+        margin-bottom: 5px;
+      }
+      #card .cstats .st .v {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--cd-ink);
+        line-height: 1.4;
+        word-break: keep-all;
+      }
+      #card .cfoot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 15px;
+      }
+      #card .cfoot .wm {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        color: var(--cd-ink3);
+      }
+      #card .cfoot .made {
+        font-size: 11.5px;
+        color: var(--cd-ink3);
+        text-align: right;
+        line-height: 1.45;
+      }
+      #card .cfoot .made b {
+        color: var(--cd-ink2);
+      }
+    </style>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/stages/styles/tokens.css" />
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <!-- 임시저장 이미지는 localStorage 쿼터를 넘기므로 IndexedDB 에 둔다 -->
+    <script src="/stages/core/data/imagestore.js"></script>
+    <script src="/stages/studio/studio-common.js"></script>
+  </head>
+  <body>
+    <header class="top">
+      <!-- 종료 전 보관함 임시 저장 프로세스 동작 -->
+      <button class="back" id="btnBack">← 뒤로</button>
+      <h1>
+        내 AI 캐릭터 만들기
+        <span
+          id="missionTag"
+          style="
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--ink-2);
+            background: rgba(255, 255, 255, 0.05);
+            border: 0;
+            border-radius: 9px;
+            padding: 6px 11px;
+            margin-left: 4px;
+          "
+          >—</span
+        >
+      </h1>
+      <div style="margin-left: auto; display: flex; gap: 8px">
+        <button id="btnKeep" style="font-size: 13px; padding: 9px 14px">
+          📥 내 보관함에 담기
+        </button>
+        <button
+          class="ghost"
+          id="btnSave"
+          style="font-size: 13px; padding: 9px 13px"
+        >
+          내 컴퓨터에 저장
+        </button>
+        <button
+          class="ghost"
+          id="btnClose"
+          style="font-size: 15px; padding: 9px 12px"
+        >
+          ✕
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <!-- 좌: 컨트롤 -->
+      <div class="ctrl">
+        <div class="note">
+          이 카드의 주인공은 물체가 아니라 <b>내가 직접 가르친 AI</b>예요. 여러
+          번 써보면서 <b>어떤 특성이 있는지</b> 관찰해 적고, AI 그림 도구로 만든
+          캐릭터를 붙여 한 장의 카드로 제출하세요.
+        </div>
+
+        <div class="sec">
+          <div class="sec-h">
+            <span class="n">1</span><span class="t">캐릭터 정보</span>
+          </div>
+          <label class="fl">이름</label>
+          <!-- 이름 힌트 텍스트 스크립트 처리 -->
+          <input id="name" maxlength="20" />
+
+          <div class="sec-h" style="margin: 14px 0 6px">
+            <span class="t" style="font-size: 13px">내 AI의 특성</span
+            ><span class="cnt" id="tCnt">0개</span>
+          </div>
+          <p class="q">
+            틀은 <b>종류별로 하나씩</b>, 필요한 만큼 켜서 쓰세요. 켠 틀에 적은
+            내용은 모두 오른쪽 카드에 들어갑니다.
+          </p>
+          <div class="tpls" id="tpls"></div>
+          <div id="tEditor"></div>
+          <p class="guide">
+            이건 물체의 성격이 아니라,
+            <b>내 AI가 분류할 때 보이는 행동 특성</b>이에요. 빈칸을 누르면
+            예시가 떠요.
+          </p>
+        </div>
+
+        <div class="sec">
+          <div class="sec-h">
+            <span class="n">2</span><span class="t">캐릭터 이미지</span>
+          </div>
+          <p class="q">
+            외부 AI로 만들어 <b>다운로드한 이미지 파일</b>을 붙여요.
+          </p>
+          <button class="wide" id="btnImg">이미지 불러오기</button>
+        </div>
+
+        <div class="sec">
+          <div class="sec-h">
+            <span class="n">3</span><span class="t">학습 기록</span>
+          </div>
+          <!-- 단위 문자열 스크립트 처리 -->
+          <p class="q">
+            내가 가르친 <b>클래스 이름</b>과 <b id="sampleQ"></b>를 적어요. 카드
+            아래에 표시돼요.
+          </p>
+          <label class="fl">가르친 클래스 (쉼표로 구분)</label>
+          <!-- 부모 화면 데이터 참조 (미션 소재 제외) -->
+          <input
+            id="classes"
+            placeholder="예: 클래스 1, 클래스 2"
+            maxlength="60"
+          />
+          <div class="id2" style="margin-top: 12px">
+            <div style="flex: 1">
+              <label class="fl" id="sampleLabel"></label
+              ><input id="photos" type="number" min="0" max="9999" />
+            </div>
+            <div style="flex: 1">
+              <label class="fl">만든 사람</label
+              ><input id="maker" placeholder="예: 홍길동" maxlength="16" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 우: 카드 (내보내기 대상) -->
+      <div class="cardwrap">
+        <div id="card">
+          <div class="ch">
+            <div class="lbl">내가 가르친 AI</div>
+            <div class="trk" id="cTrk">— 트랙</div>
+          </div>
+          <div class="imgbox">
+            <canvas
+              id="cImg"
+              width="760"
+              height="532"
+              style="display: none"
+            ></canvas>
+            <div class="ph" id="cImgPh">
+              AI로 만든 캐릭터 이미지를<br />‘이미지 불러오기’로 붙여요
+            </div>
+            <div class="chips" id="cChips"></div>
+          </div>
+          <div class="cname" id="cName">이름을 입력하세요</div>
+          <div class="ctraits" id="cTraits"></div>
+
+          <div class="cstats">
+            <div class="st">
+              <div class="k">가르친 것</div>
+              <div class="v" id="cClasses">—</div>
+            </div>
+            <div class="st">
+              <div class="k" id="cSampleK"></div>
+              <div class="v" id="cPhotos"></div>
+            </div>
+          </div>
+          <div class="cfoot">
+            <div class="wm">EDUINO VISION AI</div>
+            <div class="made" id="cMade">만든 사람 · 날짜</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      (function () {
+        const SC = window.StudioCommon; /* 미션·이미지·줄바꿈 등 공통 유틸 (idea-board 와 공유) */
+        const $ = SC.$;
+        const esc = (s) => SC.esc(s);
+
+        /* 현재 트랙 정보 조회 */
+        const TRACK = SC.track(),
+          TR = SC.TRACKS[TRACK];
+        /* 미션 및 트랙 표시명 조회 */
+        const M = SC.scope("custom"),
+          MISSION = M.name;
+        const CHIP_COLORS = [
+          "#6aa6ff",
+          "#42e29b",
+          "#ffd36a",
+          "#42d6e0",
+          "#ff7a90",
+          "#c08cff",
+        ];
+
+        /* 트랙별 힌트 텍스트 기본값 세팅 */
+        const EG = {
+          image: {
+            name: "예: 눈썰미 좋은 판별기",
+            free: "예: 우리 AI는 밝은 곳에서는 잘 맞추는데, 어두우면 자꾸 틀려요.",
+          },
+          audio: {
+            name: "예: 귀 밝은 소리 판별기",
+            free: "예: 우리 AI는 또박또박 말하면 잘 알아듣는데, 빨리 말하면 자꾸 틀려요.",
+          },
+          pose: {
+            name: "예: 동작 척척 판별기",
+            free: "예: 우리 AI는 몸이 다 보이면 잘 맞추는데, 몸이 잘리면 자꾸 틀려요.",
+          },
+        }[TRACK];
+
+        $("missionTag").textContent = MISSION;
+        $("cTrk").textContent = TR.name + " 트랙";
+
+        /* 단위 문구 적용 */
+        $("sampleLabel").textContent =
+          TR.sample.label + " (" + TR.sample.unit + ")";
+        $("sampleQ").textContent = TR.sample.label + " 개수";
+        $("cSampleK").textContent = TR.sample.label;
+        $("photos").placeholder = TR.sample.ph;
+
+        /* 학습 데이터 정보 (부모 화면 참조) */
+        const pCls = SC.parentClasses(TR);
+        if (pCls.length) $("classes").value = pCls.join(", ");
+        const pCnt = SC.parentCount(TR);
+        if (pCnt) $("photos").value = pCnt;
+
+        /* 아이콘 인라인 정의 (DOM 렌더링 및 캡처용) */
+        const ICP = {
+          look: '<circle cx="10.6" cy="10.6" r="6.4"/><path d="m15.4 15.4 5 5"/>',
+          again:
+            '<path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.9 1 6.7 2.7L21 8"/><path d="M21 3v5h-5"/>',
+          write:
+            '<path d="M16.6 3.4a2.1 2.1 0 0 1 3 3L7.4 18.6 3 20l1.4-4.4Z"/><path d="m14.3 5.7 3 3"/>',
+          blank:
+            '<path d="M12.5 20H21"/><path d="M16.6 3.4a2.1 2.1 0 0 1 3 3L7.4 18.6 3 20l1.4-4.4Z"/>',
+          close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+        };
+        const ic = (n, size) =>
+          `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none"` +
+          ` stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICP[n]}</svg>`;
+
+        /* 특성 템플릿 목록 */
+        const T = [
+          {
+            ic: "look",
+            name: "잘하는 것 / 헷갈리는 것",
+            sub: "한 번만 써봤을 때",
+            parts: [
+              "우리 AI는 ",
+              { k: "a", ph: "잘 맞추는 것" },
+              { jo: "a" },
+              " 잘 맞춰요. 그런데 ",
+              { k: "b", ph: "헷갈릴 때" },
+              ".",
+            ],
+          },
+          {
+            ic: "again",
+            name: "바꿔봤더니 달라졌어요",
+            sub: "두 번 이상 가르쳤을 때",
+            parts: [
+              "처음엔 ",
+              { k: "a", ph: "안 되던 것" },
+              ". 그래서 ",
+              { k: "b", ph: "바꿔본 것" },
+              ". 그랬더니 ",
+              { k: "c", ph: "달라진 점" },
+              ".",
+            ],
+          },
+          { ic: "write", name: "자유롭게", sub: "내 마음대로", free: true },
+        ];
+        /* 트랙별 예시 문구 칩 */
+        const SUG_BY_TRACK = {
+          image: {
+            "0a": [
+              "밝은 곳에 있는 것",
+              "크게 찍은 것",
+              "정면으로 잘 보이게 든 것",
+            ],
+            "0b": [
+              "어두우면 헷갈려요",
+              "비슷한 색이면 틀려요",
+              "멀리 있으면 못 맞춰요",
+              "각도가 바뀌면 헷갈려요",
+              "배경이 바뀌면 틀려요",
+              "여러 개가 같이 나오면 헷갈려요",
+            ],
+            "1a": [
+              "어두우면 못 맞췄어요",
+              "각도를 바꾸면 자꾸 틀렸어요",
+              "자꾸 헷갈렸어요",
+            ],
+            "1b": [
+              "사진을 더 많이 모았어요",
+              "각도를 바꿔서 찍었어요",
+              "밝기를 바꿔서 찍었어요",
+              "배경을 바꿔서 찍었어요",
+              "학습 횟수를 늘렸어요",
+              "헷갈리는 사진을 지웠어요",
+            ],
+          },
+          audio: {
+            "0a": [
+              "또박또박 말한 것",
+              "조용한 곳에서 말한 것",
+              "평소 목소리로 말한 것",
+            ],
+            "0b": [
+              "작게 말하면 못 알아들어요",
+              "주변이 시끄러우면 틀려요",
+              "빨리 말하면 헷갈려요",
+              "소리가 비슷한 말이면 틀려요",
+              "마이크에서 멀면 못 맞춰요",
+              "다른 사람이 말하면 헷갈려요",
+            ],
+            "1a": [
+              "작게 말하면 못 맞췄어요",
+              "시끄러우면 자꾸 틀렸어요",
+              "자꾸 헷갈렸어요",
+            ],
+            "1b": [
+              "녹음을 더 많이 모았어요",
+              "조용한 곳에서 다시 녹음했어요",
+              "크기를 바꿔서 녹음했어요",
+              "빠르기를 바꿔서 녹음했어요",
+              "학습 횟수를 늘렸어요",
+              "잘못 녹음된 소리를 지웠어요",
+            ],
+          },
+          pose: {
+            "0a": [
+              "몸 전체가 보이게 한 자세",
+              "크게 움직인 자세",
+              "정면으로 선 자세",
+            ],
+            "0b": [
+              "몸이 화면에서 잘리면 틀려요",
+              "비슷한 자세면 헷갈려요",
+              "멀리 서면 못 맞춰요",
+              "옆으로 서면 헷갈려요",
+              "앉아 있으면 잘 못 맞춰요",
+              "여러 명이 나오면 헷갈려요",
+            ],
+            "1a": [
+              "몸이 잘리면 못 맞췄어요",
+              "옆으로 서면 자꾸 틀렸어요",
+              "자꾸 헷갈렸어요",
+            ],
+            "1b": [
+              "자세를 더 많이 모았어요",
+              "서는 위치를 바꿔서 찍었어요",
+              "몸 전체가 나오게 찍었어요",
+              "팔다리를 더 크게 움직였어요",
+              "학습 횟수를 늘렸어요",
+              "잘못 찍힌 자세를 지웠어요",
+            ],
+          },
+        };
+        const SUG = Object.assign(
+          {
+            "1c": [
+              "이제 거의 안 틀려요",
+              "훨씬 잘 맞춰요",
+              "조금 나아졌어요",
+              "아직도 가끔 헷갈려요",
+            ],
+          },
+          SUG_BY_TRACK[TRACK],
+        );
+        const CAP = 26; /* 빈칸 1개당 최대 글자 (카드 한 줄 폭 보호) */
+
+        const jong = (s) => {
+          const c = (s || "").trim().slice(-1).charCodeAt(0);
+          return (
+            !isNaN(c) && c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 !== 0
+          );
+        }; /* 종성 여부 */
+        const eul = (s) => (jong(s) ? "을" : "를");
+        const rago = (s) => (jong(s) ? "이라고" : "라고");
+        const taught = () =>
+          $("classes")
+            .value.split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+            .slice(0, 4);
+
+        /* 학습된 클래스 활용 동적 예시 문구 생성 */
+        const egName = () => {
+          const c = taught();
+          return c.length >= 2
+            ? "예: " + c[0] + " " + c[1] + " 판별기"
+            : EG.name;
+        };
+        const egFree = () => {
+          const c = taught();
+          return c.length >= 2
+            ? "예: 우리 AI는 " +
+                c[0] +
+                eul(c[0]) +
+                " 잘 맞추는데, " +
+                c[1] +
+                eul(c[1]) +
+                " 자꾸 틀려요."
+            : EG.free;
+        };
+        const syncNamePh = () => {
+          $("name").placeholder = egName();
+        };
+
+        function sugFor(t, k) {
+          const base = SUG[t + k] || [],
+            cl = taught();
+          if (t + k === "0a") return cl.concat(base);
+          if (t + k === "1a" && cl.length > 1)
+            return [
+              cl[0] + eul(cl[0]) + " 자꾸 " + cl[1] + rago(cl[1]) + " 했어요",
+            ].concat(base);
+          return base;
+        }
+
+        let blocks = [],
+          uid = 0,
+          stash = {};
+
+        $("tpls").innerHTML = T.map(
+          (t, i) =>
+            `<button class="tpl" data-t="${i}"><span class="n">✓</span><b>${ic(t.ic, 14)}${t.name}</b>${t.sub}</button>`,
+        ).join("");
+        $("tpls")
+          .querySelectorAll(".tpl")
+          .forEach((btn) =>
+            btn.addEventListener("click", () => {
+              const ti = +btn.dataset.t;
+              syncBlocks();
+              const cur = blocks.find((x) => x.t === ti);
+              if (cur) {
+                stash[ti] = cur;
+                blocks = blocks.filter((x) => x.t !== ti);
+              } else
+                blocks.push(stash[ti] || { id: ++uid, t: ti, v: {}, free: "" });
+              blocks.sort((a, b) => a.t - b.t);
+              build();
+            }),
+          );
+
+        function syncBlocks() {
+          /* 편집기 상태 동기화 */
+          document.querySelectorAll("#tEditor .blk").forEach((blk) => {
+            const bk = blocks.find((x) => x.id == blk.dataset.id);
+            if (!bk) return;
+            if (T[bk.t].free) bk.free = blk.querySelector(".free").value;
+            else {
+              bk.v = {};
+              blk
+                .querySelectorAll(".bl")
+                .forEach((b) => (bk.v[b.dataset.k] = b.textContent.trim()));
+            }
+          });
+        }
+
+        function cap(b) {
+          /* contenteditable 길이 제한 */
+          const t = b.textContent;
+          if (t.length <= CAP) return;
+          b.textContent = t.slice(0, CAP);
+          const r = document.createRange(),
+            s = getSelection();
+          r.selectNodeContents(b);
+          r.collapse(false);
+          s.removeAllRanges();
+          s.addRange(r);
+        }
+
+        function build() {
+          const box = $("tEditor");
+          if (!blocks.length) {
+            box.innerHTML =
+              '<div class="blk-empty">위에서 쓰고 싶은 틀을 눌러 켜세요</div>';
+            paintTraits();
+            return;
+          }
+          box.innerHTML = blocks
+            .map((bk) => {
+              const t = T[bk.t],
+                v = bk.v || {};
+              const inner = t.free
+                ? `<textarea class="free" maxlength="120" placeholder="${esc(egFree())}">${esc(bk.free || "")}</textarea>`
+                : '<div class="fill">' +
+                  t.parts
+                    .map((p) =>
+                      typeof p === "string"
+                        ? p
+                        : p.jo
+                          ? `<span data-jo="${p.jo}">를</span>`
+                          : `<span class="bl" contenteditable="true" data-k="${p.k}" data-ph="${esc(p.ph)}">${esc(v[p.k] || "")}</span>`,
+                    )
+                    .join("") +
+                  "</div>";
+              return `<div class="blk" data-id="${bk.id}">
+          <div class="blk-h">${ic(t.ic, 13)}<span>${t.name}</span><button class="del" data-id="${bk.id}" title="이 틀 끄기" aria-label="이 틀 끄기">${ic("close", 13)}</button></div>
+          ${inner}<div class="sug"></div>
+        </div>`;
+            })
+            .join("");
+          box.querySelectorAll(".del").forEach((b) =>
+            b.addEventListener("click", () => {
+              syncBlocks();
+              blocks = blocks.filter((x) => x.id != b.dataset.id);
+              build();
+            }),
+          );
+          box
+            .querySelectorAll(".free")
+            .forEach((f) => f.addEventListener("input", paintTraits));
+          box.querySelectorAll(".bl").forEach((b) => {
+            b.addEventListener("input", () => {
+              if (!b.textContent && b.innerHTML) b.innerHTML = ""; /* 내부 br 태그 정리 */
+              cap(b);
+              paintTraits();
+            });
+            b.addEventListener("keydown", (ev) => {
+              if (ev.key === "Enter") {
+                ev.preventDefault();
+                b.blur();
+              }
+            });
+            b.addEventListener("paste", (ev) => {
+              ev.preventDefault();
+              const t = (
+                (ev.clipboardData || window.clipboardData).getData("text") || ""
+              ).replace(/\s+/g, " ");
+              document.execCommand("insertText", false, t);
+            });
+            b.addEventListener("focus", () => showSug(b));
+            b.addEventListener("blur", () =>
+              setTimeout(() => {
+                const blk = b.closest(".blk");
+                if (blk && !blk.querySelector(".bl:focus"))
+                  blk.querySelector(".sug").classList.remove("on");
+              }, 150),
+            );
+          });
+          paintTraits();
+        }
+
+        function showSug(b) {
+          const blk = b.closest(".blk"),
+            bk = blocks.find((x) => x.id == blk.dataset.id),
+            s = blk.querySelector(".sug");
+          const list = bk ? sugFor(bk.t, b.dataset.k) : [];
+          s.innerHTML =
+            `<div class="sh">「${esc(b.dataset.ph)}」 예시 — 눌러서 넣기</div>` +
+            list.map((x) => `<button class="sgc">${esc(x)}</button>`).join("");
+          s.classList.toggle("on", list.length > 0);
+          s.querySelectorAll(".sgc").forEach((c) =>
+            c.addEventListener("mousedown", (ev) => {
+              ev.preventDefault();
+              b.textContent = c.textContent;
+              cap(b);
+              paintTraits();
+            }),
+          );
+        }
+
+        function sentence(blk, bk) {
+          const t = T[bk.t];
+          if (t.free) {
+            const v = (blk.querySelector(".free")?.value || "")
+              .trim()
+              .replace(/\s+/g, " ");
+            return v ? esc(v) : null;
+          }
+          const bl = [...blk.querySelectorAll(".bl")];
+          const val = (k) =>
+            (bl.find((x) => x.dataset.k === k)?.textContent || "").trim();
+          blk.querySelectorAll("[data-jo]").forEach((j) => {
+            j.textContent = eul(val(j.dataset.jo));
+          }); /* 조사 처리 */
+          if (!bl.some((x) => x.textContent.trim())) return null; /* 내용이 없을 경우 제외 */
+          return t.parts
+            .map((p) =>
+              typeof p === "string"
+                ? p
+                : p.jo
+                  ? eul(val(p.jo))
+                  : esc(val(p.k)) || "___",
+            )
+            .join("") /* 카드는 강조 없이 본문 톤 (강조는 왼쪽 빈칸에서만) */
+            .replace(/([.!?])\s*\./g, "$1"); /* 중복 마침표 제거 */
+        }
+
+        /* 카드 텍스트 렌더링 갱신 */
+        function syncName() {
+          $("cName").textContent =
+            $("name").value.trim() || "이름을 입력하세요";
+        }
+        function paintTraits() {
+          const out = [];
+          blocks.forEach((bk) => {
+            const blk = $("tEditor").querySelector(`.blk[data-id="${bk.id}"]`);
+            if (!blk) return;
+            const s = sentence(blk, bk);
+            if (s) out.push({ ic: T[bk.t].ic, s: s });
+          });
+          $("cTraits").innerHTML = out.length
+            ? out
+                .map(
+                  (o) =>
+                    `<div class="tline"><span class="ic">${ic(o.ic, 14)}</span><span class="tx">${o.s}</span></div>`,
+                )
+                .join("")
+            : `<div class="tline empty"><span class="ic">${ic("blank", 14)}</span><span class="tx">내 AI의 특성이 여기에 들어가요</span></div>`;
+          $("tpls")
+            .querySelectorAll(".tpl")
+            .forEach((b, i) =>
+              b.classList.toggle(
+                "on",
+                blocks.some((x) => x.t === i),
+              ),
+            );
+          $("tCnt").textContent = out.length + "개";
+          saveDraft(); /* 내용 변경 시 자동 저장 */
+        }
+        function syncClassesStat() {
+          const raw = $("classes")
+            .value.split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+          $("cClasses").textContent = raw.length ? raw.join(" · ") : "—";
+          /* 클래스 색상 오버레이 렌더링 */
+          $("cChips").innerHTML = raw
+            .map(
+              (n, i) =>
+                `<span class="chip"><i style="background:${CHIP_COLORS[i % CHIP_COLORS.length]}"></i>${n}</span>`,
+            )
+            .join("");
+        }
+        function syncPhotos() {
+          const n = parseInt($("photos").value, 10);
+          $("cPhotos").textContent =
+            (isFinite(n) && n >= 0 ? n : "—") + " " + TR.sample.unit;
+        }
+        function syncMade() {
+          const nm = $("maker").value.trim();
+          $("cMade").innerHTML =
+            (nm ? "<b>" + esc(nm) + "</b> · " : "") + SC.todayKo();
+        }
+        /* 작성 내용 로컬 스토리지 임시 저장 */
+        const DKEY = "vision_draft_card:" + M.key;
+        let ready = false;
+        let keeper; /* 보관·종료 흐름 (아래에서 SC.keeper 로 만든다) */
+        /* 실제 쓰기 · 특성 빈칸을 채울 때마다 돌면 밀리므로 묶어서 실행한다
+           이미지는 아직 보관소에서 오는 중일 수 있으니 다 온 뒤에만 건드린다 */
+        let imgsRestored = false;
+        const writeDraft = SC.debounce(() => {
+          syncBlocks(); /* 입력 내용 갱신 */
+          SC.draftKeep(
+            DKEY,
+            {
+              name: $("name").value,
+              classes: $("classes").value,
+              photos: $("photos").value,
+              maker: $("maker").value,
+              blocks: blocks,
+              stash: stash,
+            },
+            imgsRestored ? { img: imgData } : null,
+          );
+        }, 400);
+        function saveDraft() {
+          if (!ready) return;
+          keeper.markDirty(); /* 닫기 확인에 쓰이므로 즉시 표시한다 */
+          writeDraft();
+        }
+        function restoreDraft() {
+          const d = SC.draftLoad(DKEY);
+          if (d) {
+            $("name").value = d.name || "";
+            /* 입력되지 않은 기본 정보는 부모 데이터 유지 */
+            if (d.classes) $("classes").value = d.classes;
+            if (d.photos) $("photos").value = d.photos;
+            $("maker").value = d.maker || "";
+            if (Array.isArray(d.blocks) && d.blocks.length) {
+              blocks = d.blocks;
+              stash = d.stash || {};
+              uid = Math.max(
+                0,
+                ...blocks.map((b) => +b.id || 0),
+                ...Object.keys(stash).map((k) => +(stash[k] || {}).id || 0),
+              );
+            }
+          }
+          /* 이미지는 보관소(IndexedDB)에서 따로·늦게 온다
+             다 그려질 때까지 기다려야 imgsRestored 가 참이 된다 */
+          return SC.draftImage(DKEY, "img")
+            .then(
+              (src) =>
+                new Promise((done) => {
+                  if (!src) return done();
+                  const im = new Image();
+                  im.onload = () => {
+                    imgData = src;
+                    SC.coverDraw($("cImg"), im);
+                    showImg();
+                    done();
+                  };
+                  im.onerror = () => done();
+                  im.src = src;
+                }),
+            )
+            .then(() => {
+              imgsRestored = true;
+            });
+        }
+
+        $("name").addEventListener("input", () => {
+          syncName();
+          saveDraft();
+        });
+        $("classes").addEventListener("input", () => {
+          syncClassesStat();
+          syncNamePh();
+          saveDraft();
+        });
+        $("photos").addEventListener("input", () => {
+          syncPhotos();
+          saveDraft();
+        });
+        $("maker").addEventListener("input", () => {
+          syncMade();
+          saveDraft();
+        });
+
+        /* 카드 영역 비율 유지 (10:7) */
+        const sizeFrames = SC.autoFit("#card .imgbox", 0.7);
+
+        /* 캐릭터 이미지 파일 업로드 처리 */
+        let imgData = null;
+        function showImg() {
+          $("cImgPh").style.display = "none";
+          $("btnImg").textContent = "이미지 다시 불러오기";
+        }
+        $("btnImg").addEventListener("click", () =>
+          SC.pickImage((img) => {
+            SC.coverDraw($("cImg"), img);
+            imgData = $("cImg").toDataURL("image/jpeg", 0.8);
+            showImg();
+            saveDraft();
+          }),
+        );
+
+        /* 첫 화면 초기화 렌더링 */
+        restoreDraft();
+        syncName();
+        syncClassesStat();
+        syncNamePh();
+        syncPhotos();
+        syncMade();
+        if (!blocks.length) blocks.push({ id: ++uid, t: 0, v: {}, free: "" }); /* 기본 틀 활성화 */
+        build();
+        ready = true;
+
+        /* 카드 이미지 캡처 (html2canvas) */
+        const renderCard = () =>
+          SC.capture($("card"), {
+            fonts: [
+              '13px "Pretendard"',
+              '11px "JetBrains Mono"',
+              '11px "Pretendard"',
+            ],
+            beforeCapture: sizeFrames, /* 박스 높이 확정 (내보낸 PNG 배치 어긋남 방지) */
+            onclone: (doc) => {
+              doc
+                .querySelectorAll("#card .tline .tx")
+                .forEach((tx) => SC.prewrap(tx)); /* 명시적 줄바꿈 처리 */
+            },
+          });
+
+        /* 카드 이미지 파일 다운로드 */
+        $("btnSave").addEventListener("click", () =>
+          SC.savePng(
+            $("btnSave"),
+            renderCard,
+            () =>
+              `AI캐릭터카드_${$("name").value.trim() || MISSION}_${Date.now()}.png`,
+          ),
+        );
+
+        /* 미션함에 저장 (담기·종료 확인 흐름은 studio-common 이 맡는다) */
+        keeper = SC.keeper({
+          kind: "character",
+          title: "캐릭터 카드",
+          render: renderCard,
+          /* 담으려면 이름 + 특성 한 줄이나 이미지 중 하나가 있어야 한다 */
+          complete: () =>
+            !!$("name").value.trim() &&
+            ($("cTraits").querySelectorAll(".tline:not(.empty)").length > 0 ||
+              !!imgData),
+          hints: [
+            "캐릭터 이름 적기",
+            "특성 한 줄 또는 캐릭터 이미지 중 하나 채우기",
+          ],
+          meta: () => {
+            syncBlocks();
+            const traits = [];
+            blocks.forEach((bk) => {
+              const blk = $("tEditor").querySelector(`.blk[data-id="${bk.id}"]`);
+              if (!blk) return;
+              const line = sentence(blk, bk);
+              if (!line) return;
+              traits.push({
+                type: T[bk.t].name,
+                text: line.replace(/<[^>]+>/g, ""),
+                values: bk.v || {},
+                free: bk.free || "",
+              });
+            });
+            return {
+              name: $("name").value.trim(),
+              classes: $("classes").value.trim(),
+              photos: $("photos").value.trim(),
+              maker: $("maker").value.trim(),
+              traits: traits,
+              track: TR.name,
+              mission: MISSION,
+            };
+          },
+          isReady: () => ready,
+          beforeLeave: () => writeDraft.flush(), /* 밀린 임시저장 마무리 */
+        });
+
+        window.addEventListener("pagehide", () => writeDraft.flush());
+      })();
+    </script>
+  </body>
+</html>
