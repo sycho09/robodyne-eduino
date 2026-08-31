@@ -106,17 +106,10 @@
   .hero-band .mock-cap { color: rgba(255,255,255,.5); }
   .hero-band .mock { box-shadow: 0 24px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06); }
   /* 일반모드 특성 4칩 — 히어로 하단. 별도 섹션을 두지 않고 여기서 끝낸다. */
-  .traits { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; max-width: 540px; }
-  .traits .tr { display: block; font-size: 12.5px; line-height: 1.5; color: rgba(255,255,255,.6);
-    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12); border-radius: 12px; padding: 11px 14px; }
-  .traits .tr b { display: block; font-size: 13.5px; font-weight: 800; color: #fff; margin-bottom: 2px; }
-  .traits .tr.free { background: rgba(17,160,111,.14); border-color: rgba(52,211,153,.34); }
-  .traits .tr.free b { color: #6ee7b7; }
-  @media (max-width: 900px) { .traits { grid-template-columns: 1fr; max-width: none; } }
-  .aud-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
-  .aud-row .aud-lab { font-size: 12px; color: rgba(255,255,255,.5); font-weight: 600; }
-  .aud-row .aud { font-size: 12.5px; font-weight: 700; color: #fff; background: rgba(255,255,255,.07);
-    border: 1px solid rgba(255,255,255,.16); border-radius: 999px; padding: 5px 12px; }
+    .trust { display: flex; gap: 18px; flex-wrap: wrap; color: rgba(255,255,255,.62); font-size: 13px; margin-top: 14px; }
+  .trust b { color: #fff; }
+  .trust span { display: inline-flex; align-items: center; gap: 7px; }
+  .trust svg { width: 16px; height: 16px; color: #34d399; }
 
   /* ── 히어로 제품 목업 ── */
   .mock { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
@@ -200,10 +193,10 @@
 
   /* ── 푸터 ── */
   footer { border-top: 1px solid var(--line); margin-top: 56px; padding: 40px 0 32px; }
-  .foot { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px; }
-  .foot .col h4 { margin: 0 0 12px; font-size: 13px; font-weight: 800; color: var(--ink-3); letter-spacing: .03em; }
-  .foot .col a { display: block; font-size: 13.5px; color: var(--ink-2); padding: 4px 0; }
-  .foot .col a:hover { color: var(--primary); }
+  .foot { display: flex; align-items: flex-start; justify-content: space-between; gap: 28px; flex-wrap: wrap; }
+  .foot-links { display: flex; gap: 22px; flex-wrap: wrap; }
+  .foot-links a { font-size: 13.5px; font-weight: 600; color: var(--ink-2); }
+  .foot-links a:hover { color: var(--primary); }
   .foot .about { font-size: 13.5px; color: var(--ink-3); max-width: 280px; margin-top: 12px; }
   .foot-bot { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
     font-size: 12.5px; color: var(--ink-4); }
@@ -211,6 +204,7 @@
   /* ── 마감 디테일: 접근성·스크롤·모션 ── */
   .topbar { transition: box-shadow .2s, background .2s; }
   .topbar.scrolled { box-shadow: 0 6px 24px rgba(20,22,31,.07); background: rgba(246,247,251,.92); }
+    
   a:focus-visible, .btn:focus-visible, summary:focus-visible {
     outline: 2px solid var(--primary); outline-offset: 3px; border-radius: 8px; }
   .mock-cap { text-align: center; font-size: 12px; color: var(--ink-4); margin-top: 12px;
@@ -238,8 +232,6 @@
     .hero-band { border-radius: 22px; margin: 12px auto 4px; }
     .hero { grid-template-columns: 1fr; gap: 32px; padding: 40px 22px; }
     .hero .mock-wrap { max-width: 520px; margin: 0 auto; width: 100%; }
-    .foot { grid-template-columns: 1fr 1fr; }
-    .nav a.link { display: none; }
   }
   @media (max-width: 560px) {
     .hero h1 { font-size: 36px; } .head h2 { font-size: 26px; }
@@ -257,7 +249,6 @@
     <nav class="nav">
       <a class="link" href="#modules">코스</a>
       <a class="link" href="/platform/pricing.html">요금</a>
-      <a class="btn btn-primary" href="#modules">코스 둘러보기 →</a>
     </nav>
   </div>
 </header>
@@ -275,16 +266,13 @@
         <a class="btn btn-primary btn-lg" href="#modules">6개 코스 둘러보기 →</a>
         <a class="btn btn-ghost btn-lg" href="/platform/pricing.html">요금 보기</a>
       </div>
-      <!-- 일반모드 특성 4칩 — 코스형(커리큘럼) 학습이라는 점을 앞세운다 -->
-      <div class="traits">
-        <span class="tr"><b>4단계 커리큘럼</b>진단 → 이론 → 실습 ①②③ → 평가</span>
-        <span class="tr"><b>브라우저 완결</b>설치도 가입도 없이 링크만으로</span>
-        <span class="tr"><b>온디바이스</b>카메라·음성이 기기 밖으로 안 나감</span>
-        <span class="tr free"><b>실습 ②까지 무료</b>한 차시의 3분의 2를 결제 없이</span>
-      </div>
-      <div class="aud-row">
-        <span class="aud-lab">이런 분께</span>
-        <span class="aud">초등</span><span class="aud">중등</span><span class="aud">고교</span><span class="aud">대학</span><span class="aud">교사 연수</span>
+      <!-- CTA 바로 아래 자리 — "누르지 않을 이유"를 없애는 문장만 둔다(기능 소개 아님).
+           '한 차시의 2/3' 은 shared/access.js 의 "1차시 분량의 약 3분의 2" 와 같은 값이다. -->
+      <div class="trust">
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 설치·가입 불필요</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 데이터 외부전송 없음</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> PC·태블릿 지원</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <b>한 차시의 2/3 무료</b></span>
       </div>
     </div>
 
@@ -318,30 +306,32 @@
       <div class="kicker">Course Catalog</div>
       <h2>필요한 주제만 골라 쓰는 6개 코스</h2>
       <p>각 코스는 <b>초급(체험)·중급(제작)·심화(응용)</b>를 모두 담고 있어요. 단품으로도, 학급·학교 패키지로도 도입할 수 있습니다.</p>
-      <div class="cat-note"><span>✓ 지금은 6개 코스 모두 공개</span><span>✓ 설치·가입 없음</span><span>✓ 데이터 외부전송 없음</span></div>
+      <div class="cat-note"><span>✓ 지금은 6개 코스 모두 공개</span></div>
     </div>
     <div class="cat" id="catalog"></div>
 
     <div class="buyline">
-      <span><b>사전 진단 · 이론 학습 · 실습 ①② 는 무료</b>입니다. 실습 ③ 과 최종 평가는 수업용 라이선스에 들어 있어요.</span>
+      <span>학급·학교 단위 도입을 도와드려요.</span>
       <a class="btn btn-ghost" href="/platform/pricing.html">요금 · 도입 문의 →</a>
     </div>
   </div></section>
 </main>
 
 <footer><div class="wrap">
+  <!-- 목적지가 셋뿐이라 열을 나누지 않는다. 같은 페이지를 이름만 바꿔 여러 번 부르지 말 것. -->
   <div class="foot">
     <div class="col">
       <a class="brand" href="#top"><img class="logo-img" src="/platform/img/logo.webp" alt="Eduino AI" style="height:30px" /></a>
-      <p class="about">설치 없이 브라우저에서 만지며 배우는 체험형 AI 학습 플랫폼. 체험 → 제작 → 응용.</p>
+      <p class="about">설치 없이 브라우저에서 만지며 배우는 체험형 AI 학습 플랫폼.</p>
     </div>
-    <div class="col"><h4>제품</h4><a href="#modules">코스</a><a href="/platform/pricing.html">요금</a><a href="/modules/vision/index.html">비전 코스 체험</a></div>
-    <div class="col"><h4>학습</h4><a href="#modules">코스 카탈로그</a><a href="/platform/pricing.html">무료 범위 안내</a></div>
-    <div class="col"><h4>도입</h4><a href="/platform/pricing.html">요금 안내</a><a href="/platform/pricing.html">학교 라이선스</a><a href="#top">문의</a></div>
+    <nav class="foot-links">
+      <a href="#modules">코스</a>
+      <a href="/platform/pricing.html">요금</a>
+      <a href="/platform/pricing.html#contact">문의</a>
+    </nav>
   </div>
   <div class="foot-bot">
     <span>© 2026 Eduino AI · On-Device · No Install · Classroom-Ready</span>
-    <span>체험 → 제작 → 응용</span>
   </div>
 </div></footer>
 
