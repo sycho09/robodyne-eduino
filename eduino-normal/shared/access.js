@@ -7,7 +7,7 @@
 
   var PLAN_KEY = 'eduino_plan';           // 'free' | 'paid'
   var ENT_KEY = 'eduino_entitlements';    // { <scope>: true } — 코스 단품 구매용
-  var CTA_HREF = '/platform/index.html#plans';
+  var CTA_HREF = '/platform/pricing.html';
   var CTA_LABEL = '도입·구매 문의';
 
   /* ── 저장소 (읽기 실패해도 무료로 동작) ── */
