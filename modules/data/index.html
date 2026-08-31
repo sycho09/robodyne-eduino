@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta name="theme-color" content="#f6f7fb" />
+<title>데이터 · 예측 AI (AIoT) — Eduino AI</title>
+<meta name="description" content="데이터의 관계를 보고, 예측 AI를 만들고, 비슷한 것끼리 자동으로 무리 짓는 체험형 데이터 AI 수업." />
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<link rel="stylesheet" href="../shared/components.css" />
+<link rel="stylesheet" href="./style.css" />
+<link rel="stylesheet" href="../shared/course-dashboard.css" />
+<link rel="stylesheet" href="/shared/access.css" />
+</head>
+<body>
+<div id="practice-content">
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="back" href="/platform/index.html">← 플랫폼</a>
+    <img class="logo-mark-img" src="/platform/img/logo-mark.webp" alt="Eduino AI" />
+    <div>
+      <div class="logo-title">데이터 · 예측 <span>AI</span></div>
+      <div class="logo-tag">데이터로 보고·예측하고·묶는 AI · Eduino AI</div>
+    </div>
+    <div class="status" id="status">준비됨</div>
+  </div>
+</header>
+
+<main>
+  <div class="cintro">
+    <span class="eyebrow">데이터 · 예측 AI 코스</span>
+    <h1>데이터로 보고·예측하고·묶는 AI</h1>
+    <p>표·데이터로 AI의 핵심을 직접 만져 봐요. 두 값의 <b>관계</b>를 그래프로 읽고(초급), <b>예측 모델</b>을 학습시켜 다음 값을 맞히고(중급), 정답 없이 비슷한 것끼리 <b>무리 짓기</b>까지(심화) 해봅니다.</p>
+  </div>
+
+  <div class="steps">
+    <button class="step active" data-step="explore"><div class="n" data-ic="search"></div><div class="t"><b>관계 살펴보기</b><span>두 값이 함께 움직일까?</span></div></button>
+    <button class="step" data-step="predict"><div class="n" data-ic="trending-up"></div><div class="t"><b>예측해보기</b><span>다음 값을 맞히는 AI 만들기</span></div></button>
+    <button class="step" data-step="cluster"><div class="n" data-ic="palette"></div><div class="t"><b>무리 짓기</b><span>비슷한 것끼리 자동 분류</span></div></button>
+  </div>
+
+  <!-- 1. 관계 살펴보기 (4단계) -->
+  <section id="panel-explore" class="layout">
+    <div class="flow" style="grid-column: 1 / -1;">
+      <button class="fstep active" data-ex-step="1">
+        <span class="fn">1</span><span class="ft"><b>변수 조합</b><span>두 변수의 산점도 생성</span></span>
+      </button>
+      <span class="farrow">→</span>
+      <button class="fstep" data-ex-step="2">
+        <span class="fn">2</span><span class="ft"><b>수상한 발견</b><span>상관관계 확인 및 원인 추정</span></span>
+      </button>
+      <span class="farrow">→</span>
+      <button class="fstep" data-ex-step="3">
+        <span class="fn">3</span><span class="ft"><b>제3의 변수 통제</b><span>기온 슬라이더 조작</span></span>
+      </button>
+      <span class="farrow">→</span>
+      <button class="fstep" data-ex-step="4">
+        <span class="fn">4</span><span class="ft"><b>분석 리포트</b><span>상관 vs 인과 결론</span></span>
+      </button>
+    </div>
+
+    <!-- Step 1·2 는 카드 하나를 공유한다.
+         Step 1: 좌(변수 선택) / 우(산점도 1개) 좌우 분할.
+         Step 2: 좌측을 요약 바로 접고 카드 전폭에 소형 차트를 늘어놓는다. -->
+    <div id="ex-view-12" style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr; gap: 18px;">
+      <div class="card ex-card" id="ex-card-explore">
+
+        <div class="var-summary" id="ex-var-summary" hidden>
+          <span id="ex-var-summary-txt">준비된 데이터로 함정을 살펴봅니다.</span>
+          <button class="vs-back" id="btn-back-vars">다시 고르기</button>
+        </div>
+
+        <div class="ex-side" id="ex-side">
+          <h2>변수 조합 (Step 1)</h2>
+          <p class="sub">두 변수를 골라 산점도를 생성하세요.</p>
+          <div class="var-chips" id="var-chips">
+            <button data-var="temp">기온</button>
+            <button data-var="ice">아이스크림 판매량</button>
+            <button data-var="acc">물놀이 사고</button>
+            <button data-var="ac">에어컨 판매량</button>
+          </div>
+          <div class="var-status" id="var-status">변수를 2개 선택해주세요. (현재 0개 선택)</div>
+        </div>
+
+        <div class="ex-main">
+          <div class="ex-head" id="ex-head" hidden>
+            <h2 id="ex-chart-main-title">함정에 빠지기</h2>
+            <p class="sub" id="ex-chart-desc">두 데이터가 함께 움직이는지 확인합니다.</p>
+          </div>
+
+          <!-- 변수를 다 고르기 전 자리. 차트와 같은 비율·같은 상한이라 채워질 때 밀림이 없다. -->
+          <div class="chart-empty" id="ex-chart-empty">비교할 변수를 2개 선택해 주세요</div>
+
+          <div class="ex-charts p1" id="ex-charts-container" hidden>
+            <div class="chart-box" id="cbox-main">
+              <div class="chart-head">
+                <h3 id="cbox-main-title">기온 ↔ 아이스크림</h3>
+                <span class="axis-tag" id="ax-main">X축: 기온 / Y축: 아이스크림</span>
+              </div>
+              <div class="chart-wrap">
+                <canvas class="chart" id="c-explore-main" width="600" height="430"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-box" id="cbox-sub" hidden>
+              <div class="chart-head">
+                <h3 id="cbox-sub-title">기온 ↔ 물놀이 사고</h3>
+                <span class="axis-tag" id="ax-sub">X축: 기온 / Y축: 물놀이 사고</span>
+              </div>
+              <div class="chart-wrap">
+                <canvas class="chart" id="c-explore-sub" width="600" height="430"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-box" id="cbox-reveal" hidden>
+              <div class="chart-head">
+                <h3 id="cbox-reveal-title">아이스크림 ↔ 물놀이 사고</h3>
+                <span class="axis-tag" id="ax-reveal">X축: 아이스크림 판매량 / Y축: 물놀이 사고</span>
+              </div>
+              <div class="chart-wrap">
+                <canvas class="chart" id="c-explore-reveal" width="600" height="430"></canvas>
+              </div>
+            </div>
+
+            <!-- 차트가 아니라 결론 배너다. 그리드에서 한 줄을 통째로 쓴다. -->
+            <div class="chart-box answer-box" id="cbox-answer" hidden>
+              <div class="answer-content">
+                <h3>이 둘도 관계있어 보이죠?<br>그런데 진짜 원인은 따로 있어요</h3>
+                <button class="btn primary" id="btn-cause-infer">기온을 붙잡고 다시 확인하기</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ex-actions" id="ex-actions">
+            <button class="btn primary" id="btn-next-step1" hidden>관계 확인! 다음 데이터 보기</button>
+            <button class="btn primary" id="btn-reveal-pair" hidden>그럼 이 둘끼리는 어떨까?</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="ex-view-3" style="grid-column: 1 / -1; display: none;">
+       <div class="card" style="position:relative; overflow:hidden;">
+         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+           <div>
+             <h2>제3의 변수 통제 (기온 필터링)</h2>
+             <p class="sub" style="margin:0;">기온 범위를 좁혀서 '날씨 효과'를 통제해 봅니다.</p>
+           </div>
+           <button class="btn btn-sm" id="btn-confound-info"><span class="ic-inline" data-ic="lightbulb"></span> 교란변수란?</button>
+         </div>
+
+         <div class="ctrl-panel">
+            <div class="dp-slider">
+              <!-- 예전에는 양끝 설명 두 개가 나란히 붙박이로 떠 있어, 슬라이더를 움직여도
+                   지금 어느 상태인지 알 수 없었다. 지금 값은 아래 두 칸이 실시간으로 말한다. -->
+              <div class="dp-header">
+                <span class="dp-lab">기온 범위</span>
+                <span class="dp-now">
+                  <b id="temp-range">20 ~ 35°C</b>
+                  <span id="temp-kept">전체 데이터</span>
+                </span>
+              </div>
+              <div class="slider-wrap">
+                <input type="range" class="ui-slider" id="temp-slider" min="0" max="100" value="0">
+              </div>
+            </div>
+
+            <div class="dp-score">
+              <span class="dp-title" id="ctrl-score-title">아이스크림 ↔ 사고 상관 점수</span>
+              <b class="dp-val pos" id="ctrl-score">+0.95</b>
+              <span class="dp-cap" id="ctrl-caption">기온이 제각각이라 둘이 함께 움직입니다</span>
+            </div>
+         </div>
+         
+         <!-- 축 이름은 플롯 오른쪽 위 태그 하나로 모은다 (무리 짓기 탭이 쓰던 방식으로 통일). -->
+         <div class="chart-figure">
+            <div class="chart-head">
+              <span class="axis-tag" id="ax-ctrl">X축: 아이스크림 판매량 / Y축: 물놀이 사고</span>
+            </div>
+            <div class="chart-wrap">
+              <canvas class="chart" id="c-explore-ctrl" width="600" height="430"></canvas>
+            </div>
+         </div>
+         
+         <div style="text-align:center; margin-top:16px;">
+            <button class="btn primary" id="btn-ex-report" style="display:none;">실습 완료, 리포트 보기</button>
+         </div>
+
+         <!-- 교란변수 팝업 -->
+         <div id="modal-confound" class="modal-card" style="display:none;">
+           <div class="mc-head">
+             <span class="ic" data-ic="lightbulb"></span> <b>교란변수 (Confounding Variable)</b>
+             <button class="mc-close" id="btn-close-confound">×</button>
+           </div>
+           <div class="mc-body" id="mc-confound-body">
+             두 변수(아이스크림·물놀이 사고) 양쪽 모두에 영향을 주어, 마치 둘 사이에 인과관계가 있는 것처럼 착각하게 만드는 숨은 공통 원인(더위)을 뜻합니다.
+           </div>
+         </div>
+       </div>
+    </div>
+
+    <div id="ex-view-4" style="grid-column: 1 / -1; display: none;">
+      <div class="card">
+        <h2>인과 구조 분석 리포트</h2>
+        
+        <div class="causal-diagram">
+           <div class="node origin">
+             <span class="ic" data-ic="sun"></span>
+             <b>폭염 (숨은 진짜 원인)</b>
+           </div>
+           
+           <div class="arrows">
+             <svg width="240" height="50" viewBox="0 0 240 50">
+                <path d="M 120 0 Q 70 20 40 45" fill="none" stroke="#d98a1f" stroke-width="3" marker-end="url(#arrow-y)" />
+                <path d="M 120 0 Q 170 20 200 45" fill="none" stroke="#d98a1f" stroke-width="3" marker-end="url(#arrow-y)" />
+                <defs>
+                  <marker id="arrow-y" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#d98a1f" />
+                  </marker>
+                </defs>
+             </svg>
+           </div>
+           
+           <div class="nodes-row">
+             <div class="node result">
+               <b id="node-r1">아이스크림 판매량 증가</b>
+               <span id="node-r1-why">결과 1</span>
+             </div>
+             
+             <!-- 서브텍스트로 '우연의 일치'는 쓰지 않는다.
+                  이 상관은 우연이 아니라 폭염이라는 공통 원인이 만든 것이고,
+                  앞의 2·3단계가 통째로 그걸 가르친다. -->
+             <div class="fake-link">
+               <span>가짜 상관관계 <small>서로 원인이 아님</small></span>
+             </div>
+             
+             <div class="node result">
+               <b id="node-r2">물놀이 사고 발생 증가</b>
+               <span id="node-r2-why">결과 2 · 피서객 증가</span>
+             </div>
+           </div>
+        </div>
+        
+        <div class="insight-box">
+          <span class="ic" data-ic="building"></span>
+          <div class="in-txt">
+            <b>실무 마케팅 인사이트</b>
+            <p>데이터 도구(상관 분석)가 완벽한 결과를 출력해도, 그 결과가 '진짜 원인'인지 해석하고 숨은 교란 변수를 찾아내는 것은 기획자의 필수 역량입니다.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+
+  <!-- 2. 예측해보기 -->
+  <section id="panel-predict" class="layout" hidden>
+    <div class="card">
+      <h2>내 데이터로 AI 가르치기</h2>
+      <p class="sub">가로축 <b>X는 입력(원인)</b>, 세로축 <b>Y는 그때의 결과</b>예요. 예: X=공부 시간 → Y=시험 점수. 점을 찍으면 AI가 이 관계를 보고 ‘예측선’을 찾아갑니다.</p>
+      <div class="chart-head">
+        <span class="axis-tag">X축: 입력 X / Y축: 결과 Y</span>
+      </div>
+      <div class="chart-wrap"><canvas class="chart" id="c-predict" width="600" height="430"></canvas></div>
+      <div class="tip"><span class="ic-inline" data-ic="lightbulb"></span> 그래프를 클릭해 (입력, 결과) 점을 찍어보세요</div>
+      <div class="ctrl">
+        <button class="btn" id="pr-sample">예시 채우기</button>
+        <button class="btn" id="pr-clear">모두 지우기</button>
+        <span class="seg-label" style="margin-left:auto">선 모양</span>
+        <span class="seg" id="model-seg">
+          <button data-model="linear" class="on">직선</button>
+          <button data-model="curve">곡선</button>
+        </span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>AI 학습 &amp; 예측</h2>
+      <p class="sub">[AI 학습시키기]를 누르면 선이 점들에 맞춰 조금씩 움직여요. 그게 ‘학습’이에요.</p>
+      <div class="proc" id="pr-proc">
+        <div class="p"><b>1</b>점 찍기</div><div class="p"><b>2</b>선 모양</div><div class="p"><b>3</b>학습</div><div class="p"><b>4</b>예측</div>
+      </div>
+      <div class="say"><span class="ic" data-ic="bot"></span><span id="pr-say">그래프에 점을 2개 이상 찍어 주세요.</span></div>
+      <button class="btn primary block" id="pr-train" disabled>AI 학습시키기</button>
+      <div class="metrics">
+        <div class="m"><span>학습 횟수</span><b id="m-epoch">—</b></div>
+        <div class="m"><span>틀린 정도</span><b id="m-loss" style="color:var(--primary)">—</b></div>
+        <div class="m"><span>점 개수</span><b id="m-n">0</b></div>
+      </div>
+      <div class="eqn" id="pr-eqn" hidden>AI가 찾은 예측식 → <b id="pr-eqn-t"></b></div>
+      <div class="row"><span>입력값 X 넣어보기</span><input type="range" id="pr-x" min="0" max="10" step="0.1" value="5" disabled><span class="val" id="pr-xval">5.0</span></div>
+      <div class="pred-out">
+        <div class="po-lab">AI가 예측한 <b>결과값 Y</b></div>
+        <div class="big" id="pr-yhat">먼저 학습시켜 주세요</div>
+        <div class="po-note">입력 X일 때 나올 거라고 AI가 예상한 값이에요. <b>정확도가 아니에요!</b></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- 3. 무리 짓기 (고객 세그먼트 네이밍 4단계) -->
+  <section id="panel-cluster" class="layout" hidden>
+    <div class="flow" style="grid-column: 1 / -1;">
+      <button class="fstep active" data-cl-step="1">
+        <span class="fn">1</span><span class="ft"><b>고객 데이터</b><span>구매횟수와 금액 산점도</span></span>
+      </button>
+      <span class="farrow">→</span>
+      <button class="fstep" data-cl-step="2">
+        <span class="fn">2</span><span class="ft"><b>AI 군집화</b><span>K-means 분류 실행</span></span>
+      </button>
+      <span class="farrow">→</span>
+      <button class="fstep" data-cl-step="3">
+        <span class="fn">3</span><span class="ft"><b>세그먼트 네이밍</b><span>무리에 정체성 부여</span></span>
+      </button>
+      <span class="farrow">→</span>
+      <button class="fstep" data-cl-step="4">
+        <span class="fn">4</span><span class="ft"><b>의사결정</b><span>마케팅 예산 배분</span></span>
+      </button>
+    </div>
+
+    <!-- Step 1 & 2 View -->
+    <div id="cl-view-12" style="grid-column:1/-1; display:grid; grid-template-columns:1fr 340px; gap:20px; align-items:start;">
+      <div class="card cl-chart-card" style="margin:0;">
+        <div class="chart-head">
+          <h2>쇼핑몰 고객 40명 데이터</h2>
+          <span class="axis-tag">X축: 방문 횟수 / Y축: 결제 금액</span>
+        </div>
+        <div class="chart-wrap" style="height:430px;"><canvas class="chart" id="c-cluster" width="600" height="430"></canvas></div>
+      </div>
+
+      <!-- Step 1 조작 패널 — Step 2 의 진행 과정 패널과 같은 자리(오른쪽 기둥)를 쓴다.
+           차트 아래에 두면 조작부가 화면 밖으로 밀리고, 단계가 바뀔 때 차트가 위아래로 흔들린다. -->
+      <div id="cl-step1-ctrl" class="card cl-side" style="margin:0;">
+        <h2>무리 개수 정하기</h2>
+        <p class="sub">비슷한 고객끼리 몇 덩어리로 나눌지 고르고 실행합니다.</p>
+        <div class="k-pick">
+          <b>몇 개의 고객군(무리)으로 나눌까요?</b>
+          <span class="seg" id="k-seg">
+            <button data-k="2">2</button><button data-k="3" class="on">3</button><button data-k="4">4</button>
+          </span>
+        </div>
+        <button class="btn primary block" id="btn-run-cluster" style="margin-top:16px; padding:14px; font-size:15px;">AI 군집화 (K-means) 실행</button>
+      </div>
+
+      <!-- Step 2 Result View (Right Panel) -->
+      <div id="cl-step2-res" class="card cl-side" style="margin:0; display:none;">
+        <h2>군집화 진행 과정</h2>
+        <div class="proc" id="cl-proc" style="margin-bottom:16px;">
+          <div class="p"><b>1</b>중심점 놓기</div><div class="p"><b>2</b>거리 계산</div><div class="p"><b>3</b>무리 묶기</div>
+        </div>
+        <div class="metrics" style="grid-template-columns:1fr 1fr;">
+          <div class="m"><span>반복 횟수</span><b id="cl-it">—</b></div>
+          <div class="m"><span>바뀐 고객 수</span><b id="cl-changed">—</b></div>
+        </div>
+        
+        <div id="cl-groups-wrap" style="margin-top:20px; display:none;">
+          <h3 style="font-size:14px; color:var(--ink-2); margin-bottom:10px;">무리별 고객 수</h3>
+          <div class="groups" id="cl-groups" style="flex-direction:column;"></div>
+          <button class="btn primary block" id="btn-cl-naming" style="margin-top:20px;">세그먼트 네이밍하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 View (Naming) -->
+    <div id="cl-view-3" style="grid-column:1/-1; display:none;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
+        <div class="card" style="margin:0;">
+          <div class="chart-head">
+            <h2>무리 결과 (Step 1~2)</h2>
+            <span class="axis-tag">X축: 구매횟수 / Y축: 평균 구매금액</span>
+          </div>
+          <div class="chart-wrap" style="height:350px;"><canvas class="chart" id="c-cluster-res" width="600" height="430"></canvas></div>
+        </div>
+        
+        <div class="card" style="margin:0;">
+          <h2>세그먼트 네이밍 (Step 3)</h2>
+          <p class="sub" style="margin-bottom:20px;">각 무리의 특징(평균 방문/결제)을 보고 어울리는 고객군 이름을 지어주세요.</p>
+          <div id="segment-list" style="display:flex; flex-direction:column; gap:12px;">
+            <!-- Rendered via JS -->
+          </div>
+          <button class="btn primary block" id="btn-next-step4" style="margin-top:24px;" disabled>다음 단계로 (마케팅 의사결정)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 View (Decision) -->
+    <div id="cl-view-4" style="grid-column:1/-1; display:none;">
+      <div class="card" style="max-width:700px; margin:0 auto; background:var(--blue-soft); border:none;">
+        <div style="margin:0 0 4px; font-size:16px; font-weight:800; display:flex; align-items:center; gap:8px;"><span style="font-size:24px;"><span class="ic-inline" data-ic="target"></span></span> 마케팅 의사결정</div>
+        <p style="font-size:15px; color:var(--ink-2); margin-top:8px;">한정된 <b>'50% 할인 쿠폰'</b> 예산을 어느 무리에 집중 배정하시겠습니까?</p>
+        
+        <div id="decision-options" style="display:flex; gap:16px; margin:24px 0;">
+          <!-- Rendered via JS -->
+        </div>
+        
+        <textarea id="decision-reason" class="reason-input" placeholder="이 무리를 선택한 마케팅적 근거를 1문장으로 적어보세요."></textarea>
+      </div>
+
+      <div class="insight-box" style="max-width:700px; margin:24px auto 0;">
+        <span class="ic" data-ic="lightbulb"></span>
+        <div class="in-txt">
+          <b>학습 포인트</b>
+          <p>AI는 데이터를 잘게 쪼개는 기술(수학)만 제공할 뿐, 그 쪼개진 덩어리에 비즈니스적 의미를 부여하고 돈을 쓰는 결정은 온전히 마케터(인간)의 몫입니다.</p>
+        </div>
+      </div>
+      
+    </div>
+
+  </section>
+</main>
+</div>
+
+<script src="../shared/icons.js"></script>
+<script src="/shared/access.js"></script>
+<script src="./app.js"></script>
+<script src="../shared/course-dashboard.js"></script>
+<script src="./course-config.js"></script>
+</body>
+</html>
