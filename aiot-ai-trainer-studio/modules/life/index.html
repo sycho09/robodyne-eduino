@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta name="theme-color" content="#f6f7fb" />
+<title>생활 속 인식 AI — Eduino AI</title>
+<meta name="description" content="카메라로 QR·바코드를 읽고, 사진 속 글자를 인식(OCR)하는 체험형 생활 AI 수업 코스." />
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<link rel="stylesheet" href="../shared/components.css" />
+<link rel="stylesheet" href="./style.css" />
+<link rel="stylesheet" href="../shared/course-dashboard.css" />
+<link rel="stylesheet" href="/shared/access.css" />
+</head>
+<body>
+<div id="practice-content">
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="back" href="/platform/index.html">← 플랫폼</a>
+    <img class="logo-mark-img" src="/platform/img/logo-mark.webp" alt="Eduino AI" />
+    <div>
+      <div class="logo-title">생활 속 인식 <span>AI</span></div>
+      <div class="logo-tag">QR·바코드 + 글자 인식(OCR) · Eduino AI</div>
+    </div>
+    <div class="status" id="status">대기 중</div>
+  </div>
+</header>
+
+<main>
+  <div class="banner" id="banner"></div>
+
+  <div class="cintro">
+    <span class="eyebrow">생활 속 인식 AI 코스</span>
+    <h1>생활 속에서 만나는 AI</h1>
+    <p>카메라로 <b>QR·바코드를 읽고</b>(초급), 사진 속 <b>글자를 인식(OCR)</b>해 텍스트로 바꿔 보고(중급), <b>인식이 언제 실패하는지</b> 살펴 문서 처리 자동화까지 구현해 봅니다(심화).</p>
+  </div>
+
+  <div class="steps">
+    <button class="step active" data-step="scan"><div class="n">1</div><div class="t"><b>초급 · QR·바코드</b><span>코드를 비추면 바로 읽기</span></div></button>
+    <button class="step" data-step="ocr"><div class="n">2</div><div class="t"><b>중급 · 글자 인식(OCR)</b><span>사진 속 글자를 텍스트로</span></div></button>
+    <button class="step" data-step="limit"><div class="n" data-ic="briefcase"></div><div class="t"><b>인식 한계와 자동화</b><span>심화 · 실패 조건 분석부터 문서 처리 자동화까지</span></div></button>
+  </div>
+
+  <!-- 초급: QR·바코드 -->
+  <section id="panel-scan" class="layout">
+    <div class="card">
+      <h2>카메라 스캐너 <span class="cam-state" id="scan-state">대기</span></h2>
+      <p class="sub">QR 코드나 바코드를 가운데 영역에 비추면 자동으로 읽어요.</p>
+      <div class="stage">
+        <video id="v-scan" playsinline muted></video>
+        <canvas id="c-scan"></canvas>
+        <div class="scan-frame" id="scan-frame" style="display:none"></div>
+        <div class="ph" id="ph-scan"><span class="ic-inline" data-ic="camera"></span> [카메라 켜기]를 누르고<br>QR·바코드를 비춰주세요</div>
+      </div>
+      <div class="cam-ctrl">
+        <button class="btn primary lg" id="scan-cam">카메라 켜기</button>
+        <button class="btn lg" id="scan-stop" disabled>중지</button>
+        <a class="btn lg" href="test-sheet.html" target="_blank" rel="noopener"><span class="ic-inline" data-ic="printer"></span> 실습용 코드 인쇄</a>
+      </div>
+    </div>
+    <div class="card">
+      <h2>인식 결과</h2>
+      <p class="sub">읽은 코드가 아래에 쌓입니다. 링크면 눌러서 열 수 있어요.</p>
+      <div class="scan-latest idle" id="scan-latest">아직 읽은 코드가 없어요</div>
+      <div class="codes-head">스캔 기록 <span class="cnt" id="scan-count">0개</span></div>
+      <div class="codes" id="codes"><div class="empty">코드를 비추면 여기에 기록돼요.</div></div>
+    </div>
+
+  </section>
+
+  <!-- 중급: OCR -->
+  <section id="panel-ocr" class="layout" hidden>
+    <div class="card">
+      <h2>글자 촬영 <span class="cam-state" id="ocr-state">대기</span></h2>
+      <p class="sub">글자가 또렷하게 보이게 비추고 [촬영 &amp; 인식]을 누르세요.</p>
+      <div class="stage">
+        <video id="v-ocr" playsinline muted></video>
+        <canvas id="c-ocr" style="display:none"></canvas>
+        <div class="ocr-frame" id="ocr-frame" style="display:none"><span>이 안에 글자를 맞춰주세요</span></div>
+        <div class="ph" id="ph-ocr"><span class="ic-inline" data-ic="camera"></span> [카메라 켜기] 후<br>책·종이의 글자를 비춰주세요</div>
+      </div>
+      <div class="cam-ctrl">
+        <button class="btn primary lg" id="ocr-cam">카메라 켜기</button>
+        <button class="btn lg" id="ocr-shot" disabled>촬영 &amp; 인식</button>
+        <button class="btn lg" id="ocr-retake" disabled>다시</button>
+      </div>
+      <div class="cam-ctrl" style="margin-top:10px">
+        <span style="font-size:13px;color:var(--ink-3);align-self:center;font-weight:600">언어</span>
+        <span class="seg" id="lang-seg">
+          <button data-lang="kor+eng" class="on">한국어+영어</button>
+          <button data-lang="eng">영어</button>
+        </span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>인식된 글자</h2>
+      <p class="sub">결과를 직접 고치고 <b>[교정 학습]</b>을 누르면, AI가 기억해 다음부터 자동으로 고쳐줘요.</p>
+      <div class="ocr-progress" id="ocr-progress" hidden>
+        <div class="ocr-bar"><i id="ocr-fill"></i></div>
+        <div class="lab" id="ocr-plab">준비 중…</div>
+      </div>
+      <textarea class="ocr-text" id="ocr-out" placeholder="촬영하면 인식된 글자가 여기 표시됩니다. (직접 수정 가능)"></textarea>
+      <div class="ocr-meta" id="ocr-meta"></div>
+      <div class="learn-row">
+        <button class="btn" id="ocr-learn" disabled>✓ 이 교정 학습하기</button>
+        <span class="learn-hint" id="ocr-learn-hint">결과를 고치면 학습할 수 있어요</span>
+      </div>
+      <div class="learned-head">AI가 배운 교정 <b id="ocr-count">0</b>개 <button class="btn-x" id="ocr-clearlearn" hidden>전체 초기화</button></div>
+      <div class="chips" id="ocr-chips"><div class="chip-empty">아직 배운 교정이 없어요. 결과를 고치고 [교정 학습]을 눌러보세요.</div></div>
+    </div>
+
+  </section>
+
+  <!-- 3. 고급-응용: 인식 한계 테스트 -->
+  <section id="panel-limit" hidden>
+    <div class="flow" id="flow-limit">
+      <button class="fstep active" data-lw="1"><span class="fn">1</span><span class="ft"><b>문서 촬영</b><span>카메라로 텍스트 캡처</span></span></button>
+      <span class="farrow">→</span>
+      <button class="fstep" data-lw="2"><span class="fn">2</span><span class="ft"><b>한계 실험</b><span>악조건에서의 인식 실패</span></span></button>
+      <span class="farrow">→</span>
+      <button class="fstep" data-lw="3"><span class="fn">3</span><span class="ft"><b>오류 보정</b><span>전처리 적용 후 재인식</span></span></button>
+      <span class="farrow">→</span>
+      <button class="fstep" data-lw="4"><span class="fn">4</span><span class="ft"><b>추출 완료</b><span>텍스트 전문 확인</span></span></button>
+    </div>
+
+    <!-- Step 1: 문서 촬영 -->
+    <div class="layout lstep" data-lw="1" style="margin-top:16px;">
+      <div class="card">
+        <h2>문서 촬영 <span class="cam-state" id="limit-state">대기</span></h2>
+        <p class="sub">오류 보정 알고리즘을 테스트할 글자를 촬영해주세요.</p>
+        <div class="stage">
+          <video id="v-limit" playsinline muted></video>
+          <canvas id="c-limit" style="display:none"></canvas>
+          <div class="ph" id="ph-limit"><span class="ic-inline" data-ic="camera"></span> [카메라 켜기] 후<br>책·종이의 글자를 꽉 차게 비춰주세요</div>
+        </div>
+        <div class="cam-ctrl">
+          <button class="btn primary lg" id="limit-cam">카메라 켜기</button>
+          <button class="btn lg" id="limit-shot" disabled>촬영 후 실험하기</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>실험 준비</h2>
+        <p class="sub">문서를 촬영하면 다음 단계로 넘어갑니다.</p>
+        <div class="scan-latest idle" style="display:flex; height:100%; align-items:center; justify-content:center; color:var(--ink-3);">
+          좌측 카메라로 글자를 촬영해 주세요.
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: 조건별 인식 실험 (한계 실험) -->
+    <div class="layout lstep" data-lw="2" style="margin-top:16px;" hidden>
+      <div class="card">
+        <h2>환경 조건 선택</h2>
+        <p class="sub">다양한 환경 조건 탭을 눌러 이미지가 어떻게 무너지는지 확인하세요.</p>
+        <div class="lm-tabs" id="lm-tabs" style="margin-bottom: 16px;">
+          <div class="lm-tab active" data-env="orig">
+            <span class="lm-tab-icon"><span class="ic-inline" data-ic="file-text"></span></span><span class="lm-tab-name">원본</span>
+          </div>
+          <div class="lm-tab" data-env="hide">
+            <span class="lm-tab-icon"><span class="ic-inline" data-ic="scissors"></span></span><span class="lm-tab-name">일부 가림</span>
+          </div>
+          <div class="lm-tab" data-env="crumple">
+            <span class="lm-tab-icon"><span class="ic-inline" data-ic="newspaper"></span></span><span class="lm-tab-name">구겨진 종이</span>
+          </div>
+        </div>
+        <div class="lm-img-box">
+          <canvas id="lm-test-cv" style="width:100%; height:auto; background:#000; border-radius:8px; display:block;"></canvas>
+          <div class="lm-img-cap" id="lm-img-cap">조건 적용됨</div>
+        </div>
+      </div>
+      <div class="card">
+        <h2 id="lm-reason-title">결과 대기 중...</h2>
+        <div class="lm-reason-desc" id="lm-reason-desc" style="margin-bottom: 24px; color:var(--ink-2); line-height:1.6;">좌측에서 조건을 선택해주세요.</div>
+        
+        <div class="lm-res-box" id="lm-res-box" style="margin-bottom: 24px;">
+          <div class="lm-res-msg" id="lm-res-msg">인식 결과 대기</div>
+          <div class="lm-res-sub" id="lm-res-sub">읽은 글자가 여기에 표시됩니다.</div>
+        </div>
+        
+        <div style="margin-top:auto;">
+          <button class="btn primary lg block" style="width:100%;" onclick="goToLmStep(3)">전처리로 오류 보정하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: 오류 보정 -->
+    <div class="layout lstep" data-lw="3" style="margin-top:16px;" hidden>
+      <div class="card">
+        <h2>훼손된 원본</h2>
+        <p class="sub">이전 단계에서 적용된 극한의 노이즈 조건입니다.</p>
+        <canvas id="lm-bad-cv" style="width:100%; height:auto; background:#000; border-radius:8px; opacity:0.8; display:block; margin-top:16px;"></canvas>
+      </div>
+      <div class="card">
+        <h2>전처리(오츠 이진화) 완료</h2>
+        <p class="sub">픽셀 단위로 글자와 배경을 분리하여 이미지를 복원했습니다.</p>
+        <canvas id="lm-good-cv" style="width:100%; height:auto; background:#000; border-radius:8px; display:block; margin-top:16px;"></canvas>
+        
+        <div class="lm-prog-wrap" style="margin-top:24px;">
+          <div class="lm-prog-bar-bg"><div class="lm-prog-bar" id="lm-prog-bar"></div></div>
+          <div class="lm-prog-text" id="lm-prog-text">대기 중...</div>
+        </div>
+        
+        <div style="margin-top:auto; padding-top:16px;">
+          <button class="btn primary lg block" id="lm-batch-btn" style="width:100%;" onclick="startLmBatch()">보정 후 다시 읽기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: 자동화 완료 -->
+    <div class="layout lstep" data-lw="4" style="margin-top:16px;" hidden>
+      <div class="card">
+        <h2>전처리(오츠 이진화) 완료</h2>
+        <p class="sub">복원된 이미지를 바탕으로 텍스트 추출을 완료했습니다.</p>
+        <canvas id="lm-good-cv-2" style="width:100%; height:auto; background:#000; border-radius:8px; display:block; margin-top:16px;"></canvas>
+      </div>
+      <div class="card">
+        <h2>추출 완료</h2>
+        <p class="sub">최종 텍스트 결과입니다.</p>
+        
+        <textarea class="ocr-text" id="lm-final-text" readonly style="height:140px; margin-top:16px;" placeholder="추출된 텍스트가 여기에 표시됩니다."></textarea>
+
+        <div class="row" style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:16px; margin-top:auto;">
+          <div style="color:#166534; font-size:14px; font-weight:600;"><span class="ic-inline" data-ic="lightbulb"></span> 실무 활용 팁</div>
+          <div style="color:#15803d; font-size:14px; margin-left:12px; margin-top:4px;">이렇게 노이즈를 제거하고 글자를 뚜렷하게 분리해내는 전처리 과정을 거치면, 명함 관리, 물류 송장 처리, 문서 자동 스캔 등 수많은 문서 업무를 흐린 조건에서도 정확하게 자동화할 수 있습니다.</div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+</main>
+</div>
+
+<script src="../shared/icons.js"></script>
+<script src="/shared/access.js"></script>
+<script src="./app.js"></script>
+<script src="./advanced.js"></script>
+<script src="../shared/course-dashboard.js"></script>
+<script src="./course-config.js"></script>
+</body>
+</html>

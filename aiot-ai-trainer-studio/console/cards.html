@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta name="theme-color" content="#0a0b12" />
+<title>VISION STUDIO · 카드 캐러셀</title>
+<meta name="description" content="비전 스튜디오 콘솔 — 게임팩 카드를 넘겨 스테이지를 고르고 바로 시작합니다." />
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<!-- 공통 셸(항목 데이터·인트로·HUD·세션·사운드·진행)은 console/shared.js 하나에서 관리 -->
+<script src="/console/shared.js"></script>
+
+<style>
+  /* ══════ C안 · 예전 게임팩 캐러셀 복원 (허브 안으로 통합) ══════ */
+  body { height:100vh; overflow:hidden; }
+
+  .stage { position:relative; z-index:5; flex:1; display:flex; flex-direction:column; align-items:center; min-height:0; }
+
+  /* 트랙 탭 — 마크업·기본 스타일은 shared.js (.v-tabs/.v-tab) 단일 소스, 여기서는 크기만 줄인다 */
+  .topbar { display:flex; align-items:center; gap:14px; flex-wrap:wrap; justify-content:center; margin-bottom:2px; }
+  .v-tab { padding:9px 16px; font-size:13px; }
+  .v-tab .tno { font-size:10.5px; }
+
+  .stage-title { font-size:26px; font-weight:800; letter-spacing:-.02em; margin:12px 0 2px;
+    text-shadow:0 2px 26px var(--accGlow, rgba(59,134,255,.4)); }
+  .stage-title b { color:var(--acc,#6aa6ff); }
+
+  /* ── 게임팩 캐러셀 ── */
+  /* 화면 밖으로 밀려난(보이지 않는) 카드가 가로 스크롤을 만들지 않도록 잘라낸다.
+     overflow:clip + clip-margin 이라 중앙 카드의 그림자는 그대로 살아 있다. */
+  .carousel { position:relative; width:100%; flex:1; min-height:0; overflow:clip; overflow-clip-margin:56px; }
+  .track { position:absolute; inset:0; }
+  /* 카드 크기는 남은 세로 공간에 맞춘다 — 제목/하단 UI를 덮지 않게 */
+  .pack { position:absolute; top:50%; left:50%; height:min(94%,560px); width:auto; max-width:76vw; aspect-ratio:3/4;
+    transform:translate(calc(-50% + var(--off,0) * var(--gap,230px)), -50%) scale(var(--sc,.8));
+    opacity:var(--op,0); z-index:var(--z,1);
+    transition:transform .45s cubic-bezier(.2,.7,.2,1), opacity .45s;
+    border:0; padding:0; background:none; pointer-events:var(--pe,none); }
+  .pack-inner { position:relative; width:100%; height:100%; border-radius:18px; overflow:hidden;
+    box-shadow:0 30px 80px rgba(0,0,0,.6); transition:box-shadow .4s; }
+  .pack.center { cursor:pointer; }
+  .pack.center .pack-inner { box-shadow:0 40px 110px rgba(0,0,0,.72); }
+  .pack.center:hover .pack-inner { box-shadow:0 46px 120px rgba(0,0,0,.78); }
+  .pack-art { position:absolute; inset:0;
+    background:radial-gradient(120% 70% at 30% 12%, var(--c1), transparent 60%), linear-gradient(165deg, var(--c2), #0c1120); }
+  .pack-art::after { content:''; position:absolute; inset:0;
+    background-image:radial-gradient(rgba(255,255,255,.5) 1px,transparent 1px); background-size:18px 18px; opacity:.06; }
+  .pack-thumb { position:absolute; inset:0; z-index:1; width:100%; height:100%; object-fit:cover; }
+  .pack-scrim { position:absolute; inset:0; z-index:2;
+    background:linear-gradient(180deg, rgba(8,9,15,.15) 28%, rgba(8,9,15,.5) 58%, rgba(8,9,15,.92) 100%); }
+  .pack-body { position:absolute; inset:0; z-index:3; padding:22px; display:flex; flex-direction:column; }
+  .pack-no { font-family:var(--mono); font-size:13px; font-weight:700; color:rgba(255,255,255,.5); }
+  .pack-ic { font-size:66px; line-height:1; margin:auto; color:#fff; display:grid; place-items:center;
+    filter:drop-shadow(0 6px 18px rgba(0,0,0,.55)); }
+  /* 아이콘은 포스터가 없을 때만 쓰는 폴백 — 이미지 위에 겹쳐 두지 않는다 */
+  .pack.has-thumb .pack-ic { display:none; }
+  .pack-name { font-size:23px; font-weight:800; letter-spacing:-.02em; color:#fff; text-shadow:0 2px 12px rgba(0,0,0,.6); }
+  .pack-badge { font-family:var(--mono); font-size:10.5px; font-weight:700; color:#fff; opacity:.85; margin-top:4px; }
+  /* 완료 마크는 텍스트 없이 조용한 체크 배지 하나 — 포스터를 덜 가리고 축소 카드에서도 인지된다 */
+  .pack-stamp { position:absolute; z-index:4; top:14px; right:14px; display:none; place-items:center;
+    width:26px; height:26px; border-radius:50%; font-size:14px; font-weight:800; line-height:1;
+    color:#06210f; background:var(--green);
+    box-shadow:0 4px 12px rgba(0,0,0,.4), 0 0 0 3px rgba(66,226,155,.22); }
+  body.show-progress .pack.done .pack-stamp { display:grid; }
+
+  /* 캐러셀 하단 통합 브랜딩 */
+  .cbrand { display:flex; align-items:center; justify-content:center; gap:9px; margin-top:6px;
+    font-size:19px; font-weight:800; letter-spacing:.01em; color:rgba(255,255,255,.55); }
+  .cbrand img { height:18px; opacity:.85; }
+  .cbrand b { color:#f0473a; }
+
+  .arrow { position:absolute; top:50%; transform:translateY(-50%); z-index:8; width:auto; height:auto;
+    padding:14px; border:0; background:none; color:rgba(255,255,255,.45); font-size:46px; line-height:0;
+    font-weight:300; transition:color .15s, transform .15s; }
+  .arrow:hover { color:#fff; }
+  .arrow.left { left:max(6px, 2vw); } .arrow.left:hover { transform:translateY(-50%) translateX(-3px); }
+  .arrow.right { right:max(6px, 2vw); } .arrow.right:hover { transform:translateY(-50%) translateX(3px); }
+
+  /* ── 하단 정보 + 입장 ── */
+  .foot { position:relative; z-index:6; flex:none; display:flex; flex-direction:column; align-items:center;
+    gap:10px; padding:6px 20px 18px; }
+  .infobar { display:inline-flex; align-items:center; gap:10px; font-size:13.5px; }
+  .infobar .ib-tag { font-family:var(--mono); font-size:11px; font-weight:700; color:var(--acc,#6aa6ff); letter-spacing:.04em; }
+  .infobar .nm { font-weight:800; }
+  .infobar .tg { color:var(--ink-3); font-family:var(--mono); font-size:11.5px; }
+  .enter { display:inline-flex; align-items:center; gap:9px; font-size:18px; font-weight:800; letter-spacing:.01em;
+    color:#fff; padding:6px 4px; border:0; background:none; transition:gap .15s; }
+  .enter:hover { gap:13px; }
+  .enter .ar { color:var(--acc,#6aa6ff); font-weight:400; font-size:20px; }
+  .dots { display:flex; gap:7px; }
+  .dots i { width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.22); transition:.2s; cursor:pointer; }
+  .dots i.done { background:var(--green); }                          /* 완료한 스테이지 — 트랙 진도 한눈에 */
+  .dots i.on { background:#fff; width:20px; border-radius:99px; }    /* 현재 위치는 흰색 우선 */
+  .legend { font-size:11.5px; color:var(--ink-3); margin-top:2px; }
+  .legend kbd { font-family:var(--mono); font-size:10.5px; color:var(--ink); background:rgba(255,255,255,.07);
+    border:1px solid var(--line-2); border-radius:5px; padding:2px 6px; }
+
+  @media (max-width:560px) {
+    .v-tab { padding:8px 11px; font-size:12px; }
+    .stage-title { font-size:20px; }
+    .arrow { padding:8px; font-size:34px; }
+    .enter { font-size:15px; }
+    .cbrand { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="v-boot" id="vboot"></div>
+<div class="v-amb" id="vamb"></div>
+<div class="v-scan"></div>
+
+<header id="vhud"></header>
+
+<main class="stage">
+  <!-- 탭 내용은 VStudio.tabs() 가 TRACKS 에서 그린다 (라벨·개수 복붙 금지) -->
+  <div class="topbar">
+    <div id="tabs"></div>
+  </div>
+
+  <h1 class="stage-title" id="title">스테이지를 <b>골라 입장</b>하세요</h1>
+
+  <div class="carousel">
+    <button class="arrow left" id="prev" aria-label="이전">‹</button>
+    <div class="track" id="packs"></div>
+    <button class="arrow right" id="next" aria-label="다음">›</button>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="infobar" id="infobar"></div>
+  <button class="enter" id="enter">입장하기 <span class="ar">→</span></button>
+  <div class="dots" id="dots"></div>
+  <div class="legend"><kbd>←</kbd> <kbd>→</kbd> 넘기기 · <kbd>⏎</kbd> 입장 · <kbd>↑</kbd><kbd>↓</kbd> 트랙 · <kbd>ESC</kbd> 홈</div>
+  <div class="cbrand"><img src="/platform/img/logo-mark.webp" alt="" />Eduino <b>AI</b></div>
+</footer>
+
+<script src="/stages/core/ui/icons.js"></script>
+<script src="/stages/core/session.js"></script>
+<script src="/stages/admin/cert.js"></script>
+<script src="/stages/submission/board.js"></script>
+<script>
+(function () {
+  VStudio.claim('cards');   /* 실습 화면에서 /studio.html 로 돌아와도 이 안으로 온다 */
+  VStudio.guard();
+  VStudio.hud();
+
+  const { TRACKS, progress, sound } = VStudio;
+  const packsEl = document.getElementById('packs');
+  const dotsEl  = document.getElementById('dots');
+  const tabsEl  = VStudio.tabs(document.getElementById('tabs'));
+  let track = VStudio.initTrack(), cur = 0, packs = [], dots = [];
+
+  function items() { return TRACKS[track].items; }
+  /* 좁은 화면에서는 중앙 카드만 — 양옆 카드가 화면 밖으로 새는 것을 원천 차단 */
+  function solo() { return window.innerWidth < 640; }
+  /* 양옆 카드(0.82배로 축소됨)의 바깥 끝이 화면 안에 들어오는 최대 간격 */
+  function gap() {
+    const pw = (packs[0] && packs[0].offsetWidth) || 300;
+    const fit = (window.innerWidth / 2 - (pw * 0.82) / 2 - 8) / 2;
+    return Math.max(60, Math.min(pw * 0.95, fit));
+  }
+
+  function build(snd) {
+    const t = TRACKS[track];
+    VStudio.paintTrack(t);
+    VStudio.syncTabs(tabsEl, track);
+    document.getElementById('title').innerHTML = track === 'explore'
+      ? '스테이지를 <b>골라 입장</b>하세요'
+      : '만들 <b>미션</b>을 골라 시작하세요';
+
+    packsEl.innerHTML = t.items.map((s, i) => `
+      <button class="pack" data-i="${i}" data-thumbhost style="--c1:${s.c1};--c2:${s.c2}">
+        <div class="pack-inner">
+          <div class="pack-art"></div>
+          <img class="pack-thumb" data-base="/platform/img/${t.thumb}-${s.key}" alt="" decoding="async" />
+          <div class="pack-scrim"></div>
+          <span class="pack-stamp" aria-label="체험 완료">✓</span>
+          <div class="pack-body">
+            <div class="pack-no">${t.unit} ${String(i + 1).padStart(2, '0')}</div>
+            <div class="pack-ic"><i data-ic="${s.ic}"></i></div>
+            <div class="pack-name">${s.name}</div>
+            <div class="pack-badge">${s.badge}</div>
+          </div>
+        </div>
+      </button>`).join('');
+
+    packs = [...packsEl.querySelectorAll('.pack')];
+    packs.forEach((p, i) => {
+      p.classList.toggle('done', progress.has(t.items[i].key));
+      p.addEventListener('click', () => { i === cur ? enter() : to(i); });
+    });
+    if (window.paintIcons) window.paintIcons(packsEl);
+    VStudio.thumbs(packsEl, 'has-thumb');
+
+    dotsEl.innerHTML = t.items.map((s, i) => `<i data-i="${i}"${progress.has(s.key) ? ' class="done"' : ''}></i>`).join('');
+    dots = [...dotsEl.querySelectorAll('i')];
+    dots.forEach((d, i) => d.addEventListener('click', () => to(i)));
+
+    cur = Math.min(cur, t.items.length - 1);
+    render();
+    VStudio.showProgress();
+    if (snd) sound.tab();
+  }
+
+  function render() {
+    const t = TRACKS[track], g = gap(), one = solo();
+    packs.forEach((p, i) => {
+      const off = i - cur, a = Math.abs(off);
+      const shown = one ? 0 : Math.max(-2, Math.min(2, off));  /* 화면 밖 카드는 겹쳐 숨긴다 */
+      p.style.setProperty('--gap', g + 'px');
+      p.style.setProperty('--off', a > 2 || one ? shown : off);
+      p.style.setProperty('--sc', off === 0 ? 1 : (a === 1 ? 0.82 : 0.66));
+      p.style.setProperty('--op', (one || a > 2) ? (off === 0 ? 1 : 0) : (off === 0 ? 1 : 0.48));
+      p.style.setProperty('--z', 10 - a);
+      p.style.setProperty('--pe', (off === 0 || (!one && a <= 2)) ? 'auto' : 'none');
+      p.classList.toggle('center', off === 0);
+    });
+    dots.forEach((d, i) => d.classList.toggle('on', i === cur));
+    const s = t.items[cur];
+    document.getElementById('infobar').innerHTML =
+      `<span class="ib-tag">${t.unit} ${String(cur + 1).padStart(2, '0')}</span>` +
+      `<span class="nm">${s.name}</span><span class="tg">${s.badge}</span>`;
+    document.getElementById('enter').innerHTML =
+      (track === 'explore' ? '입장하기' : '미션 시작') + ' <span class="ar">→</span>';
+  }
+
+  function move(d) { cur = (cur + d + items().length) % items().length; render(); sound.move(); }
+  function to(i) { if (i === cur) return; cur = i; render(); sound.move(); }
+  function enter() { const s = items()[cur]; VStudio.launch(s.href, s.key); }
+
+  function setTrack(key, snd) {
+    if (!TRACKS[key] || key === track) return;
+    track = key; cur = 0;
+    VStudio.rememberTrack(key);
+    build(snd !== false);
+  }
+
+  VStudio.wireTabs(tabsEl, setTrack);
+  document.getElementById('prev').addEventListener('click', () => move(-1));
+  document.getElementById('next').addEventListener('click', () => move(1));
+  document.getElementById('enter').addEventListener('click', enter);
+
+  VStudio.keys({
+    next:  () => move(1),
+    prev:  () => move(-1),
+    enter: enter,
+    track: () => setTrack(VStudio.nextTrackKey(track)),
+    jump:  (i) => { if (i < items().length) to(i); },
+  });
+
+  /* 스와이프 */
+  let sx = null;
+  packsEl.addEventListener('touchstart', e => sx = e.touches[0].clientX, { passive: true });
+  packsEl.addEventListener('touchend', e => {
+    if (sx == null) return;
+    const dx = e.changedTouches[0].clientX - sx;
+    if (Math.abs(dx) > 40) move(dx < 0 ? 1 : -1);
+    sx = null;
+  });
+
+  window.addEventListener('resize', render);
+  VStudio.onHashTrack((h) => setTrack(h, false));
+
+  build(false);
+  VStudio.variantBar(() => build(false));
+  VStudio.boot();
+})();
+</script>
+</body>
+</html>

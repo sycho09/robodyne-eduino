@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/favicon.png" />
+<meta name="theme-color" content="#0a0b12" />
+<title>객체 탐지 · VISION AI</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="/stages/styles/stage.css" />
+</head>
+<body>
+
+<div class="ambient"></div>
+<div class="scanlines"></div>
+
+<header class="hud">
+  <div class="hud-l">
+    <a class="back" href="/studio.html" onclick="try{sessionStorage.setItem(String.fromCharCode(118,111,115,95,112,97,115,115),String(1))}catch(e){}" title="콘솔(모드 선택)"><img src="/platform/img/logo-mark.webp" alt="콘솔" style="height:18px;display:block" /></a>
+    <a class="back" href="/explore.html">← 스테이지</a>
+    <div class="title"><h1><i data-ic="detect"></i>객체 탐지</h1><span class="tag">COCO-SSD · 사전학습</span></div>
+  </div>
+  <div class="hud-r">
+    <a class="back" href="/platform/index.html" title="플랫폼 홈"><i data-ic="home"></i> 홈</a>
+    <button class="back" data-board id="boardBtn" title="제출 게시판" style="display:none"><i data-ic="board"></i> 게시판</button>
+    <span class="chip idle" id="status">● IDLE</span>
+    <span class="chip" id="fps">FPS <b>—</b></span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="stagecol">
+  <div class="viewport" id="viewport">
+    <video id="video" playsinline muted></video>
+    <canvas id="overlay"></canvas>
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <div class="cover" id="cover">
+      <div class="big"><i data-ic="detect"></i></div>
+      <p>카메라를 켜면 화면 속 사물을 실시간으로 찾아 박스로 표시해요. 추가 학습은 필요 없어요!</p>
+      <button class="startbtn" id="start">▶ 카메라 켜기 · 탐지 시작</button>
+      <p style="font-size:11.5px;color:var(--ink-3)">카메라는 이 기기에서만 처리되고 어디에도 전송되지 않아요.</p>
+    </div>
+  </div>
+  </div>
+
+  <aside class="side">
+    <button class="theorybtn" id="codexBtn"><i data-ic="book"></i> 이론 학습하기</button>
+    <div class="card list-card">
+      <h2>탐지된 사물 <span class="cnt" id="count">0</span></h2>
+      <div class="det-list" id="list"><div class="empty">아직 없어요 — 카메라를 켜보세요</div></div>
+    </div>
+    <div class="card">
+      <h2>실시간 수치</h2>
+      <div class="telem">
+        <div class="t"><span class="tl">추론 시간</span><span class="tv acc" id="tInfer">— <small>ms</small></span></div>
+        <div class="t"><span class="tl">FPS</span><span class="tv" id="tFps">—</span></div>
+        <div class="t"><span class="tl">최고 신뢰도</span><span class="tv acc" id="tMax">—</span></div>
+        <div class="t"><span class="tl">평균 신뢰도</span><span class="tv" id="tAvg">—</span></div>
+        <div class="t"><span class="tl">처리 해상도</span><span class="tv" id="tRes" style="font-size:14px">—</span></div>
+        <div class="t"><span class="tl">처리 프레임</span><span class="tv" id="tFrames">0</span></div>
+      </div>
+    </div>
+    <div class="card ctrl">
+      <label>탐지 민감도 <span id="thrv">50%</span></label>
+      <input type="range" id="thr" min="10" max="90" value="50" />
+      <div id="actionArea"></div>
+      <button class="stopbtn" id="stop">⏹ 카메라 끄기</button>
+    </div>
+  </aside>
+</main>
+
+<!-- 개념 도감 (인-페이지 모달) -->
+<div class="codex" id="codex" aria-hidden="true">
+  <div class="codex-card">
+    <button class="codex-x" id="codexX" aria-label="닫기">✕</button>
+    <div class="codex-head">
+      <span class="codex-ic"><i data-ic="detect"></i></span>
+      <div><div class="codex-name">객체 탐지</div><div class="codex-sub">COCO-SSD · 사전학습 추론</div></div>
+    </div>
+    <div class="codex-grid">
+      <div class="codex-sec">
+        <div class="codex-h">학습 정보</div>
+        <p>COCO(사물 90종) 데이터로 미리 학습된 모델을 그대로 사용해요. 목표는 “잘 학습된 AI”의 힘을 직접 체험하는 거예요. 자율주행·CCTV 분석처럼 실제로 쓰이는 기술의 축소판이랍니다.</p>
+      </div>
+      <div class="codex-sec">
+        <div class="codex-h">알고리즘 정보</div>
+        <p>COCO-SSD가 화면을 한 번에 훑어 사물의 <b>위치</b>와 <b>종류</b>를 동시에 예측해요. 그 결과를 상자·이름·확률(%)로 함께 표시합니다. ‘민감도’를 낮추면 더 많이, 높이면 확실한 것만 잡아요.</p>
+      </div>
+    </div>
+    <div class="codex-use">이런 곳에 쓰여요 · 자율주행 자동차 · 무인 매장 · 스마트 CCTV</div>
+  </div>
+</div>
+
+<script src="/stages/core/ui/icons.js"></script>
+<script src="/stages/core/session.js"></script>
+<script src="/stages/admin/cert.js"></script>
+<script src="/stages/submission/board.js"></script>
+<script src="/stages/submission/data/submit.store.js"></script>
+  <script src="/stages/submission/submit.core.js"></script>
+  <script src="/stages/submission/ui/submit.ui.js"></script>
+<script>
+  const $ = (id)=>document.getElementById(id);
+  const els = { video:$('video'), overlay:$('overlay'), cover:$('cover'), start:$('start'), stop:$('stop'),
+    status:$('status'), fps:$('fps'), count:$('count'), list:$('list'), thr:$('thr'), thrv:$('thrv'), viewport:$('viewport') };
+  const detect = { model:null, stream:null, raf:null, lastT:0, threshold:0.5 };
+
+  els.thr.addEventListener('input', ()=>{ detect.threshold=(+els.thr.value)/100; els.thrv.textContent=els.thr.value+'%'; });
+  els.start.addEventListener('click', startCam);
+  els.stop.addEventListener('click', stopCam);
+
+  function setStatus(t, cls){ els.status.textContent='● '+t; els.status.className='chip '+(cls||''); }
+  function setAR(){ const vw=els.video.videoWidth, vh=els.video.videoHeight;
+    if (vw && vh) els.viewport.style.setProperty('--ar', vw + ' / ' + vh); }
+
+  async function startCam(){
+    if (detect.stream) return;
+    if (!window.cocoSsd){ setStatus('ERROR','idle'); return; }
+    els.start.classList.add('loading'); els.start.textContent='모델 불러오는 중…'; setStatus('LOADING');
+    try {
+      if (!detect.model) detect.model = await cocoSsd.load();
+      detect.stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user' } });
+      els.video.srcObject = detect.stream;
+      await els.video.play().catch(()=>{});
+      setAR(); els.video.addEventListener('loadedmetadata', setAR, { once:true });
+      els.cover.classList.add('hide');
+      setStatus('LIVE','live');
+      detect.lastT = performance.now();
+      loop();
+    } catch(e){ console.error('[detect]', e); setStatus('ERROR','idle');
+      els.start.classList.remove('loading'); els.start.textContent='▶ 다시 시도'; }
+  }
+
+  function stopCam(){
+    if (detect.stream){ detect.stream.getTracks().forEach(t=>t.stop()); detect.stream=null; }
+    els.video.srcObject=null;
+    if (detect.raf) cancelAnimationFrame(detect.raf);
+    const ctx=els.overlay.getContext('2d'); ctx.clearRect(0,0,els.overlay.width,els.overlay.height);
+    els.cover.classList.remove('hide');
+    els.start.classList.remove('loading'); els.start.textContent='▶ 카메라 켜기 · 탐지 시작';
+    setStatus('IDLE','idle'); els.fps.innerHTML='FPS <b>—</b>';
+    els.count.textContent='0'; els.list.innerHTML='<div class="empty">아직 없어요 — 카메라를 켜보세요</div>';
+    detect.frames=0;
+    ['tFps','tMax','tAvg','tRes'].forEach(id=>$(id).textContent='—');
+    $('tInfer').innerHTML='— <small>ms</small>'; $('tFrames').textContent='0';
+  }
+
+  async function loop(){
+    if (!detect.stream || !detect.model) return;
+    if (els.video.readyState >= 2){
+      const vw=els.video.videoWidth, vh=els.video.videoHeight;
+      els.overlay.width=vw; els.overlay.height=vh; setAR();
+      try {
+        const t0=performance.now();
+        const preds = (await detect.model.detect(els.video)).filter(p=>p.score>=detect.threshold);
+        const inferMs=performance.now()-t0;
+        detect.lastPreds = preds; detect.frames=(detect.frames||0)+1;
+        const ctx=els.overlay.getContext('2d'); ctx.clearRect(0,0,vw,vh);
+        ctx.font='600 16px JetBrains Mono';
+        const rr=(x,y,w,h,r)=>{ if(ctx.roundRect){ctx.beginPath();ctx.roundRect(x,y,w,h,r);} else {ctx.beginPath();ctx.rect(x,y,w,h);} };
+        preds.forEach(p=>{
+          const [x,y,w,h]=p.bbox, mx=vw-x-w; // 비디오가 좌우 반전 표시되므로 박스 X만 반전
+          ctx.strokeStyle='rgba(106,166,255,.95)'; ctx.lineWidth=2.5; ctx.shadowColor='rgba(59,134,255,.6)'; ctx.shadowBlur=10;
+          rr(mx, y, w, h, 10); ctx.stroke(); ctx.shadowBlur=0;
+          const label=`${p.class} ${Math.round(p.score*100)}%`, tw=ctx.measureText(label).width;
+          ctx.fillStyle='rgba(10,12,20,.82)'; rr(mx, y-24, tw+16, 21, 6); ctx.fill();
+          ctx.fillStyle='#9cc1ff'; ctx.fillText(label, mx+8, y-8);
+        });
+        els.count.textContent=preds.length;
+        els.list.innerHTML = preds.length ? preds.slice(0,8).map(p=>{
+          const pct=Math.round(p.score*100);
+          return `<div class="det-row"><div class="det-head"><span>${p.class}</span><span class="det-pct">${pct}%</span></div>
+            <div class="gauge"><div class="gauge-fill" style="width:${pct}%"></div></div></div>`;
+        }).join('') : '<div class="empty">사물이 안 보여요 — 카메라 앞에 물건을 비춰보세요</div>';
+        const now=performance.now(), fps=1000/(now-detect.lastT); detect.lastT=now;
+        els.fps.innerHTML='FPS <b>'+fps.toFixed(1)+'</b>';
+        /* 실시간 수치 텔레메트리 */
+        const sc=preds.map(p=>p.score);
+        $('tInfer').innerHTML=inferMs.toFixed(0)+' <small>ms</small>';
+        $('tFps').textContent=fps.toFixed(1);
+        $('tMax').textContent=sc.length?Math.round(Math.max(...sc)*100)+'%':'—';
+        $('tAvg').textContent=sc.length?Math.round(sc.reduce((a,b)=>a+b,0)/sc.length*100)+'%':'—';
+        $('tRes').textContent=vw+'×'+vh;
+        $('tFrames').textContent=detect.frames;
+      } catch(e){ /* skip frame */ }
+    }
+    detect.raf=requestAnimationFrame(loop);
+  }
+
+  /* 미션 제출 — 현재 화면(영상+탐지박스)을 스냅샷으로 캡처 */
+  function captureFrame(){
+    if(!detect.stream) return null;
+    const vw=els.video.videoWidth||640, vh=els.video.videoHeight||480;
+    const sc=Math.min(1,480/vw), W=Math.round(vw*sc), H=Math.round(vh*sc);
+    const c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d');
+    x.save(); x.translate(W,0); x.scale(-1,1); x.drawImage(els.video,0,0,W,H); x.restore();
+    x.drawImage(els.overlay,0,0,W,H);
+    return c.toDataURL('image/jpeg',0.8);
+  }
+  function summary(){
+    const n=els.count.textContent||'0';
+    const cls=[...new Set((detect.lastPreds||[]).map(p=>p.class))].slice(0,3);
+    return [`탐지 ${n}개`, ...cls];
+  }
+  if(window.Submit) Submit.init({ feature:'detect', label:'객체 탐지', capture:captureFrame, summary });
+
+  /* 개념 도감 */
+  const codex = $('codex');
+  const openCodex = ()=>{ codex.classList.add('on'); codex.setAttribute('aria-hidden','false'); };
+  const closeCodex = ()=>{ codex.classList.remove('on'); codex.setAttribute('aria-hidden','true'); };
+  $('codexBtn').addEventListener('click', openCodex);
+  $('codexX').addEventListener('click', closeCodex);
+  codex.addEventListener('click', (e)=>{ if(e.target===codex) closeCodex(); });
+
+  window.addEventListener('keydown',(e)=>{
+    if(e.key==='Escape'){ if(codex.classList.contains('on')) closeCodex(); else location.href='/explore.html'; }
+  });
+  window.addEventListener('pagehide', stopCam);
+  window.addEventListener('pageshow',()=>{ document.body.style.opacity='1'; });
+</script>
+</body>
+</html>

@@ -1,0 +1,1065 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.png" />
+    <meta name="theme-color" content="#0a0b12" />
+    <title>AI 상상 보드 만들기 · VISION AI</title>
+    <!--
+  VISION AI AI 아이디어 피치 보드
+  - 독립 모달(iframe) (추론 로직 없음)
+  - 부모 페이지 인식 결과 캡처(좌) + 외부 AI 이미지 첨부(우)
+  - 구성: <style>(#board 전용) → 본문 → #camOv 캡처 모달 → <script>(SC 의존)
+  - 스타일 구조는 docs/result-studio.md 5장
+-->
+    <link rel="stylesheet" href="/stages/styles/studio.css" />
+    <style>
+      /* 좌측 컨트롤 영역 */
+      .ctrl {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .sec-h .acc {
+        margin-left: auto;
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent-ink);
+        background: var(--accent-soft);
+        border: 0;
+        border-radius: var(--radius-sm);
+        padding: 4px 9px;
+      }
+      .dataprev {
+        position: relative;
+        aspect-ratio: 4/3;
+        border-radius: var(--radius);
+        background: rgba(0, 0, 0, 0.38);
+        border: 1px solid var(--border);
+        overflow: hidden;
+        display: grid;
+        place-items: center;
+      }
+      .dataprev canvas {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .dataprev .ph {
+        color: var(--ink-3);
+        font-size: 12px;
+        text-align: center;
+        padding: 14px;
+        line-height: 1.6;
+      }
+      .dataprev .cls {
+        position: absolute;
+        left: 8px;
+        bottom: 8px;
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 700;
+        color: #fff;
+        background: rgba(5, 6, 11, 0.72);
+        border-radius: var(--radius-sm);
+        padding: 4px 9px;
+        display: none;
+      }
+      .dataprev .cls b {
+        color: var(--green);
+      }
+      .id2 {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .genrow {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .genrow button {
+        flex: 1;
+      }
+      /* 우측 렌더링 영역 (보드 캔버스) */
+      .boardwrap {
+        overflow: auto;
+        padding-bottom: 8px;
+        display: flex;
+        justify-content: center;
+      }
+      #board {
+        width: 100%;
+        max-width: 1100px;
+        min-width: 520px;
+        border-radius: 18px;
+        padding: 22px;
+        position: relative;
+        overflow: hidden;
+        --bd-ink: #f2f4fb;
+        --bd-ink2: #cdb6bd;
+        --bd-ink3: #9c7d84;
+        --bd-frame: rgba(255, 255, 255, 0.045);
+        --bd-frameb: rgba(255, 255, 255, 0.1);
+        --bd-accent: #ff5747;
+        background: radial-gradient(120% 120% at 0% 0%, #1c151f, #0b0c14 60%);
+        color: var(--bd-ink);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+      }
+      #board .bh {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      #board .bh > div:first-child {
+        flex: 1;
+        min-width: 0;
+      }
+      #board .lbl {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        color: var(--bd-accent);
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+      #board .ttl {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        line-height: 1.2;
+      }
+      #board .auth {
+        font-size: 13.5px;
+        color: var(--bd-ink3);
+        margin-top: 7px;
+      }
+      #board .frames {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      #board .frame {
+        flex: 1 1 0;
+        min-width: 0;
+        background: var(--bd-frame);
+        border: 1px solid var(--bd-frameb);
+        border-radius: 14px;
+        padding: 12px;
+      }
+      #board .frame .fl {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        letter-spacing: 0.08em;
+        color: var(--bd-ink3);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      #board .frame .fl::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--bd-accent);
+      }
+      #board .frame.app .fl::before {
+        background: var(--green);
+      }
+      #board .imgbox {
+        position: relative;
+        height: 300px;
+        border-radius: var(--radius);
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.42);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #board .imgbox canvas {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      #board .imgbox .ph {
+        color: var(--bd-ink3);
+        font-size: 12px;
+        text-align: center;
+        padding: 12px;
+        line-height: 1.5;
+      }
+      #board .imgbox .tag {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        color: #fff;
+        background: rgba(5, 6, 11, 0.7);
+        border-radius: 6px;
+        padding: 3px 7px;
+      }
+      #board .imgbox .cls {
+        position: absolute;
+        left: 8px;
+        bottom: 8px;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 800;
+        color: #fff;
+        background: rgba(5, 6, 11, 0.72);
+        border-radius: var(--radius-sm);
+        padding: 4px 9px;
+      }
+      #board .imgbox .cls b {
+        color: var(--green);
+      }
+      #board .imgbox .acc {
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 800;
+        color: #04140c;
+        background: var(--green);
+        border-radius: var(--radius-sm);
+        padding: 4px 8px;
+      }
+      #board .arrow {
+        text-align: center;
+        font-size: 20px;
+        color: var(--bd-accent);
+        font-weight: 800;
+      }
+      #board .pline {
+        margin-top: 12px;
+        font-family: var(--mono);
+        font-size: 13.5px;
+        color: var(--bd-ink3);
+        background: var(--bd-frame);
+        border: 1px solid var(--bd-frameb);
+        border-radius: 9px;
+        padding: 10px 13px;
+        line-height: 1.6;
+      }
+      #board .pline span {
+        color: var(--bd-ink2);
+        font-family: var(--sans);
+      }
+      #board .bf {
+        margin-top: 12px;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        color: var(--bd-ink3);
+        text-align: right;
+      }
+    </style>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- html2canvas 만 사용 (자체 추론 없음 · 부모 페이지의 인식 결과를 읽어옴) -->
+    <link rel="stylesheet" href="/stages/styles/tokens.css" />
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <!-- 임시저장 이미지는 localStorage 쿼터를 넘기므로 IndexedDB 에 둔다 -->
+    <script src="/stages/core/data/imagestore.js"></script>
+    <script src="/stages/studio/studio-common.js"></script>
+  </head>
+  <body>
+    <header class="top">
+      <!-- 종료 전 보관함 임시 저장 프로세스 동작 -->
+      <button class="back" id="btnBack">← 뒤로</button>
+      <h1>
+        AI 상상 보드 만들기
+        <span
+          id="missionTag"
+          style="
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--ink-2);
+            background: rgba(255, 255, 255, 0.05);
+            border: 0;
+            border-radius: 9px;
+            padding: 6px 11px;
+            margin-left: 4px;
+          "
+          >—</span
+        >
+      </h1>
+      <div style="margin-left: auto; display: flex; gap: 8px">
+        <button id="btnKeep" style="font-size: 13px; padding: 9px 14px">
+          📥 내 보관함에 담기
+        </button>
+        <button
+          class="ghost"
+          id="btnSave"
+          style="font-size: 13px; padding: 9px 13px"
+        >
+          내 컴퓨터에 저장
+        </button>
+        <button
+          class="ghost"
+          id="btnClose"
+          style="font-size: 15px; padding: 9px 12px"
+        >
+          ✕
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <!-- 좌측 영역: 입력 폼 -->
+      <div class="ctrl">
+        <div class="note">
+          학습시킨 데이터를 현실에서 어떻게 활용할 수 있을까요?
+          <b>데이터와 아이디어</b>를 한 장의 보드로 만들어 제출하세요.
+        </div>
+
+        <div class="sec">
+          <div class="sec-h">
+            <span class="n">1</span><span class="t">추론 데이터 (현실)</span
+            ><span class="acc" id="accBadge" style="display: none"
+              >ACCURACY: <span id="accVal">—</span></span
+            >
+          </div>
+          <div class="dataprev">
+            <canvas
+              id="dataPhoto"
+              width="320"
+              height="240"
+              style="display: none"
+            ></canvas>
+            <div class="ph" id="dataPh">
+              이전 페이지에서 인식 중인 AI 결과를 담아요
+            </div>
+            <div class="cls" id="dataCls">CLASS: <b id="dataClsName">—</b></div>
+          </div>
+          <button class="ghost wide" id="btnData" style="margin-top: 10px">
+            AI 인식 결과 캡처
+          </button>
+        </div>
+
+        <div class="sec">
+          <div class="sec-h">
+            <span class="n">2</span><span class="t">활용 아이디어</span>
+          </div>
+          <p class="q">이 인식 기능을 우리 주변 어디에 쓸 수 있을까요?</p>
+          <input
+            id="idea"
+            placeholder="이 AI를 어디에 쓰면 좋을지 한 줄로 적어요"
+            maxlength="60"
+          />
+          <p class="q" style="margin: 10px 0 5px">아이디어 및 이미지 설명</p>
+          <textarea
+            id="prompt"
+            rows="4"
+            placeholder="구상한 아이디어에 대한 설명과 첨부한 이미지에 대한 내용을 자유롭게 설명해 주세요."
+            maxlength="300"
+          ></textarea>
+          <p class="q" style="margin: 10px 0 5px">
+            <b style="color: var(--ink-2)">AI로 만든 이미지</b>를 붙여요 · 외부
+            AI로 만들어 <b style="color: var(--ink-2)">다운로드한 파일</b>
+          </p>
+          <div class="genrow">
+            <button id="btnGen">AI 이미지 파일 선택</button>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-h">
+            <span class="n">3</span><span class="t">제목 · 작성자</span>
+          </div>
+          <input id="title" placeholder="프로젝트 제목" maxlength="34" />
+          <div class="id2">
+            <input
+              id="name"
+              placeholder="이름 (예: 홍길동)"
+              maxlength="12"
+            /><input
+              id="klass"
+              placeholder="학년/반 (예: 2학년 3반)"
+              maxlength="14"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- 우측 영역: 보드 결과물 -->
+      <div class="boardwrap">
+        <div id="board">
+          <div class="bh">
+            <div>
+              <!-- 트랙별 동적 렌더링 (bPitch, bRawTag, bPhotoPh) -->
+              <div class="lbl" id="bPitch"></div>
+              <div class="ttl" id="bTitle">프로젝트 제목을 입력하세요</div>
+              <div class="auth" id="bAuth">작성자: 이름 · 학년/반</div>
+            </div>
+          </div>
+          <div class="frames">
+            <div class="frame input">
+              <div class="fl">INPUT DATA (현실)</div>
+              <div class="imgbox">
+                <span class="tag" id="bRawTag"></span>
+                <canvas
+                  id="bPhoto"
+                  width="640"
+                  height="640"
+                  style="display: none"
+                ></canvas>
+                <div class="ph" id="bPhotoPh"></div>
+                <div class="cls" id="bCls" style="display: none">
+                  CLASS: <b id="bClsName">—</b>
+                </div>
+                <div class="acc" id="bAcc" style="display: none">—%</div>
+              </div>
+            </div>
+            <div class="arrow">»</div>
+            <div class="frame app">
+              <div class="fl">APPLICATION (활용 아이디어)</div>
+              <div class="imgbox">
+                <canvas
+                  id="bGen"
+                  width="640"
+                  height="640"
+                  style="display: none"
+                ></canvas>
+                <div class="ph" id="bGenPh">
+                  AI로 만든 이미지를<br />‘파일 선택’으로 붙여요
+                </div>
+                <div
+                  class="cls"
+                  id="bIdea"
+                  style="display: none; max-width: calc(100% - 16px)"
+                >
+                  <span id="bIdeaTxt"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="pline" id="bPromptWrap" style="display: none">
+            설명 · <span id="bPrompt"></span>
+          </div>
+          <div class="bf">POWERED BY EDUINO VISION AI</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 데이터 촬영/인식 모달 (실제 분류기) -->
+    <div
+      id="camOv"
+      style="
+        position: fixed;
+        inset: 0;
+        z-index: 80;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(5, 6, 12, 0.78);
+        backdrop-filter: blur(6px);
+      "
+    >
+      <div
+        style="
+          width: min(820px, 100%);
+          background: linear-gradient(180deg, #171119, #100d15);
+          border: 1px solid var(--border);
+          border-radius: 18px;
+          overflow: hidden;
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.05),
+            0 30px 70px rgba(0, 0, 0, 0.55);
+        "
+      >
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 800;
+            font-size: 14px;
+          "
+        >
+          AI 인식 결과 캡처
+          <span
+            class="acc"
+            id="mModel"
+            style="
+              margin-left: auto;
+              font-family: var(--mono);
+              font-size: 12px;
+              font-weight: 700;
+              color: var(--ink-2);
+              background: rgba(255, 255, 255, 0.05);
+              border: 0;
+              border-radius: 9px;
+              padding: 6px 11px;
+            "
+            >인식 대기</span
+          >
+          <button class="ghost" id="mClose" style="padding: 6px 10px">✕</button>
+        </div>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 12px;
+            padding: 14px;
+          "
+        >
+          <div
+            style="
+              position: relative;
+              background: #05060b;
+              aspect-ratio: 4/3;
+              border-radius: 12px;
+              overflow: hidden;
+              display: grid;
+              place-items: center;
+            "
+          >
+            <canvas
+              id="mView"
+              width="640"
+              height="480"
+              style="width: 100%; height: 100%; object-fit: contain"
+            ></canvas>
+            <!-- 트랙별 안내 문구 (mHintTxt, mNote) -->
+            <div
+              class="ph"
+              id="mHint"
+              style="
+                position: absolute;
+                inset: 0;
+                display: grid;
+                place-items: center;
+                text-align: center;
+                color: var(--ink-3);
+                font-size: 12.5px;
+                padding: 18px;
+                line-height: 1.6;
+              "
+            >
+              <div id="mHintTxt"></div>
+            </div>
+          </div>
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              gap: 5px;
+            "
+          >
+            <div
+              style="
+                font-family: var(--mono);
+                font-size: 10px;
+                letter-spacing: 0.12em;
+                color: var(--ink-3);
+              "
+            >
+              지금 인식된 클래스
+            </div>
+            <div
+              id="mPredName"
+              style="
+                font-size: 30px;
+                font-weight: 800;
+                line-height: 1.1;
+                color: var(--ink);
+              "
+            >
+              —
+            </div>
+            <div
+              id="mPredPct"
+              style="
+                font-size: 16px;
+                font-weight: 800;
+                color: var(--green);
+                font-family: var(--mono);
+              "
+            >
+              0%
+            </div>
+            <p
+              id="mNote"
+              style="
+                font-size: 11.5px;
+                color: var(--ink-3);
+                line-height: 1.55;
+                margin-top: 6px;
+              "
+            ></p>
+          </div>
+        </div>
+        <div
+          style="display: flex; gap: 8px; padding: 0 14px 14px; flex-wrap: wrap"
+        >
+          <span style="flex: 1"></span>
+          <button id="mCapture" disabled>이 순간 캡처 → 보드에 담기</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const SC = window.StudioCommon; /* 미션·이미지·줄바꿈 등 공통 유틸 (character-card 와 공유) */
+        const $ = SC.$;
+
+        /* 현재 트랙 정보 확인 */
+        const TR = SC.TRACKS[SC.track()];
+
+        /* 미션별 예시 문구 정의 */
+        const COPY = {
+          rps: {
+            idea: "가위바위보를 해서 이기면 간식을 주는 자판기",
+            prompt:
+              "미래형 간식 자판기 앞에서 가위바위보를 하는 학생, 밝고 귀여운 3D 일러스트, 네온 조명, 흰 배경, 고화질",
+            title: "가위바위보 간식 자판기 프로젝트",
+          },
+          recycle: {
+            idea: "쓰레기를 비추면 어느 통에 넣을지 알려주는 안내판",
+            prompt:
+              "학교 복도에 놓인 스마트 분리수거함, 캔과 페트병을 자동으로 안내하는 화면, 밝고 깨끗한 3D 일러스트, 흰 배경, 고화질",
+            title: "스마트 분리수거 안내판 프로젝트",
+          },
+          mask: {
+            idea: "마스크를 안 쓰면 알려주는 교실 출입문 도우미",
+            prompt:
+              "교실 문 앞의 귀여운 로봇 도우미가 마스크 착용을 안내하는 장면, 밝고 친근한 3D 일러스트, 흰 배경, 고화질",
+            title: "마스크 안내 도우미 프로젝트",
+          },
+          thumb: {
+            idea: "엄지 척을 하면 좋아요가 올라가는 우리 반 투표기",
+            prompt:
+              "교실에서 손으로 투표하면 화면에 점수가 올라가는 재미있는 장치, 밝고 귀여운 3D 일러스트, 흰 배경, 고화질",
+            title: "우리 반 손 투표기 프로젝트",
+          },
+          custom: {
+            idea: "내가 만든 AI를 우리 생활 어디에 쓸 수 있을까?",
+            prompt:
+              "내가 상상한 장치가 실제로 동작하는 장면, 밝고 귀여운 3D 일러스트, 흰 배경, 고화질",
+            title: "나의 AI 활용 프로젝트",
+          },
+          audio: {
+            idea: '"불 켜"라고 말하면 불이 켜지는 교실 스위치',
+            prompt:
+              "교실에서 학생이 말하자 조명이 켜지는 장면, 목소리 파형이 빛으로 퍼지는 연출, 밝고 귀여운 3D 일러스트, 흰 배경, 고화질",
+            title: "목소리로 켜는 교실 조명 프로젝트",
+          },
+          pose: {
+            idea: "만세 자세를 하면 점수가 올라가는 체육 시간 게임",
+            prompt:
+              "체육관에서 학생이 동작을 취하자 화면 속 캐릭터가 따라 하며 점수가 오르는 장면, 밝고 활기찬 3D 일러스트, 흰 배경, 고화질",
+            title: "동작으로 하는 체육 게임 프로젝트",
+          },
+        };
+        const M0 = SC.scope("rps");
+        const M = Object.assign({}, M0, COPY[M0.key]);
+        const MISSION = M.name;
+
+        /* 모달 상태 (루프 여부, 마지막 추론 데이터) */
+        const S = { loopOn: false, lastName: "", lastPct: 0 };
+
+        /* 헤더 배지 · 입력칸 placeholder 에 미션 문구 주입 */
+        $("missionTag").textContent = MISSION;
+        $("idea").placeholder = "예: " + M.idea;
+        $("title").placeholder = "프로젝트 제목 (예: " + M.title + ")";
+
+        /* 트랙 문구 적용 */
+        $("bPitch").textContent = TR.pitch;
+        $("bRawTag").textContent = TR.rawTag;
+        $("bPhotoPh").textContent = TR.boardPh;
+        $("mHintTxt").innerHTML =
+          "이전 페이지에서 <b>" +
+          TR.turnOn +
+          "</b>을 먼저 눌러 주세요.<br>여기서는 그 <b>AI 인식 결과</b>를 캡처해 보드에 담습니다.";
+        $("mNote").innerHTML =
+          "내가 학습시킨 AI가 " +
+          TR.srcName +
+          ' 입력을 실시간으로 분류한 결과예요. 원하는 순간에 <b style="color:var(--ink-2)">캡처</b>하세요.';
+
+        /* 보드 정보 업데이트 */
+        function syncBoard() {
+          $("bTitle").textContent =
+            $("title").value.trim() || "프로젝트 제목을 입력하세요";
+          const nm = $("name").value.trim() || "이름",
+            kl = $("klass").value.trim() || "학년/반";
+          $("bAuth").textContent =
+            "작성자: " + nm + " · " + kl + " · " + SC.todayKo();
+        }
+        ["title", "name", "klass"].forEach((id) =>
+          $(id).addEventListener("input", () => {
+            syncBoard();
+            saveDraft();
+          }),
+        );
+
+        /* 입력 상태 로컬스토리지 보관 (임시 저장) */
+        const DKEY = "vision_draft_idea:" + M.key;
+        let ready = false;
+        let keeper; /* 보관·종료 흐름 (아래에서 SC.keeper 로 만든다) */
+        let capImgData = null; /* 웹캠 캡처 이미지 데이터 */
+        let capData = null; /* 캡처 시점의 메타데이터 (이름, 정확도) */
+        let genImgData = null; /* 첨부한 생성 AI 이미지 데이터 */
+
+        function applyCapUI(name, acc) {
+          $("dataPh").style.display = "none";
+          $("dataClsName").textContent = name;
+          $("dataCls").style.display = "block";
+          $("accVal").textContent = acc + "%";
+          $("accBadge").style.display = "inline-block";
+          $("bPhotoPh").style.display = "none";
+          $("bClsName").textContent = name;
+          $("bCls").style.display = "block";
+          $("bAcc").textContent = acc + "%";
+          $("bAcc").style.display = "block";
+        }
+
+        function applyGenUI() {
+          $("bGenPh").style.display = "none";
+          syncIdea();
+          $("btnGen").textContent = "이미지 다시 선택";
+        }
+
+        /* 실제 쓰기 · 타자마다 돌면 밀리므로 묶어서 실행한다
+           이미지는 아직 보관소에서 오는 중일 수 있으니 다 온 뒤에만 건드린다 */
+        let imgsRestored = false;
+        const writeDraft = SC.debounce(
+          () =>
+            SC.draftKeep(
+              DKEY,
+              {
+                title: $("title").value,
+                name: $("name").value,
+                klass: $("klass").value,
+                idea: $("idea").value,
+                prompt: $("prompt").value,
+                capData: capData,
+              },
+              imgsRestored
+                ? { capImg: capImgData, genImg: genImgData }
+                : null,
+            ),
+          400,
+        );
+        function saveDraft() {
+          if (!ready) return;
+          keeper.markDirty(); /* 닫기 확인에 쓰이므로 즉시 표시한다 */
+          writeDraft();
+        }
+        function restoreDraft() {
+          const d = SC.draftLoad(DKEY);
+          if (d) {
+            if (d.title) $("title").value = d.title;
+            if (d.name) $("name").value = d.name;
+            if (d.klass) $("klass").value = d.klass;
+            if (d.idea) $("idea").value = d.idea;
+            if (d.prompt) $("prompt").value = d.prompt;
+            if (d.capData) capData = d.capData;
+          }
+
+          /* 이미지는 보관소(IndexedDB)에서 따로·늦게 온다
+             다 그려질 때까지 기다려야 imgsRestored 가 참이 된다 */
+          const draw = (field, onReady) =>
+            SC.draftImage(DKEY, field).then(
+              (src) =>
+                new Promise((done) => {
+                  if (!src) return done();
+                  const im = new Image();
+                  im.onload = () => {
+                    onReady(im, src);
+                    done();
+                  };
+                  im.onerror = () => done();
+                  im.src = src;
+                }),
+            );
+
+          return Promise.all([
+            draw("capImg", (im, src) => {
+              if (!capData) return; /* 캡처 메타가 없으면 되살릴 게 없다 */
+              capImgData = src;
+              [$("dataPhoto"), $("bPhoto")].forEach((cv) =>
+                SC.coverDraw(cv, im),
+              );
+              applyCapUI(capData.name, capData.acc);
+            }),
+            draw("genImg", (im, src) => {
+              genImgData = src; /* syncIdea 가 보므로 UI 갱신 전에 채운다 */
+              SC.coverDraw($("bGen"), im);
+              applyGenUI();
+            }),
+          ]).then(() => {
+            imgsRestored = true;
+          });
+        }
+
+        /* 이미지 박스 1:1 비율 유지 */
+        const sizeFrames = SC.autoFit("#board .imgbox", 1);
+
+        /* 데이터 인식 캡처 모달 동작 (부모 화면 상태 복사) */
+        const pEl = (id) => (SC.parentDoc() || document).getElementById(id);
+        function pCam() {
+          if (!TR.cam) return null;
+          const v = pEl(TR.cam);
+          return v && v.videoWidth ? v : null;
+        }
+        function pWave() {
+          if (!TR.wave) return null; /* 영상 트랙 판단 */
+          const c = pEl(TR.wave);
+          if (!c || !c.width) return null;
+          const ov = pEl(TR.standby); /* 대기 상태 확인 */
+          return ov && (ov.style.display || "") !== "none" ? null : c;
+        }
+        /* 지금 보고 있는 입력원 (카메라 우선 · 없으면 파형)
+           프레임마다 부모 문서를 두 번 뒤지지 않도록 한 번 찾아 돌려 쓴다 */
+        function pLive() {
+          const cam = pCam();
+          if (cam) return { el: cam, isCam: true };
+          const wv = pWave();
+          return wv ? { el: wv, isCam: false } : null;
+        }
+        const pPred = () => SC.parentPred(TR);
+        const pConf = () => SC.parentConf(TR);
+
+        /* 부모 비디오/캔버스 화면 복제 그리기 (거울반전/비율 적용)
+           src 를 넘기면 그것을 쓰고, 없으면 그때 찾는다 */
+        function drawSource(cv, src) {
+          if (src === undefined) src = pLive();
+          const g = cv.getContext("2d"),
+            W = cv.width,
+            H = cv.height;
+          g.clearRect(0, 0, W, H);
+          if (!src) return false;
+          if (src.isCam) {
+            const cam = src.el;
+            const s = Math.min(cam.videoWidth, cam.videoHeight);
+            const sx = (cam.videoWidth - s) / 2,
+              sy = (cam.videoHeight - s) / 2;
+            g.save();
+            g.translate(W, 0);
+            g.scale(-1, 1);
+            try {
+              g.drawImage(cam, sx, sy, s, s, 0, 0, W, H);
+              const ov = TR.overlay ? pEl(TR.overlay) : null; /* 오버레이 복사 */
+              if (ov && ov.width) g.drawImage(ov, sx, sy, s, s, 0, 0, W, H);
+            } catch (e) {}
+            g.restore();
+            return true;
+          }
+          const wv = src.el;
+          g.fillStyle = "#0a0e1a";
+          g.fillRect(0, 0, W, H);
+          const r = Math.min(W / wv.width, H / wv.height),
+            dw = wv.width * r,
+            dh = wv.height * r;
+          try {
+            g.drawImage(wv, (W - dw) / 2, (H - dh) / 2, dw, dh);
+          } catch (e) {}
+          return true;
+        }
+
+        /* 캡처 모달에서 초당 60회 갱신되는 자리 (프레임마다 다시 찾지 않는다) */
+        const mEl = {
+          hint: $("mHint"),
+          view: $("mView"),
+          pred: $("mPredName"),
+          pct: $("mPredPct"),
+          model: $("mModel"),
+          capture: $("mCapture"),
+        };
+        /* 값이 그대로면 DOM 을 건드리지 않는다 */
+        const setText = (el, v) => {
+          if (el.textContent !== v) el.textContent = v;
+        };
+
+        function mLoop() {
+          if (!S.loopOn) return;
+          const live = pLive(),
+            name = pPred(),
+            pct = pConf();
+          const hint = live ? "none" : "grid";
+          if (mEl.hint.style.display !== hint) mEl.hint.style.display = hint;
+          drawSource(mEl.view, live);
+          setText(mEl.pred, name || "—");
+          setText(mEl.pct, (name ? pct : 0) + "%");
+          setText(
+            mEl.model,
+            live ? (name ? "인식 중" : "인식 대기") : TR.offMsg,
+          );
+          mEl.capture.disabled = !(live && name);
+          S.lastName = name;
+          S.lastPct = pct;
+          requestAnimationFrame(mLoop);
+        }
+        function mCapture() {
+          const name = S.lastName || pPred(),
+            acc = S.lastPct || pConf();
+          if (!pLive() || !name) {
+            SC.say({
+              title: "아직 캡처할 수 없어요",
+              body:
+                "학습 화면에서 " +
+                TR.turnOn +
+                "을 누르고, AI가 클래스를 알아본 상태에서 캡처해 주세요.",
+            });
+            return;
+          }
+          /* 캡처 화면 렌더링 */
+          [$("dataPhoto"), $("bPhoto")].forEach((cv) => {
+            if (drawSource(cv)) cv.style.display = "block";
+          });
+          applyCapUI(name, acc);
+          closeCam();
+          capData = { name: name, acc: acc };
+          /* 캡처 이미지 데이터 생성 */
+          capImgData = $("bPhoto").toDataURL("image/jpeg", 0.8);
+          saveDraft();
+        }
+        function openCam() {
+          $("camOv").style.display = "flex";
+          S.loopOn = true;
+          mLoop();
+        }
+        function closeCam() {
+          S.loopOn = false;
+          $("camOv").style.display = "none";
+        }
+        $("btnData").addEventListener("click", openCam);
+        $("mClose").addEventListener("click", closeCam);
+        $("mCapture").addEventListener("click", mCapture);
+        $("camOv").addEventListener("click", (e) => {
+          if (e.target === $("camOv")) closeCam();
+        });
+
+        /* 아이디어 이미지 업로드 및 파일 읽기 */
+        function syncIdea() {
+          const t = $("idea").value.trim();
+          if (genImgData && t) {
+            $("bIdeaTxt").textContent = t;
+            $("bIdea").style.display = "block";
+          } else $("bIdea").style.display = "none";
+        }
+        $("btnGen").addEventListener("click", () =>
+          SC.pickImage((img) => {
+            SC.coverDraw($("bGen"), img);
+            /* syncIdea 가 genImgData 를 보므로 UI 갱신 전에 먼저 채운다 */
+            genImgData = $("bGen").toDataURL("image/jpeg", 0.8);
+            applyGenUI();
+            saveDraft();
+          }),
+        );
+        $("idea").addEventListener("input", () => {
+          syncIdea();
+          saveDraft();
+        });
+        function syncPrompt() {
+          const t = $("prompt").value.trim();
+          if (t) {
+            $("bPrompt").textContent = t;
+            $("bPromptWrap").style.display = "block";
+          } else $("bPromptWrap").style.display = "none";
+        }
+        $("prompt").addEventListener("input", () => {
+          syncPrompt();
+          saveDraft();
+        });
+
+        /* html2canvas 캡처 렌더링 */
+        const renderBoard = () =>
+          SC.capture($("board"), {
+            fonts: [
+              '24px "Pretendard"',
+              '13.5px "Pretendard"',
+              '13.5px "JetBrains Mono"',
+              '11px "JetBrains Mono"',
+            ],
+            beforeCapture: sizeFrames, /* 박스 높이 확정 (내보낸 PNG 배치 어긋남 방지) */
+            onclone: (doc) => {
+              const st = doc.createElement("style");
+              st.textContent =
+                "#board .lbl,#board .fl{letter-spacing:normal !important}#board .fl{display:block !important}#board .pline{color:var(--bd-ink2) !important}";
+              doc.head.appendChild(st);
+              SC.prewrap(doc.getElementById("bPromptWrap")); /* 줄바꿈 보정 */
+            },
+          });
+
+        /* 캡처 이미지 로컬 다운로드 */
+        $("btnSave").addEventListener("click", () =>
+          SC.savePng(
+            $("btnSave"),
+            renderBoard,
+            () =>
+              `상상보드_${$("title").value.trim() || MISSION}_${Date.now()}.png`,
+          ),
+        );
+
+        /* 결과물 미션함 보관 처리 (담기·종료 확인 흐름은 studio-common 이 맡는다) */
+        keeper = SC.keeper({
+          kind: "idea",
+          title: "상상보드",
+          render: renderBoard,
+          /* 담으려면 인식 결과 캡처 + 아이디어·설명·이미지 중 하나가 있어야 한다 */
+          complete: () =>
+            !!capImgData &&
+            !!($("idea").value.trim() || $("prompt").value.trim() || genImgData),
+          hints: [
+            "AI 인식 결과를 캡처하기",
+            "아이디어 · 설명 · AI 이미지 중 하나 채우기",
+          ],
+          meta: () => ({
+            title: $("title").value.trim(),
+            name: $("name").value.trim(),
+            klass: $("klass").value.trim(),
+            idea: $("idea").value.trim(),
+            prompt: $("prompt").value.trim(),
+            className: (capData && capData.name) || "",
+            acc: (capData && capData.acc) || 0,
+            track: TR.name,
+            mission: MISSION,
+          }),
+          isReady: () => ready,
+          beforeLeave: () => {
+            S.loopOn = false; /* 프레임 루프 정지 */
+            writeDraft.flush(); /* 밀린 임시저장 마무리 */
+          },
+          canClose: () => $("camOv").style.display !== "flex", /* 캡처 모달이 먼저다 */
+        });
+
+        /* ══ 첫 화면 구성 ══ (보관해 둔 내용을 먼저 되살린 뒤 그린다 · ready 전에는 담지 않는다) */
+        restoreDraft();
+        syncBoard();
+        syncIdea();
+        syncPrompt();
+        ready = true;
+
+        window.addEventListener("pagehide", () => {
+          S.loopOn = false;
+          writeDraft.flush(); /* 창이 닫혀도 마지막 입력은 남긴다 */
+        });
+      })();
+    </script>
+  </body>
+</html>

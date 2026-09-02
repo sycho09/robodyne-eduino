@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta name="theme-color" content="#f6f7fb" />
+<title>실습용 QR·바코드 인쇄 시트 — Eduino AI</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="stylesheet" href="./test-sheet.css" />
+</head>
+<body>
+<div class="bar">
+  <a href="/modules/life/index.html">← 코스로</a>
+  <h1>실습용 QR·바코드 시트 <span>Eduino AI</span></h1>
+  <button class="print" onclick="window.print()">🖨 인쇄</button>
+</div>
+
+<div class="sheet">
+  <p class="lead">아래 코드를 인쇄해 잘라서 사용하세요. 카메라에 비추면 생활 속 인식 AI 코스에서 읽힙니다. (QR은 휴대폰 카메라로도 테스트 가능)</p>
+
+  <h2>QR 코드</h2>
+  <div class="grid" id="qr-grid"></div>
+
+  <h2>바코드 (1D)</h2>
+  <div class="bgrid" id="bc-grid"></div>
+</div>
+
+<script src="./test-sheet.js"></script>
+</body>
+</html>

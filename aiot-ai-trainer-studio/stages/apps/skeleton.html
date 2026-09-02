@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/favicon.png" />
+<meta name="theme-color" content="#0a0b12" />
+<title>뼈대 검출 · VISION AI</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js"></script>
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/stages/styles/stage.css" />
+</head>
+<body>
+
+<div class="ambient"></div>
+<div class="scanlines"></div>
+
+<header class="hud">
+  <div class="hud-l">
+    <a class="back" href="/studio.html" onclick="try{sessionStorage.setItem(String.fromCharCode(118,111,115,95,112,97,115,115),String(1))}catch(e){}" title="콘솔(모드 선택)"><img src="/platform/img/logo-mark.webp" alt="콘솔" style="height:18px;display:block" /></a>
+    <a class="back" href="/explore.html">← 스테이지</a>
+    <div class="title"><h1><i data-ic="skeleton"></i>뼈대 검출</h1><span class="tag">MoveNet · 알고리즘</span></div>
+  </div>
+  <div class="hud-r">
+    <a class="back" href="/platform/index.html" title="플랫폼 홈"><i data-ic="home"></i> 홈</a>
+    <button class="back" data-board id="boardBtn" title="제출 게시판" style="display:none"><i data-ic="board"></i> 게시판</button>
+    <span class="chip idle" id="status">● IDLE</span>
+    <span class="chip" id="fps">FPS <b>—</b></span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="stagecol">
+  <div class="viewport mirror" id="viewport">
+    <video id="video" playsinline muted></video>
+    <canvas id="overlay"></canvas>
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <div class="cover" id="cover">
+      <div class="big"><i data-ic="skeleton"></i></div>
+      <p>카메라를 켜고 몸 전체가 화면에 들어오게 서보세요. 관절을 점과 선으로 이어 <b>뼈대</b>를 실시간으로 그려요!</p>
+      <button class="startbtn" id="start">▶ 카메라 켜기 · 뼈대 시작</button>
+      <p style="font-size:11.5px;color:var(--ink-3)">카메라는 이 기기에서만 처리되고 어디에도 전송되지 않아요.</p>
+    </div>
+  </div>
+  </div>
+
+  <aside class="side">
+    <button class="theorybtn" id="codexBtn"><i data-ic="book"></i> 이론 학습하기</button>
+    <div class="card list-card" style="justify-content:center">
+      <h2>인식된 관절</h2>
+      <div class="metric"><div class="v" id="count">0 / 17</div><div class="u">관절 인식 중</div></div>
+      <div class="gauge" style="margin-top:16px"><div class="gauge-fill" id="bar" style="width:0%"></div></div>
+    </div>
+    <div class="card">
+      <h2>실시간 수치</h2>
+      <div class="telem">
+        <div class="t"><span class="tl">추론 시간</span><span class="tv acc" id="tInfer">— <small>ms</small></span></div>
+        <div class="t"><span class="tl">FPS</span><span class="tv" id="tFps">—</span></div>
+        <div class="t"><span class="tl">인식 관절</span><span class="tv acc" id="tJoints">0/17</span></div>
+        <div class="t"><span class="tl">평균 신뢰도</span><span class="tv" id="tAvg">—</span></div>
+        <div class="t"><span class="tl">처리 해상도</span><span class="tv" id="tRes" style="font-size:14px">—</span></div>
+        <div class="t"><span class="tl">처리 프레임</span><span class="tv" id="tFrames">0</span></div>
+      </div>
+    </div>
+    <div class="card ctrl">
+      <label>인식 민감도 <span id="minv">30%</span></label>
+      <input type="range" id="min" min="10" max="70" value="30" />
+      <div id="actionArea"></div>
+      <button class="stopbtn" id="stop">⏹ 카메라 끄기</button>
+    </div>
+  </aside>
+</main>
+
+<div class="codex" id="codex" aria-hidden="true">
+  <div class="codex-card">
+    <button class="codex-x" id="codexX" aria-label="닫기">✕</button>
+    <div class="codex-head">
+      <span class="codex-ic"><i data-ic="skeleton"></i></span>
+      <div><div class="codex-name">뼈대 검출</div><div class="codex-sub">MoveNet · 영상처리 알고리즘</div></div>
+    </div>
+    <div class="codex-grid">
+      <div class="codex-sec">
+        <div class="codex-h">학습 정보</div>
+        <p>미리 학습된 자세 추정 모델을 그대로 사용해요. 목표는 컴퓨터가 사람 몸을 어떻게 <b>‘점과 선’</b>으로 보는지 체험하는 거예요. 운동 자세 교정·동작 분석 등에 쓰여요.</p>
+      </div>
+      <div class="codex-sec">
+        <div class="codex-h">알고리즘 정보</div>
+        <p>MoveNet이 관절 <b>17곳</b>을 찾아 점으로 찍고, 정해진 연결 규칙대로 선을 이어 뼈대를 그립니다. 학습 단계 없이 바로 추론만 해서 가볍고 빨라요.</p>
+      </div>
+    </div>
+    <div class="codex-use">이런 곳에 쓰여요 · 홈트레이닝 자세 교정 · 동작 게임 · 재활 분석</div>
+  </div>
+</div>
+
+<script src="/stages/core/ui/icons.js"></script>
+<script src="/stages/core/session.js"></script>
+<script src="/stages/admin/cert.js"></script>
+<script src="/stages/submission/board.js"></script>
+<script src="/stages/submission/data/submit.store.js"></script>
+  <script src="/stages/submission/submit.core.js"></script>
+  <script src="/stages/submission/ui/submit.ui.js"></script>
+<script>
+  const $ = (id)=>document.getElementById(id);
+  const els = { video:$('video'), overlay:$('overlay'), cover:$('cover'), start:$('start'), stop:$('stop'),
+    status:$('status'), fps:$('fps'), count:$('count'), bar:$('bar'), min:$('min'), minv:$('minv'), viewport:$('viewport') };
+  const skel = { detector:null, stream:null, raf:null, lastT:0, minScore:0.3 };
+  const EDGES = [[5,7],[7,9],[6,8],[8,10],[5,6],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16],[0,5],[0,6]];
+
+  function setStatus(t,cls){ els.status.textContent='● '+t; els.status.className='chip '+(cls||''); }
+  function setAR(){ const vw=els.video.videoWidth, vh=els.video.videoHeight; if(vw&&vh) els.viewport.style.setProperty('--ar', vw+' / '+vh); }
+  els.min.addEventListener('input', ()=>{ skel.minScore=(+els.min.value)/100; els.minv.textContent=els.min.value+'%'; });
+
+  async function startCam(){
+    if(skel.stream) return;
+    els.start.classList.add('loading'); els.start.textContent='모델 불러오는 중…'; setStatus('LOADING');
+    try{
+      /* 저장소에 번들한 모델 — 기본값(tfhub.dev)은 데스크톱 앱에서 403 (근거: docs/result-studio.md) */
+      if(!skel.detector) skel.detector=await poseDetection.createDetector(
+        poseDetection.SupportedModels.MoveNet, { modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
+          modelUrl: '/models/movenet/singlepose-lightning/model.json' });
+      skel.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}});
+      els.video.srcObject=skel.stream; await els.video.play().catch(()=>{});
+      setAR(); els.video.addEventListener('loadedmetadata', setAR, {once:true});
+      els.cover.classList.add('hide'); setStatus('LIVE','live'); skel.lastT=performance.now(); loop();
+    }catch(e){ console.error('[skel]',e); setStatus('ERROR','idle');
+      els.start.classList.remove('loading'); els.start.textContent='▶ 다시 시도'; }
+  }
+  function stopCam(){
+    if(skel.stream){ skel.stream.getTracks().forEach(t=>t.stop()); skel.stream=null; }
+    els.video.srcObject=null; if(skel.raf) cancelAnimationFrame(skel.raf);
+    const ctx=els.overlay.getContext('2d'); ctx.clearRect(0,0,els.overlay.width,els.overlay.height);
+    els.cover.classList.remove('hide'); els.start.classList.remove('loading'); els.start.textContent='▶ 카메라 켜기 · 뼈대 시작';
+    setStatus('IDLE','idle'); els.fps.innerHTML='FPS <b>—</b>'; els.count.textContent='0 / 17'; els.bar.style.width='0%';
+    skel.frames=0; ['tFps','tAvg','tRes'].forEach(id=>$(id).textContent='—');
+    $('tInfer').innerHTML='— <small>ms</small>'; $('tJoints').textContent='0/17'; $('tFrames').textContent='0';
+  }
+  async function loop(){
+    if(!skel.stream) return;
+    if(skel.detector && els.video.readyState>=2){
+      const vw=els.video.videoWidth, vh=els.video.videoHeight; els.overlay.width=vw; els.overlay.height=vh; setAR();
+      try{
+        const t0=performance.now();
+        const poses=await skel.detector.estimatePoses(els.video);
+        const inferMs=performance.now()-t0; skel.frames=(skel.frames||0)+1;
+        const ctx=els.overlay.getContext('2d'); ctx.clearRect(0,0,vw,vh); let good=0, sum=0;
+        if(poses[0]){ const kp=poses[0].keypoints;
+          ctx.strokeStyle='#3b86ff'; ctx.lineWidth=4; ctx.lineCap='round';
+          EDGES.forEach(([a,b])=>{ if(kp[a].score>skel.minScore&&kp[b].score>skel.minScore){
+            ctx.beginPath(); ctx.moveTo(kp[a].x,kp[a].y); ctx.lineTo(kp[b].x,kp[b].y); ctx.stroke(); } });
+          ctx.fillStyle='#6aa6ff';
+          kp.forEach(p=>{ if(p.score>skel.minScore){ good++; sum+=p.score; ctx.beginPath(); ctx.arc(p.x,p.y,5,0,Math.PI*2); ctx.fill(); } });
+        }
+        els.count.textContent=good+' / 17'; els.bar.style.width=Math.round(good/17*100)+'%';
+        const now=performance.now(), fps=1000/(now-skel.lastT); skel.lastT=now;
+        els.fps.innerHTML='FPS <b>'+fps.toFixed(1)+'</b>';
+        $('tInfer').innerHTML=inferMs.toFixed(0)+' <small>ms</small>'; $('tFps').textContent=fps.toFixed(1);
+        $('tJoints').textContent=good+'/17'; $('tAvg').textContent=good?Math.round(sum/good*100)+'%':'—';
+        $('tRes').textContent=vw+'×'+vh; $('tFrames').textContent=skel.frames;
+      }catch(e){ /* skip */ }
+    }
+    skel.raf=requestAnimationFrame(loop);
+  }
+
+  els.start.addEventListener('click', startCam);
+  els.stop.addEventListener('click', stopCam);
+
+  /* 미션 제출 — 영상+뼈대 스냅샷(둘 다 미러) */
+  function captureFrame(){
+    if(!skel.stream) return null;
+    const vw=els.video.videoWidth||640, vh=els.video.videoHeight||480;
+    const sc=Math.min(1,480/vw), W=Math.round(vw*sc), H=Math.round(vh*sc);
+    const c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d');
+    x.save(); x.translate(W,0); x.scale(-1,1); x.drawImage(els.video,0,0,W,H); x.drawImage(els.overlay,0,0,W,H); x.restore();
+    return c.toDataURL('image/jpeg',0.8);
+  }
+  function summary(){ return ['관절 '+(els.count.textContent||'0/17')]; }
+  if(window.Submit) Submit.init({ feature:'skeleton', label:'뼈대 검출', capture:captureFrame, summary });
+
+  const codex=$('codex'); const openC=()=>codex.classList.add('on'), closeC=()=>codex.classList.remove('on');
+  $('codexBtn').addEventListener('click',openC); $('codexX').addEventListener('click',closeC);
+  codex.addEventListener('click',e=>{ if(e.target===codex) closeC(); });
+  window.addEventListener('keydown',e=>{ if(e.key==='Escape'){ codex.classList.contains('on')?closeC():location.href='/explore.html'; } });
+  window.addEventListener('pagehide', stopCam);
+  window.addEventListener('pageshow',()=>{ document.body.style.opacity='1'; });
+</script>
+</body>
+</html>

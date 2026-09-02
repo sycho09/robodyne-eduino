@@ -1,0 +1,31 @@
+{
+  "name": "eduino-ml-trainer",
+  "version": "1.0.0",
+  "description": "브라우저 완결형 교육용 AI 학습·추론 + 영상처리 체험 (Eduino AI Lab)",
+  "private": true,
+  "main": "electron-main.js",
+  "scripts": {
+    "test": "node --test test/*.test.mjs --test-force-exit",
+    "app": "electron .",
+    "dist": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^43.4.1",
+    "electron-builder": "^24.13.3",
+    "jsdom": "^24.1.0"
+  },
+  "build": {
+    "appId": "com.eduino.ailab",
+    "productName": "Eduino AI Lab",
+    "files": [
+      "index.html",
+      "electron-main.js"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "portable"
+    }
+  }
+}
