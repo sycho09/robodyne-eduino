@@ -1,0 +1,385 @@
+/* vision 코스 전용 스타일.
+   공통 규칙은 ../shared/base.css 와 ../shared/components.css 가 맡는다.
+   여기에는 이 코스에만 있는 화면(필터·픽셀 스트립 · 탐지 목록 · 혼동행렬 · 미션)만 둔다. */
+
+a { color:inherit; text-decoration:none; }
+
+/* 헤더 */
+.back { font-size:13px; font-weight:600; color:var(--ink-2); display:inline-flex; align-items:center; gap:6px; padding:8px 12px;
+  border:1px solid var(--line-2); border-radius:10px; background:#fff; box-shadow:var(--shadow-sm); transition:.15s; }
+
+.banner { display:none; background:var(--amber-soft); border:1px solid rgba(217,138,31,.4); color:#8a5a12;
+  border-radius:12px; padding:13px 16px; font-size:13.5px; margin-bottom:18px; }
+.banner.on { display:block; }
+.banner b { color:#6b4408; }
+
+/* 코스 인트로 */
+.cintro p { margin:0 auto; max-width:760px; font-size:14px; color:var(--ink-2); line-height:1.6; }
+
+/* 단계 탭 */
+.step { flex:1; min-width:220px; text-align:left; background:#fff; border:1px solid var(--line); border-radius:var(--r); padding:13px 16px; transition:.15s; display:flex; gap:12px; align-items:center; box-shadow:var(--shadow-sm); }
+.step:hover { border-color:var(--line-2); }
+.step .n { width:32px; height:32px; border-radius:9px; flex:none; display:grid; place-items:center;
+  font-family:var(--mono); font-weight:700; font-size:14px; background:var(--bg-soft); border:1px solid var(--line); color:var(--ink-3); }
+.step.active .n { background:linear-gradient(150deg,var(--primary-2),var(--primary)); border-color:transparent; color:#fff; }
+
+/* 레이아웃 */
+.layout { display:grid; grid-template-columns:1.12fr .88fr; gap:18px; align-items:start; }
+.card { background:#fff; border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); padding:18px; }
+.card .sub { font-size:12.5px; color:var(--ink-3); margin:0 0 14px; }
+
+/* 카메라 스테이지 — 탐지 탭은 캔버스가 영상을 완전히 덮는다.
+   좌우 반전은 app.js 의 작업 캔버스에서 처리하므로 여기서 transform 을 걸지 않는다.
+   CSS 로 캔버스를 뒤집으면 그 위에 그린 클래스 이름과 % 가 거꾸로 읽힌다. */
+.stage video { transform:scaleX(-1); }
+.stage canvas { transform:none; }
+.stage .rec-dot { position:absolute; top:12px; left:12px; display:none; align-items:center; gap:7px; z-index:3;
+  background:rgba(240,71,58,.92); color:#fff; font-size:11.5px; font-weight:700; padding:5px 11px; border-radius:999px; }
+.stage .rec-dot.on { display:inline-flex; }
+.stage .rec-dot i { width:8px; height:8px; border-radius:50%; background:#fff; animation:blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+.btn { border:1px solid var(--line-2); background:#fff; color:var(--ink); border-radius:11px; padding:11px 16px; font-size:14px; font-weight:700;
+  transition:.15s; box-shadow:var(--shadow-sm); display:inline-flex; align-items:center; justify-content:center; gap:7px; }
+
+.learn { background:var(--card-2); border:1px solid var(--line); border-radius:12px; padding:13px 15px; margin-top:16px; font-size:12.5px; color:var(--ink-2); line-height:1.6; }
+
+/* ══════ 탭 1 · 필터 버튼과 색 스와치 ══════ */
+.fx-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.fx-btn { flex:1 1 auto; min-width:78px; border:1px solid var(--line-2); background:#fff; color:var(--ink-2);
+  border-radius:10px; padding:9px 12px; font-size:13px; font-weight:700; transition:.15s; }
+.fx-btn:hover { border-color:var(--primary-line); color:var(--primary-ink); }
+.fx-btn.on { background:var(--primary-soft); border-color:var(--primary); color:var(--primary-ink); box-shadow:0 0 0 2px var(--primary-soft); }
+
+/* 도넛 (탭 1·2 공용) */
+.donut-wrap { display:flex; align-items:center; gap:16px; margin-top:14px; }
+.donut { position:relative; width:92px; height:92px; flex:none; }
+.donut svg { transform:rotate(-90deg); }
+.donut .ring-bg { fill:none; stroke:var(--bg-soft); stroke-width:9; }
+.donut .ring-fg { fill:none; stroke:var(--primary); stroke-width:9; stroke-linecap:round; transition:stroke-dasharray .3s; }
+.donut .pct { position:absolute; inset:0; display:grid; place-items:center; font-weight:800; font-size:19px; color:var(--primary-ink); }
+.donut-lab { font-size:13px; color:var(--ink-3); }
+.donut-lab b { display:block; font-size:15px; color:var(--ink); margin-top:2px; }
+
+/* ══════ 탭 1 · 임계값과 탐지 결과 ══════ */
+.row { display:flex; align-items:center; gap:10px; margin:14px 0 10px; font-size:13.5px; color:var(--ink-2); font-weight:600; }
+.row input[type=range] { flex:1; accent-color:var(--primary); }
+.row .val { font-family:var(--mono); font-size:13px; color:var(--ink); min-width:44px; text-align:right; }
+.thres-row { margin-bottom:6px; }
+
+.thres-note { font-size:12.5px; line-height:1.6; border-radius:10px; padding:10px 12px; border:1px solid; }
+.thres-note b { font-weight:800; }
+.thres-note.strict { color:#92400e; background:var(--amber-soft); border-color:rgba(217,138,31,.4); }
+.thres-note.loose { color:var(--primary-ink); background:var(--primary-soft); border-color:var(--primary-line); }
+.thres-note.balanced { color:var(--green); background:var(--green-soft); border-color:rgba(17,160,111,.3); }
+
+.det-counts { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:4px; }
+.det-c { border:1px solid var(--line); border-radius:11px; padding:11px 12px; text-align:center; background:var(--card-2); }
+.det-c span { display:block; font-size:11.5px; color:var(--ink-3); font-weight:700; }
+.det-c b { font-family:var(--mono); font-size:22px; font-weight:700; }
+.det-c.shown { background:var(--green-soft); border-color:rgba(17,160,111,.3); } .det-c.shown b { color:var(--green); }
+.det-c.dropped b { color:var(--ink-3); }
+
+.det-list { display:flex; flex-direction:column; gap:9px; margin-top:14px; min-height:44px; }
+.det-list .empty { color:var(--ink-4); font-size:12.5px; text-align:center; padding:14px 8px; line-height:1.6; }
+.det-row { display:flex; align-items:center; gap:10px; font-size:13px; }
+.det-name { flex:none; width:96px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.det-bar { flex:1; height:9px; border-radius:5px; background:var(--bg-soft); overflow:hidden; }
+.det-bar i { display:block; height:100%; background:var(--primary); border-radius:5px; transition:width .12s; }
+.det-pct { flex:none; width:42px; text-align:right; font-family:var(--mono); font-size:12px; color:var(--ink-3); }
+
+/* ══════ 탭 2 · 위저드 ══════ */
+.work { display:grid; grid-template-columns:1.04fr .96fr; gap:18px; align-items:start; }
+.camera-card { align-self:start; display:flex; flex-direction:column; }
+.phost { min-width:0; }
+.wstep { }
+.wstep[hidden] { display:none; }
+.wstep > .card { display:flex; flex-direction:column; }
+
+.wnav { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
+
+/* 클래스(데이터셋) */
+.cls { display:flex; flex-direction:column; gap:10px; margin-bottom:12px; }
+.cls-item { background:var(--card-2); border:1px solid var(--line); border-radius:12px; padding:11px 12px; transition:.15s; }
+.cls-item.rec { border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-soft); }
+.cls-head { display:flex; align-items:center; gap:9px; }
+.swatch { width:13px; height:13px; border-radius:4px; flex:none; }
+.cls-name { flex:1; background:transparent; border:none; color:var(--ink); font-size:14.5px; font-weight:700; padding:4px 2px; border-radius:6px; min-width:0; }
+.cls-name:focus { outline:none; background:#fff; box-shadow:0 0 0 1px var(--line-2); }
+.cls-count { font-family:var(--mono); font-size:12px; color:var(--ink-3); }
+.cls-del { background:none; border:none; color:var(--ink-4); font-size:18px; line-height:1; padding:2px 6px; border-radius:6px; }
+.cls-del:hover { color:var(--primary); background:var(--primary-soft); }
+.cls-actions { display:flex; gap:8px; margin-top:8px; }
+.cap-btn { flex:1; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px;
+  padding:11px; border-radius:10px; font-family:inherit; font-size:14px; font-weight:700; color:#fff;
+  background:linear-gradient(150deg,var(--primary-2),var(--primary));
+  box-shadow:0 5px 13px rgba(240,71,58,.3), inset 0 1px 0 rgba(255,255,255,.25);
+  transition:transform .08s, box-shadow .15s, filter .15s; touch-action:none; user-select:none; }
+.cap-btn .ci { font-size:15px; line-height:1; display:inline-flex; color:rgba(255,255,255,.85); }
+.cap-btn .cap-count { min-width:22px; padding:1px 6px; border-radius:999px; background:rgba(255,255,255,.25); font-family:var(--mono); font-size:12px; }
+.cap-btn:hover:not(:disabled) { filter:brightness(1.04); }
+.cap-btn:active:not(:disabled) { transform:scale(.98); box-shadow:0 0 0 3px var(--primary-soft), 0 4px 10px rgba(240,71,58,.3); }
+.cap-btn:disabled { background:var(--bg-soft); color:var(--ink-4); box-shadow:none; cursor:not-allowed; }
+.cap-btn:disabled .ci, .cap-btn:disabled .cap-count { color:var(--ink-4); background:transparent; }
+.clear { border:1px solid var(--line-2); background:#fff; color:var(--ink-3); border-radius:9px; padding:9px 14px; font-size:13px; font-weight:600; }
+.clear:hover { color:var(--primary-ink); border-color:var(--primary-line); }
+.samp-bar { height:5px; border-radius:3px; background:var(--bg-soft); overflow:hidden; margin-top:10px; }
+.samp-bar i { display:block; height:100%; background:var(--primary); width:0; transition:.12s; }
+.add-cls { width:100%; border:1px dashed var(--line-2); background:transparent; color:var(--ink-3); border-radius:12px; padding:11px; font-size:13.5px; font-weight:700; }
+.add-cls:hover { border-color:var(--primary-line); color:var(--primary-ink); background:var(--primary-soft); }
+.hint { font-size:12.5px; color:var(--ink-3); margin-top:8px; }
+
+/* 학습 모니터 */
+.train-bar { height:7px; border-radius:4px; background:var(--bg-soft); overflow:hidden; margin:10px 0; }
+.train-bar i { display:block; height:100%; width:0; background:linear-gradient(90deg,var(--primary),#ff8a3d); transition:.2s; }
+.metrics.big { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
+.metrics.big .met { background:var(--card-2); border:1px solid var(--line); border-radius:11px; padding:11px 12px; text-align:center; }
+.metrics.big .met span { font-size:11.5px; color:var(--ink-3); display:block; }
+.metrics.big .met b { font-family:var(--mono); font-size:18px; font-weight:700; color:var(--ink); }
+.metrics.big .met b.acc { color:var(--green); } .metrics.big .met b.loss { color:var(--primary); }
+.curve { width:100%; height:128px; background:var(--card-2); border:1px solid var(--line); border-radius:12px; display:block; }
+.curve .grid { stroke:var(--line-2); stroke-width:1; stroke-dasharray:4 4; }
+.curve-legend { display:flex; gap:16px; font-size:11.5px; color:var(--ink-3); margin-top:9px; }
+.curve-legend i { display:inline-block; width:12px; height:3px; border-radius:2px; vertical-align:middle; margin-right:5px; }
+
+/* 추론 결과 */
+.rtop { display:flex; align-items:center; gap:16px; padding:4px 0 14px; border-bottom:1px solid var(--line); margin-bottom:12px; }
+.rlab b { font-size:21px; font-weight:800; display:block; line-height:1.2; }
+.rlab span { font-size:12.5px; color:var(--ink-3); }
+.bars { display:flex; flex-direction:column; gap:10px; margin-top:6px; min-height:40px; }
+.bars .empty { color:var(--ink-4); font-size:12.5px; text-align:center; padding:16px 8px; }
+.pbar .pb-top { display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px; }
+.pbar .pb-name { font-weight:700; } .pbar .pb-pct { font-family:var(--mono); color:var(--ink-3); }
+.pbar .pb-track { height:10px; border-radius:6px; background:var(--bg-soft); overflow:hidden; }
+.pbar .pb-fill { height:100%; width:0; border-radius:6px; transition:.12s; }
+
+/* ══════ 탭 2 ④단계 · 혼동행렬 ══════ */
+.conf { margin-top:6px; overflow-x:auto; }
+.conf .empty { color:var(--ink-4); font-size:12.5px; text-align:center; padding:20px 8px; }
+.conf table { width:100%; border-collapse:collapse; font-size:12.5px; }
+.conf caption { caption-side:top; text-align:left; font-size:12px; color:var(--ink-3); margin-bottom:9px; line-height:1.6; }
+.conf caption b { color:var(--ink-2); }
+.conf th, .conf td { border:1px solid var(--line); padding:9px 10px; text-align:center; font-family:var(--mono); }
+.conf th { background:var(--card-2); color:var(--ink-2); font-weight:700; font-family:var(--sans); }
+.conf td.rowh { background:var(--card-2); font-weight:700; color:var(--ink-2); font-family:var(--sans); }
+.conf td.diag { background:var(--green-soft); color:var(--green); font-weight:800; }
+.conf td.miss { background:var(--primary-soft); color:var(--primary-ink); font-weight:700; }
+.conf td.held { background:var(--bg-soft); color:var(--ink-3); }
+
+.cm-verdict { font-size:12.5px; line-height:1.7; color:var(--ink-2); background:var(--card-2);
+  border:1px solid var(--line); border-radius:11px; padding:11px 13px; margin-bottom:4px; }
+.cm-verdict b { color:var(--ink); font-family:var(--mono); }
+/* 표에서 실제로 새는 방향을 짚어 주는 줄 — ④단계에서 다음에 할 일이 여기서 나온다. */
+.cm-fix { display:block; margin-top:8px; padding-top:8px; border-top:1px dashed var(--line-2); color:var(--ink-2); }
+.cm-fix b { color:var(--primary-ink); font-family:var(--sans); }
+.cm-caveat { display:block; margin-top:6px; color:var(--ink-3); font-size:12px; }
+
+/* ══════════════════════════════════════════════════════════
+   탭 3 · 심화 응용 — 자동 판정 시스템 도입 미션
+   text·gesture·life 심화 미션과 같은 4단계 규격의 화면.
+   ══════════════════════════════════════════════════════════ */
+.msstep[hidden], .ms-gate[hidden] { display:none; }
+#flow-ms .fstep:disabled { opacity:.4; cursor:not-allowed; }
+
+/* 학습 전 잠금 화면 */
+.ms-gate { max-width:520px; margin:0 auto; text-align:center; padding:30px 0; }
+.ms-gate-ic { display:inline-flex; width:64px; height:64px; align-items:center; justify-content:center;
+  font-size:30px; color:var(--amber); background:var(--amber-soft); border-radius:50%; margin-bottom:18px; }
+.ms-gate h2 { justify-content:center; margin-bottom:10px; }
+.ms-gate h2::before { display:none; }
+.ms-gate p { font-size:13.5px; color:var(--ink-2); line-height:1.7; margin:0 0 24px; }
+
+/* ① 미션 수령 */
+.ms-badge { display:inline-flex; align-items:center; font-family:var(--mono); font-size:11px; font-weight:700;
+  letter-spacing:.1em; color:var(--primary-ink); background:var(--primary-soft);
+  border:1px solid var(--primary-line); border-radius:999px; padding:4px 12px; margin-bottom:10px; }
+.ms-lead { font-size:13.5px; color:var(--ink-2); line-height:1.75; margin:10px 0 16px; }
+.ms-lead b { color:var(--ink); }
+.ms-e-tag { flex:none; font-size:11.5px; font-weight:800; border-radius:6px; padding:3px 9px; }
+.ms-e-tag.miss { color:var(--primary-ink); background:var(--primary-soft); border:1px solid var(--primary-line); }
+.ms-e-tag.wrong { color:#92400e; background:var(--amber-soft); border:1px solid rgba(217,138,31,.4); }
+
+.ms-pick-lab { font-size:13.5px; font-weight:700; color:var(--ink); margin:18px 0 10px; }
+.ms-pick { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+.ms-pick-btn { display:flex; flex-direction:column; align-items:flex-start; gap:5px; text-align:left;
+  background:#fff; border:2px solid var(--line); border-radius:12px; padding:14px 16px; transition:.15s; }
+.ms-pick-btn:hover { border-color:var(--primary-line); transform:translateY(-1px); box-shadow:var(--shadow-sm); }
+.ms-pick-btn.on { border-color:var(--primary); background:var(--primary-soft); box-shadow:0 0 0 3px var(--primary-soft); }
+.ms-pick-sw { width:14px; height:14px; border-radius:4px; }
+.ms-pick-btn b { font-size:15px; font-weight:800; }
+.ms-pick-btn em { font-style:normal; font-size:11.5px; color:var(--ink-3); }
+.ms-goal { margin-top:16px; background:var(--green-soft); border:1px solid rgba(17,160,111,.3);
+  border-radius:11px; padding:12px 14px; font-size:13px; color:var(--ink-2); line-height:1.7; }
+.ms-goal b { color:var(--green); }
+
+/* ══════════════════════════════════════════════════════════
+   ②③ 자동 판정 라인 — 검증 사진 한 장이 벨트 위 제품 한 개다.
+   판정 4종의 색은 기존 토큰을 그대로 쓴다.
+     ok(진짜 불량 쳐냄) --green · wrong(헛짚음) --amber
+     miss(불량 출하)   --primary · pass(정상 통과) --ink-3
+   ══════════════════════════════════════════════════════════ */
+.ms-line { border:1px solid var(--line); border-radius:14px; background:var(--card-2); padding:12px; margin:16px 0; }
+.ms-line-top { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.ms-line-tag { font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:.08em; color:var(--ink-3);
+  border:1px solid var(--line-2); border-radius:999px; padding:3px 10px; background:#fff; }
+.ms-line-cut { margin-left:auto; font-size:12px; font-weight:700; color:var(--ink-3); }
+.ms-line-cut b { font-family:var(--mono); font-size:13px; color:var(--ink); }
+.ms-mute { border:1px solid var(--line-2); background:#fff; color:var(--ink-3); border-radius:9px;
+  padding:5px 10px; font-size:11.5px; font-weight:700; }
+.ms-mute[aria-pressed="true"] { color:var(--ink-4); background:var(--bg-soft); }
+
+/* 벨트 — 어두운 바닥에 줄무늬가 흘러 라인이 돌고 있음을 알린다 */
+.ms-belt { position:relative; height:134px; border-radius:12px; overflow:hidden;
+  background:#2a2f3a; border:1px solid #1c2029; }
+.ms-belt::after { content:''; position:absolute; left:0; right:0; bottom:0; height:26px;
+  background:repeating-linear-gradient(90deg,#3a4150 0 14px,#2f3542 14px 28px);
+  animation:ms-roll .7s linear infinite; }
+@keyframes ms-roll { to { background-position:28px 0; } }
+.ms-belt.stopped::after { animation-play-state:paused; }
+.ms-line.noanim .ms-belt { display:none; }
+
+.ms-track { position:absolute; left:5px; right:5px; bottom:26px; height:80px; }
+.ms-prod { position:absolute; left:0; bottom:0; margin:0; width:54px; will-change:transform; }
+.ms-prod img, .ms-prod .ms-noimg { display:block; width:54px; height:54px; object-fit:cover;
+  border-radius:9px; border:2px solid #59616f; background:#3a4150; }
+.ms-prod .ms-prod-p { display:block; text-align:center; font-family:var(--mono);
+  font-size:10px; color:#aab3c2; margin-top:3px; }
+.ms-prod.ok    img, .ms-prod.ok    .ms-noimg { border-color:var(--green); }
+.ms-prod.wrong img, .ms-prod.wrong .ms-noimg { border-color:var(--amber); }
+.ms-prod.miss  img, .ms-prod.miss  .ms-noimg { border-color:var(--primary); box-shadow:0 0 0 3px rgba(240,71,58,.35); }
+.ms-prod.miss  .ms-prod-p { color:#ff9c93; font-weight:700; }
+.ms-prod.dropping { transition:transform .28s cubic-bezier(.4,.7,.6,1), opacity .28s; opacity:0; }
+.ms-noimg { display:grid; place-items:center; color:var(--ink-4); font-size:17px; font-weight:800; }
+
+/* 스캐너 + 로봇 팔 — 벨트 폭의 62% 지점에 함께 선다.
+   이름을 ms-scan 으로 둔다: .ms-gate 는 학습 전 잠금 화면이 이미 쓰고 있다. */
+.ms-scan { position:absolute; top:0; bottom:0; left:62%; width:0; z-index:2; }
+.ms-scan-beam { position:absolute; top:26px; bottom:26px; left:-1px; width:2px; border-radius:1px;
+  background:linear-gradient(180deg,rgba(240,71,58,0),rgba(240,71,58,.85),rgba(240,71,58,0)); }
+/* 팔이 게이트 선 위에 서므로 이름표는 선 왼쪽으로 뺀다 (겹치면 둘 다 안 읽힌다) */
+.ms-scan-lab { position:absolute; top:7px; right:10px; font-family:var(--mono); font-size:9.5px;
+  color:#8b93a3; white-space:nowrap; }
+.ms-arm { position:absolute; left:62%; top:0; width:12px; height:58px; z-index:3;
+  transform-origin:50% 0; transform:rotate(-26deg); transition:transform .13s ease-out; }
+.ms-arm i { position:absolute; top:0; left:3px; width:6px; height:46px; border-radius:3px;
+  background:linear-gradient(180deg,#9aa3b3,#666f80); }
+.ms-arm::after { content:''; position:absolute; top:44px; left:-5px; width:22px; height:12px;
+  border-radius:3px; background:#f0473a; box-shadow:0 2px 0 rgba(0,0,0,.28); }
+.ms-arm.hit { transform:rotate(8deg); transition:transform .07s ease-in; }
+
+/* 라인 끝의 통 두 개 — ①④의 정지 그림도 같은 스타일을 쓴다 */
+.ms-bins { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+.ms-bin { border:1px solid var(--line); border-radius:12px; background:#fff; padding:11px 12px; }
+.ms-bin.reject { border-color:var(--primary-line); }
+.ms-bin.ship { border-color:rgba(17,160,111,.32); }
+.ms-bins.static .ms-bin { background:var(--card-2); }
+.ms-bin-head { display:flex; align-items:baseline; gap:8px; }
+.ms-bin-head b { font-size:13.5px; font-weight:800; }
+.ms-bin-head em { font-style:normal; font-size:11px; color:var(--ink-4); }
+.ms-bin-n { margin-left:auto; font-family:var(--mono); font-size:19px; font-weight:700; color:var(--ink); }
+.ms-bin-cost { margin-top:9px; font-size:12.5px; color:var(--ink-2); line-height:1.7; }
+.ms-bin-cost b { color:var(--ink); }
+.ms-bin-pile { display:flex; flex-wrap:wrap; align-content:flex-start; gap:3px; min-height:34px;
+  margin:9px 0 8px; padding:6px; border-radius:9px; background:var(--bg-soft); }
+.ms-chip { width:18px; height:18px; border-radius:4px; background-size:cover; background-position:center;
+  background-color:var(--card-2); border:1.5px solid var(--line-2); }
+.ms-chip.ok { border-color:var(--green); }
+.ms-chip.wrong { border-color:var(--amber); }
+.ms-chip.miss { border-color:var(--primary); }
+.ms-chip.pass { opacity:.5; }
+.ms-pile-more { align-self:center; padding-left:4px; font-family:var(--mono); font-size:11px; color:var(--ink-3); }
+.ms-bin-split { display:flex; gap:12px; flex-wrap:wrap; font-size:11.5px; color:var(--ink-3); }
+.ms-bin-split em { font-style:normal; }
+.ms-bin-split b { font-family:var(--mono); font-weight:700; }
+.ms-bin-split .ok b { color:var(--green); }
+.ms-bin-split .wrong b { color:#92400e; }
+.ms-bin-split .miss b { color:var(--primary-ink); }
+.ms-bin-split .pass b { color:var(--ink-2); }
+
+.ms-line-ctrl { margin-top:12px; }
+/* 벨트와 게이지가 서로 다른 것을 재고 있다는 점을 한 줄로 못 박는다 */
+.ms-line-note { font-size:12px; color:var(--ink-3); line-height:1.7; margin:-6px 0 4px; }
+.ms-line-note b { color:var(--ink-2); }
+
+.ms-alert { border-radius:12px; padding:13px 15px; font-size:13px; line-height:1.7; border:1px solid; }
+.ms-alert b:first-child { display:block; font-size:14px; font-weight:800; margin-bottom:4px; }
+.ms-alert b:not(:first-child) { font-weight:700; color:inherit; }
+.ms-alert.fail { color:var(--ink-2); background:var(--primary-soft); border-color:var(--primary-line); }
+.ms-alert.fail b { color:var(--primary-ink); }
+.ms-alert.pass { color:var(--ink-2); background:var(--green-soft); border-color:rgba(17,160,111,.3); }
+.ms-alert.pass b { color:var(--green); }
+.ms-alert.idle { color:var(--ink-2); background:var(--card-2); border-color:var(--line); }
+.ms-alert.idle b { color:var(--ink); }
+
+/* ③ 게이지 */
+.ms-tune { margin-top:6px; }
+.ms-tune-split { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:stretch; min-height: 400px; }
+.ms-tune-left { display:flex; flex-direction:column; }
+.ms-tune-right { display:flex; flex-direction:column; }
+.ms-tune-right .ms-line { margin:0; height:100%; display:flex; flex-direction:column; justify-content:center; }
+.ms-gauges { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:18px 0 16px; }
+.ms-g { background:var(--card-2); border:1px solid var(--line); border-radius:12px; padding:13px 15px; }
+.ms-g-lab { display:block; font-size:12.5px; font-weight:700; color:var(--ink-2); margin-bottom:9px; }
+.ms-g-lab em { font-style:normal; font-weight:600; color:var(--ink-4); font-size:11px; margin-left:5px; }
+.ms-g-bar { position:relative; height:10px; border-radius:6px; background:var(--bg-soft); }
+.ms-g-bar i { display:block; height:100%; width:0; border-radius:6px; background:var(--amber); transition:width .15s, background-color .15s; }
+.ms-g-bar i.pass { background:var(--green); }
+/* 목표선(90%) — 재현율 막대에만 붙는다 */
+.ms-g-target { position:absolute; top:-3px; bottom:-3px; left:90%; width:2px; background:var(--ink-3); border-radius:1px; }
+.ms-g b { display:block; margin-top:8px; font-family:var(--mono); font-size:20px; font-weight:700; color:var(--ink); }
+
+/* ④ 리포트 */
+.ms-report { margin:6px 0 18px; }
+.ms-verdict { display:flex; align-items:center; gap:14px; border-radius:13px; padding:16px 18px; border:1px solid; margin-bottom:14px; }
+.ms-verdict .ms-v-ic { flex:none; width:44px; height:44px; border-radius:50%; display:grid; place-items:center;
+  font-size:22px; font-weight:800; color:#fff; }
+.ms-verdict b { display:block; font-size:16px; font-weight:800; margin-bottom:3px; }
+.ms-verdict span { font-size:13px; color:var(--ink-2); line-height:1.65; }
+.ms-verdict.pass { background:var(--green-soft); border-color:rgba(17,160,111,.35); }
+.ms-verdict.pass .ms-v-ic { background:var(--green); } .ms-verdict.pass b { color:var(--green); }
+.ms-verdict.fail { background:var(--amber-soft); border-color:rgba(217,138,31,.4); }
+.ms-verdict.fail .ms-v-ic { background:var(--amber); } .ms-verdict.fail b { color:#92400e; }
+
+.ms-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.ms-kpi { background:#fff; border:1px solid var(--line); border-radius:11px; padding:12px 13px; }
+.ms-kpi span { display:block; font-size:11px; color:var(--ink-3); font-weight:700; margin-bottom:3px; }
+.ms-kpi b { font-size:17px; font-weight:800; color:var(--ink); word-break:break-all; }
+.ms-kpi.good { background:var(--green-soft); border-color:rgba(17,160,111,.3); } .ms-kpi.good b { color:var(--green); }
+.ms-kpi.bad { background:var(--primary-soft); border-color:var(--primary-line); } .ms-kpi.bad b { color:var(--primary-ink); }
+.ms-summary { margin-top:12px; font-size:12.5px; color:var(--ink-3); text-align:center; }
+.ms-summary b { font-family:var(--mono); color:var(--ink-2); }
+
+/* ④ 개념 보충 — 기본은 접어 두고 필요한 학생만 펼친다 */
+.ms-fold { background:var(--card-2); border:1px solid var(--line); border-radius:12px; margin-top:12px; }
+.ms-fold > summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px;
+  padding:12px 15px; font-size:13px; font-weight:700; color:var(--ink-2); }
+.ms-fold > summary::-webkit-details-marker { display:none; }
+.ms-fold > summary::after { content:'+'; margin-left:auto; font-family:var(--mono); font-size:16px; color:var(--ink-4); }
+.ms-fold[open] > summary::after { content:'\2212'; }
+.ms-fold > summary:hover { color:var(--primary-ink); }
+.ms-fold > div { padding:0 15px 14px; font-size:12.5px; color:var(--ink-2); line-height:1.7; }
+.ms-fold > div b { color:var(--ink); }
+.ms-fold ul { margin:0; padding-left:18px; }
+.ms-fold li { margin-bottom:5px; }
+
+/* 좁은 화면 */
+@media (max-width:880px){
+  .layout { grid-template-columns:1fr; }
+  .work { grid-template-columns:1fr; align-items:start; }
+  .wstep > .card { height:auto; }
+  .ms-kpis { grid-template-columns:1fr 1fr; }
+  .ms-tune-split { grid-template-columns:1fr; }
+}
+@media (max-width:560px){
+  .wnav { grid-template-columns:1fr; }
+  .ms-bins { grid-template-columns:1fr; }
+  .ms-gauges { grid-template-columns:1fr; }
+  .ms-kpis { grid-template-columns:1fr; }
+}
+
+/* 동작 줄이기 — 라인 연출만 끄고 결과는 그대로 보여 준다 */
+@media (prefers-reduced-motion: reduce){
+  .ms-belt::after { animation:none; }
+  .ms-arm { transition:none; }
+  .ms-prod, .ms-prod.dropping { transition:none; }
+}

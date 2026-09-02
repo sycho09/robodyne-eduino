@@ -1,0 +1,34 @@
+{
+  "name": "eduino-normal",
+  "version": "1.0.0",
+  "description": "Eduino AI 일반모드 — 브라우저 완결형 6개 AI 학습 코스 (비전·제스처·데이터·텍스트·생활인식·머신러닝 개념)",
+  "private": true,
+  "main": "electron-main.js",
+  "scripts": {
+    "app": "electron .",
+    "dist": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^43.4.1",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.eduino.ailab.normal",
+    "productName": "Eduino AI 코스",
+    "files": [
+      "electron-main.js",
+      "platform/**",
+      "modules/**",
+      "shared/**",
+      "favicon.png",
+      "apple-touch-icon.png",
+      "og-image.svg"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "portable"
+    }
+  }
+}

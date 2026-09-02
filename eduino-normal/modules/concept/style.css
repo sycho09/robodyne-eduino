@@ -1,0 +1,124 @@
+/* concept 코스 고유 스타일.
+   공통 부품(.back .step .card .btn .proc .say .learn .flow .fstep .qz-* …)은
+   ../shared/components.css 에 있다. 여기에는 이 코스에서만 값이 다르거나
+   이 코스에만 있는 규칙만 둔다. */
+
+/* ── components.css 의 공통값을 이 코스 값으로 되돌리는 선언들 ──
+   (원래 이 파일에 있던 값 그대로. 화면은 이전과 동일하다) */
+.cintro p { max-width:600px; }
+.step { min-width:220px; }
+.card { display:flex; flex-direction:column; }
+.card .sub { font-size:13px; line-height:1.55; }
+.btn { padding:10px 15px; font-size:13.5px; }
+.seg { border-radius:10px; }
+.seg button { padding:9px 14px; font-size:13px; }
+.tip { margin-top:6px; }
+.learn { line-height:1.7; }
+
+/* 단계 탭 번호 자리 — 이 코스는 번호 대신 SVG 아이콘을 넣어 크기가 다르다 */
+.step .n { width:34px; height:34px; border-radius:10px; flex:none; display:grid; place-items:center; font-size:18px; background:var(--bg-soft); border:1px solid var(--line); }
+.step.active .n { background:var(--primary-soft); border-color:var(--primary-line); }
+.layout { display:grid; grid-template-columns:1.08fr .92fr; gap:18px; align-items:start; }
+
+.classpick { display:flex; gap:8px; margin-bottom:10px; }
+.classpick button { flex:1; border:1px solid var(--line-2); background:#fff; border-radius:10px; padding:9px; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:7px; color:var(--ink-2); }
+.classpick button.on { box-shadow:0 0 0 2px currentColor inset; }
+.classpick .d { width:13px; height:13px; border-radius:50%; }
+
+/* 슬라이더 값 표시가 '낮음 (단순)' 처럼 길어 자리를 넓게 잡는다 */
+.row { gap:11px; margin:14px 0 4px; }
+.row .val { font-size:12.5px; min-width:54px; }
+
+.metrics { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:12px 0; }
+.metrics .m { padding:11px; }
+.metrics .m span { font-size:11.5px; }
+.metrics .m b { font-size:18px; }
+
+.compare { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.compare .c { border:1px solid var(--line); border-radius:12px; padding:13px; background:var(--card-2); }
+.compare .c h3 { margin:0 0 6px; font-size:14px; }
+.compare .c.sup h3 { color:var(--primary-ink); }
+.compare .c.unsup h3 { color:var(--blue-ink); }
+.compare .c p { margin:0; font-size:12px; color:var(--ink-2); line-height:1.6; }
+
+/* ---- 고급-응용 (모델 검증) ---- */
+
+/* 상단 차트 정보 표시 */
+.vl-chart-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.vl-chart-title { font-size:16px; font-weight:700; color:var(--ink); }
+.vl-badge { background:var(--bg-soft); border:1px solid var(--line); color:var(--ink-2); font-size:12px; font-weight:600; padding:4px 12px; border-radius:16px; }
+/* 단계별 배지 상태 — advanced.js 가 클래스만 갈아 끼운다. */
+.vl-badge.unsup { background:var(--primary-soft); border-color:var(--primary-line); color:var(--primary-ink); }
+.vl-badge.reveal { background:var(--green-soft); border-color:rgba(17,160,111,.35); color:var(--green); }
+.vl-badge.sup { background:var(--blue-soft); border-color:rgba(77,141,255,.35); color:var(--blue); }
+
+/* 차트 래퍼 */
+.vl-chart-wrap { background:var(--card-2); border:1px solid var(--line); border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; padding:16px; min-height:360px; position:relative; }
+.vl-chart-wrap canvas { background:#fff; border-radius:8px; box-shadow:var(--shadow-sm); width:100%; max-width:600px; height:auto; aspect-ratio:600/430; }
+/* 축 이름 자리 — 캔버스 여백(PAD 28px)에는 눈금 숫자까지만 들어간다.
+   세로 이름은 writing-mode 로 세우고, 캔버스는 2열 1행에 그대로 둔다. */
+.vl-plot { display:grid; grid-template-columns:auto minmax(0,1fr); grid-template-rows:auto auto; align-items:center; column-gap:4px; row-gap:6px; width:100%; max-width:632px; }
+.vl-plot canvas { grid-column:2; grid-row:1; }
+.vl-axis { font-size:12px; font-weight:600; color:var(--ink-2); white-space:nowrap; }
+.vl-axis-y { grid-column:1; grid-row:1; writing-mode:vertical-rl; text-orientation:sideways; transform:rotate(180deg); justify-self:center; }
+.vl-axis-x { grid-column:2; grid-row:2; text-align:center; }
+
+/* 학습 진행 오버레이 — 차트 위를 덮는 유일한 레이어다(경고는 차트 아래 배너로 내렸다).
+   .dash-badge 처럼 display 를 author 규칙으로 정하는 요소는 [hidden] 이 UA 규칙이라
+   덮이지 않는다. 그래서 [hidden] 을 명시적으로 다시 눌러 준다(.dash-panel[hidden] 과 같은 이유). */
+.vl-train-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:9px;
+  border-radius:12px; background:rgba(255,255,255,.82); backdrop-filter:blur(2px); z-index:11; font-size:14px; color:var(--ink-2); }
+.vl-train-overlay[hidden] { display:none; }
+.vl-train-overlay b { color:var(--ink); }
+.vl-train-overlay .ic-inline { color:var(--primary-ink); }
+#vl-train-pct { font-family:var(--mono); font-weight:700; color:var(--primary-ink); min-width:42px; }
+
+/* 2단계 무리별 인원 — 군집에는 이름이 없어 '무리 A/B'로만 쓴다. */
+.vl-clusters { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:0 0 14px; }
+.vl-clusters .c { display:inline-flex; align-items:center; gap:8px; background:var(--card-2); border:1px solid var(--line);
+  border-radius:999px; padding:7px 14px; font-size:13px; font-weight:600; color:var(--ink-2); }
+.vl-clusters .d { width:13px; height:13px; border-radius:50%; flex:none; }
+.vl-clusters b { font-family:var(--mono); color:var(--ink); }
+
+/* 하단 결과 카드 */
+.vl-res-card { background:var(--card-2); border:1px solid var(--line); border-radius:12px; padding:24px; margin-top:24px; display:flex; align-items:center; gap:24px; }
+/* 수치·라벨을 한 열에 세로로 쌓아 가운데 맞춘다(절대배치로 끌어내지 않는다). */
+.vl-res-left { flex:0 0 200px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; border-right:1px solid var(--line); padding-right:24px; }
+.vl-res-right { flex:1; font-size:14px; color:var(--ink-2); line-height:1.6; }
+.vl-res-title { margin:0 0 8px; font-size:15px; font-weight:700; color:var(--ink); line-height:1.45; }
+.vl-res-lead { margin:0 0 10px; }
+.vl-res-next { margin:12px 0 0; padding-top:10px; border-top:1px solid var(--line); font-size:13px; color:var(--ink-3); }
+.vl-res-list { margin:0; padding-left:18px; display:grid; gap:5px; }
+.vl-res-list li { font-size:13px; line-height:1.55; }
+.vl-res-rate { font-size:40px; font-weight:800; color:var(--primary-ink); line-height:1.2; font-family:var(--mono); margin-bottom:8px; }
+.vl-res-cap { font-size:14px; color:var(--ink-2); font-weight:600; margin-bottom:4px; }
+.vl-res-sub { font-size:12px; color:var(--ink-3); }
+@media (max-width:760px) {
+  .vl-res-card { flex-direction:column; }
+  .vl-res-left { flex:none; width:100%; border-right:none; border-bottom:1px solid var(--line); padding:0 0 16px; }
+}
+
+/* 과적합 경고 배너 — 색은 전부 primary 토큰으로.
+   예전에는 차트를 덮는 오버레이였는데, "경계가 섬처럼 휘었다"고 말하면서 정작 그 섬을
+   가려 버렸다. 증거를 가리는 경고는 거꾸로라 차트 아래 배너로 내렸다. */
+.vl-warn { display:none; margin-top:14px; background:var(--primary-soft); border:1px solid var(--primary-line);
+  border-radius:12px; padding:16px 18px; gap:14px; align-items:flex-start; }
+.vl-warn.show { display:flex; }
+.vl-warn > .ic-inline { color:var(--primary-ink); font-size:20px; flex:none; margin-top:1px; }
+.vl-warn-body { flex:1; min-width:0; }
+.vl-warn h3 { color:var(--primary-ink); font-size:15px; font-weight:800; margin:0 0 6px; }
+.vl-warn p { color:var(--ink-2); font-size:13px; line-height:1.6; margin:0; }
+.vl-warn .btn { flex:none; align-self:center; }
+@media (max-width:640px){
+  .vl-warn.show { flex-direction:column; }
+  .vl-warn .btn { align-self:stretch; }
+}
+
+/* 단계 안내 문단 · 복잡도 슬라이더 줄 */
+.vl-note { font-size:14px; color:var(--ink-2); line-height:1.6; margin:0 0 16px; }
+.vl-note .c-primary { color:var(--primary-ink); }
+.vl-note .c-blue { color:var(--blue); }
+.vl-cx-row { max-width:600px; margin:24px auto 0; background:var(--card-2); border:1px solid var(--line); border-radius:10px; padding:16px; }
+.vl-cx-row .val { min-width:60px; }
+#vl-cx-readout { max-width:600px; margin:8px auto 0; text-align:right; font-size:12px; color:var(--ink-3); font-family:var(--mono); }
+
