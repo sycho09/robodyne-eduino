@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>요금 · 수업용 라이선스 — Eduino AI 비전 콘솔</title>
+<meta name="description" content="비전 콘솔 요금 안내 — 무료로 쓸 수 있는 범위와 수업용 라이선스에 들어 있는 것을 한눈에." />
+<link rel="icon" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<style>
+  :root {
+    --bg: #f6f7fb; --bg-soft: #eef1f7; --bg-tint: #fbfcff;
+    --card: #ffffff; --card-2: #f9fafd;
+    --line: #e9ebf2; --line-2: #dfe2ec;
+    --ink: #14161f; --ink-2: #50566a; --ink-3: #868da3; --ink-4: #aeb4c6;
+    --primary: #f0473a; --primary-ink: #d12e1e; --primary-2: #ff6a52;
+    --primary-soft: #fff1ee; --primary-line: #ffd6cd;
+    --green: #11a06f; --green-soft: #e6f6ef; --green-line: #b9e5d3;
+    --shadow-sm: 0 1px 2px rgba(20,22,31,.05), 0 1px 3px rgba(20,22,31,.05);
+    --shadow: 0 2px 6px rgba(20,22,31,.05), 0 12px 30px rgba(20,22,31,.07);
+    --r: 16px; --r-lg: 22px;
+    --sans: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: var(--sans); color: var(--ink);
+    background: var(--bg);
+    font-size: 16px; line-height: 1.62; -webkit-font-smoothing: antialiased;
+    word-break: keep-all; overflow-wrap: break-word;
+  }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+
+  /* 헤더 */
+  .topbar { position: sticky; top: 0; z-index: 50; background: rgba(246,247,251,.82);
+    backdrop-filter: blur(14px) saturate(1.4); border-bottom: 1px solid var(--line); }
+  .topbar-inner { display: flex; align-items: center; gap: 14px; height: 66px; }
+  .brand { display: flex; align-items: center; gap: 11px; }
+  .logo-img { height: 36px; width: auto; display: block; }
+  .nav { margin-left: auto; display: flex; align-items: center; gap: 2px; }
+  .nav a.link { padding: 9px 13px; border-radius: 9px; font-size: 14px; font-weight: 600; color: var(--ink-2); transition: .14s; }
+  .nav a.link:hover { color: var(--ink); background: #fff; box-shadow: var(--shadow-sm); }
+  .btn { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; font-size: 14.5px;
+    padding: 11px 20px; border-radius: 11px; cursor: pointer; border: 1px solid transparent; transition: .16s; }
+  .btn-primary { color: #fff; background: linear-gradient(150deg, var(--primary-2), var(--primary));
+    box-shadow: 0 6px 18px rgba(240,71,58,.32); }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(240,71,58,.42); }
+  .btn-ghost { color: var(--ink); background: #fff; border-color: var(--line-2); box-shadow: var(--shadow-sm); }
+  .nav .btn { margin-left: 8px; }
+  .btn-console { color: #fff; background: linear-gradient(150deg, #1b1f33, #0c0e18);
+    border-color: rgba(120,150,255,.4); box-shadow: 0 6px 18px rgba(0,0,0,.28); }
+  .btn-console .beta { font-size: 10px; font-weight: 800; background: linear-gradient(135deg,#6aa6ff,#3b86ff); border-radius: 5px; padding: 2px 6px; margin-left: 2px; }
+
+  /* 섹션 */
+  section { padding: 56px 0; }
+  section.tight { padding-top: 0; }
+  .head { text-align: center; max-width: 680px; margin: 0 auto 36px; }
+  .head .kicker { font-size: 13px; font-weight: 800; letter-spacing: .08em; color: var(--primary); text-transform: uppercase; }
+  .head h2 { margin: 10px 0 12px; font-size: 33px; font-weight: 800; letter-spacing: -0.03em; }
+  .head p { margin: 0; color: var(--ink-2); font-size: 16px; }
+
+  /* 무료 / 유료 경계표 — shared/access.js 의 FREE_LIMITS · defineVisionLocks 와 일치해야 한다 */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+  .sp { border-radius: var(--r-lg); border: 1px solid var(--line); background: var(--card); box-shadow: var(--shadow); padding: 26px 26px 28px; }
+  .sp.free { border-color: var(--green-line); background: linear-gradient(180deg, var(--green-soft), rgba(230,246,239,0) 42%), var(--card); }
+  .sp.paid { border-color: var(--primary-line); background: linear-gradient(180deg, var(--primary-soft), rgba(255,241,238,0) 42%), var(--card); }
+  .sp-tag { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 800; border-radius: 999px; padding: 6px 13px; }
+  .sp.free .sp-tag { color: #0b7a53; background: var(--green-soft); border: 1px solid var(--green-line); }
+  .sp.paid .sp-tag { color: var(--primary-ink); background: #fff; border: 1px solid var(--primary-line); }
+  .sp-tag svg { width: 14px; height: 14px; flex: none; }
+  .sp h3 { margin: 14px 0 4px; font-size: 19px; font-weight: 800; letter-spacing: -0.02em; }
+  .sp .sp-sub { margin: 0 0 18px; font-size: 13.5px; color: var(--ink-3); }
+  .sp ul { list-style: none; padding: 18px 0 0; margin: 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; }
+  .sp li { font-size: 14px; color: var(--ink-2); display: flex; gap: 10px; align-items: flex-start; }
+  .sp li svg { width: 17px; height: 17px; flex: none; margin-top: 3px; }
+  .sp.free li svg { color: var(--green); }
+  .sp.paid li svg { color: var(--primary); }
+  .sp li b { color: var(--ink); font-weight: 700; }
+
+  /* 요금 표 */
+  .plans { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--card);
+    border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); overflow: hidden; }
+  .plan { padding: 30px 28px; display: flex; flex-direction: column; position: relative; }
+  .plan:not(:last-child) { border-right: 1px solid var(--line); }
+  .plan.feat { background: linear-gradient(180deg, var(--primary-soft), rgba(255,241,238,0)); }
+  .plan .rec-slot { min-height: 26px; margin-bottom: 14px; }
+  .plan .rec { font-size: 11.5px; font-weight: 800; color: #fff; background: linear-gradient(150deg, var(--primary-2), var(--primary)); padding: 5px 13px; border-radius: 999px; }
+  .plan .pn { font-size: 17px; font-weight: 800; }
+  .plan .pd { font-size: 13px; color: var(--ink-3); margin: 4px 0 16px; min-height: 36px; }
+  .plan .price { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; color: var(--primary-ink); }
+  .plan .price small { font-size: 14px; font-weight: 600; color: var(--ink-3); }
+  .plan .pl { list-style: none; padding: 18px 0 0; margin: 18px 0 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 11px; flex: 1; }
+  .plan .pl li { font-size: 13.5px; color: var(--ink-2); display: flex; gap: 9px; align-items: flex-start; }
+  .plan .pl li svg { width: 17px; height: 17px; flex: none; margin-top: 2px; color: var(--primary); }
+  .plan .btn { width: 100%; justify-content: center; margin-top: 22px; }
+  .plan-note { text-align: center; color: var(--ink-3); font-size: 12.5px; margin-top: 18px; }
+
+  /* 문의 */
+  .contact { margin-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
+    background: linear-gradient(150deg, rgba(240,71,58,.10), rgba(255,138,61,.05)), var(--card);
+    border: 1px solid var(--primary-line); border-radius: var(--r-lg); padding: 26px 28px; box-shadow: var(--shadow); }
+  .contact h3 { margin: 0 0 6px; font-size: 20px; font-weight: 800; }
+  .contact p { margin: 0; font-size: 14px; color: var(--ink-2); }
+  .contact-r { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .contact-note { font-size: 12px; color: var(--ink-4); }
+
+  @media (max-width: 960px) {
+    .split { grid-template-columns: 1fr; }
+    .plans { grid-template-columns: 1fr; }
+    .plan:not(:last-child) { border-right: none; border-bottom: 1px solid var(--line); }
+  }
+  @media (max-width: 560px) {
+    .head h2 { font-size: 25px; }
+    .contact-r { align-items: stretch; } .btn { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/platform/index.html">
+      <img class="logo-img" src="/platform/img/logo.webp" alt="Eduino AI" />
+    </a>
+    <nav class="nav">
+      <a class="link" href="/platform/index.html">메인으로</a>
+      <a class="btn btn-console" href="/entry.html">🎮 비전 콘솔 시작 <span class="beta">BETA</span></a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section><div class="wrap">
+    <div class="head">
+      <div class="kicker">What&rsquo;s Included</div>
+      <h2>무료로 되는 것 · 라이선스가 필요한 것</h2>
+      <p>체험 스테이지 5종은 전부 무료입니다. 제작 트랙도 클래스 2개까지는 학습·추론을 끝까지 해 볼 수 있어요.</p>
+    </div>
+    <div class="split" id="split"></div>
+    <p class="plan-note">* 무료 구간은 기간 제한이 없습니다. 학생 수 제한도 없어요.</p>
+  </div></section>
+
+  <section class="tight"><div class="wrap">
+    <div class="head">
+      <div class="kicker">Pricing</div>
+      <h2>도입 규모에 맞게 선택</h2>
+      <p>한 학급부터 학교 단위까지. 필요한 만큼만 시작할 수 있습니다.</p>
+    </div>
+    <div class="plans" id="plans-grid"></div>
+    <p class="plan-note">* 구성·가격은 예시이며, 실제 도입 조건은 협의로 정합니다.</p>
+
+    <div class="contact" id="contact">
+      <div>
+        <h3>도입·구매 문의</h3>
+        <p>학교·학원·기관 단체 도입을 환영합니다. 학급 규모에 맞춰 견적을 맞춰 드려요.</p>
+      </div>
+      <div class="contact-r">
+        <a class="btn btn-primary" href="mailto:hello@eduino.kr?subject=Eduino%20AI%20%EB%B9%84%EC%A0%84%20%EC%BD%98%EC%86%94%20%EB%8F%84%EC%9E%85%20%EB%AC%B8%EC%9D%98" style="padding:14px 26px;font-size:16px;">이메일로 문의하기 →</a>
+        <span class="contact-note">평일 1–2일 내 회신</span>
+      </div>
+    </div>
+  </div></section>
+</main>
+
+<script>
+const IC = (p) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const CK = IC('<path d="M20 6 9 17l-5-5"/>');
+const LOCK = IC('<rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>');
+
+/* 무료/유료 경계 — 실제 판정은 shared/access.js 가 단독으로 한다. 여기는 표시만 하며 두 곳이 어긋나면 안 된다.
+   무료 상한 : FREE_LIMITS = { classes: 2, shots: 30, records: 20 }
+   잠금 항목 : classes(3개 이상) · epochs · confusion · preset · preset-custom · output · challenge · mission */
+const SPLIT = [
+  { cls:'free', tag:'무료 · 가입 없이', icon:CK, title:'지금 바로 되는 것',
+    sub:'설치도 결제도 없이 브라우저에서 열립니다.',
+    items:[
+      ['체험 스테이지 5종 전부', '객체 탐지 · 얼굴 검출 · 뼈대 검출 · 색상 추적 · 영상 효과'],
+      ['제작 트랙 3종', '이미지 · 음성 · 동작 분류를 직접 학습시키기'],
+      ['클래스 2개까지', '2종 분류기는 학습·추론을 끝까지 해 볼 수 있어요'],
+      ['클래스당 사진 30장 · 녹음 20번', '데이터 수집 상한'],
+      ['수업 개설 · 코드 입장', '6자리 코드로 학급이 함께 들어오기'],
+    ] },
+  { cls:'paid', tag:'수업용 라이선스', icon:LOCK, title:'라이선스로 열리는 것',
+    sub:'왼쪽 무료 구간을 모두 포함합니다.',
+    items:[
+      ['클래스 3~4개', '분리수거처럼 여러 갈래로 나누는 분류기'],
+      ['데이터 수집 상한 없음', '사진 · 녹음을 필요한 만큼'],
+      ['학습 횟수 조절 · 혼동행렬', '과소·과대 학습 비교와 오답 분석'],
+      ['더 많은 주제 · 자유 주제', '준비된 주제 확장과 내가 정한 주제 구성'],
+      ['결과물 · 챌린지 · 미션함', '만든 것을 남기고, 정확도로 겨루고, 제출받기'],
+    ] },
+];
+document.getElementById('split').innerHTML = SPLIT.map(s => `
+  <div class="sp ${s.cls}">
+    <span class="sp-tag">${s.icon} ${s.tag}</span>
+    <h3>${s.title}</h3>
+    <p class="sp-sub">${s.sub}</p>
+    <ul>${s.items.map(i => `<li>${s.icon}<span><b>${i[0]}</b> — ${i[1]}</span></li>`).join('')}</ul>
+  </div>`).join('');
+
+/* 요금 플랜 — 콘솔은 코스 단위가 아니라 학급 단위로 쓴다 */
+const PLANS = [
+  { name:'교사 1인', desc:'한 선생님이 쓰는 최소 구성', price:'문의', unit:'/ 1인', feat:false,
+    items:['수업 개설 제한 없음','클래스·데이터 상한 없음','결과물 · 챌린지 · 미션함','콘텐츠 업데이트 제공'], cta:'문의하기', primary:false },
+  { name:'학급 패키지', desc:'한 학급을 함께 운영', price:'추천', unit:'', feat:true,
+    items:['교사 1인 구성 전체 포함','학생 제출물 관리 · 진행 현황','교사용 수업 가이드','우선 지원'], cta:'도입 문의', primary:true },
+  { name:'학교 라이선스', desc:'학교·기관 단위 도입', price:'협의', unit:'', feat:false,
+    items:['다중 학급 · 교사 계정','전체 스테이지 이용','정기 업데이트 · 신규 스테이지','맞춤 교육 · 설치 지원'], cta:'견적 문의', primary:false },
+];
+document.getElementById('plans-grid').innerHTML = PLANS.map(p => `
+  <div class="plan ${p.feat?'feat':''}">
+    <div class="rec-slot">${p.feat?'<span class="rec">가장 인기</span>':''}</div>
+    <div class="pn">${p.name}</div>
+    <div class="pd">${p.desc}</div>
+    <div class="price">${p.price} <small>${p.unit}</small></div>
+    <ul class="pl">${p.items.map(i => `<li>${CK}<span>${i}</span></li>`).join('')}</ul>
+    <a class="btn ${p.primary?'btn-primary':'btn-ghost'}" href="#contact">${p.cta}</a>
+  </div>`).join('');
+</script>
+</body>
+</html>
