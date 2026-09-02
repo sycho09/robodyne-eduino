@@ -1,0 +1,196 @@
+/* 06-legibility.css — 이론관 시인성 패스.
+ *
+ * 목적: 실습용 PC 화면과 빔프로젝터 원거리 관람(3~5m)을 동시에 만족시킨다.
+ *
+ * 원칙 — 모든 텍스트가 뒷자리에서 읽힐 필요는 없다. 두 티어로 나눈다.
+ *   · 원거리 티어: 제목·핵심 캡션·흐름도 라벨·탭 — 적극 상향
+ *   · 책상 티어  : 핀 안내·상태 메시지·수치 표기 — 가독 하한(14~15px)까지만
+ *
+ * 이 파일은 파트 중 '가장 뒤'라 앞선 규칙을 덮어쓴다(main.css 의 캐스케이드 규약).
+ * 되돌리기: main.css 의 이 파일 @import 한 줄만 주석 처리하면 전부 원복된다.
+ */
+
+/* ══════════ 아이콘 공통 ══════════ */
+/* 인라인 SVG(app/icons.js)는 텍스트 옆에 붙으므로 baseline 이 아니라 중앙 정렬이어야 한다. */
+.ic-svg { display: inline-block; vertical-align: -0.18em; flex: 0 0 auto; }
+.tv-tab .ic-svg, .bx-step .ic-svg, .dc-h .ic-svg, .bx-theory h3 .ic-svg { vertical-align: 0; }
+
+/* 색면 원판 + 실루엣 — 원거리에서는 글립보다 색면이 먼저 읽힌다.
+   색면(배경)이 3단계 구분을 담당하고, 스트로크는 '읽히는 것'만 담당한다.
+   그래서 배경은 밝게 두고 선만 어둡게 간다 — 밝은 주황/노랑 선은 색면 위에서 2.4:1 까지
+   떨어져(비텍스트 기준 3:1 미달) 프로젝터에서 색면에 먹혔다. */
+.ic-orb { width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; flex: 0 0 auto; }
+.ic-read  { background: #e3f1ff; color: #2f7fce; }  /* 3.6:1 */
+.ic-think { background: #ffe9d6; color: #a8560c; }  /* 4.5:1 — was #e07b20, 2.6:1 */
+.ic-act   { background: #fff4cf; color: #8a6100; }  /* 5.0:1 — was #cf9500, 2.4:1 */
+.ic-in    { background: #e3f1ff; color: #2f7fce; }  /* 3.6:1 */
+.ic-out   { background: #ffe1ec; color: #c22f66; }  /* 5.4:1 */
+
+/* ══════════ 대비 — 프로젝터는 검정이 뜨고 흰색이 날아간다 ══════════ */
+/* #8a90a0(3.2:1) · #9aa0ac(2.6:1) 은 WCAG AA(4.5:1) 미달이라 배경에 먹힌다. */
+.dc-h span { color: #5f6676; }
+.dl-pin { color: #5f6676; }
+.dl-pin span { color: #6b7280; }
+.kb-key span { color: #5f6676; }
+.tv-cap { color: #4b5163; }
+.dc-status, .bc-status { color: #4b5163; }
+.tv-tab { color: #5b6170; }
+
+/* ══════════ ① 이론관(sensorRoom) — 원거리 티어 ══════════ */
+.tv-tab { font-size: 18px; padding: 11px 20px; display: inline-flex; align-items: center; gap: 9px; }
+.tv-x { font-size: 16px; padding: 11px 16px; color: #3d424f; }
+.tv-arrow { width: 58px; height: 58px; font-size: 22px; }
+.tv-dots i { width: 11px; height: 11px; }
+.tv-dots i.on { width: 30px; }
+.tv-eddie-wrap .tv-bubble { font-size: 19px; line-height: 1.5; padding: 15px 18px; }
+.tv-eddie-wrap { width: 330px; }
+
+/* 자료 슬라이드 안의 설명문 — 이 화면에서 제일 멀리 가야 하는 문장이다. */
+.ba-flow { font-size: 28px; line-height: 1.45; }
+.la-high, .la-low { font-size: 20px; padding: 9px 20px; }
+.la3 .la-names i { font-size: 22px; width: 150px; }
+.ba-freqrow { font-size: 26px; }
+.ba-use { font-size: 20px; }
+
+/* 여백 회수 — 카드는 1080px 인데 그림이 300px 남짓이라 16:9 무대의 40%도 못 썼다. */
+.la-field { height: 330px; gap: 16px; }
+.la-bulb { width: 150px; height: 150px; border-width: 4px; }
+.la-center { width: 150px; }
+.la3 .la-bulbs, .la3 .la-names { gap: 60px; }
+.la-cb { width: 128px; height: 128px; }
+
+/* 전자(e⁻)·정공(h⁺) — 원래는 흰 글씨가 흰 카드 위에 얹혀 아예 보이지 않았다.
+   입자 원 '안'으로 넣어 흰 글씨가 제 색면을 갖게 한다. */
+.la-p { gap: 10px; font-size: 0; }
+.la-p em { font-size: 19px; color: #3a4154; font-weight: 800; }
+.la-p.e::before, .la-p.h::before { display: none; }
+.la-p .la-orb { width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 26px; font-weight: 900; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.55); }
+/* 구슬 광택은 '유지하되 글자에 닿지 않게' 한다.
+   원래 radial-gradient(밝은색 → 어두운색)는 원 중앙이 그라디언트의 28% 지점이라, 흰 글자가
+   앉는 자리가 밝은 쪽이었다 — h⁺ 는 흰 글씨 대비가 2.5:1 까지 떨어져 프로젝터에서 날아간다.
+   그래서 바탕은 solid 계열로 깔고, 광택은 좌상단에서 일찍 사라지는 별도 레이어로 얹는다. */
+.la-p.e .la-orb { background: radial-gradient(circle at 32% 26%, rgba(255,255,255,.5), rgba(255,255,255,0) 26%),
+  linear-gradient(#3576c4, #2a63ab); box-shadow: 0 0 22px rgba(74,144,226,.55); }   /* 흰 글씨 4.6~6.1:1 */
+.la-p.h .la-orb { background: radial-gradient(circle at 32% 26%, rgba(255,255,255,.5), rgba(255,255,255,0) 26%),
+  linear-gradient(#c26810, #a8560c); box-shadow: 0 0 22px rgba(255,158,60,.55); }   /* 흰 글씨 4.0~5.3:1 */
+
+/* ══════════ ① 이론관 — 책상 티어(가독 하한만) ══════════ */
+.dc-h { font-size: 18px; gap: 9px; }
+.dc-h span { font-size: 14px; }
+.dl-pin { font-size: 15px; }
+.dl-pin span { font-size: 13.5px; }
+.dc-status, .bc-status { font-size: 15px; }
+.kb-info { font-size: 18px; }
+.kb-key b { font-size: 22px; }
+.kb-key span { font-size: 14px; }
+.dbtn { font-size: 17px; }
+
+/* ══════════ ② 스타트 게이트 이론관(basics) ══════════ */
+/* 아이콘이 들어오면서 span/button 들이 flex 컨테이너가 되어야 한다(글자와 세로 중앙 정렬). */
+.bx-step { font-size: 18px; padding: 11px 8px; gap: 9px;
+  display: flex; align-items: center; justify-content: center; }
+.bx-ic-sm { display: inline-flex; align-items: center; }
+.bx-theory h3 { font-size: 30px; gap: 11px; }
+/* 제목 아이콘만 브랜드 오렌지 — 페이지 진입점 표시.
+   브랜드 값 #ff7a3c 그대로는 흰 카드에서 2.6:1 이라 얇은 스트로크가 사라진다. 한 단계 조인 값. */
+.bx-theory h3 .ic-svg { color: #e35c10; }   /* 3.6:1 */
+.bx-opt { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.viz-code .viz-led { display: inline-flex; align-items: center; color: #d59a00; }
+.bx-theory p { font-size: 22px; max-width: 580px; line-height: 1.6; }
+.bx-dots i { width: 10px; height: 10px; }
+.bx-dots i.on { width: 28px; }
+.btn.bx-next, .btn.bx-ghost { height: 56px !important; max-height: 56px !important; font-size: 19px; padding: 0 26px; }
+.bx-speech { max-width: 340px; font-size: 17px; line-height: 1.5; }
+.bx-prog { font-size: 17px; }
+
+/* 흐름도(읽기 → 생각 → 동작) — 3단계 구조 자체가 멀리서 형태로 읽혀야 한다. */
+.bx-viz { height: 150px; gap: 18px; }
+.viz-node { font-size: 18px; gap: 8px; color: #3a4154; }
+.viz-arrow { font-size: 32px; }
+.viz-wire .ic-orb { width: 68px; height: 68px; }
+.viz-wire .viz-track { width: 74px; height: 6px; }
+.viz-wire .viz-dot { width: 14px; height: 14px; margin-top: -7px; }
+
+/* 입력/출력 비교 — 얇은 세로 띠 두 개는 멀리서 한 덩어리로 뭉친다.
+   각 열을 색면 블록으로 만들고 부품을 가로로 눕혀, 두 개의 '판'으로 대비시킨다. */
+.viz-io { gap: 30px; align-items: stretch; }
+.viz-io .io-col { gap: 8px; padding: 11px 18px 13px; border-radius: 15px; justify-content: center; }
+.viz-io .in { background: #eaf3ff; }
+.viz-io .out { background: #ffeef4; }
+.viz-io .io-h { font-size: 17px; display: flex; align-items: center; gap: 7px; }
+.viz-io .io-row { display: flex; align-items: center; gap: 16px; }
+/* 라벨과 아이콘은 같은 색 하나로 간다. 원래 헤더 색(#3aa0e0 / #e85a8a)은 흰 배경에서 쓰던
+   값이라 색면 블록 위에서는 2.6:1 / 3.0:1 로 내려앉는다 — 본문 대비 기준(4.5:1) 미달. */
+.viz-io .in .io-h, .viz-io .in .ic-svg { color: #1f6aad; }    /* 5.0:1 */
+.viz-io .out .io-h, .viz-io .out .ic-svg { color: #c22f66; }  /* 4.8:1 */
+
+.viz-pins .pin { font-size: 19px; padding: 11px 15px; }
+.viz-code code { font-size: 21px; padding: 13px 18px; }
+
+/* 퀴즈 · 미션 */
+.bx-qn { font-size: 22px; line-height: 1.5; }
+.bx-opt { font-size: 20px; }
+.bx-opt .ic-svg { vertical-align: -0.2em; }
+.bx-fb { font-size: 18px; }
+.bx-fb .ic-svg { vertical-align: -0.2em; }
+.bx-mtitle { font-size: 19px; }
+.bx-part { font-size: 19px; display: inline-flex; align-items: center; gap: 9px; }
+.bx-pick { font-size: 17px; display: inline-flex; align-items: center; gap: 7px; }
+
+/* ══════════ ② 스타트 이론 본문 — '한 줄 = 한 생각' ══════════ */
+/* 폰트만 키우면 긴 문장은 '큰 글자 덩어리'가 될 뿐이다. 원거리에서 문단은 글자보다 형태가
+   먼저 읽히므로, 형태가 곧 내용이 되도록 세 가지를 맞춘다.
+     ① 줄바꿈을 의미 단위로 — 줄 배열은 basics.js 의 THEORY[].body 가 들고 있다.
+     ② 줄 시작점을 세로로 정렬 — 가운데 정렬은 매 줄 시작 x 가 달라서, 끊어도 대비가
+        형태로 뭉치지 않는다. 블록 자체는 fit-content 로 가운데 놓아 카드의 중앙 구도는 지킨다.
+     ③ 키워드 색 = 바로 위 viz 색면의 색. 지금까지 문장 속 '입력'은 분홍인데 그림 속 입력 판은
+        파랑이었다 — 제일 빠른 판독 채널(색)이 그림과 반대로 가리키고 있었다.
+   줄 수는 늘지 않는다. 어차피 접혀서 3줄이던 것이 '의미 있는 3줄'이 될 뿐이다. */
+.bx-lines { width: fit-content; max-width: 660px; margin: 0 auto; text-align: left; }
+.bx-theory .bx-line { margin: 0; max-width: none; text-wrap: balance; }
+
+/* 기본 강조색 — #e85a8a 는 흰 카드에서 3.35:1 로, 이 카드에 남아 있던 마지막 AA 미달 텍스트다. */
+.bx-theory .bx-line b, .bx-mtitle b { color: #d13a72; }   /* 4.6:1 */
+
+/* 대비쌍 — 두 줄이 같은 x 에서 시작하고 색으로 갈린다. 색은 이 둘만 쓴다(늘수록 판독이 느려진다). */
+.bx-line.k-in b, .bx-line.k-ana b { color: #1f6aad; }     /* 5.9:1 — viz 입력 판과 같은 파랑 */
+.bx-line.k-out b, .bx-line.k-dig b { color: #c22f66; }    /* 5.7:1 — viz 출력 판과 같은 분홍 */
+
+/* 마무리 한 줄 — 대비쌍과 섞이지 않게 얇은 선으로 끊는다. */
+.bx-line.k-key { margin-top: 9px; padding-top: 9px; border-top: 1px solid #e3e7f0; }
+
+/* 디지털/아날로그 파형 — 4px 스트로크가 #ff7ab8(2.6:1) · #5ac9ff(2.0:1) 이라 비텍스트 기준(3:1)
+   미달이었다. 문장 키워드와 같은 값으로 맞춰, 선과 글자가 같은 것을 가리키게 한다. */
+.viz-line.dig { stroke: #c22f66; }
+.viz-line.ana { stroke: #1f6aad; }
+
+/* ══════════ ① 이론관 자료 캡션 — 정렬 고정 · 키워드 대비 ══════════ */
+/* .ba 가 align-items:center 라 캡션 박스는 fit-content 다. 그래서 한 줄에 들어가는 캡션은
+   가운데에 앉고, 넘치는 캡션은 무대 폭(≈872px)을 꽉 채워 왼쪽 정렬로 바뀐다 — 28px 기준
+   한 줄이 31자인데 캡션 22개 중 절반이 넘치므로, ◀▶ 로 넘길 때마다 캡션이 가운데↔왼쪽으로 튄다.
+   text-align 으로 정렬을 한쪽에 못 박고, balance 로 '…우리 눈엔 하나의 / 색으로 보여요!' 같은
+   짧은 꼬리를 두 줄 균형으로 편다. 측정폭은 좁히지 않는다 — 좁히면 한 줄짜리까지 접힌다. */
+.ba-flow { text-align: center; text-wrap: balance; }
+
+/* 강조 키워드 — #2ec27e 는 흰 배경에서 2.30:1 로, 28px 볼드에 걸리는 AA-large(3:1) 조차 못 넘긴다.
+   캡션에서 제일 중요한 단어가 제일 안 보이던 자리다. 색상 계열은 그대로 두고 명도만 내린다. */
+.ba-flow b, .ba-freqrow b { color: #0f7a45; }   /* 5.4:1 — was #2ec27e, 2.30:1 */
+.ba-note { background: #0f7a45; }               /* 흰 글씨 5.4:1 */
+
+/* ══════════ 좁은 화면 보호 ══════════ */
+/* 원거리 티어를 그대로 두면 세로가 짧은 노트북에서 카드가 넘친다. 여기서만 되돌린다. */
+@media (max-height: 760px) {
+  .bx-lines { max-width: 560px; }
+  .bx-line.k-key { margin-top: 6px; padding-top: 6px; }
+  .ic-orb { width: 64px; height: 64px; }
+  .bx-viz { height: 116px; }
+  .bx-theory p { font-size: 19px; }
+  .bx-theory h3 { font-size: 26px; }
+  .la-field { height: 250px; }
+  .la-bulb { width: 118px; height: 118px; }
+  .la-center { width: 118px; }
+  .la-p .la-orb { width: 68px; height: 68px; font-size: 22px; }
+  .ba-flow { font-size: 23px; }
+  .la-cb { width: 104px; height: 104px; }
+}

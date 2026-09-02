@@ -1,0 +1,393 @@
+[hidden] { display: none !important; }
+/* main.css — Playino · PlayHouse 거실 레슨 (2단 레이아웃 §5) */
+
+:root {
+  --bg: #0b1322;
+  --bg-elev: #131d31;
+  --bg-elev-2: #1b2840;
+  --line: #26344f;
+  --text: #e8eef9;
+  --muted: #9aaccb;
+  --accent: #6fb7ff;
+  --accent-2: #ffd11a;
+  --ok: #3ddc91;
+  --warn: #ffb020;
+  --err: #ff6b6b;
+  --radius: 12px;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --sans: "Pretendard", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #1c1016;
+  color: var(--text);
+  font-family: var(--sans);
+}
+#app { background: #1c1016; }
+
+#app, body { min-height: 100dvh; }
+
+/* ---- 헤더 ------------------------------------------------------------ */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 8px; font-size: 15px; }
+.brand strong { color: #fff; }
+.brand .crumb {
+  margin-left: 6px; padding: 2px 8px; border-radius: 999px;
+  background: var(--bg-elev-2); color: var(--muted); font-size: 12px;
+}
+.brand-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--accent-2); box-shadow: 0 0 10px var(--accent-2);
+}
+.phase-badge {
+  font-size: 12px; font-weight: 600; letter-spacing: .02em;
+  color: #0b1322; background: var(--accent-2);
+  padding: 5px 10px; border-radius: 999px;
+}
+
+/* ---- 레이아웃 62 / 38 ------------------------------------------------ */
+.layout {
+  display: grid;
+  grid-template-columns: 62% 38%;
+  gap: 0;
+  height: calc(100dvh - 51px);
+}
+.game-pane {
+  position: relative;
+  background:
+    radial-gradient(1200px 600px at 30% -10%, #18233c 0%, transparent 60%),
+    var(--bg);
+  overflow: hidden;
+  border-right: 1px solid var(--line);
+}
+.practice-pane {
+  background: var(--bg-elev);
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* ---- 스테이지 (게임 캔버스 영역) ------------------------------------ */
+.stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 24px;
+}
+.stage .room-card {
+  width: min(440px, 90%);
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  text-align: center;
+}
+.stage .room-card h2 { margin: 0 0 4px; font-size: 18px; }
+.stage .room-card p { margin: 0; color: var(--muted); font-size: 13px; }
+
+/* EDDIE 프리뷰 (시리얼 success 시그니처 데모) */
+.eddie-stage {
+  position: relative;
+  width: 200px; height: 240px;
+  display: flex; align-items: center; justify-content: center;
+}
+.eddie-stage svg { width: 150px; height: 200px; overflow: visible; }
+.eddie-caption { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+/* 거실 LED 시각 표시 */
+.room-lamp {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: #1a2440; border: 2px solid var(--line);
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, box-shadow .15s, border-color .15s;
+}
+.room-lamp.on {
+  background: radial-gradient(circle, #fff2b0 0%, #ffd11a 70%);
+  border-color: #ffe680;
+  box-shadow: 0 0 36px 8px rgba(255, 209, 26, .55);
+}
+.room-lamp small { font-size: 11px; color: var(--bg); font-weight: 700; }
+
+/* ---- 연습 패널 컴포넌트 -------------------------------------------- */
+.panel-section { margin-bottom: 16px; }
+.panel-section > h3 {
+  margin: 0 0 8px; font-size: 13px; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--muted);
+}
+.card {
+  background: var(--bg-elev-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+/* 연결 상태 */
+.conn-row { display: flex; align-items: center; gap: 10px; }
+.status-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--muted); flex: none;
+}
+.status-dot.connected { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+.status-dot.connecting { background: var(--warn); box-shadow: 0 0 8px var(--warn); animation: blink 1s infinite; }
+.status-dot.error { background: var(--err); box-shadow: 0 0 8px var(--err); }
+.conn-text { font-size: 14px; }
+.conn-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+@keyframes blink { 50% { opacity: .35; } }
+
+/* 버튼 */
+.btn {
+  appearance: none; border: 1px solid var(--line); flex: 0 0 auto;
+  background: var(--bg-elev); color: var(--text);
+  padding: 9px 14px; border-radius: 9px; font-size: 13px;
+  cursor: pointer; transition: background .12s, border-color .12s, opacity .12s;
+}
+.btn:hover { background: var(--bg-elev-2); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #08172e; font-weight: 600; }
+.btn.primary:hover { background: #8ac6ff; }
+.btn.on { background: var(--accent-2); border-color: var(--accent-2); color: #2a1c00; font-weight: 700; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+
+/* 시리얼 모니터 */
+.serial-monitor {
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.5;
+  background: #0a1120;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px;
+  height: 220px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.mon-line { display: flex; gap: 8px; }
+.mon-time { color: #4b5e80; flex: none; }
+.mon-tx { color: var(--accent); }
+.mon-rx { color: var(--ok); }
+.mon-rx.err { color: var(--err); }
+.mon-sys { color: var(--muted); font-style: italic; }
+.mon-empty { color: #4b5e80; }
+
+.monitor-tools { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.monitor-tools .hint { font-size: 11px; color: var(--muted); }
+
+/* 모달 (보드 준비) */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(4, 9, 18, .72);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 50;
+}
+.modal {
+  width: min(420px, 92%);
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px;
+}
+.modal h3 { margin: 0 0 8px; }
+.modal p { color: var(--muted); font-size: 13px; line-height: 1.6; }
+.modal .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
+/* 플래싱 진행 바 */
+.flash-progress { margin-top: 14px; }
+.flash-progress .bar {
+  height: 10px; background: #0a1120; border: 1px solid var(--line);
+  border-radius: 999px; overflow: hidden;
+}
+.flash-progress .bar-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width .15s ease;
+}
+.flash-stat { font-size: 12px; color: var(--muted); margin-top: 7px; font-family: var(--mono); }
+
+/* ---- 씬 공통 ------------------------------------------------------- */
+.scene-fade { animation: scene-in .35s ease; }
+@keyframes scene-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ---- 인트로 씬 ----------------------------------------------------- */
+.intro {
+  position: relative; min-height: 100dvh;
+  display: flex; align-items: center; justify-content: center;
+}
+.intro-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(900px 600px at 50% -5%, #1d3a6b 0%, transparent 60%),
+    radial-gradient(700px 500px at 80% 110%, #2a1d52 0%, transparent 55%),
+    var(--bg);
+}
+.intro-card {
+  position: relative;
+  width: min(560px, 92%);
+  text-align: center;
+  padding: 8px 20px 24px;
+}
+.intro-brand {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--muted); font-size: 14px; margin-bottom: 6px;
+}
+.intro-title {
+  margin: 4px 0 10px; font-size: 34px; line-height: 1.2; color: #fff;
+  letter-spacing: -0.01em;
+}
+.intro-eddie {
+  width: 180px; height: 240px; margin: 4px auto 6px;
+  display: flex; align-items: center; justify-content: center;
+}
+.intro-eddie svg { width: 150px; height: 200px; overflow: visible; }
+/* 인트로에서는 EDDIE 글로우를 은은하게 상시 펄스 */
+.intro-eddie #eddie-glow { animation: intro-glow 2.8s ease-in-out infinite; }
+@keyframes intro-glow { 0%,100% { opacity: .12; } 50% { opacity: .5; } }
+
+.intro-speech {
+  min-height: 56px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 2px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin: 6px auto 18px;
+  max-width: 460px;
+  font-size: 16px; color: var(--text); line-height: 1.5;
+}
+.intro-caret { color: var(--accent-2); animation: blink 1s steps(1) infinite; }
+
+.intro-actions { min-height: 48px; }
+.intro-start {
+  font-size: 16px; padding: 12px 26px;
+  opacity: 0; transform: translateY(8px) scale(.96);
+  transition: opacity .35s, transform .35s;
+}
+.intro-start.show { opacity: 1; transform: none; animation: cta-pulse 2s ease-in-out infinite; }
+@keyframes cta-pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(111,183,255,.5); }
+  50%     { box-shadow: 0 0 0 10px rgba(111,183,255,0); }
+}
+.intro-skip {
+  position: absolute; top: 0; right: 8px;
+  background: none; border: none; color: var(--muted);
+  font-size: 13px; cursor: pointer;
+}
+.intro-skip:hover { color: var(--text); }
+.intro-foot { margin-top: 18px; color: #4b5e80; font-size: 12px; }
+
+/* 인트로 슬라이드 */
+.intro-card.in { animation: slide-in .35s ease; }
+@keyframes slide-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.intro-title .accent { color: var(--accent); }
+.intro-desc { color: var(--muted); font-size: 15px; line-height: 1.6; margin: 6px auto 14px; max-width: 460px; }
+.intro-dots { display: flex; gap: 7px; justify-content: center; margin: 14px 0 16px; }
+.intro-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.intro-dots span.on { background: var(--accent); }
+#i-start { opacity: 0; transform: translateY(8px) scale(.96); transition: opacity .35s, transform .35s; }
+#i-start.show { opacity: 1; transform: none; animation: cta-pulse 2s ease-in-out infinite; }
+
+/* ---- 사용환경 준비 씬 ---------------------------------------------- */
+.scene.setup { display: flex; flex-direction: column; min-height: 100dvh; }
+.setup-body {
+  display: grid;
+  grid-template-columns: 240px minmax(380px, 480px) 320px;
+  gap: 28px; padding: 28px; align-items: center;   /* 세 열을 세로 가운데로 */
+  width: 100%; max-width: 1140px; margin: auto;     /* flex 컬럼 안에서 화면 가운데로 */
+}
+@media (max-width: 980px) {
+  .setup-body { grid-template-columns: 1fr; max-width: 560px; align-items: stretch; }
+  .setup-left { order: -1; }
+}
+
+.setup-left { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.setup-eddie { width: 190px; height: 200px; display: flex; align-items: center; justify-content: center; }
+.setup-eddie svg { width: 150px; height: 200px; overflow: visible; }
+.setup-eddie #eddie-glow { animation: intro-glow 2.8s ease-in-out infinite; }
+.setup-speech {
+  background: var(--bg-elev); border: 1px solid var(--line); border-radius: 14px;
+  padding: 14px 16px; color: var(--text); font-size: 14px; line-height: 1.5; text-align: center;
+}
+
+/* 가운데 메인 = 카드로 묶어 정돈 */
+.setup-main {
+  display: flex; flex-direction: column; align-items: stretch; text-align: center;
+  background: rgba(19,29,49,.55); border: 1px solid var(--line); border-radius: 18px;
+  padding: 26px 28px; box-shadow: 0 18px 50px rgba(0,0,0,.34);
+}
+.setup-title { font-size: 21px; margin: 0 0 16px; }
+.checklist { list-style: none; margin: 0 0 18px; padding: 0; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.check-item {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg-elev); border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px 14px; transition: border-color .2s, background .2s;
+}
+.check-item.done  { border-color: rgba(61,220,145,.55); background: rgba(61,220,145,.06); }
+.check-item.doing { border-color: rgba(255,176,32,.55); }
+.check-item.fail  { border-color: rgba(255,107,107,.55); }
+.check-icon { font-size: 20px; width: 24px; text-align: center; flex: none; }
+.check-text { display: flex; flex-direction: column; }
+.check-text b { font-size: 15px; }
+.check-text small { color: var(--muted); font-size: 12px; }
+
+.setup-action { min-height: 56px; margin-bottom: 14px; display: flex; flex-direction: column; align-items: center; gap: 10px; justify-content: center; }
+.setup-note { font-size: 12.5px; line-height: 1.5; margin: 2px 0 0; max-width: 320px; text-align: center; }
+.setup-action .flash-progress, .setup-action .btn-row { width: 100%; }
+.confirm-q { font-size: 15px; margin: 0 0 4px; }
+.setup-go { font-size: 16px; padding: 12px 24px; opacity: .5; align-self: center; }
+.setup-go.show:not(:disabled) { opacity: 1; animation: cta-pulse 2s ease-in-out infinite; }
+.setup-skip-wrap { display: flex; justify-content: center; }
+
+/* 시리얼 모니터 카드 */
+.setup-monitor { background: rgba(13,22,40,.5); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+.setup-monitor h3 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+
+.muted { color: var(--muted); font-size: 13px; line-height: 1.6; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+
+/* EDDIE success 글로우 펄스 (§5.5 signature) */
+@keyframes eddie-glow-pulse {
+  0%, 100% { opacity: 0; }
+  30%      { opacity: 1; }
+  60%      { opacity: .55; }
+}
+#eddie-glow.pulse { animation: eddie-glow-pulse 1.1s ease-in-out; }
+#eddie-glow.held  { opacity: .9; }
+
+/* EDDIE idle bob (미리보기에서 살짝 보여줌) */
+@keyframes eddie-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+#eddie { animation: eddie-bob 2.4s ease-in-out infinite; transform-origin: center; }
+
+/* ---- 씬 청크 로딩 (main.js mountLazy) --------------------------------
+   게임 씬은 동적 import 로 받는다. 대개 프리페치로 즉시 끝나므로 220ms 를
+   넘길 때만 나타난다. 배경색은 #app 과 맞춰 화면이 튀지 않게 한다. */
+.scene-loading {
+  position: fixed; inset: 0; z-index: 40;
+  display: grid; place-items: center;
+  background: #1c1016;
+}
+.scene-loading-dot {
+  width: 46px; height: 46px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.14);
+  border-top-color: var(--accent);
+  animation: scene-loading-spin .8s linear infinite;
+}
+@keyframes scene-loading-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .scene-loading-dot { animation: none; border-top-color: rgba(255,255,255,.14); }
+}
+

@@ -1,0 +1,109 @@
+Eduino AI : 미니게임천국 — 서드파티 라이선스 고지
+=================================================
+
+이 파일은 배포물(dist/)에 그대로 포함된다. ISC·MIT 의 유일한 조건인
+"사본에 저작권 고지를 포함할 것"을 지키는 자리다. 지우지 말 것.
+이 파일이 유일한 원본이다 — 저장소용 사본을 따로 두지 않는다.
+
+
+1. Lucide Icons — 아이콘 도형
+-----------------------------
+src/app/icons.js 의 표준 도형 41종은 Lucide 아이콘의 SVG 경로를 복사한 것이다.
+런타임 의존성은 없다 — 경로 문자열만 소스에 들어가 있다.
+제품 고유 개념 6종(robot·board·brain·press·motor·digital)은 직접 그린 것이라 해당 없음.
+
+출처: https://lucide.dev (lucide-static v1.29.0)
+
+ISC License
+
+Copyright (c) 2026 Lucide Icons and Contributors
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+
+2. Feather — Lucide 중 일부 도형의 원본
+---------------------------------------
+Lucide 아이콘 일부는 Feather 프로젝트에서 파생됐다.
+
+The MIT License (MIT)
+
+Copyright (c) 2013-present Cole Bemis
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+3. 웹폰트 — Space Grotesk · Orbitron
+------------------------------------
+SIL Open Font License 1.1 · Google Fonts CDN 에서 링크로 불러온다.
+폰트 파일을 재배포하지 않으므로 라이선스 동봉 의무는 없다. 셀프호스팅으로 바꾸면
+각 폰트의 OFL.txt 를 함께 배포해야 한다.
+
+Space Grotesk — Copyright (c) 2020 Florian Karsten
+Orbitron      — Copyright (c) 2009 Matt McInerney
+https://openfontlicense.org
+
+
+4. html2canvas — 기록증 이미지 저장
+----------------------------------
+'이미지로 저장' 이 화면을 PNG 로 굽는 데 쓴다. 필요할 때만 동적 import 하므로
+첫 화면에는 안 실리지만, 배포물(dist/assets/html2canvas.esm-*.js)에는 포함된다.
+
+  출처: https://github.com/niklasvh/html2canvas (v1.4.1)
+  라이선스: MIT
+
+Copyright (c) 2012 Niklas von Hertzen
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+
+5. 그 외
+--------
+· 이미지·3D 렌더(public/brand/) · 펌웨어(public/firmware/) · 애플리케이션 코드 — 자체 제작
+· 이모지 — 사용자 OS 폰트로 렌더된다. 재배포 아님
+· sharp · vite — 빌드 도구. 배포물에 포함되지 않는다
+· 런타임 npm 의존성은 html2canvas 하나뿐 (위 4절) — 나머지는 빌드 도구다
