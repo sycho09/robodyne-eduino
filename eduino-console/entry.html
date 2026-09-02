@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/favicon.png" />
+<meta name="theme-color" content="#0a0b12" />
+<title>입장 · VISION AI</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<!-- 콘솔 공통 셸.
+     data-intro="always" — 여기는 "비전 콘솔"의 입구라 들어올 때마다 브랜드 인트로를 재생한다.
+     (허브·실습에서 되돌아오는 내부 이동은 shared.js 가 알아서 건너뛴다) -->
+<script src="/console/shared.js" data-intro="always"></script>
+
+<style>
+  :root{ --bg:#0a0b12;--bg-2:#0f1120;--ink:#f2f4fb;--ink-2:#aeb6cf;--ink-3:#737c9c;
+    --line:rgba(255,255,255,.10);--line-2:rgba(255,255,255,.16);--panel:rgba(255,255,255,.045);
+    --acc:#3b86ff;--acc-2:#6aa6ff;--acc-soft:rgba(59,134,255,.18);--green:#42e29b;
+    --mono:'JetBrains Mono',ui-monospace,monospace; }
+  *{box-sizing:border-box;} html,body{margin:0;height:100%;}
+  body{font-family:'Pretendard',system-ui,sans-serif;background:var(--bg);color:var(--ink);height:100vh;overflow:hidden;
+    word-break:keep-all;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;}
+  a{color:inherit;text-decoration:none;} button{font-family:inherit;cursor:pointer;}
+  .ambient{position:fixed;inset:0;z-index:0;pointer-events:none;transition:background .5s;
+    background:radial-gradient(60% 60% at 50% 16%,var(--glow,var(--acc-soft)),transparent 60%),linear-gradient(180deg,var(--bg-2),var(--bg));}
+  .scanlines{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:.28;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px);}
+  .hud{position:relative;z-index:6;display:flex;align-items:center;justify-content:space-between;padding:16px 26px;gap:14px;flex:none;}
+  .brand{display:flex;align-items:center;gap:11px;} .brand img{height:27px;}
+  .brand .t{font-size:15px;font-weight:800;} .brand .t span{color:#f0473a;}
+  .brand .sys{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;color:var(--ink-3);}
+  .brand .sep{width:1px;height:16px;background:var(--line-2);}
+  .hbtn{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--ink-2);
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;transition:.15s;}
+  .hbtn:hover{color:var(--ink);border-color:var(--acc-2);}
+  [data-ic]{display:inline-flex;align-items:center;justify-content:center;line-height:0;} [data-ic] svg{width:1em;height:1em;display:block;} .hbtn [data-ic]{font-size:14px;}
+  .stage{position:relative;z-index:5;flex:1;display:flex;flex-direction:column;align-items:center;min-height:0;}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--ink-3);text-transform:uppercase;margin:6px 0 2px;}
+  .title{font-size:27px;font-weight:800;letter-spacing:-.02em;margin:6px 0 2px;text-shadow:0 2px 26px rgba(59,134,255,.35);}
+  .title b{color:var(--acc-2);}
+  /* 3장 동시 노출 — 화살표로 넘길 필요 없이 한눈에 보고 바로 선택 */
+  .carousel{position:relative;width:100%;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:4px 22px;}
+  .track{display:flex;gap:20px;justify-content:center;align-items:stretch;width:100%;max-width:1020px;height:100%;max-height:440px;}
+  .pack{position:relative;flex:1 1 0;min-width:0;max-width:320px;border:0;padding:0;background:none;cursor:pointer;
+    transition:transform .22s cubic-bezier(.2,.7,.3,1.4);opacity:0;animation:packIn .45s cubic-bezier(.2,.8,.3,1) forwards;}
+  @keyframes packIn{from{opacity:0;transform:translateY(20px) scale(.96);}to{opacity:1;transform:none;}}
+  .pi{position:relative;width:100%;height:100%;border-radius:18px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.55);transition:box-shadow .3s;}
+  .pack:hover,.pack.center{transform:translateY(-8px) scale(1.02);z-index:2;}
+  .pack.center .pi{box-shadow:0 0 0 2px var(--c,#fff),0 32px 78px rgba(0,0,0,.7);}
+  .pack:focus-visible{outline:none;}
+  .pack:focus-visible .pi{box-shadow:0 0 0 3px var(--c,#fff),0 32px 78px rgba(0,0,0,.7);}
+  .pa{position:absolute;inset:0;background:radial-gradient(120% 75% at 30% 12%,var(--c1),transparent 60%),linear-gradient(165deg,var(--c2),#0c1120);}
+  .pa::after{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.5) 1px,transparent 1px);background-size:18px 18px;opacity:.05;}
+  .pthumb{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;transition:transform .35s ease;}
+  .pack:hover .pthumb,.pack.center .pthumb{transform:scale(1.05);}
+  .pscrim{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,rgba(8,9,15,.1) 28%,rgba(8,9,15,.55) 60%,rgba(8,9,15,.95) 100%);}
+  .pb{position:absolute;inset:0;z-index:3;padding:24px;display:flex;flex-direction:column;text-align:left;}
+  .pno{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.06em;color:rgba(255,255,255,.6);}
+  .pb .nm{margin-top:auto;font-size:25px;font-weight:800;letter-spacing:-.02em;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.65);}
+  .pb .ds{font-size:13px;line-height:1.55;color:rgba(255,255,255,.84);margin-top:8px;text-shadow:0 1px 8px rgba(0,0,0,.6);}
+  .pb .go{display:inline-flex;align-items:center;gap:7px;margin-top:14px;font-size:14px;font-weight:800;color:#fff;}
+  .pb .go .ar{color:var(--c,var(--acc-2));font-weight:400;font-size:17px;transition:transform .15s;}
+  .pack:hover .pb .go .ar,.pack.center .pb .go .ar{transform:translateX(4px);}
+  .foot{position:relative;z-index:6;flex:none;display:flex;flex-direction:column;align-items:center;gap:12px;padding:10px 20px 22px;}
+  .hint{font-size:11.5px;color:var(--ink-3);letter-spacing:.01em;}
+  @media(max-width:760px){
+    body{height:auto;min-height:100vh;overflow:auto;}
+    .carousel{padding:10px 18px;}
+    .track{flex-direction:column;height:auto;max-height:none;max-width:420px;gap:14px;}
+    .pack{max-width:none;aspect-ratio:16/9;}
+    .pb{padding:18px;} .pb .nm{font-size:21px;} .pb .ds{display:none;}
+  }
+  @media(prefers-reduced-motion:reduce){ .pack{animation:none!important;opacity:1!important;} }
+  /* 모달 */
+  .ov{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(5,6,12,.74);backdrop-filter:blur(6px);}
+  .ov.on{display:flex;}
+  .modal.wide{width:min(640px,100%);}
+  .modal{position:relative;width:min(460px,100%);max-height:90vh;overflow:auto;background:linear-gradient(180deg,#12162a,#0d1020);
+    border:1px solid rgba(59,134,255,.32);border-radius:20px;padding:24px;box-shadow:0 0 0 4px rgba(59,134,255,.14),0 30px 70px rgba(0,0,0,.6);}
+  .modal h2{margin:0 0 4px;font-size:19px;font-weight:800;} .modal .sub{margin:0 0 16px;font-size:12.5px;color:var(--ink-3);}
+  .x{position:absolute;top:15px;right:15px;width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--ink-2);font-size:14px;}
+  .lbl{display:block;font-size:12.5px;color:var(--ink-2);font-weight:600;margin:0 0 6px;}
+  .in{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--line-2);border-radius:10px;color:var(--ink);font-size:15px;font-family:inherit;padding:11px 12px;margin-bottom:13px;}
+  .in:focus{outline:none;border-color:var(--acc-2);}
+  .btn{width:100%;font-size:15px;font-weight:800;color:#fff;border:0;border-radius:12px;padding:13px;background:linear-gradient(135deg,var(--acc-2),var(--acc));box-shadow:0 8px 22px rgba(59,134,255,.34);}
+  .btn.ghost{color:var(--ink-2);background:rgba(255,255,255,.05);border:1px solid var(--line-2);box-shadow:none;}
+  .row{display:flex;gap:9px;}
+  .codebig{font-family:var(--mono);font-size:38px;font-weight:700;letter-spacing:.12em;color:var(--acc-2);text-align:center;
+    background:rgba(59,134,255,.1);border:1px dashed rgba(59,134,255,.4);border-radius:14px;padding:18px;margin:6px 0 16px;}
+  .clist{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-height:300px;overflow:auto;margin-bottom:16px;padding:2px;}
+  .citem{display:flex;flex-direction:column;align-items:flex-start;gap:5px;text-align:left;background:rgba(255,255,255,.05);border:0;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);border-radius:14px;padding:16px 16px;cursor:pointer;transition:.15s;min-height:78px;justify-content:center;}
+  .citem:hover{background:rgba(255,255,255,.09);}
+  .citem.sel{background:var(--acc-soft);box-shadow:inset 0 0 0 2px var(--acc-2);}
+  .citem{position:relative;}
+  .citem .cn{font-weight:800;font-size:15px;color:#fff;padding-right:18px;}
+  .citem .cm{font-size:11.5px;color:var(--ink-3);}
+  .cdel{position:absolute;top:8px;right:9px;width:20px;height:20px;border-radius:7px;display:grid;place-items:center;
+    font-size:11px;color:var(--ink-3);background:rgba(255,255,255,.06);transition:.15s;}
+  .cdel:hover{color:#fff;background:rgba(240,71,58,.5);}
+  .cdiv{display:flex;align-items:center;gap:10px;margin:4px 0 14px;color:var(--ink-3);font-size:11.5px;}
+  .cdiv::before,.cdiv::after{content:'';flex:1;height:1px;background:var(--line);}
+  @media(max-width:520px){ .clist{grid-template-columns:1fr;} }
+  .cl-empty{color:var(--ink-3);font-size:12.5px;text-align:center;padding:18px 0;}
+  @media(max-width:560px){
+    .title{font-size:22px;}
+    .hud{padding:12px 14px;gap:8px;flex-wrap:wrap;}
+    .brand .t{font-size:13px;white-space:nowrap;} .brand .sys,.brand .sep{display:none;}
+    .hbtn{padding:7px 9px;font-size:11.5px;white-space:nowrap;}
+  }
+</style>
+</head>
+<body>
+<div class="v-boot" id="vboot"></div>
+<div class="ambient" id="ambient"></div>
+<div class="scanlines"></div>
+
+<header class="hud">
+  <a class="brand" href="/platform/index.html">
+    <img src="/platform/img/logo-mark.webp" alt="Eduino AI" />
+    <span class="t">Eduino <span>AI</span></span><span class="sep"></span><span class="sys">VISION&nbsp;AI</span>
+  </a>
+  <div style="display:flex;gap:9px;align-items:center">
+    <button class="hbtn" data-admin title="관리자 모드 · 수업 현황/정리"><i data-ic="settings"></i> 관리자</button>
+    <a class="hbtn" href="/platform/index.html"><i data-ic="home"></i> 플랫폼 홈</a>
+  </div>
+</header>
+
+<main class="stage">
+  <div class="eyebrow">VISION AI · START</div>
+  <h1 class="title">어떻게 <b>시작</b>할까요?</h1>
+  <div class="carousel">
+    <div class="track" id="track"></div>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="hint">카드를 클릭하면 바로 시작합니다 · <b style="color:var(--ink-2)">← →</b> 이동 · Enter 시작</div>
+</footer>
+
+<!-- 수업 만들기 모달 -->
+<div class="ov" id="createOv">
+  <div class="modal" id="createCard"></div>
+</div>
+<!-- 수업 참여 모달 -->
+<div class="ov" id="joinOv">
+  <div class="modal wide" id="joinCard"></div>
+</div>
+
+<script src="/stages/core/ui/icons.js"></script>
+<script src="/stages/core/session.js"></script>
+<script src="/stages/admin/cert.js"></script>
+<script src="/stages/submission/board.js"></script>
+<script src="/stages/admin/admin.js"></script>
+<script>
+  const $=(id)=>document.getElementById(id);
+  const esc=(s)=>(s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  /* 콘솔 목적지 — 상사가 고른 UI안(A/B/C)으로 들어간다 */
+  const STUDIO=()=>(window.VStudio?VStudio.studioURL():'/studio.html');
+  const ROLES=[
+    { key:'free', nm:'체험 모드', ds:'코드 없이 자유롭게 둘러봐요. 결과는 이미지로 저장됩니다.', tag:'MODE · 누구나 · 코드 불필요',
+      cta:'체험 시작', c:'#6aa6ff', c1:'rgba(59,134,255,.5)', c2:'#15233f', glow:'rgba(59,134,255,.18)' },
+    { key:'create', nm:'수업 개설', ds:'교사용. 수업명·인원을 설정하면 입장 코드가 발급됩니다.', tag:'TEACHER · 수업 만들기',
+      cta:'수업 만들기', c:'#ff8472', c1:'rgba(240,71,58,.5)', c2:'#2a1410', glow:'rgba(240,71,58,.16)' },
+    { key:'join', nm:'수업 참여', ds:'학생용. 선생님이 만든 수업을 찾아 코드로 입장합니다.', tag:'STUDENT · 코드 입력',
+      cta:'수업 참여', c:'#42e29b', c1:'rgba(66,226,155,.45)', c2:'#0e2a22', glow:'rgba(66,226,155,.15)' },
+  ];
+  const track=$('track');
+  track.innerHTML=ROLES.map((r,i)=>`
+    <button class="pack" data-i="${i}" style="--c:${r.c};--c1:${r.c1};--c2:${r.c2}">
+      <div class="pi">
+        <div class="pa"></div>
+        <img class="pthumb" data-base="/platform/img/entry-${r.key}" alt="" decoding="async" />
+        <div class="pscrim"></div>
+        <div class="pb"><div class="pno">${r.tag}</div><div class="nm">${r.nm}</div><div class="ds">${r.ds}</div>
+          <div class="go">${r.cta} <span class="ar">→</span></div></div>
+      </div>
+    </button>`).join('');
+  const packs=[...track.querySelectorAll('.pack')];
+  /* 실사 포스터 로더 — webp→jpg→png, 없으면 그라데이션 폴백 */
+  packs.forEach((p,i)=>{ p.style.animationDelay=(i*0.06)+'s';
+    const img=p.querySelector('.pthumb'); if(!img) return;
+    const base=img.dataset.base, exts=['webp','jpg','png','jpeg']; let k=0;
+    const next=()=>{ if(k>=exts.length){ img.remove(); return; } img.src=base+'.'+exts[k++]; };
+    img.addEventListener('error',next); next(); });
+  let cur=0;
+  function render(){
+    packs.forEach((p,i)=>p.classList.toggle('center',i===cur));
+    $('ambient').style.setProperty('--glow',ROLES[cur].glow);
+  }
+  function move(d){ cur=(cur+d+ROLES.length)%ROLES.length; render(); }
+  function to(i){ cur=i; render(); }
+  /* 카드 클릭 = 즉시 실행 (확인 버튼 없음) */
+  packs.forEach((p,i)=>{
+    p.addEventListener('click',()=>{ to(i); act(); });
+    p.addEventListener('mouseenter',()=>to(i));
+    p.addEventListener('focus',()=>to(i));
+  });
+  document.addEventListener('keydown',e=>{
+    if($('createOv').classList.contains('on')||$('joinOv').classList.contains('on')){ if(e.key==='Escape'){ closeAll(); } return; }
+    if(e.key==='ArrowRight') move(1); else if(e.key==='ArrowLeft') move(-1);
+    else if(e.key==='Enter') act(); else if(e.key==='Escape') location.href='/platform/index.html';
+  });
+  function act(){ const r=ROLES[cur];
+    if(r.key==='free'){ Session.setMode({mode:'free'}); Session.arm(); location.href=STUDIO(); }
+    else if(r.key==='create') openCreate();
+    else openJoin();
+  }
+  function closeAll(){ $('createOv').classList.remove('on'); $('joinOv').classList.remove('on'); }
+  $('createOv').addEventListener('click',e=>{ if(e.target===$('createOv')) closeAll(); });
+  $('joinOv').addEventListener('click',e=>{ if(e.target===$('joinOv')) closeAll(); });
+
+  /* 수업 만들기 / 이어서 운영 */
+  function resumeTeach(code){ const cls=Session.getClass(code); if(!cls) return;
+    Session.setMode({mode:'teach', code:cls.code, name:cls.name}); Session.arm(); location.href=STUDIO(); }
+  function openCreate(){
+    const mine=Session.listClasses();
+    const mineHtml = mine.length ? `
+      <label class="lbl">내가 만든 수업 · 이어서 운영하기</label>
+      <div class="clist" id="myList">${mine.map(c=>{ const n=Session.submissionsFor(c.code).length;
+        return `<button class="citem" data-code="${c.code}"><span class="cdel" data-del="${c.code}" title="목록에서 삭제">✕</span>
+          <div class="cn">${esc(c.name)}</div><div class="cm"><span style="font-family:var(--mono);color:var(--acc-2)">${c.code}</span> · 제출 ${n}건</div></button>`; }).join('')}</div>
+      <div class="cdiv"><span>또는 새 수업 만들기</span></div>` : '';
+    $('createCard').innerHTML=`
+      <button class="x" onclick="document.getElementById('createOv').classList.remove('on')">✕</button>
+      <h2>수업 개설 · 운영 <span style="font-size:11px;font-weight:700;color:#ff8472;background:rgba(240,71,58,.16);border-radius:6px;padding:3px 8px;vertical-align:middle;margin-left:4px">교사용</span></h2>
+      <p class="sub">이미 만든 수업을 이어서 운영하거나, 새 수업을 개설하세요.</p>
+      ${mineHtml}
+      <label class="lbl">수업명</label><input class="in" id="cName" placeholder="예: 3학년 2반 AI 비전 수업" />
+      <label class="lbl">예상 인원 (선택)</label><input class="in" id="cCap" type="number" min="1" placeholder="예: 28" />
+      <button class="btn" id="cMake">코드 발급하고 개설</button>`;
+    $('createOv').classList.add('on'); setTimeout(()=>{ const f=$('cName'); if(f&&!mine.length) f.focus(); },50);
+    $('createCard').querySelectorAll('.citem').forEach(it=>it.addEventListener('click',(e)=>{
+      const del=e.target.closest('[data-del]');
+      if(del){ e.stopPropagation(); if(confirm('이 수업을 목록에서 삭제할까요?\n(제출물은 게시판에 남아있어요)')){ Session.removeClass(del.dataset.del); openCreate(); } return; }
+      resumeTeach(it.dataset.code);
+    }));
+    $('cMake').onclick=()=>{
+      const name=($('cName').value||'').trim(); if(!name){ $('cName').focus(); $('cName').style.borderColor='#ff6a52'; return; }
+      const rec=Session.createClass({name, capacity:$('cCap').value});
+      Session.setMode({mode:'teach', code:rec.code, name:rec.name});
+      $('createCard').innerHTML=`
+        <button class="x" onclick="document.getElementById('createOv').classList.remove('on')">✕</button>
+        <h2>✅ 수업 개설 완료</h2><p class="sub">학생들에게 아래 <b>입장 코드</b>를 알려주세요.</p>
+        <div class="codebig">${rec.code}</div>
+        <div class="row" style="margin-bottom:9px">
+          <button class="btn ghost" id="cBoard">수업 게시판</button>
+          <button class="btn" id="cEnter">콘솔 입장</button>
+        </div>
+        <p class="sub" style="text-align:center;margin:0">수업명: <b>${esc(rec.name)}</b>${rec.capacity?` · 정원 ${rec.capacity}명`:''}</p>`;
+      $('cEnter').onclick=()=>{ Session.arm(); location.href=STUDIO(); };
+      $('cBoard').onclick=()=>{ closeAll(); if(window.Board) Board.open({code:rec.code}); };
+    };
+  }
+
+  /* 수업 참여 / 재참여 */
+  function enterClass(code, name, className){
+    Session.setMode({mode:'class', code, name:className||code, student:name});
+    Session.addRecentJoin({code, name, className:className||code});
+    try{ localStorage.setItem('vision_student_name', name); }catch(e){}
+    Session.arm(); location.href=STUDIO();
+  }
+  let joinSel=null;
+  function openJoin(){
+    const list=Session.listClasses();
+    const recent=Session.recentJoins();
+    const recentHtml = recent.length ? `
+      <label class="lbl">최근 참여한 수업 · 다시 입장</label>
+      <div class="clist" id="recentList">${recent.map(r=>`<button class="citem" data-rcode="${r.code}" data-rname="${esc(r.name)}" data-rcls="${esc(r.className)}">
+        <span class="cdel" data-rdel="${r.code}" title="기록 삭제">✕</span>
+        <div class="cn">${esc(r.className||r.code)}</div><div class="cm"><span style="font-family:var(--mono);color:var(--acc-2)">${r.code}</span>${r.name?(' · '+esc(r.name)):''}</div></button>`).join('')}</div>
+      <div class="cdiv"><span>또는 새 수업 코드로 참여</span></div>` : '';
+    $('joinCard').innerHTML=`
+      <button class="x" onclick="document.getElementById('joinOv').classList.remove('on')">✕</button>
+      <h2>수업 참여 <span style="font-size:11px;font-weight:700;color:#42e29b;background:rgba(66,226,155,.16);border-radius:6px;padding:3px 8px;vertical-align:middle;margin-left:4px">학생용</span></h2>
+      <p class="sub">전에 참여한 수업은 한 번에 다시 입장하고, 새 수업은 코드로 참여하세요.</p>
+      ${recentHtml}
+      ${ list.length? `<label class="lbl">이 기기에 등록된 수업</label><div class="clist" id="clist">${list.map(c=>`<button class="citem" data-code="${c.code}"><div class="cn">${esc(c.name)}</div><div class="cm"><span style="font-family:var(--mono);color:var(--acc-2)">${c.code}</span>${c.capacity?(' · 정원 '+c.capacity+'명'):''}</div></button>`).join('')}</div>` : '' }
+      <label class="lbl">입장 코드</label><input class="in" id="jCode" placeholder="선생님께 받은 6자리 코드" maxlength="6" style="text-transform:uppercase;font-family:var(--mono);letter-spacing:.12em" />
+      <label class="lbl">이름 / 번호</label><input class="in" id="jName" placeholder="예: 3학년 2반 김에듀" />
+      <button class="btn" id="jEnter">입장하기</button>`;
+    $('joinOv').classList.add('on');
+    joinSel=null;
+    /* 최근 참여 — 원탭 재입장 (로컬에 수업이 없어도 기록으로 복원) */
+    $('joinCard').querySelectorAll('[data-rcode]').forEach(it=>it.addEventListener('click',(e)=>{
+      const del=e.target.closest('[data-rdel]');
+      if(del){ e.stopPropagation(); Session.removeRecentJoin(del.dataset.rdel); openJoin(); return; }
+      enterClass(it.dataset.rcode, it.dataset.rname||'', it.dataset.rcls||'');
+    }));
+    /* 이 기기 등록 수업 — 코드 자동 채움 */
+    $('joinCard').querySelectorAll('#clist .citem').forEach(it=>it.addEventListener('click',()=>{
+      $('joinCard').querySelectorAll('#clist .citem').forEach(x=>x.classList.remove('sel')); it.classList.add('sel');
+      joinSel=it.dataset.code; $('jCode').value=it.dataset.code; setTimeout(()=>$('jName').focus(),30);
+    }));
+    $('jEnter').onclick=()=>{
+      const code=($('jCode').value||'').trim().toUpperCase(); const name=($('jName').value||'').trim();
+      const cls=Session.getClass(code);
+      if(!cls){ $('jCode').style.borderColor='#ff6a52'; alert('일치하는 수업 코드가 없어요. 코드를 확인해 주세요.'); return; }
+      if(!name){ $('jName').focus(); $('jName').style.borderColor='#ff6a52'; return; }
+      enterClass(cls.code, name, cls.name);
+    };
+  }
+
+  render();
+  window.addEventListener('pageshow',()=>{ document.body.style.opacity='1'; });
+  /* 인트로 — 이 세션에서 콘솔 화면을 처음 열었다면 여기서 1회 재생 */
+  if(window.VStudio) VStudio.boot();
+</script>
+</body>
+</html>
