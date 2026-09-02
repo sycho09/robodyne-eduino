@@ -41,3 +41,6 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
+
+# 비교 도구가 생성하는 main 스냅샷
+_dev/baseline/
