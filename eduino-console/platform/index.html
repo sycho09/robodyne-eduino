@@ -221,7 +221,7 @@
   .gbox li { font-size: 13px; color: var(--ink-2); line-height: 1.6; }
 
   /* ── 카탈로그 하단 무료 범위 안내 + 요금 진입 (요금표는 pricing.html) ── */
-  .buyline { margin-top: 8px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  .buyline { margin-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
     background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 20px; box-shadow: var(--shadow-sm); }
   .buyline span { font-size: 13.5px; color: var(--ink-2); }
   .buyline b { color: var(--ink); font-weight: 700; }
@@ -355,15 +355,11 @@
       <p>내 역할에 맞는 경로 하나만 따라가면 됩니다. 가입도 설정도 없습니다.</p>
     </div>
     <div class="guide" id="guide-grid"></div>
-    <div class="gnote" id="gnote"></div>
-  </div></section>
-
-  <div class="wrap">
     <div class="buyline">
       <span>무료로 쓸 수 있는 기능과 수업용 라이선스 혜택을 비교해 보세요.</span>
       <a class="btn btn-ghost" href="/platform/pricing.html">요금 안내 보기 →</a>
     </div>
-  </div>
+  </div></section>
 </main>
 
 <footer><div class="wrap">
@@ -469,15 +465,11 @@ document.getElementById('tracks').innerHTML = TRACKS.map(t => `
       <p>${t.desc}</p>
     </div>
     <div class="cat">${t.items.map(s => `
-      <a class="mod live" href="${ENTRY}">
+      <div class="mod live">
         <div class="mod-top"><span class="emo">${s.emoji}</span><span class="tag off">${s.badge}</span></div>
         <h3>${s.name}</h3>
         <p class="d">${s.desc}</p>
-        <div class="foot">
-          <span class="meta"><span class="st">${'★'.repeat(s.stars)}</span> 약 ${s.mins}분</span>
-          <span class="go">콘솔에서 열기 →</span>
-        </div>
-      </a>`).join('')}</div>
+      </div>`).join('')}</div>
   </div>`).join('');
 
 /* ── 수업 운영 가이드라인 ──────────────────────────────────────────
@@ -506,25 +498,6 @@ document.getElementById('guide-grid').innerHTML = GUIDE.map(g => `
     <h3>${g.title}</h3>
     <ol>${g.steps.map(s => `<li>${s}</li>`).join('')}</ol>
   </div>`).join('');
-
-/* 준비물 · 안 될 때 — 구 FAQ 5개가 여기로 들어왔다 */
-document.getElementById('gnote').innerHTML = `
-  <div class="gbox">
-    <h4><span>📋</span> 준비물</h4>
-    <ul>
-      <li>웹캠이 있는 PC 또는 태블릿 (음성 분류는 마이크도 필요)</li>
-      <li>크롬 등 최신 브라우저 — 설치도 회원가입도 없습니다</li>
-      <li>카메라를 쓰므로 <b>https</b> 또는 <b>localhost</b> 접속 (데스크톱 앱은 해당 없음)</li>
-    </ul>
-  </div>
-  <div class="gbox">
-    <h4><span>🛟</span> 안 될 때</h4>
-    <ul>
-      <li>카메라가 안 켜지면 — 주소가 https 인지 확인하고, 주소창 왼쪽 자물쇠에서 카메라 권한을 허용으로 바꿉니다</li>
-      <li>코드 입장이 안 되면 — 선생님 화면의 코드가 아직 열려 있는지, 6자리를 정확히 눌렀는지 확인합니다</li>
-      <li>학생 데이터는 <b>기기 안에서만</b> 처리되어 서버로 전송되지 않습니다</li>
-    </ul>
-  </div>`;
 
 /* ── 마감: 헤더 스크롤 상태 + 스크롤 등장(스태거) ── */
 (function(){
