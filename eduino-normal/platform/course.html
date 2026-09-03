@@ -141,29 +141,6 @@
       margin-left: 8px;
     }
 
-    .logo-mark {
-      width: 38px;
-      height: 38px;
-      border-radius: 11px;
-      background: linear-gradient(150deg, var(--primary-2), var(--primary));
-      color: #fff;
-      display: grid;
-      place-items: center;
-      font-weight: 800;
-      font-size: 20px;
-      box-shadow: 0 4px 12px rgba(240, 71, 58, .4), inset 0 1px 0 rgba(255, 255, 255, .4);
-    }
-
-    .logo-title {
-      font-size: 19px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-    }
-
-    .logo-title span {
-      color: var(--primary);
-    }
-
     .logo-img {
       height: 36px;
       width: auto;
@@ -553,41 +530,6 @@
       background: var(--blue-soft);
     }
 
-    /* 무료/유료 경계 표시 — 판정은 shared/access.js 가 하고 여기서는 표시만 한다 */
-    .flow-node .fn-free,
-    .flow-node .fn-lock {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 10.5px;
-      font-weight: 800;
-      padding: 3px 9px;
-      border-radius: 999px;
-      margin-left: 6px;
-      vertical-align: 1px;
-    }
-
-    .flow-node .fn-free {
-      color: var(--green);
-      background: var(--green-soft);
-      border: 1px solid rgba(17, 160, 111, .25);
-    }
-
-    .flow-node .fn-lock {
-      color: var(--primary-ink);
-      background: var(--primary-soft);
-      border: 1px solid var(--primary-line);
-    }
-
-    .flow-node .fn-lock svg {
-      width: 11px;
-      height: 11px;
-    }
-
-    .flow-node.locked {
-      background: linear-gradient(180deg, var(--primary-soft), #fff);
-    }
-
     .flow-note {
       margin-top: 16px;
       font-size: 13px;
@@ -851,7 +793,7 @@
           <p class="tagline" id="c-tag"></p>
           <div class="chero-cta">
             <a class="btn btn-primary btn-lg" id="c-start" href="#">체험 시작 →</a>
-            <a class="btn btn-ghost btn-lg" href="#guide">가이드라인 보기 ↓</a>
+            <a class="btn btn-ghost btn-lg" href="#guide">진행 방식 보기 ↓</a>
           </div>
         </div>
       </div>
@@ -911,7 +853,6 @@
   <script src="/platform/feature-data.js"></script>
   <script>
     const IC = (p) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
-    const CK = IC('<path d="M20 6 9 17l-5-5"/>');
     const ICONS = {
       vision: IC('<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/>'),
       gesture: IC('<circle cx="12" cy="4" r="2"/><path d="M12 6v6m0 0l-4 6m4-6l4 6M6 9l6 1 6-1"/>'),
@@ -1052,40 +993,39 @@
     /* 4단계 학습 과정 — [체험 시작] 이 여는 modules/shared/course-dashboard.js 의
        STEP_LABELS(사전 진단 · 이론 학습 · 실습 퀘스트 · 최종 평가) 와 같은 순서다.
        문항·개념 수는 코스마다 다르므로 여기 적지 않고 course-config.js 에서 읽는다.
-       무료/유료 판정은 shared/access.js 가 단독으로 하고 여기서는 표시만 한다. */
-    const LOCKIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>';
+       무료/유료 구간은 카드가 아니라 아래 각주(#c-freenote) 한 줄이 말한다. */
 
     function renderSteps(cfg) {
       /* 개수를 못 읽었을 때는 숫자 없는 이름으로 떨어뜨린다 — 배지가 비지 않게 */
       const cnt = (arr, fmt, fallback) => (Array.isArray(arr) && arr.length) ? fmt(arr.length) : fallback;
-      const FREE = '<span class="fn-free">무료</span>';
-      const LOCK = `<span class="fn-lock">${LOCKIC} 수업용 라이선스</span>`;
+      /* 요금 표시는 카드에 달지 않는다 — 코스마다 값이 다른 개수 칩만 남기고,
+         무료/유료 구간은 아래 각주(#c-freenote) 한 줄이 책임진다. */
       const steps = [
         {
-          title: '사전 진단', tag: FREE,
+          title: '사전 진단',
           badge: cnt(cfg.precheck, v => `OX ${v}문항`, 'OX 문항'),
           desc: '점수를 매기는 시험이 아니에요. 아는 개념을 가려내 이론 학습 경로를 맞춰 줍니다.'
         },
         {
-          title: '이론 학습', tag: FREE,
+          title: '이론 학습',
           badge: cnt(cfg.theory, v => `핵심 개념 ${v}개`, '핵심 개념'),
           desc: '정의 → 예시 → 실무 활용 순서로 개념을 읽습니다.'
         },
         {
-          title: '실습 퀘스트', tag: `<span class="fn-free">①② 무료</span>${LOCK}`,
+          title: '실습 퀘스트',
           badge: `${c.curriculum.length}단계`,
           desc: c.curriculum.map(u => u.title).join(' → ')
         },
         {
-          title: '최종 평가', tag: LOCK, locked: true,
+          title: '최종 평가',
           badge: cnt(cfg.quiz, v => `${v}문항`, '평가 문항'),
           desc: '문항을 풀면 즉시 채점하고, 문항별 해설을 보여 줍니다.'
         },
       ];
       document.getElementById('c-steps').innerHTML = steps
         .map((s, i) =>
-          `<div class="flow-node t${i + 1}${s.locked ? ' locked' : ''}"><span class="fn-step">${i + 1}</span>` +
-          `<span class="fn-badge">${s.badge}</span>${s.tag}<h3>${s.title}</h3><p>${s.desc}</p></div>`)
+          `<div class="flow-node t${i + 1}"><span class="fn-step">${i + 1}</span>` +
+          `<span class="fn-badge">${s.badge}</span><h3>${s.title}</h3><p>${s.desc}</p></div>`)
         .join('<div class="flow-arrow"></div>');
     }
 
@@ -1099,7 +1039,8 @@
     document.head.appendChild(cfgScript);
 
     document.getElementById('c-freenote').innerHTML =
-      '<b>사전 진단 · 이론 학습 · 실습 ①②</b> 는 결제 없이 진행됩니다. ' +
+      '<b>사전 진단부터 실습 ②단계까지</b> 는 결제 없이 진행되고, ' +
+      '<b>실습 ③ 과 최종 평가</b> 는 수업용 라이선스에 들어 있어요. ' +
       '<a href="/platform/pricing.html">요금 보기 →</a>';
     document.getElementById('c-other').innerHTML = ORDER.filter(k => k !== dkey).map(k => `<a href="/platform/course.html?c=${k}">${COURSES[k].name}</a>`).join('');
 
@@ -1468,7 +1409,7 @@
     };
 
     /* ───────────── 기능(서비스) 단위 렌더 ─────────────
-       버튼을 누르면 ①기능설명 ②플로우차트 ③동작화면 ④가이드라인 이 통째로 바뀐다.
+       버튼을 누르면 아래 동작 화면(GIF 또는 캔버스)이 그 기능으로 바뀐다.
        자동 순환은 두지 않는다 — 글을 읽는 중에 내용이 바뀌면 안 되고,
        "각 서비스 버튼 클릭 시" 가 이 화면의 조작 규약이다. */
     (function startDemo() {
@@ -1478,46 +1419,8 @@
       let cur = 0;
 
       const chipsEl = document.getElementById('demo-feats');
-      const elDesc = document.getElementById('f-desc');
-      const elUse = document.getElementById('f-use');
-      const elStage = document.getElementById('f-stage');
-      const elFlow = document.getElementById('f-flow');
-      const elGuide = document.getElementById('f-guide');
       const gif = document.getElementById('demo-gif');
       const live = document.getElementById('demo-live');
-
-      const STAGE = { 1: '초급 · 체험', 2: '중급 · 제작', 3: '심화 · 응용' };
-
-      /* ①②④ 텍스트 블록 채우기 */
-      function paint(i) {
-        const id = feats[i].id, d = DATA[id];
-        if (!d) return;                       // 데이터가 없으면 캔버스만 돌린다
-        if (elStage) {
-          const paid = d.stage >= 3;
-          elStage.className = 'fstage' + (paid ? ' paid' : '');
-          elStage.textContent = STAGE[d.stage] + (paid ? ' · 수업용 라이선스' : ' · 무료');
-        }
-        if (elDesc) elDesc.textContent = d.desc;
-        if (elUse) elUse.textContent = d.use;
-        if (elFlow) {
-          elFlow.innerHTML = d.flow.map((n, k) => `
-        <div class="fnode">
-          <span class="fnum">${k + 1}</span>
-          <span class="fic">${esc(n.ic)}</span>
-          <b>${esc(n.t)}</b>
-          <span>${esc(n.d)}</span>
-        </div>`).join('<div class="farrow" aria-hidden="true"></div>');
-        }
-        if (elGuide) {
-          const g = d.guide;
-          const list = (arr) => '<ul>' + arr.map(x => `<li>${esc(x)}</li>`).join('') + '</ul>';
-          elGuide.innerHTML =
-            `<div class="gcol"><h5><span>📋</span> 준비</h5>${list(g.ready)}</div>` +
-            `<div class="gcol wide"><h5><span>👣</span> 이렇게 진행해요</h5><ol>${g.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol></div>` +
-            `<div class="gcol"><h5><span>🛟</span> 안 될 때</h5>${list(g.trouble)}</div>` +
-            `<div class="gtip"><b>교사 팁</b> ${esc(g.tip)}</div>`;
-        }
-      }
 
       /* ③ 동작화면 — GIF 가 있으면 GIF, 없으면 캔버스 폴백.
          GIF 는 선택 자산이라 없어도 완전히 동작해야 한다. */
@@ -1546,7 +1449,7 @@
       }
 
       function hi() { if (!chipsEl) return; const k = chipsEl.children; for (let i = 0; i < k.length; i++) k[i].classList.toggle('on', i === cur); }
-      function select(i) { cur = i; tBase = now0(); hi(); paint(i); showMedia(feats[i].id); }
+      function select(i) { cur = i; tBase = now0(); hi(); showMedia(feats[i].id); }
 
       const now0 = () => (window.performance && performance.now) ? performance.now() : Date.now();
       let tBase = now0();
@@ -1561,7 +1464,6 @@
       }
 
       const cv = document.getElementById('demo-canvas');
-      paint(0);
       showMedia(feats[0].id);
 
       if (!cv || !cv.getContext) return;
