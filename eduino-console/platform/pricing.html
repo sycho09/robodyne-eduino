@@ -52,46 +52,63 @@
     border-color: rgba(120,150,255,.4); box-shadow: 0 6px 18px rgba(0,0,0,.28); }
   .btn-console .beta { font-size: 10px; font-weight: 800; background: linear-gradient(135deg,#6aa6ff,#3b86ff); border-radius: 5px; padding: 2px 6px; margin-left: 2px; }
 
-  /* 섹션 */
-  section { padding: 56px 0; }
-  section.tight { padding-top: 0; }
-  .head { text-align: center; max-width: 680px; margin: 0 auto 36px; }
-  .head .kicker { font-size: 13px; font-weight: 800; letter-spacing: .08em; color: var(--primary); text-transform: uppercase; }
-  .head h2 { margin: 10px 0 12px; font-size: 33px; font-weight: 800; letter-spacing: -0.03em; }
-  .head p { margin: 0; color: var(--ink-2); font-size: 16px; }
+  main { max-width:1140px; margin:0 auto; padding:0 24px 60px; }
 
-  /* 무료 / 유료 경계표 — shared/access.js 의 FREE_LIMITS · defineVisionLocks 와 일치해야 한다 */
-  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
-  .sp { border-radius: var(--r-lg); border: 1px solid var(--line); background: var(--card); box-shadow: var(--shadow); padding: 26px 26px 28px; }
-  .sp.free { border-color: var(--green-line); background: linear-gradient(180deg, var(--green-soft), rgba(230,246,239,0) 42%), var(--card); }
-  .sp.paid { border-color: var(--primary-line); background: linear-gradient(180deg, var(--primary-soft), rgba(255,241,238,0) 42%), var(--card); }
-  .sp-tag { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 800; border-radius: 999px; padding: 6px 13px; }
-  .sp.free .sp-tag { color: #0b7a53; background: var(--green-soft); border: 1px solid var(--green-line); }
-  .sp.paid .sp-tag { color: var(--primary-ink); background: #fff; border: 1px solid var(--primary-line); }
-  .sp-tag svg { width: 14px; height: 14px; flex: none; }
-  .sp h3 { margin: 14px 0 4px; font-size: 19px; font-weight: 800; letter-spacing: -0.02em; }
-  .sp .sp-sub { margin: 0 0 18px; font-size: 13.5px; color: var(--ink-3); }
-  .sp ul { list-style: none; padding: 18px 0 0; margin: 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; }
-  .sp li { font-size: 14px; color: var(--ink-2); display: flex; gap: 10px; align-items: flex-start; }
-  .sp li svg { width: 17px; height: 17px; flex: none; margin-top: 3px; }
-  .sp.free li svg { color: var(--green); }
-  .sp.paid li svg { color: var(--primary); }
-  .sp li b { color: var(--ink); font-weight: 700; }
+  /* 히어로 (다크 밴드) */
+  .phero { position:relative; margin-top:18px; border-radius:28px; overflow:hidden; padding:38px 36px; text-align:center;
+    background:linear-gradient(150deg,#14161f 0%, #1e1411 60%, #241019 100%);
+    border:1px solid rgba(255,255,255,.08); box-shadow:0 30px 70px rgba(20,22,31,.30), inset 0 1px 0 rgba(255,255,255,.06); }
+  .phero::before { content:''; position:absolute; inset:0; pointer-events:none; opacity:.55;
+    background:radial-gradient(58% 80% at 88% -12%, rgba(240,71,58,.5), transparent 60%), radial-gradient(50% 70% at 8% 112%, rgba(124,108,255,.28), transparent 60%); }
+  .phero::after { content:''; position:absolute; inset:0; pointer-events:none;
+    background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+    background-size:30px 30px; -webkit-mask-image:radial-gradient(120% 95% at 50% 0%,#000 28%,transparent 78%); mask-image:radial-gradient(120% 95% at 50% 0%,#000 28%,transparent 78%); }
+  .phero > * { position:relative; z-index:1; }
+  .crumb { font-size:12.5px; color:rgba(255,255,255,.55); margin-bottom:16px; }
+  .crumb a:hover { color:#fff; }
+  .phero h1 { margin:2px 0 10px; font-size:34px; font-weight:800; letter-spacing:-.03em; color:#fff; }
+  .phero p { font-size:16px; color:rgba(255,255,255,.74); margin:0 auto; max-width:640px; }
+  .phero p b { color:#fff; }
+
+  .head { text-align:center; max-width:680px; margin:0 auto 30px; }
+  .head .kicker { font-size:13px; font-weight:800; letter-spacing:.08em; color:var(--primary); text-transform:uppercase; }
+  .head h2 { margin:10px 0 12px; font-size:30px; font-weight:800; letter-spacing:-.03em; }
+  .head p { margin:0; color:var(--ink-2); font-size:16px; }
+  section.blk { padding-top:56px; }
+
+  /* 무료 / 유료 경계표 */
+  .split { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
+  .sp { border-radius:var(--r-lg); border:1px solid var(--line); background:var(--card); box-shadow:var(--shadow); padding:26px 26px 28px; }
+  .sp.free { border-color:var(--green-line); background:linear-gradient(180deg,var(--green-soft),rgba(230,246,239,0) 42%), var(--card); }
+  .sp.paid { border-color:var(--primary-line); background:linear-gradient(180deg,var(--primary-soft),rgba(255,241,238,0) 42%), var(--card); }
+  .sp-tag { display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:800; border-radius:999px; padding:6px 13px; }
+  .sp.free .sp-tag { color:#0b7a53; background:var(--green-soft); border:1px solid var(--green-line); }
+  .sp.paid .sp-tag { color:var(--primary-ink); background:#fff; border:1px solid var(--primary-line); }
+  .sp-tag svg { width:14px; height:14px; flex:none; }
+  .sp h3 { margin:14px 0 4px; font-size:19px; font-weight:800; letter-spacing:-.02em; }
+  .sp .sp-sub { margin:0 0 18px; font-size:13.5px; color:var(--ink-3); }
+  .sp ul { list-style:none; padding:18px 0 0; margin:0; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:12px; }
+  .sp li { font-size:14px; color:var(--ink-2); display:flex; gap:10px; align-items:flex-start; }
+  .sp li svg { width:17px; height:17px; flex:none; margin-top:3px; }
+  .sp.free li svg { color:var(--green); }
+  .sp.paid li svg { color:var(--primary); }
+  .sp li b { color:var(--ink); font-weight:700; }
+  .plan-note { text-align:center; color:var(--ink-3); font-size:12.5px; margin-top:18px; }
 
   /* 문의 */
-  .contact { margin-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
-    background: linear-gradient(150deg, rgba(240,71,58,.10), rgba(255,138,61,.05)), var(--card);
-    border: 1px solid var(--primary-line); border-radius: var(--r-lg); padding: 26px 28px; box-shadow: var(--shadow); }
-  .contact h3 { margin: 0 0 6px; font-size: 20px; font-weight: 800; }
-  .contact p { margin: 0; font-size: 14px; color: var(--ink-2); }
-  .contact-r { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .contact { margin-top:22px; display:flex; align-items:center; justify-content:space-between; gap:18px; flex-wrap:wrap;
+    background:linear-gradient(150deg, rgba(240,71,58,.10), rgba(255,138,61,.05)), var(--card);
+    border:1px solid var(--primary-line); border-radius:var(--r-lg); padding:26px 28px; box-shadow:var(--shadow); }
+  .contact h3 { margin:0 0 6px; font-size:20px; font-weight:800; }
+  .contact p { margin:0; font-size:14px; color:var(--ink-2); }
+  .contact-r { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
 
-  @media (max-width: 960px) {
-    .split { grid-template-columns: 1fr; }
+  @media (max-width:900px) {
+    .split { grid-template-columns:1fr; }
   }
-  @media (max-width: 560px) {
-    .head h2 { font-size: 25px; }
-    .contact-r { align-items: stretch; } .btn { width: 100%; justify-content: center; }
+  @media (max-width:560px) {
+    .phero h1 { font-size:27px; } .head h2 { font-size:24px; }
+    .contact-r { align-items:stretch; } .btn { width:100%; justify-content:center; }
   }
 </style>
 </head>
@@ -110,30 +127,36 @@
 </header>
 
 <main>
-  <section><div class="wrap">
+  <section class="phero">
+    <div class="crumb"><a href="/platform/index.html">Eduino AI</a> › 요금</div>
+    <h1>무료로 먼저 써 보고, 필요할 때 라이선스</h1>
+    <p>체험 스테이지 5종은 전부 무료입니다.<br>제작 트랙도 클래스 2개까지는 학습·추론을 끝까지 해 볼 수 있어요.</p>
+  </section>
+
+  <section class="blk">
     <div class="head">
       <div class="kicker">What&rsquo;s Included</div>
       <h2>무료로 되는 것 · 라이선스가 필요한 것</h2>
-      <p>체험 스테이지 5종은 전부 무료입니다. 제작 트랙도 클래스 2개까지는 학습·추론을 끝까지 해 볼 수 있어요.</p>
+      <p>모든 코스에 같은 기준이 적용됩니다.</p>
     </div>
     <div class="split" id="split"></div>
     <p class="plan-note">* 무료 구간은 기간 제한이 없습니다. 학생 수 제한도 없어요.</p>
-  </div></section>
+  </section>
 
-  <section class="tight"><div class="wrap">
+  <section class="tight">
     <div class="head">
       <div class="kicker">Pricing</div>
     </div>
     <div class="contact" id="contact">
       <div>
         <h3>수업용 라이선스 도입 문의</h3>
-        <p>기본 기능은 결제 없이 모두 무료로 열려 있습니다. 데이터 수집 상한 해제와 클래스 확장이 포함된 전체 기능이 필요하시다면 문의해 주세요.</p>
+        <p>기본 기능은 결제 없이 모두 무료로 열려 있습니다.<br>데이터 수집 상한 해제와 클래스 확장이 포함된 전체 기능이 필요하시다면 문의해 주세요.</p>
       </div>
       <div class="contact-r">
         <a class="btn btn-primary btn-lg" href="mailto:hello@eduino.kr?subject=Eduino%20AI%20%EB%B9%84%EC%A0%84%20%EC%BD%98%EC%86%94%20%EB%8F%84%EC%9E%85%20%EB%AC%B8%EC%9D%98">라이선스 문의하기 →</a>
       </div>
     </div>
-  </div></section>
+  </section>
 </main>
 
 <script>
