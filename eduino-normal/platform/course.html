@@ -387,9 +387,13 @@
     }
 
     .dfeat .dlock {
-      font-style: normal;
-      font-size: 10.5px;
+      display: inline-flex;
       opacity: .85;
+    }
+
+    .dfeat .dlock svg {
+      width: 11px;
+      height: 11px;
     }
 
     /* ── 동작 미리보기 (시뮬레이션) ── */
@@ -406,10 +410,11 @@
     .demo-side { grid-column:2; grid-row:2; display:flex; flex-direction:column; gap:12px; }
     .pipe { display:flex; flex-direction:column; gap:0; background:#fff; border:1px solid var(--line); border-radius:var(--r-lg); padding:16px 18px; box-shadow:var(--shadow-sm); }
     .pnode { display:flex; align-items:center; gap:12px; padding:9px 2px; }
-    .pnode .pic { width:36px; height:36px; flex:none; border-radius:11px; display:grid; place-items:center; font-size:18px; }
-    .pnode.in .pic { background:var(--blue-soft); }
-    .pnode.proc .pic { background:var(--primary-soft); }
-    .pnode.out .pic { background:var(--green-soft); }
+    .pnode .pic { width:36px; height:36px; flex:none; border-radius:11px; display:grid; place-items:center; }
+    .pnode .pic svg { width:18px; height:18px; }
+    .pnode.in .pic { background:var(--blue-soft); color:var(--blue); }
+    .pnode.proc .pic { background:var(--primary-soft); color:var(--primary); }
+    .pnode.out .pic { background:var(--green-soft); color:var(--green); }
     .pnode b { display:block; font-size:11px; letter-spacing:.04em; color:var(--ink-3); font-weight:700; }
     .pnode span.pt { font-size:14.5px; font-weight:700; color:var(--ink); }
     .pconn { width:2px; height:16px; margin-left:19px; background:var(--line-2); position:relative; overflow:hidden; }
@@ -813,11 +818,11 @@
         </div>
         <div class="demo-side">
           <div class="pipe">
-            <div class="pnode in"><span class="pic">🎛️</span><span><b>입력</b><span class="pt" id="demo-in">입력</span></span></div>
+            <div class="pnode in"><span class="pic"></span><span><b>입력</b><span class="pt" id="demo-in">입력</span></span></div>
             <div class="pconn"></div>
-            <div class="pnode proc"><span class="pic">🧠</span><span><b>학습 · 추론</b><span class="pt" id="demo-proc">처리</span></span></div>
+            <div class="pnode proc"><span class="pic"></span><span><b>학습 · 추론</b><span class="pt" id="demo-proc">처리</span></span></div>
             <div class="pconn"></div>
-            <div class="pnode out"><span class="pic">✅</span><span><b>출력</b><span class="pt" id="demo-out">출력</span></span></div>
+            <div class="pnode out"><span class="pic"></span><span><b>출력</b><span class="pt" id="demo-out">출력</span></span></div>
           </div>
           <div class="demo-cap" id="demo-cap"></div>
         </div>
@@ -866,6 +871,7 @@
         name:'비전 · 영상처리 AI', href:'/modules/vision/index.html', audience:'초등~중등',
         tagline:'카메라로 “보는 AI”. 물체를 탐지하고, 내 사진으로 분류 AI를 만들어 실제 판정 업무에 투입해 봅니다.',
         demo:{ in:'카메라 영상', proc:'인식 모델', out:'이름 · 확신도', scene:'vision',
+          ic:{ in:'<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/>', proc:'<rect x="3" y="3" width="18" height="18" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1"/>', out:'<path d="M20.6 13.4 12 22l-9-9V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/>' },
           cap:'카메라에 비친 대상을 <b>실시간으로 인식</b>해 위치(상자)·이름·확신도(%)를 표시합니다. 내 사진을 모으면 나만의 분류 AI도 만들 수 있어요.' },
         learn:[
           {t:'실시간 객체 탐지', d:'카메라에 잡힌 80종의 물체를 상자로 찾아내요.'},
@@ -883,6 +889,7 @@
         name:'제스처 · 동작 AI', href:'/modules/gesture/index.html', audience:'초등~중등',
         tagline:'손 관절을 실시간 추적해 가위바위보를 인식하고, 내 제스처를 학습시켜 봅니다.',
         demo:{ in:'손 관절 추적', proc:'제스처 분류', out:'가위·바위·보', scene:'gesture',
+          ic:{ in:'<path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12m0-1.5a1.5 1.5 0 0 1 3 0V12m0-1a1.5 1.5 0 0 1 3 0v4a6 6 0 0 1-6 6h-1a6 6 0 0 1-6-6v-3a1.5 1.5 0 0 1 3 0"/>', proc:'<circle cx="12" cy="4" r="1.8"/><path d="M12 5.8v3.4M12 9.2 7 14v4.2M12 9.2 17 14v4.2"/><circle cx="7" cy="20" r="1.8"/><circle cx="17" cy="20" r="1.8"/>', out:'<path d="M10 6h10M10 12h9M10 18h9"/><path d="m2.6 5.7 1.3 1.3 2.7-2.7"/><circle cx="4.6" cy="12" r="1.1"/><circle cx="4.6" cy="18" r="1.1"/>' },
           cap:'손의 <b>21개 관절</b>을 점·선으로 추적해 손 모양을 분류합니다. 가위·바위·보가 바뀌는 걸 그대로 따라 그려요.' },
         learn:[
           {t:'손 관절 추적', d:'손 21개 관절을 실시간으로 추적해요.'},
@@ -900,6 +907,7 @@
         name:'데이터 · 예측 AI (AIoT)', href:'/modules/data/index.html', audience:'중·고~대학',
         tagline:'표·데이터의 관계를 보고, 예측 모델을 학습시키고, 비슷한 것끼리 자동으로 무리 짓습니다.',
         demo:{ in:'데이터 점', proc:'회귀 학습', out:'예측 직선', scene:'data',
+          ic:{ in:'<path d="M3 3v18h18"/><circle cx="8" cy="16" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="16" cy="14" r="1.3"/><circle cx="18" cy="8" r="1.3"/>', proc:'<path d="M3 3v18h18"/><path d="M6 17 18 7"/><circle cx="9" cy="15" r="1.2"/><circle cx="15" cy="10" r="1.2"/>', out:'<path d="M3 3v18h18"/><path d="m6 16 5-5 4 3 5-6"/>' },
           cap:'흩어진 점에 <b>예측선이 스스로 맞춰지는</b> 과정을 보여줍니다. 경사하강법이 오차를 줄여 직선을 학습하는 원리예요.' },
         learn:[
           {t:'관계 관찰', d:'데이터의 상관관계를 그래프로 살펴봐요.'},
@@ -917,6 +925,7 @@
         name:'텍스트 · 언어 AI', href:'/modules/text/index.html', audience:'중등~대학',
         tagline:'글을 숫자로 바꿔 비슷한 말을 찾고, 예문을 모아 문장 분류 AI를 직접 학습시킵니다.',
         demo:{ in:'문장 입력', proc:'벡터 변환', out:'유사도', scene:'text',
+          ic:{ in:'<path d="M4 6h16M4 12h16M4 18h10"/>', proc:'<path d="M4 20V4M4 20h16"/><path d="m4 20 9-9"/><circle cx="13" cy="11" r="1.5"/>', out:'<path d="M3 12a9 9 0 0 1 18 0"/><path d="m12 12 4-3"/><circle cx="12" cy="12" r="1.3"/>' },
           cap:'문장을 <b>숫자 벡터</b>로 바꿔 두 문장이 얼마나 닮았는지 수치로 비교합니다. 막대는 벡터, 게이지는 유사도예요.' },
         learn:[
           {t:'문장을 숫자로', d:'문장을 벡터로 바꾸는 원리를 이해해요.'},
@@ -934,6 +943,7 @@
         name:'생활 속 인식 AI', href:'/modules/life/index.html', audience:'초등~중등',
         tagline:'카메라로 QR·바코드를 읽고, 사진 속 글자를 인식(OCR)합니다. 생활 속 AI를 체험해요.',
         demo:{ in:'카메라 스캔', proc:'코드 해독', out:'복원된 정보', scene:'life',
+          ic:{ in:'<path d="M3 8V5.5A2.5 2.5 0 0 1 5.5 3H8M16 3h2.5A2.5 2.5 0 0 1 21 5.5V8M21 16v2.5a2.5 2.5 0 0 1-2.5 2.5H16M8 21H5.5A2.5 2.5 0 0 1 3 18.5V16"/><path d="M3 12h18"/>', proc:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14h1M14 20h1M18 18h3v3h-3z"/>', out:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>' },
           cap:'카메라가 코드를 <b>스캔</b>하면 숨어 있던 정보(링크·글자)가 복원됩니다. QR·바코드·OCR의 공통 원리예요.' },
         learn:[
           {t:'복원 원리 이해', d:'QR·바코드가 숫자/글자로 복원되는 원리를 배워요.'},
@@ -951,6 +961,7 @@
         name:'머신러닝 개념 실험실', href:'/modules/concept/index.html', audience:'고교~대학',
         tagline:'결정 경계·과적합, 지도학습 vs 비지도학습을 직접 그려보며 핵심 개념을 익힙니다.',
         demo:{ in:'라벨 데이터', proc:'경계 학습', out:'분류 정확도', scene:'concept',
+          ic:{ in:'<circle cx="8" cy="9" r="2"/><circle cx="8" cy="16" r="2"/><path d="M14 9h6M14 16h6"/>', proc:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M4 20 20 4"/><circle cx="8" cy="8" r="1.3"/><circle cx="16" cy="16" r="1.3"/>', out:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>' },
           cap:'두 색의 점을 가르는 <b>결정 경계</b>가 학습되는 모습을 보여줍니다. 경계가 변하며 정확도가 오르내려요.' },
         learn:[
           {t:'결정 경계 학습', d:'정답(색)을 칠해 분류 경계를 학습해요.'},
@@ -982,6 +993,13 @@
     document.getElementById('demo-proc').textContent = c.demo.proc;
     document.getElementById('demo-out').textContent = c.demo.out;
     document.getElementById('demo-cap').innerHTML = '<p>' + c.demo.cap + '</p>';
+    /* 입력 · 학습/추론 · 출력 아이콘 — 옆에 붙는 문구가 코스마다 다르므로 아이콘도
+       COURSES[].demo.ic 에서 코스별로 가져온다. 페이지의 다른 아이콘과 같은 IC() 로
+       만들어 굵기·뷰박스를 맞추고, 색은 .pnode.* .pic 의 color 를 따른다. */
+    ['in', 'proc', 'out'].forEach(k => {
+      const el = document.querySelector('.pnode.' + k + ' .pic');
+      if (el && c.demo.ic && c.demo.ic[k]) el.innerHTML = IC(c.demo.ic[k]);
+    });
 
     const LIC = [
       IC('<circle cx="12" cy="12" r="3"/><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>'),
@@ -1457,7 +1475,7 @@
       if (chipsEl) {
         chipsEl.innerHTML = feats.map((f, i) => {
           const d = DATA[f.id];
-          const lock = d && d.stage >= 3 ? '<i class="dlock" title="수업용 라이선스" aria-label="수업용 라이선스">🔒</i>' : '';
+          const lock = d && d.stage >= 3 ? `<i class="dlock" title="수업용 라이선스" aria-label="수업용 라이선스">${IC('<rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>')}</i>` : '';
           return `<button type="button" class="dfeat${i === 0 ? ' on' : ''}" data-i="${i}">${esc(d ? d.label : f.label)}${lock}</button>`;
         }).join('');
         chipsEl.querySelectorAll('.dfeat').forEach(b => b.addEventListener('click', () => select(+b.dataset.i)));
