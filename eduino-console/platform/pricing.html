@@ -78,24 +78,6 @@
   .sp.paid li svg { color: var(--primary); }
   .sp li b { color: var(--ink); font-weight: 700; }
 
-  /* 요금 표 */
-  .plans { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--card);
-    border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); overflow: hidden; }
-  .plan { padding: 30px 28px; display: flex; flex-direction: column; position: relative; }
-  .plan:not(:last-child) { border-right: 1px solid var(--line); }
-  .plan.feat { background: linear-gradient(180deg, var(--primary-soft), rgba(255,241,238,0)); }
-  .plan .rec-slot { min-height: 26px; margin-bottom: 14px; }
-  .plan .rec { font-size: 11.5px; font-weight: 800; color: #fff; background: linear-gradient(150deg, var(--primary-2), var(--primary)); padding: 5px 13px; border-radius: 999px; }
-  .plan .pn { font-size: 17px; font-weight: 800; }
-  .plan .pd { font-size: 13px; color: var(--ink-3); margin: 4px 0 16px; min-height: 36px; }
-  .plan .price { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; color: var(--primary-ink); }
-  .plan .price small { font-size: 14px; font-weight: 600; color: var(--ink-3); }
-  .plan .pl { list-style: none; padding: 18px 0 0; margin: 18px 0 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 11px; flex: 1; }
-  .plan .pl li { font-size: 13.5px; color: var(--ink-2); display: flex; gap: 9px; align-items: flex-start; }
-  .plan .pl li svg { width: 17px; height: 17px; flex: none; margin-top: 2px; color: var(--primary); }
-  .plan .btn { width: 100%; justify-content: center; margin-top: 22px; }
-  .plan-note { text-align: center; color: var(--ink-3); font-size: 12.5px; margin-top: 18px; }
-
   /* 문의 */
   .contact { margin-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
     background: linear-gradient(150deg, rgba(240,71,58,.10), rgba(255,138,61,.05)), var(--card);
@@ -107,8 +89,6 @@
 
   @media (max-width: 960px) {
     .split { grid-template-columns: 1fr; }
-    .plans { grid-template-columns: 1fr; }
-    .plan:not(:last-child) { border-right: none; border-bottom: 1px solid var(--line); }
   }
   @media (max-width: 560px) {
     .head h2 { font-size: 25px; }
@@ -144,20 +124,14 @@
   <section class="tight"><div class="wrap">
     <div class="head">
       <div class="kicker">Pricing</div>
-      <h2>도입 규모에 맞게 선택</h2>
-      <p>한 학급부터 학교 단위까지. 필요한 만큼만 시작할 수 있습니다.</p>
     </div>
-    <div class="plans" id="plans-grid"></div>
-    <p class="plan-note">* 구성·가격은 예시이며, 실제 도입 조건은 협의로 정합니다.</p>
-
     <div class="contact" id="contact">
       <div>
-        <h3>도입·구매 문의</h3>
-        <p>학교·학원·기관 단체 도입을 환영합니다. 학급 규모에 맞춰 견적을 맞춰 드려요.</p>
+        <h3>수업용 라이선스 도입 문의</h3>
+        <p>기본 기능은 결제 없이 모두 무료로 열려 있습니다. 데이터 수집 상한 해제와 클래스 확장이 포함된 전체 기능이 필요하시다면 문의해 주세요.</p>
       </div>
       <div class="contact-r">
-        <a class="btn btn-primary" href="mailto:hello@eduino.kr?subject=Eduino%20AI%20%EB%B9%84%EC%A0%84%20%EC%BD%98%EC%86%94%20%EB%8F%84%EC%9E%85%20%EB%AC%B8%EC%9D%98" style="padding:14px 26px;font-size:16px;">이메일로 문의하기 →</a>
-        <span class="contact-note">평일 1–2일 내 회신</span>
+        <a class="btn btn-primary btn-lg" href="mailto:hello@eduino.kr?subject=Eduino%20AI%20%EB%B9%84%EC%A0%84%20%EC%BD%98%EC%86%94%20%EB%8F%84%EC%9E%85%20%EB%AC%B8%EC%9D%98">라이선스 문의하기 →</a>
       </div>
     </div>
   </div></section>
@@ -172,7 +146,7 @@ const LOCK = IC('<rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/><path d
    무료 상한 : FREE_LIMITS = { classes: 2, shots: 30, records: 20 }
    잠금 항목 : classes(3개 이상) · epochs · confusion · preset · preset-custom · output · challenge · mission */
 const SPLIT = [
-  { cls:'free', tag:'무료 · 가입 없이', icon:CK, title:'지금 바로 되는 것',
+  { cls:'free', tag:'기본 무료', icon:CK, title:'지금 바로 되는 것',
     sub:'설치도 결제도 없이 브라우저에서 열립니다.',
     items:[
       ['체험 스테이지 5종 전부', '객체 탐지 · 얼굴 검출 · 뼈대 검출 · 색상 추적 · 영상 효과'],
@@ -199,24 +173,7 @@ document.getElementById('split').innerHTML = SPLIT.map(s => `
     <ul>${s.items.map(i => `<li>${s.icon}<span><b>${i[0]}</b> — ${i[1]}</span></li>`).join('')}</ul>
   </div>`).join('');
 
-/* 요금 플랜 — 콘솔은 코스 단위가 아니라 학급 단위로 쓴다 */
-const PLANS = [
-  { name:'교사 1인', desc:'한 선생님이 쓰는 최소 구성', price:'문의', unit:'/ 1인', feat:false,
-    items:['수업 개설 제한 없음','클래스·데이터 상한 없음','결과물 · 챌린지 · 미션함','콘텐츠 업데이트 제공'], cta:'문의하기', primary:false },
-  { name:'학급 패키지', desc:'한 학급을 함께 운영', price:'추천', unit:'', feat:true,
-    items:['교사 1인 구성 전체 포함','학생 제출물 관리 · 진행 현황','교사용 수업 가이드','우선 지원'], cta:'도입 문의', primary:true },
-  { name:'학교 라이선스', desc:'학교·기관 단위 도입', price:'협의', unit:'', feat:false,
-    items:['다중 학급 · 교사 계정','전체 스테이지 이용','정기 업데이트 · 신규 스테이지','맞춤 교육 · 설치 지원'], cta:'견적 문의', primary:false },
-];
-document.getElementById('plans-grid').innerHTML = PLANS.map(p => `
-  <div class="plan ${p.feat?'feat':''}">
-    <div class="rec-slot">${p.feat?'<span class="rec">가장 인기</span>':''}</div>
-    <div class="pn">${p.name}</div>
-    <div class="pd">${p.desc}</div>
-    <div class="price">${p.price} <small>${p.unit}</small></div>
-    <ul class="pl">${p.items.map(i => `<li>${CK}<span>${i}</span></li>`).join('')}</ul>
-    <a class="btn ${p.primary?'btn-primary':'btn-ghost'}" href="#contact">${p.cta}</a>
-  </div>`).join('');
+
 </script>
 </body>
 </html>
