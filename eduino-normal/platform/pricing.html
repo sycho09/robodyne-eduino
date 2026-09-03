@@ -34,20 +34,21 @@
   a { color:inherit; text-decoration:none; } button { font-family:inherit; cursor:pointer; }
   .wrap { max-width:1080px; margin:0 auto; padding:0 24px; }
 
-  .topbar { position:sticky; top:0; z-index:30; background:rgba(246,247,251,.82); backdrop-filter:blur(14px) saturate(1.4); border-bottom:1px solid var(--line); }
-  .topbar::after { content:''; display:block; height:3px; background:linear-gradient(90deg,var(--primary),#ff8a3d 40%,rgba(255,138,61,0) 80%); }
-  .topbar-inner { max-width:1080px; margin:0 auto; padding:12px 24px; display:flex; align-items:center; gap:13px; }
-  .back { font-size:13px; font-weight:600; color:var(--ink-2); display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border:1px solid var(--line-2); border-radius:10px; background:#fff; box-shadow:var(--shadow-sm); transition:.15s; }
-  .back:hover { color:var(--primary-ink); border-color:var(--primary-line); }
-  .brand { display:flex; align-items:center; gap:10px; }
-  .logo-img { height:30px; width:auto; display:block; }
+  .topbar { position: sticky; top: 0; z-index: 50; background: rgba(246,247,251,.82);
+    backdrop-filter: blur(14px) saturate(1.4); border-bottom: 1px solid var(--line); }
+  .topbar-inner { display: flex; align-items: center; gap: 14px; height: 66px; }
+  .brand { display: flex; align-items: center; gap: 11px; }
+  .logo-img { height: 36px; width: auto; display: block; }
+  @media (max-width: 600px) { .logo-img { height: 30px; } }
+  .nav { margin-left: auto; display: flex; align-items: center; gap: 2px; }
+  .nav a.link { padding: 9px 13px; border-radius: 9px; font-size: 14px; font-weight: 600; color: var(--ink-2); transition: .14s; }
+  .nav a.link:hover { color: var(--ink); background: #fff; box-shadow: var(--shadow-sm); }
   .btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; font-weight:700; font-size:14.5px; padding:11px 20px; border-radius:11px; border:1px solid transparent; transition:.16s; }
   .btn-primary { color:#fff; background:linear-gradient(150deg,var(--primary-2),var(--primary)); box-shadow:0 6px 18px rgba(240,71,58,.32); }
   .btn-primary:hover { transform:translateY(-1px); box-shadow:0 10px 24px rgba(240,71,58,.42); }
   .btn-ghost { color:var(--ink); background:#fff; border-color:var(--line-2); box-shadow:var(--shadow-sm); }
   .btn-ghost:hover { border-color:var(--primary-line); color:var(--primary-ink); }
   .btn-lg { padding:14px 26px; font-size:16px; border-radius:13px; }
-  .nav-cta { margin-left:auto; }
 
   main { max-width:1080px; margin:0 auto; padding:0 24px 60px; }
 
@@ -115,10 +116,14 @@
 <body>
 
 <header class="topbar">
-  <div class="topbar-inner">
-    <a class="back" href="/platform/index.html">← 코스 목록</a>
-    <a class="brand" href="/platform/index.html"><img class="logo-img" src="/platform/img/logo.webp" alt="Eduino AI" /></a>
-    <a class="btn btn-primary nav-cta" href="#contact">라이선스 문의 →</a>
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/platform/index.html">
+      <img class="logo-img" src="/platform/img/logo.webp" alt="Eduino AI" />
+    </a>
+    <nav class="nav">
+      <a class="link" href="/platform/index.html#modules">코스</a>
+      <a class="link" href="/platform/pricing.html">요금</a>
+    </nav>
   </div>
 </header>
 
