@@ -90,26 +90,6 @@
   .sp.free li svg { color:var(--green); }
   .sp.paid li svg { color:var(--primary); }
   .sp li b { color:var(--ink); font-weight:700; }
-  .sp-foot { margin:18px 0 0; font-size:12.5px; color:var(--ink-4); }
-
-  /* 요금 플랜 */
-  .plans { display:grid; grid-template-columns:repeat(3,1fr); background:var(--card);
-    border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--shadow); overflow:hidden; }
-  .plan { padding:30px 28px; display:flex; flex-direction:column; position:relative; }
-  .plan:not(:last-child) { border-right:1px solid var(--line); }
-  .plan.feat { background:linear-gradient(180deg, var(--primary-soft), rgba(255,241,238,0)); }
-  .plan .rec-slot { min-height:26px; margin-bottom:14px; }
-  .plan .rec { font-size:11.5px; font-weight:800; color:#fff;
-    background:linear-gradient(150deg, var(--primary-2), var(--primary)); padding:5px 13px; border-radius:999px;
-    box-shadow:0 5px 14px rgba(240,71,58,.4); }
-  .plan .pn { font-size:17px; font-weight:800; }
-  .plan .pd { font-size:13px; color:var(--ink-3); margin:4px 0 16px; min-height:36px; }
-  .plan .price { font-size:30px; font-weight:800; letter-spacing:-.02em; color:var(--primary-ink); }
-  .plan .price small { font-size:14px; font-weight:600; color:var(--ink-3); }
-  .plan .pl { list-style:none; padding:18px 0 0; margin:18px 0 0; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:11px; flex:1; }
-  .plan .pl li { font-size:13.5px; color:var(--ink-2); display:flex; gap:9px; align-items:flex-start; }
-  .plan .pl li svg { width:17px; height:17px; flex:none; margin-top:2px; color:var(--primary); }
-  .plan .btn { width:100%; justify-content:center; margin-top:22px; }
   .plan-note { text-align:center; color:var(--ink-3); font-size:12.5px; margin-top:18px; }
 
   /* 문의 */
@@ -119,24 +99,12 @@
   .contact h3 { margin:0 0 6px; font-size:20px; font-weight:800; }
   .contact p { margin:0; font-size:14px; color:var(--ink-2); }
   .contact-r { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
-  .contact-note { font-size:12px; color:var(--ink-4); }
-
-  /* FAQ */
-  .faq { max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:10px; }
-  .faq details { background:var(--card); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow-sm); overflow:hidden; }
-  .faq summary { cursor:pointer; padding:16px 20px; font-weight:700; font-size:15px; list-style:none; display:flex; justify-content:space-between; gap:12px; align-items:center; }
-  .faq summary::-webkit-details-marker { display:none; }
-  .faq summary::after { content:'+'; color:var(--primary); font-weight:800; font-size:19px; flex:none; }
-  .faq details[open] summary::after { content:'\2212'; }
-  .faq .a { padding:0 20px 18px; font-size:14px; color:var(--ink-2); }
 
   footer { border-top:1px solid var(--line); margin-top:56px; padding:32px 0; }
   .foot-bot { display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:12.5px; color:var(--ink-3); }
 
   @media (max-width:900px) {
     .split { grid-template-columns:1fr; }
-    .plans { grid-template-columns:1fr; }
-    .plan:not(:last-child) { border-right:none; border-bottom:1px solid var(--line); }
   }
   @media (max-width:560px) {
     .phero h1 { font-size:27px; } .head h2 { font-size:24px; }
@@ -150,7 +118,7 @@
   <div class="topbar-inner">
     <a class="back" href="/platform/index.html">← 코스 목록</a>
     <a class="brand" href="/platform/index.html"><img class="logo-img" src="/platform/img/logo.webp" alt="Eduino AI" /></a>
-    <a class="btn btn-primary nav-cta" href="#contact">도입 문의 →</a>
+    <a class="btn btn-primary nav-cta" href="#contact">라이선스 문의 →</a>
   </div>
 </header>
 
@@ -158,7 +126,7 @@
   <section class="phero">
     <div class="crumb"><a href="/platform/index.html">Eduino AI</a> › 요금</div>
     <h1>무료로 먼저 써 보고, 필요할 때 라이선스</h1>
-    <p>6개 코스 전부 <b>사전 진단 · 이론 학습 · 기본 실습</b>까지 결제 없이 그대로 진행할 수 있어요.</p>
+    <p>6개 코스 전부 <b>사전 진단 · 이론 학습 · 기본 실습</b>까지,<br>한 차시 분량의 약 3분의 2를 결제 없이 진행할 수 있어요.</p>
   </section>
 
   <section class="blk">
@@ -183,14 +151,6 @@
       <div class="contact-r">
         <a class="btn btn-primary btn-lg" href="mailto:hello@eduino.kr?subject=Eduino%20AI%20%EB%8F%84%EC%9E%85%20%EB%AC%B8%EC%9D%98">라이선스 문의하기 →</a>
       </div>
-    </div>
-  </section>
-
-  <section class="blk">
-    <div class="head"><div class="kicker">FAQ</div><h2>요금 관련 자주 묻는 질문</h2></div>
-    <div class="faq">
-      <details><summary>무료 구간만 써도 수업이 되나요?</summary><div class="a">됩니다. 한 차시 분량의 약 3분의 2를 결제 없이 진행할 수 있습니다. 기간 제한도, 학생 수 제한도 없습니다.</div></details>
-      <details><summary>결제하면 무엇이 열리나요?</summary><div class="a">실습(심화 응용 미션), 최종 평가 전체(문항 · 채점 · 결과 리포트), 사전 진단의 개념별 취약 영역 분석 리포트가 열립니다.</div></details>
     </div>
   </section>
 </main>
@@ -231,25 +191,6 @@ document.getElementById('split').innerHTML = SPLIT.map(s => `
     <h3>${s.title}</h3>
     <p class="sp-sub">${s.sub}</p>
     <ul>${s.items.map(i => `<li>${s.icon}<span><b>${i[0]}</b> — ${i[1]}</span></li>`).join('')}</ul>
-  </div>`).join('');
-
-/* 요금 플랜 */
-const PLANS = [
-  { name:'코스 단품', desc:'필요한 한 주제만 골라서', price:'문의', unit:'/ 코스', feat:false,
-    items:['코스 1개 · 초·중·심화 전체','브라우저에서 바로 사용','학생 수 제한 없음','콘텐츠 업데이트 제공'], cta:'문의하기', primary:false },
-  { name:'학급 패키지', desc:'한 학급을 위한 추천 구성', price:'추천', unit:'', feat:true,
-    items:['코스 3개 자유 선택','교사용 활동지·수업 가이드','대상별 학습 경로 제공','우선 지원'], cta:'도입 문의', primary:true },
-  { name:'학교 라이선스', desc:'학교·기관 단위 도입', price:'협의', unit:'', feat:false,
-    items:['전체 코스 이용','다중 학급·교사 계정','정기 업데이트·신규 코스','맞춤 교육·설치 지원'], cta:'견적 문의', primary:false },
-];
-document.getElementById('plans-grid').innerHTML = PLANS.map(p => `
-  <div class="plan ${p.feat?'feat':''}">
-    <div class="rec-slot">${p.feat?'<span class="rec">가장 인기</span>':''}</div>
-    <div class="pn">${p.name}</div>
-    <div class="pd">${p.desc}</div>
-    <div class="price">${p.price} <small>${p.unit}</small></div>
-    <ul class="pl">${p.items.map(i => `<li>${CK}<span>${i}</span></li>`).join('')}</ul>
-    <a class="btn ${p.primary?'btn-primary':'btn-ghost'}" href="#contact">${p.cta}</a>
   </div>`).join('');
 </script>
 </body>
