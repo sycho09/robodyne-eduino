@@ -14,8 +14,8 @@
     --card: #ffffff; --card-2: #f9fafd;
     --line: #e9ebf2; --line-2: #dfe2ec;
     --ink: #14161f; --ink-2: #50566a; --ink-3: #868da3; --ink-4: #aeb4c6;
-    --primary: #f0473a; --primary-ink: #d12e1e; --primary-2: #ff6a52;
-    --primary-soft: #fff1ee; --primary-line: #ffd6cd;
+    --primary: #3b86ff; --primary-ink: #2b61b8; --primary-2: #6aa6ff;
+    --primary-soft: #eef4ff; --primary-line: #c7dbff;
     --green: #11a06f; --green-soft: #e6f6ef; --green-line: #b9e5d3;
     --shadow-sm: 0 1px 2px rgba(20,22,31,.05), 0 1px 3px rgba(20,22,31,.05);
     --shadow: 0 2px 6px rgba(20,22,31,.05), 0 12px 30px rgba(20,22,31,.07);
@@ -44,8 +44,8 @@
   .btn { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; font-size: 14.5px;
     padding: 11px 20px; border-radius: 11px; cursor: pointer; border: 1px solid transparent; transition: .16s; }
   .btn-primary { color: #fff; background: linear-gradient(150deg, var(--primary-2), var(--primary));
-    box-shadow: 0 6px 18px rgba(240,71,58,.32); }
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(240,71,58,.42); }
+    box-shadow: 0 6px 18px rgba(59,134,255,.32); }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(59,134,255,.42); }
   .btn-ghost { color: var(--ink); background: #fff; border-color: var(--line-2); box-shadow: var(--shadow-sm); }
   .nav .btn { margin-left: 8px; }
   .btn-console { color: #fff; background: linear-gradient(150deg, #1b1f33, #0c0e18);
@@ -60,7 +60,7 @@
     background:linear-gradient(150deg,#14161f 0%, #1e1411 60%, #241019 100%);
     border:1px solid rgba(255,255,255,.08); box-shadow:0 30px 70px rgba(20,22,31,.30), inset 0 1px 0 rgba(255,255,255,.06); }
   .phero::before { content:''; position:absolute; inset:0; pointer-events:none; opacity:.55;
-    background:radial-gradient(58% 80% at 88% -12%, rgba(240,71,58,.5), transparent 60%), radial-gradient(50% 70% at 8% 112%, rgba(124,108,255,.28), transparent 60%); }
+    background:radial-gradient(58% 80% at 88% -12%, rgba(59,134,255,.5), transparent 60%), radial-gradient(50% 70% at 8% 112%, rgba(124,108,255,.28), transparent 60%); }
   .phero::after { content:''; position:absolute; inset:0; pointer-events:none;
     background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
     background-size:30px 30px; -webkit-mask-image:radial-gradient(120% 95% at 50% 0%,#000 28%,transparent 78%); mask-image:radial-gradient(120% 95% at 50% 0%,#000 28%,transparent 78%); }
@@ -98,7 +98,7 @@
 
   /* 문의 */
   .contact { margin-top:22px; display:flex; align-items:center; justify-content:space-between; gap:18px; flex-wrap:wrap;
-    background:linear-gradient(150deg, rgba(240,71,58,.10), rgba(255,138,61,.05)), var(--card);
+    background:linear-gradient(150deg, rgba(59,134,255,.10), rgba(255,138,61,.05)), var(--card);
     border:1px solid var(--primary-line); border-radius:var(--r-lg); padding:26px 28px; box-shadow:var(--shadow); }
   .contact h3 { margin:0 0 6px; font-size:20px; font-weight:800; }
   .contact p { margin:0; font-size:14px; color:var(--ink-2); }
