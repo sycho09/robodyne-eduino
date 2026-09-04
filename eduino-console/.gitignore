@@ -28,6 +28,9 @@ pnpm-debug.log*
 .parcel-cache/
 .vercel
 
+# 머신별 npm 설정 (예: Windows script-shell) — 커밋 금지
+.npmrc
+
 # Editor / IDE
 .vscode/
 .idea/

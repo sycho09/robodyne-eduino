@@ -20,6 +20,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# 머신별 npm 설정 (예: Windows script-shell) — 커밋 금지
+.npmrc
+
 # 에디터 / IDE
 .vscode/
 .idea/
