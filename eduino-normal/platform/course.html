@@ -450,120 +450,74 @@
       min-width: 0;
       background: #fff;
       border: 1px solid var(--line);
-      border-top: 3px solid var(--line-2);
-      border-radius: var(--r-lg);
-      padding: 20px 20px 22px;
-      box-shadow: var(--shadow-sm);
+      border-radius: 24px;
+      padding: 26px 22px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.02);
       position: relative;
-      transition: .3s;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s;
+      overflow: hidden;
     }
 
-    .flow-node.t1 {
-      border-top-color: var(--green);
+    .flow-node:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+      border-color: var(--line-2);
     }
 
-    .flow-node.t2 {
-      border-top-color: var(--primary);
-    }
-
-    .flow-node.t3 {
-      border-top-color: var(--coral);
-    }
-
-    .flow-node.t4 {
-      border-top-color: var(--blue);
+    .flow-node .fn-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
     }
 
     .flow-node .fn-step {
-      position: absolute;
-      top: -13px;
-      left: 18px;
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
       font-family: var(--mono);
-      font-size: 12px;
-      font-weight: 700;
-      color: #fff;
-      box-shadow: var(--shadow-sm);
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      line-height: 1;
     }
 
-    .flow-node.t1 .fn-step {
-      background: var(--green);
-    }
-
-    .flow-node.t2 .fn-step {
-      background: var(--primary);
-    }
-
-    .flow-node.t3 .fn-step {
-      background: var(--coral);
-    }
-
-    .flow-node.t4 .fn-step {
-      background: var(--blue);
-    }
+    .flow-node.t1 .fn-step { color: var(--green); }
+    .flow-node.t2 .fn-step { color: var(--primary); }
+    .flow-node.t3 .fn-step { color: var(--coral); }
+    .flow-node.t4 .fn-step { color: var(--blue); }
 
     .flow-node .fn-badge {
-      display: inline-block;
+      display: inline-flex;
       font-size: 11.5px;
       font-weight: 800;
-      padding: 4px 10px;
-      border-radius: 999px;
-      margin: 6px 0 10px;
+      padding: 5px 10px;
+      border-radius: 8px;
     }
 
-    .flow-node.t1 .fn-badge {
-      color: var(--green);
-      background: var(--green-soft);
-    }
-
-    .flow-node.t2 .fn-badge {
-      color: var(--primary-ink);
-      background: var(--primary-soft);
-    }
-
-    .flow-node.t3 .fn-badge {
-      color: var(--coral);
-      background: #fff4e8;
-    }
-
-    .flow-node.t4 .fn-badge {
-      color: #2f6fd0;
-      background: var(--blue-soft);
-    }
+    .flow-node.t1 .fn-badge { color: var(--green); background: var(--green-soft); }
+    .flow-node.t2 .fn-badge { color: var(--primary-ink); background: var(--primary-soft); }
+    .flow-node.t3 .fn-badge { color: var(--coral-ink); background: var(--coral-soft); }
+    .flow-node.t4 .fn-badge { color: #2f6fd0; background: var(--blue-soft); }
 
     .flow-note {
-      margin-top: 16px;
-      font-size: 13px;
+      margin-top: 20px;
+      font-size: 13.5px;
       color: var(--ink-3);
       text-align: center;
     }
 
-    .flow-note b {
-      color: var(--ink-2);
-    }
-
-    .flow-note a {
-      color: var(--primary-ink);
-      font-weight: 700;
-    }
-
-    .flow-note a:hover {
-      text-decoration: underline;
-    }
+    .flow-note b { color: var(--ink-2); }
+    .flow-note a { color: var(--primary-ink); font-weight: 700; }
+    .flow-note a:hover { text-decoration: underline; }
 
     .flow-node h3 {
-      margin: 0 0 7px;
-      font-size: 16px;
+      margin: 0 0 10px;
+      font-size: 18px;
       font-weight: 800;
+      letter-spacing: -0.02em;
     }
 
     .flow-node p {
       margin: 0;
-      font-size: 13px;
+      font-size: 13.5px;
       color: var(--ink-3);
       line-height: 1.6;
     }
@@ -1042,8 +996,9 @@
       ];
       document.getElementById('c-steps').innerHTML = steps
         .map((s, i) =>
-          `<div class="flow-node t${i + 1}"><span class="fn-step">${i + 1}</span>` +
-          `<span class="fn-badge">${s.badge}</span><h3>${s.title}</h3><p>${s.desc}</p></div>`)
+          `<div class="flow-node t${i + 1}">` +
+          `<div class="fn-head"><span class="fn-step">0${i + 1}</span><span class="fn-badge">${s.badge}</span></div>` +
+          `<h3>${s.title}</h3><p>${s.desc}</p></div>`)
         .join('<div class="flow-arrow"></div>');
     }
 
