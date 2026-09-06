@@ -468,11 +468,15 @@ function scrim(ctx,w,h){ ctx.fillStyle='rgba(15,19,32,.30)'; ctx.fillRect(0,0,w,
 /* 실사 배경 (선택적) — 있으면 도식 대신 사진 위에 오버레이, 없으면 도식 폴백.
    확장자(png/jpg/webp) 자동 감지. */
 const DEMO_IMG = { v_detect:'vision-detect', v_face:'vision-face', v_pose:'vision-pose', v_classify:'vision-classify', l_qr:'life-qr', l_ocr:'life-ocr', g_track:'gesture-hand', g_rps:'gesture-hand' };
+/* 동작 줄이기에서는 rAF 가 돌지 않아 처음 그린 한 장이 마지막이다. 사진은 비동기로
+   도착하므로 그 한 장은 늘 도식 폴백이었다 — 사진 도착·창 크기 변경·탭 전환 때
+   이 훅으로 다시 그린다 (startDemo 가 자기 draw 를 걸어 둔다). */
+let refreshStatic = () => {};
 const IMGS = {};
 if(typeof Image !== 'undefined'){
   Object.keys(DEMO_IMG).forEach(id=>{ const name=DEMO_IMG[id];
     const rec={img:new Image(), ok:false}; IMGS[id]=rec;
-    rec.img.onload=()=>{ if(rec.img.width>0) rec.ok=true; };
+    rec.img.onload=()=>{ if(rec.img.width>0){ rec.ok=true; refreshStatic(); } };
     rec.img.src='/platform/img/demo/'+name+'.webp'; });
 }
 
@@ -741,7 +745,7 @@ const FEATS = {
   function hi(){ if(!chipsEl) return; const k=chipsEl.children; for(let i=0;i<k.length;i++) k[i].classList.toggle('on', i===cur); }
   if(chipsEl){
     chipsEl.innerHTML = feats.map((f,i)=>`<button type="button" class="dfeat${i===0?' on':''}" data-i="${i}">${f.label}</button>`).join('');
-    chipsEl.querySelectorAll('.dfeat').forEach(b=>b.addEventListener('click',()=>{ cur=+b.dataset.i; tBase=now0(); hi(); }));
+    chipsEl.querySelectorAll('.dfeat').forEach(b=>b.addEventListener('click',()=>{ cur=+b.dataset.i; tBase=now0(); hi(); refreshStatic(); }));
   }
   const cv = document.getElementById('demo-canvas');
   if(!cv || !cv.getContext) return;
@@ -750,8 +754,9 @@ const FEATS = {
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   function size(){ const r=cv.getBoundingClientRect(); const dpr=Math.min(window.devicePixelRatio||1,2);
     cv.width=Math.max(1,r.width*dpr); cv.height=Math.max(1,r.height*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); }
-  size(); window.addEventListener('resize', size);
+  size(); window.addEventListener('resize', ()=>{ size(); refreshStatic(); });
   function draw(localT){ const r=cv.getBoundingClientRect(); (SCENES[feats[cur].id]||SCENES.v_detect)(ctx, r.width, r.height, localT); }
+  refreshStatic = () => { if(reduce) draw(2000); };   // 애니메이션이 꺼진 상태에서만 의미가 있다
   /* localT 는 반드시 0 이상이어야 한다. rAF 가 넘겨주는 now 는 "프레임 시작 시각" 이라
      tBase 를 찍은 performance.now() 보다 이를 수 있고, 그러면 now-tBase 가 음수가 된다.
      장면들이 t 로 Math.floor(t/seg)%n 인덱스를 만들기 때문에(예: RPS[-1]) 음수가 그대로
