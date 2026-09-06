@@ -174,7 +174,8 @@
   .tag.on { color: var(--green); background: var(--green-soft); }
   .tag.off { color: var(--ink-3); background: var(--bg-soft); }
   .mod h3 { margin: 0; font-size: 19px; font-weight: 800; }
-  .mod .d { font-size: 14px; color: var(--ink-2); line-height: 1.58; }
+  /* p 기본 마진(1em)이 gap 위에 얹혀 제목-설명이 27px, 카드 아래가 39px 가 됐었다 */
+  .mod .d { margin: 0; font-size: 14px; color: var(--ink-2); line-height: 1.58; }
   .mod .lv { display: flex; flex-direction: column; margin-top: 2px; }
   .mod .lv .r { display: flex; gap: 11px; font-size: 13px; padding: 9px 0; align-items: center; }
   .mod .lv .r:not(:last-child) { border-bottom: 1px solid var(--line); }
