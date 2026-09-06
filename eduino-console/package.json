@@ -6,7 +6,6 @@
   "main": "electron-main.js",
   "scripts": {
     "app": "electron .",
-    "compare": "LIVE_PORT=5181 sh _dev/compare.sh",
     "dist": "electron-builder --win portable"
   },
   "devDependencies": {
