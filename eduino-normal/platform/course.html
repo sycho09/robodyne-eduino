@@ -1046,11 +1046,19 @@
       for (let x = 24; x < w; x += 26) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
       for (let y = 24; y < h; y += 26) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
     }
+    /* cover 로 그린 사진의 실제 사각형을 돌려준다. 오버레이를 캔버스가 아니라
+       사진에 맞춰 그리기 위해서다 — 캔버스 비율이 사진(16:9)과 달라지면 좌우가
+       잘리는데, 캔버스 기준으로 그리면 상자가 그만큼 피사체에서 밀린다. */
     function coverImg(ctx, im, w, h) {
       const ir = im.width / im.height, sr = w / h; let dw, dh;
       if (ir > sr) { dh = h; dw = h * ir; } else { dw = w; dh = w / ir; }
-      ctx.drawImage(im, (w - dw) / 2, (h - dh) / 2, dw, dh);
+      const dx = (w - dw) / 2, dy = (h - dh) / 2;
+      ctx.drawImage(im, dx, dy, dw, dh);
+      return { dx, dy, dw, dh };
     }
+    /* 사진 기준 정규좌표(0~1) → 캔버스 좌표 */
+    const pX = (R, f) => R.dx + f * R.dw;
+    const pY = (R, f) => R.dy + f * R.dh;
     function scrim(ctx, w, h) { ctx.fillStyle = 'rgba(15,19,32,.30)'; ctx.fillRect(0, 0, w, h); }
 
     /* 실사 배경 (선택적) — 있으면 도식 대신 사진 위에 오버레이, 없으면 도식 폴백.
@@ -1114,11 +1122,11 @@
     SCENES.v_detect = (ctx, w, h, t) => {
       const im = IMGS.v_detect;
       if (im && im.ok) {
-        coverImg(ctx, im.img, w, h); scrim(ctx, w, h);
+        const R = coverImg(ctx, im.img, w, h); scrim(ctx, w, h);
         const objs = [{ x: .33, y: .36, w: .33, h: .42, c: PAL.blue, l: '노트북 94%' }, { x: .13, y: .60, w: .15, h: .26, c: PAL.amber, l: '컵 88%' }, { x: .70, y: .69, w: .25, h: .19, c: PAL.green, l: '책 81%' }];
         objs.forEach((o, i) => {
           const ap = clamp((t - 300 - i * 450) / 500, 0, 1); if (ap <= 0) return;
-          ctx.save(); ctx.globalAlpha = ap; ctx.strokeStyle = o.c; ctx.lineWidth = 2.5; rr(ctx, o.x * w, o.y * h, o.w * w, o.h * h, 8); ctx.stroke(); chip(ctx, o.x * w, o.y * h - 24, o.l, o.c); ctx.restore();
+          ctx.save(); ctx.globalAlpha = ap; ctx.strokeStyle = o.c; ctx.lineWidth = 2.5; rr(ctx, pX(R, o.x), pY(R, o.y), o.w * R.dw, o.h * R.dh, 8); ctx.stroke(); chip(ctx, pX(R, o.x), pY(R, o.y) - 24, o.l, o.c); ctx.restore();
         });
         chip(ctx, 12, 12, '객체 탐지 · COCO-SSD', PAL.dim); return;
       }
@@ -1135,8 +1143,8 @@
     SCENES.v_face = (ctx, w, h, t) => {
       const im = IMGS.v_face;
       if (im && im.ok) {
-        coverImg(ctx, im.img, w, h); scrim(ctx, w, h);
-        const bx = w * 0.415, by = h * 0.11, bw = w * 0.155, bh = h * 0.34;
+        const R = coverImg(ctx, im.img, w, h); scrim(ctx, w, h);
+        const bx = pX(R, .415), by = pY(R, .11), bw = .155 * R.dw, bh = .34 * R.dh;
         ctx.strokeStyle = PAL.green; ctx.lineWidth = 2.5; rr(ctx, bx, by, bw, bh, 8); ctx.stroke();
         chip(ctx, bx, by - 24, '얼굴 1명', PAL.green);
         ctx.fillStyle = PAL.red;[[.26, .32], [.74, .32], [.5, .55], [.32, .78], [.68, .78]].forEach(p => { ctx.beginPath(); ctx.arc(bx + p[0] * bw, by + p[1] * bh, 2.6, 0, 7); ctx.fill(); });
@@ -1153,11 +1161,11 @@
     SCENES.v_pose = (ctx, w, h, t) => {
       const im = IMGS.v_pose;
       if (im && im.ok) {
-        coverImg(ctx, im.img, w, h); scrim(ctx, w, h);
+        const R = coverImg(ctx, im.img, w, h); scrim(ctx, w, h);
         const P = { head: [.5, .155], neck: [.5, .25], sl: [.455, .28], sr: [.545, .28], el: [.43, .16], er: [.57, .16], hl: [.43, .075], hr: [.57, .075], hip: [.5, .52], kl: [.47, .70], kr: [.53, .70], fl: [.47, .88], fr2: [.53, .88] };
         const bones = [['head', 'neck'], ['neck', 'sl'], ['neck', 'sr'], ['sl', 'el'], ['el', 'hl'], ['sr', 'er'], ['er', 'hr'], ['neck', 'hip'], ['hip', 'kl'], ['kl', 'fl'], ['hip', 'kr'], ['kr', 'fr2']];
-        ctx.strokeStyle = PAL.blue; ctx.lineWidth = 3; bones.forEach(b => { ctx.beginPath(); ctx.moveTo(P[b[0]][0] * w, P[b[0]][1] * h); ctx.lineTo(P[b[1]][0] * w, P[b[1]][1] * h); ctx.stroke(); });
-        ctx.fillStyle = '#fff'; Object.keys(P).forEach(k => { ctx.beginPath(); ctx.arc(P[k][0] * w, P[k][1] * h, 4, 0, 7); ctx.fill(); });
+        ctx.strokeStyle = PAL.blue; ctx.lineWidth = 3; bones.forEach(b => { ctx.beginPath(); ctx.moveTo(pX(R, P[b[0]][0]), pY(R, P[b[0]][1])); ctx.lineTo(pX(R, P[b[1]][0]), pY(R, P[b[1]][1])); ctx.stroke(); });
+        ctx.fillStyle = '#fff'; Object.keys(P).forEach(k => { ctx.beginPath(); ctx.arc(pX(R, P[k][0]), pY(R, P[k][1]), 4, 0, 7); ctx.fill(); });
         chip(ctx, 12, 12, '자세 추정 · MoveNet', PAL.dim); return;
       }
       screen(ctx, w, h);
@@ -1212,8 +1220,8 @@
     SCENES.g_track = (ctx, w, h, t) => {
       const im = IMGS.g_track;
       if (im && im.ok) {
-        coverImg(ctx, im.img, w, h); scrim(ctx, w, h);
-        drawHandLM(ctx, w * 0.15, h * 0.03, w * 0.69, h * 0.93); // 사진 속 손에 정합된 21점 오버레이
+        const R = coverImg(ctx, im.img, w, h); scrim(ctx, w, h);
+        drawHandLM(ctx, pX(R, .15), pY(R, .03), .69 * R.dw, .93 * R.dh); // 사진 속 손에 정합된 21점 오버레이
         chip(ctx, 12, 12, '손 관절 21점 추적', PAL.dim); return;
       }
       screen(ctx, w, h);
@@ -1225,8 +1233,8 @@
     SCENES.g_rps = (ctx, w, h, t) => {
       const im = IMGS.g_rps;
       if (im && im.ok) {
-        coverImg(ctx, im.img, w, h); scrim(ctx, w, h);
-        drawHandLM(ctx, w * 0.15, h * 0.03, w * 0.69, h * 0.93);
+        const R = coverImg(ctx, im.img, w, h); scrim(ctx, w, h);
+        drawHandLM(ctx, pX(R, .15), pY(R, .03), .69 * R.dw, .93 * R.dh);
         chip(ctx, 12, 12, '가위바위보 인식', PAL.dim);
         chip(ctx, w - 118, 12, '✋ 보  92%', PAL.green); return;
       }
