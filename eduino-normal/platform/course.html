@@ -649,6 +649,9 @@
 
       .flow-node {
         min-width: 0;
+        /* 가로 배치의 flex:1 1 0 은 균등 분할용이다. 세로로 세우면 그 basis 0 이
+           높이가 되어 카드가 패딩만 남기고 납작해진다 — 여기서 되돌린다. */
+        flex: 0 0 auto;
       }
 
       .flow-arrow {
