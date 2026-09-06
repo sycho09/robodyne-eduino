@@ -109,6 +109,9 @@
 
   @media (max-width:900px) {
     .split { grid-template-columns:1fr; }
+    /* 로고 + 링크 3개 + 콘솔 버튼은 좁은 폭에 다 못 들어간다 (390px 에서 535px 필요).
+       메인(index.html)과 같이 링크를 접고 버튼만 남긴다. */
+    .nav a.link { display: none; }
   }
   @media (max-width:560px) {
     .phero h1 { font-size:27px; } .head h2 { font-size:24px; }
