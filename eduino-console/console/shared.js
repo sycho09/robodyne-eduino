@@ -200,7 +200,6 @@
     box-shadow:0 8px 22px var(--tglow);}
   .v-tab.on .cnt{background:rgba(0,0,0,.24);color:#fff;}
   /* 트랙 흐름 화살표 — 체험 → 제작 순서를 커리큘럼처럼 잇는다 (쓰는 안에서만 켠다) */
-  .v-flow{align-self:center;font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink-3);opacity:.75;}
 
   /* ── 진행 게이지 (토글 시 표시) ── */
   .v-prog{display:inline-flex;align-items:center;gap:10px;font-size:12px;color:var(--ink-3);}
@@ -490,15 +489,13 @@
 
   /* ── 트랙 탭 — 두 안이 같은 마크업을 복붙하던 곳.
         라벨(label)·번호(no)·개수(items.length)는 TRACKS 에서만 온다. ── */
-  function tabs(host, opt) {
+  function tabs(host) {
     if (!host) return null;
-    const flow = !!(opt && opt.flow);
     host.className = 'v-tabs';
     host.setAttribute('role', 'tablist');
     host.innerHTML = TRACK_KEYS.map((k, i) => {
       const t = TRACKS[k];
-      return (i && flow ? '<span class="v-flow" aria-hidden="true">→</span>' : '') +
-        '<button class="v-tab" role="tab" data-track="' + k + '"' +
+      return '<button class="v-tab" role="tab" data-track="' + k + '"' +
         ' style="--tacc:' + t.accent + ';--tacc2:' + t.accent2 + ';--tglow:' + t.glowA + '">' +
         '<span class="tno">' + t.no + '</span> ' + t.label +
         ' <span class="cnt">' + t.items.length + '</span></button>';
