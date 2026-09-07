@@ -1468,7 +1468,9 @@
       /* lazy 를 쓰지 않는다. 2~4번 슬라이드는 트랙 안에서 오른쪽으로 한두 화면 밀려 있어
          lazy 임계 밖이라, 화살표를 눌러야 그때 받아오기 시작해 빈 칸이 번쩍인다.
          네 장 합쳐 148KB 뿐이라 전부 받되 히어로와 경쟁하지 않게 우선순위만 낮춘다.
-         width/height 는 실제 파일 픽셀 — 이미지가 늦게 와도 자리가 안 흔들린다. */
+         width/height 는 쓰지 않는다. 장마다 원본 픽셀 크기가 다르기 때문이다(내용에 맞춰
+         잘라 900x563 짜리도 있고 1200x750 짜리도 있다). 비율은 모두 16:10 이고,
+         자리 예약은 .fs-shot 의 aspect-ratio 가 이미 하고 있어 흔들리지 않는다. */
       track.innerHTML = FLOW.map((s, i) =>
         `<article class="fslide fs-t${i + 1}" role="group" aria-roledescription="슬라이드" aria-label="${i + 1} / ${FLOW.length} · ${s.title}">
         <div class="fs-text">
@@ -1476,7 +1478,7 @@
           <h3>${s.title}</h3><p>${s.desc}</p>
         </div>
         <div class="fs-shot">
-          <img src="/platform/img/flow/${s.shot}.webp" alt="${s.alt}" width="1200" height="750"
+          <img src="/platform/img/flow/${s.shot}.webp" alt="${s.alt}"
             decoding="async" fetchpriority="${i === 0 ? 'high' : 'low'}">
         </div>
       </article>`).join('');
