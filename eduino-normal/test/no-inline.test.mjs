@@ -1,4 +1,4 @@
-// HTML L1(타입 분리) 회귀 검출 — 인라인 <style> 또는 src 없는 <script> 본문을 찾으면 실패한다.
+// HTML 타입 분리 회귀 검출 — 인라인 <style> 또는 src 없는 <script> 본문 존재 시 실패 처리.
 // 기준선(2026-09-07 측정): 위반 파일 2개, 총 4건(style 2 + script 2)
 //   — platform/course.html · platform/index.html.
 // 화이트리스트 없음: modules/*/index.html 7개는 이미 분리 완료 상태라 위반 0건이 정상.
@@ -25,15 +25,15 @@ const SCRIPT_TAG_RE = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
 const COMMENT_RE = /<!--[\s\S]*?-->/g;
 
 /**
- * HTML 주석 내부 텍스트를 공백으로 치환한다 (줄바꿈은 보존해 줄 번호가 밀리지 않게 함).
- * 문서 설명용 주석에 예시로 적힌 "<style>"·"<script>" 문구가 실제 태그로
- * 오검출되는 것을 막기 위함.
+ * HTML 주석 내부 텍스트 공백 치환 (줄바꿈 보존, 줄 번호 오프셋 유지).
+ * 설명용 주석에 예시로 적힌 "<style>"·"<script>" 문구가 실제 태그로 오검출되는
+ * 것을 방지.
  */
 function stripComments(content) {
   return content.replace(COMMENT_RE, (m) => m.replace(/[^\n]/g, ' '));
 }
 
-/** 디렉터리를 재귀 순회해 확장자가 일치하는 파일의 절대경로 목록을 반환한다 */
+/** 디렉터리 재귀 순회 — 확장자가 일치하는 파일의 절대경로 목록 반환 */
 function walk(dir, ext, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (entry.isDirectory()) {
@@ -46,12 +46,12 @@ function walk(dir, ext, out = []) {
   return out;
 }
 
-/** 0-index 문자 위치를 1-index 줄 번호로 변환한다 */
+/** 0-index 문자 위치를 1-index 줄 번호로 변환 */
 function lineAt(content, index) {
   return content.slice(0, index).split('\n').length;
 }
 
-/** 파일 하나를 검사해 인라인 style/script 위반 목록을 반환한다 */
+/** 파일 하나를 검사해 인라인 style/script 위반 목록 반환 */
 function checkFile(rawContent) {
   const violations = [];
   const content = stripComments(rawContent); // 라인 오프셋 동일, 주석 텍스트만 무력화

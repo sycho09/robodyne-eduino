@@ -1,19 +1,20 @@
-// 하위 경로 배포 회귀 검출 — .html/.js/.css 안에 도메인 루트 기준 절대경로 참조가
-// 남아있으면 실패한다. (전제: 이 폴더가 도메인 루트가 아닌 하위 경로에 배포될 수 있음)
+// 하위 경로 배포 회귀 검출 — .html/.js/.css 안에 도메인 루트 기준 절대경로 참조
+// 존재 시 실패 처리. (전제: 이 폴더가 도메인 루트가 아닌 하위 경로에 배포될 수 있음)
 //
 // 검출 대상:
 //   - HTML  : src="/…" · href="/…" · <meta http-equiv="refresh" content="…url=/…">
-//   - JS    : 문자열 리터럴 '/console…' · '/stages…' · '/platform…' · '/shared…' ·
+//   - JS    : 문자열 리터럴 '/console…' · "/stages…" · `/platform…` · '/shared…' ·
 //             '/modules…' · '/entry.html' · '/index.html' · '/favicon…' · '/apple-touch-icon…'
-//             (HTML 안의 인라인 <script> 본문도 같은 기준으로 함께 검사)
+//             (홑따옴표·쌍따옴표·백틱 템플릿 리터럴 전부 대상, HTML 안의 인라인
+//             <script> 본문도 같은 기준으로 함께 검사)
 //   - CSS   : url(/…)  (HTML 안의 인라인 <style> 본문도 함께 검사)
-//   ※ '/index.html' 은 브리프 원문 접두사 목록에는 없으나, console/shared.js 가
-//     같은 방식(절대경로 문자열)으로 앱 루트의 index.html#해시를 참조하고 있어
-//     하위 경로 배포 시 동일하게 깨진다 — 회귀 방지 목적상 접두사에 포함시킴.
-//   ※ 오탐 제외: 외부 URL(`//…`·`http://`·`https://`)과 data: URI.
+//   ※ '/index.html' 접두사는 console/shared.js 의 '/index.html#…' 실제 참조를 반영해
+//     추가 — 하위 경로 배포 시 다른 접두사와 동일하게 깨지는 지점이라 검출 대상에 포함.
+//   ※ 오탐 제외 대상: 외부 URL(`//…`·`http://`·`https://`)과 data: URI.
 //
-// 기준선(2026-09-07 측정): 스캔 38개(html+js+css) 중 위반 파일 17개, 총 161건
-//   — html-attr 128 · inline-script-literal 13 · meta-refresh 4 · js-literal 16 · css-url 0.
+// 기준선(2026-09-07 측정, 백틱 지원 반영 후): 스캔 38개(html+js+css) 중 위반 파일 17개,
+//   총 161건 — html-attr 128 · inline-script-literal 13 · meta-refresh 4 · js-literal 16 · css-url 0.
+//   (이 앱에는 백틱만 쓴 절대경로 리터럴이 없어 수치 변동 없음 — normal 쪽에서 신규 검출 확인)
 //
 // node:test 만 사용, 의존성 추가 없음.
 
@@ -34,12 +35,13 @@ const STYLE_TAG_RE = /<style\b[^>]*>([\s\S]*?)<\/style>/gi;
 const ATTR_RE = /\b(?:src|href)\s*=\s*(["'])(\/[^"'>]*)\1/gi;
 const META_REFRESH_RE = /<meta\b[^>]*http-equiv\s*=\s*["']refresh["'][^>]*>/gi;
 const META_URL_RE = /url\s*=\s*(\/[^"'\s>]*)/i;
-// JS 문자열 리터럴 안의 앱 루트 절대경로 — 접두사 뒤에 '/'·'.'로 이어지거나 그대로 끝난다
+// JS 문자열 리터럴 안의 앱 루트 절대경로 — 홑따옴표·쌍따옴표·백틱(템플릿 리터럴) 전부 대상.
+// 접두사 뒤에 '/'·'.'로 이어지거나 그대로 끝나는 형태 인식.
 const JS_LITERAL_RE =
-  /(["'])(\/(?:console|stages|platform|shared|modules)(?:[/.][^"']*)?|\/entry\.html[^"']*|\/index\.html[^"']*|\/favicon[^"']*|\/apple-touch-icon[^"']*)\1/g;
+  /(["'`])(\/(?:console|stages|platform|shared|modules)(?:[/.][^"'`]*)?|\/entry\.html[^"'`]*|\/index\.html[^"'`]*|\/favicon[^"'`]*|\/apple-touch-icon[^"'`]*)\1/g;
 const CSS_URL_RE = /url\(\s*(["']?)(\/[^"')]*)\1\s*\)/gi;
 
-/** 디렉터리를 재귀 순회해 확장자가 일치하는 파일의 절대경로 목록을 반환한다 */
+/** 디렉터리 재귀 순회 — 확장자가 일치하는 파일의 절대경로 목록 반환 */
 function walk(dir, exts, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (entry.isDirectory()) {
@@ -52,17 +54,17 @@ function walk(dir, exts, out = []) {
   return out;
 }
 
-/** 0-index 문자 위치를 1-index 줄 번호로 변환한다 */
+/** 0-index 문자 위치를 1-index 줄 번호로 변환 */
 function lineAt(content, index) {
   return content.slice(0, index).split('\n').length;
 }
 
-/** HTML 주석 내부 텍스트를 공백으로 치환한다 (줄바꿈 보존, 줄 번호 오프셋 유지) */
+/** HTML 주석 내부 텍스트 공백 치환 (줄바꿈 보존, 줄 번호 오프셋 유지) */
 function stripComments(content) {
   return content.replace(COMMENT_RE, (m) => m.replace(/[^\n]/g, ' '));
 }
 
-/** 태그 본문(스타일·스크립트) 구간을 공백으로 치환한 사본을 반환한다 (속성 스캔 전용) */
+/** 태그 본문(스타일·스크립트) 구간을 공백으로 치환한 사본 반환 (속성 스캔 전용) */
 function maskBodies(content, tagRe) {
   let masked = content;
   for (const m of content.matchAll(tagRe)) {
@@ -85,8 +87,8 @@ function checkHtml(rawContent) {
   const violations = [];
   const content = stripComments(rawContent);
 
-  // 속성 스캔은 <script>/<style> 본문을 가려서, 본문 안 JS 대입문(`.src = "/…"`)이
-  // 이중 검출되는 것을 막는다 (본문 쪽은 아래에서 JS_LITERAL_RE 로 별도 검사).
+  // 속성 스캔은 <script>/<style> 본문을 가려서, 본문 안 JS 대입문(`.src = "/…"`)의
+  // 이중 검출 차단 (본문 쪽은 아래에서 JS_LITERAL_RE 로 별도 검사).
   const attrScanContent = maskBodies(maskBodies(content, SCRIPT_TAG_RE), STYLE_TAG_RE);
 
   for (const m of attrScanContent.matchAll(ATTR_RE)) {
