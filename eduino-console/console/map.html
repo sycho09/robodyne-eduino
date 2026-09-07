@@ -97,14 +97,6 @@
   .go:hover { transform:translateY(-2px); filter:brightness(1.07); }
   .go kbd { font-family:var(--mono); font-size:11px; background:rgba(0,0,0,.22); border-radius:5px; padding:2px 6px; }
 
-  .legend { position:relative; z-index:5; display:flex; align-items:center; justify-content:center;
-    gap:20px; padding:14px 22px 20px; font-size:12.5px; color:var(--ink-3); flex-wrap:wrap; }
-  .legend b { display:inline-flex; align-items:center; gap:7px; font-weight:600; color:var(--ink-2); }
-  .legend kbd { font-family:var(--mono); font-size:11px; font-weight:700; color:var(--ink);
-    background:rgba(255,255,255,.07); border:1px solid var(--line-2); border-bottom-width:2px;
-    border-radius:6px; padding:3px 7px; min-width:22px; text-align:center; }
-  .legend .ver { font-family:var(--mono); }
-
   @media (max-width:900px) {
     .title { font-size:22px; }
     .disc { width:74px; height:74px; }
@@ -158,21 +150,12 @@
   </section>
 </main>
 
-<footer class="legend">
-  <b><kbd>←</kbd><kbd>→</kbd> 이동</b>
-  <b><kbd>↑</kbd><kbd>↓</kbd> 트랙 전환</b>
-  <b><kbd>⏎</kbd> 시작</b>
-  <b><kbd>ESC</kbd> 홈</b>
-  <span class="ver">VISION AI v1.0</span>
-</footer>
-
 <script src="/stages/core/ui/icons.js"></script>
 <script src="/stages/core/session.js"></script>
 <script src="/stages/admin/cert.js"></script>
 <script src="/stages/submission/board.js"></script>
 <script>
 (function () {
-  /* 저장된 안이 A가 아니면 그쪽으로 넘긴다 (실습 화면의 콘솔 링크는 /studio.html 고정) */
   VStudio.claim('map');   /* 실습 화면에서 /studio.html 로 돌아와도 이 안으로 온다 */
   VStudio.guard();
   VStudio.hud();
