@@ -16,12 +16,10 @@ export function showRecords(host, { onPlay } = {}) {
   host.appendChild(root);
   document.body.dataset.inRecords = '1';
 
-  let layout = 'split';   // 'split'(카드) | 'table'(표) — 좌하단 토글이 바꾼다
-
   const draw = () => {
-    root.dataset.layout = layout;
-    root.innerHTML = template(layout);
-    wire(root, onPlay, (next) => { layout = next; draw(); });
+    root.dataset.layout = 'table';
+    root.innerHTML = template();
+    wire(root, onPlay);
   };
   draw();
 
@@ -40,7 +38,7 @@ export function showRecords(host, { onPlay } = {}) {
 
 // ── 마크업 ───────────────────────────────────────────────────────────────────
 
-function template(layout) {
+function template() {
   return `
     <header class="records-head">
       <h1 class="records-title">🏆 내 성취도 기록실</h1>
@@ -52,30 +50,13 @@ function template(layout) {
       </div>
     </header>
 
-    <div class="records-dock">
-      ${layoutToggle(layout)}
-    </div>
-
     <div class="records-content">
-      ${layout === 'table'
-        ? mockHtml()
-        : CHAPTERS.map(sectionHtml).join('') + summaryHtml(CARD_CLS)}
+      ${mockHtml()}
     </div>
   `;
 }
 
-function layoutToggle(layout) {
-  const btn = (val, label) =>
-    `<button type="button" class="${layout === val ? 'is-active' : ''}" data-layout="${val}">${label}</button>`;
-  return `
-    <div class="records-seg" role="group" aria-label="배치">
-      <span class="records-seg-label">배치</span>
-      ${btn('split', '카드')}${btn('table', '표')}
-    </div>`;
-}
-
-// 무대 한 덩이의 껍데기 — 배치마다 클래스 이름만 다르고 구조는 같다.
-const CARD_CLS = { box: 'records-stage', head: 'records-stage-head', icon: 'records-stage-icon' };
+// 무대 한 덩이의 껍데기
 const TABLE_CLS = { box: 'mk-stage', head: 'mk-head', icon: 'mk-head-icon' };
 
 const stageBox = (cls, rgb, icon, title, body) => `
@@ -143,38 +124,6 @@ function roomCells() {
 const firstEmoji = (s) =>
   (String(s || '').match(/^\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*/u) || ['🏅'])[0];
 
-// ── 카드 배치 ────────────────────────────────────────────────────────────────
-function sectionHtml(ch) {
-  const cards = roomsOf(ch).map((r) => cardHtml(r, ch.id)).join('');
-  return stageBox(CARD_CLS, chRgb(ch.id), ch.icon, esc(ch.short || ch.name),
-    `<ul class="records-grid">${cards}</ul>`);
-}
-
-// 표와 같은 구조: [이름] · [단계별 등급 = 과정] · [메달 = 결과].
-// 방 대표 등급(큰 알파벳)은 안 쓴다 — 1단계 S · 2단계 D 인 방에 D 만 크게 박히면 오해가 된다.
-function cardHtml(room, chId) {
-  return `<li class="rc" data-play="${room.id}" role="button" tabindex="0" style="--rc-rgb: ${chRgb(chId)};">
-    <div class="rc-content">
-      <span class="rc-icon" aria-hidden="true">${room.icon}</span>
-      <div class="rc-info">
-        <h3 class="rc-name">${esc(room.name)}</h3>
-        ${cardBadges(room)}
-      </div>
-      ${hasMedal(room)
-        ? `<span class="rc-seal is-got" title="${esc(room.reward || '')}">🏅</span>`
-        : '<span class="rc-seal">-</span>'}
-    </div>
-  </li>`;
-}
-
-// 카드엔 열 머리가 없으니 배지에 단계 번호를 같이 넣는다.
-const STAGE_NO = ['①', '②', '③', '④', '⑤'];
-
-function cardBadges(room) {
-  const chips = stageList(room).map((s) =>
-    `<span class="rc-sb" title="${esc(s.name)}">${s.no ? `<i>${STAGE_NO[s.no - 1] || s.no}</i>` : ''}<b data-grade="${gradeKey(s.grade)}">${esc(gradeText(s.grade, DASH))}</b></span>`).join('');
-  return `<div class="rc-badges">${chips}</div>`;
-}
 
 // ── 표 배치 ──────────────────────────────────────────────────────────────────
 const MOCK_SUFFIX = { ch4: '명예의 전당' };   // 나머지 무대는 '성취도'
@@ -241,12 +190,7 @@ function stageCells(room, cols) {
 }
 
 // ── 동작 ─────────────────────────────────────────────────────────────────────
-function wire(root, onPlay, onLayout) {
-  // 배치 토글 — 무대 목록의 [data-play] 와 섞이지 않게 패널 안에서만 찾는다.
-  root.querySelectorAll('.records-seg [data-layout]').forEach((b) => {
-    b.addEventListener('click', () => onLayout(b.dataset.layout));
-  });
-
+function wire(root, onPlay) {
   root.querySelectorAll('[data-play]').forEach((b) => {
     b.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -332,42 +276,7 @@ function ensureStyles() {
 }
 .records-save-btn:hover { background: rgba(30,24,50,.72); border-color: rgba(255,255,255,.32); transform: scale(1.02); }
 
-/* 좌하단 배치 토글 — 카드/표. */
-.records-dock {
-  position: fixed; left: 24px; bottom: 32px; z-index: 100;
-  display: flex; flex-direction: column; gap: 8px; align-items: flex-start;
-}
-.records-seg {
-  display: flex; align-items: center; gap: 4px; padding: 4px 8px 4px 4px; border-radius: 999px;
-  background: rgba(18,14,30,.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,.15); box-shadow: 0 16px 40px rgba(0,0,0,.5);
-}
-.records-seg-label { order: -1; padding: 0 4px 0 10px; font-size: 11px; font-weight: 700; color: rgba(255,255,255,.4); }
-.records-seg button {
-  height: 30px; padding: 0 12px; border: none; border-radius: 999px; cursor: pointer;
-  background: transparent; color: rgba(255,255,255,.55); font-size: 12px; font-weight: 700; transition: all .16s;
-}
-.records-seg button:hover { color: #fff; }
-.records-seg button.is-active { background: rgba(255,255,255,.16); color: #fff; }
-
 .records-content { margin: 0 auto; }
-.records-stage { margin-bottom: 40px; }
-.records-stage-head { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; font-size: 22px; font-weight: 800; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,0.6); }
-.records-stage-icon { font-size: 26px; }
-
-/* 최소 카드 폭 320px — .rc-name 이 nowrap 이라 더 좁아지면 제목이 메달 칸을 밀어낸다.
-   auto-fill 이라 폭이 줄면 한 줄 카드 수가 알아서 준다(미디어 쿼리가 따로 필요 없다). */
-.records-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
-
-/* ── [배치] 카드 ──────────────────────────────────────────────────────────────
-   무대별 방 수가 1·6·2·1 로 기울어 좌/우 고정 분할은 한쪽만 길어진다. 단 흘림은 알아서 맞물린다.
-   column-count 를 배치 스코프에 두는 이유: 표 배치의 .mk-cols 격자는 단에 잘리면 깨진다. */
-.records[data-layout="split"] .records-content { max-width: 1380px; column-count: 2; column-gap: 24px; }
-.records[data-layout="split"] .records-stage {
-  /* inline-block + width:100% 라야 단 안에서 break-inside 가 확실히 먹는다. */
-  display: inline-block; width: 100%; break-inside: avoid; margin-bottom: 24px;
-}
 
 /* ── [배치] 표 ────────────────────────────────────────────────────────────────
    한 열 574px — 가장 긴 방 이름이 nowrap 으로 들어가는 선. 값은 .records 의 --deck-* 에 있다. */
@@ -440,59 +349,6 @@ function ensureStyles() {
 .records [data-grade="done"] { color: #34d399; }
 .records [data-grade="none"] { color: #475569; }
 
-/* ── 카드 ─────────────────────────────────────────────────────────────────────
-   배경이 어두워 카드와 명도가 붙는다 — 판을 진하게 깔고 챕터색 테두리·글로우로 경계를 세운다.
-   .rc 는 카드 배치에만 나오므로 배치 스코프가 없다. */
-.rc {
-  position: relative; padding: 20px; border-radius: 16px;
-  display: flex; flex-direction: column;
-  background:
-    radial-gradient(ellipse 60% 70% at 50% 0%, rgba(var(--rc-rgb), .26) 0%, transparent 100%),
-    var(--deck-fill);
-  border: 1px solid rgba(var(--rc-rgb), .75);
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 10px 34px rgba(0,0,0,.5), 0 0 20px rgba(var(--rc-rgb), .22), inset 0 1px 0 rgba(255,255,255,.08);
-  transition: transform .2s, box-shadow .2s, background .2s, border-color .2s;
-}
-/* 카드 전체가 버튼이다 — 버튼을 따로 두면 카드 아래가 무거워진다. */
-.rc[data-play] { cursor: pointer; }
-.rc:hover, .rc:focus-visible {
-  transform: translateY(-4px); outline: none;
-  border-color: rgb(var(--rc-rgb));
-  box-shadow: 0 16px 44px rgba(0,0,0,.55), 0 0 30px rgba(var(--rc-rgb), .42), inset 0 1px 0 rgba(255,255,255,.1);
-}
-
-.rc-content { display: flex; align-items: center; width: 100%; }
-.rc-icon { font-size: 40px; margin-right: 16px; }
-.rc-info { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-.rc-name { font-size: 16px; font-weight: 700; margin: 0; white-space: nowrap; color: #fff; }
-/* 못 딴 방도 '-' 로 자리를 남긴다 — 칸이 비면 카드마다 폭이 달라져 격자가 어긋난다. */
-.rc-seal {
-  display: flex; align-items: center; justify-content: center; align-self: stretch;
-  font-size: 20px; line-height: 1; color: rgba(255,255,255,.35);
-  border-left: 1px solid rgba(255,255,255,.15); padding-left: 16px; margin-left: 12px; width: 60px; text-align: center;
-}
-.rc-seal.is-got { font-size: 34px; color: inherit; text-shadow: 0 2px 10px rgba(251,191,36,.35); }
-
-/* 단계 배지 — 알 하나가 한 단계라 경계가 분명하다. */
-.rc-badges { display: flex; flex-wrap: wrap; gap: 6px; }
-.rc-sb {
-  display: inline-flex; align-items: baseline; gap: 4px; padding: 1px 8px;
-  border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
-}
-.rc-sb i { font-style: normal; font-size: 10px; opacity: .55; }   /* 단계 번호 */
-.rc-sb b { font-weight: 800; font-size: 13px; }
-.rc-sb b[data-grade="done"] { font-size: 11px; }
-/* 표의 '-' 와 같은 이유 — 공용 색은 카드 위에서 거의 안 보인다. */
-.rc-sb b[data-grade="none"] { color: rgba(255,255,255,.5); }
-
-/* 카드 배치의 진척 판만 카드와 같은 만큼 테두리·글로우를 올린다 — 나란히 놓이므로
-   한쪽만 얇으면 그 판만 덜 여문 것으로 보인다. 표 쪽은 행 구분선이 이미 촘촘해 덧칠하지 않는다. */
-.records[data-layout="split"] .rs {
-  border-color: rgba(var(--rc-rgb), .75);
-  box-shadow: 0 10px 34px rgba(0,0,0,.5), 0 0 20px rgba(var(--rc-rgb), .18);
-}
-
 /* ── 진척 요약 ────────────────────────────────────────────────────────────────
    금색은 이 블록에서만 — 챕터색과 겹치지 않아야 '전체 합계' 로 읽힌다(.records-entry 와 같은 값). */
 .rs { padding: 13px 16px; }
@@ -554,17 +410,14 @@ function ensureStyles() {
 
 .records :focus-visible, .records-entry:focus-visible { outline: 2px solid #fbbf24; outline-offset: 3px; }
 
-/* 좁아지면 글자가 먼저 깨진다 — 단부터 접는다. 표는 열이 많아 더 일찍 접힌다. */
-@media (max-width: 900px) { .records[data-layout="split"] .records-content { column-count: 1; } }
+/* 좁아지면 글자가 먼저 깨진다 — 표는 열이 많아 더 일찍 접힌다. */
 @media (max-width: 1100px) { .mk-cols { grid-template-columns: 1fr; } }
 @media (max-width: 640px) {
   .records { padding: 84px 16px 110px; }
   .records-head { text-align: left; margin-top: 20px; }
   .records-save { position: absolute; top: 16px; right: 16px; }
   .records-save-btn { height: 38px; padding: 0 16px 0 12px; font-size: 13px; }
-  .records-dock { left: 16px; bottom: 20px; }
-  .records-seg button { height: 28px; padding: 0 10px; font-size: 11px; }
 }
-@media (prefers-reduced-motion: reduce) { .rs-bar span, .rc { transition: none; } }`;
+@media (prefers-reduced-motion: reduce) { .rs-bar span { transition: none; } }`;
   document.head.appendChild(el);
 }
