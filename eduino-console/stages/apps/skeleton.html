@@ -124,7 +124,7 @@
       /* 저장소에 번들한 모델 — 기본값(tfhub.dev)은 데스크톱 앱에서 403 (근거: docs/result-studio.md) */
       if(!skel.detector) skel.detector=await poseDetection.createDetector(
         poseDetection.SupportedModels.MoveNet, { modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
-          modelUrl: '/models/movenet/singlepose-lightning/model.json' });
+          modelUrl: '../../models/movenet/singlepose-lightning/model.json' });
       skel.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}});
       els.video.srcObject=skel.stream; await els.video.play().catch(()=>{});
       setAR(); els.video.addEventListener('loadedmetadata', setAR, {once:true});
@@ -186,7 +186,7 @@
   const codex=$('codex'); const openC=()=>codex.classList.add('on'), closeC=()=>codex.classList.remove('on');
   $('codexBtn').addEventListener('click',openC); $('codexX').addEventListener('click',closeC);
   codex.addEventListener('click',e=>{ if(e.target===codex) closeC(); });
-  window.addEventListener('keydown',e=>{ if(e.key==='Escape'){ codex.classList.contains('on')?closeC():location.href='/explore.html'; } });
+  window.addEventListener('keydown',e=>{ if(e.key==='Escape'){ codex.classList.contains('on')?closeC():location.href='../../explore.html'; } });
   window.addEventListener('pagehide', stopCam);
   window.addEventListener('pageshow',()=>{ document.body.style.opacity='1'; });
 </script>

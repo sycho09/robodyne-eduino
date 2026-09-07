@@ -221,7 +221,7 @@
   codex.addEventListener('click', (e)=>{ if(e.target===codex) closeCodex(); });
 
   window.addEventListener('keydown',(e)=>{
-    if(e.key==='Escape'){ if(codex.classList.contains('on')) closeCodex(); else location.href='/explore.html'; }
+    if(e.key==='Escape'){ if(codex.classList.contains('on')) closeCodex(); else location.href='../../explore.html'; }
   });
   window.addEventListener('pagehide', stopCam);
   window.addEventListener('pageshow',()=>{ document.body.style.opacity='1'; });

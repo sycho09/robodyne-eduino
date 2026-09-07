@@ -113,7 +113,7 @@ async function poseInit() {
     pose.detector = await poseDetection.createDetector(
       poseDetection.SupportedModels.MoveNet,
       { modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
-        modelUrl: '/models/movenet/singlepose-lightning/model.json' }
+        modelUrl: AppBase.resolve('models/movenet/singlepose-lightning/model.json') }
     );
     console.log('[pose] MoveNet ready, backend=', tf.getBackend());
   } catch (e) { console.error('[pose] MoveNet load fail:', e); }

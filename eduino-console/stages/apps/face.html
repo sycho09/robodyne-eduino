@@ -200,7 +200,7 @@
   const codex=$('codex'); const openC=()=>codex.classList.add('on'), closeC=()=>codex.classList.remove('on');
   $('codexBtn').addEventListener('click',openC); $('codexX').addEventListener('click',closeC);
   codex.addEventListener('click',e=>{ if(e.target===codex) closeC(); });
-  window.addEventListener('keydown',e=>{ if(e.key==='Escape'){ codex.classList.contains('on')?closeC():location.href='/explore.html'; } });
+  window.addEventListener('keydown',e=>{ if(e.key==='Escape'){ codex.classList.contains('on')?closeC():location.href='../../explore.html'; } });
   window.addEventListener('pagehide', stopCam);
   window.addEventListener('pageshow',()=>{ document.body.style.opacity='1'; });
 </script>
