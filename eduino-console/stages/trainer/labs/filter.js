@@ -74,7 +74,7 @@ async function filterToggle() {
 }
 
 /* 모션 감지: tf.browser.fromPixels 로 프레임을 읽어(가려진 비디오에서도 안전한 WebGL 경로)
-   이전 프레임과의 밝기 차이가 큰 픽셀을 빨갛게 오버레이로 표시한다. */
+   이전 프레임과의 밝기 차이가 큰 픽셀을 빨갛게 오버레이로 표시. */
 async function motionLoop() {
   if (ff.mode !== 'motion' || !ff.stream) return;
   if (ffEls.video.readyState >= 2 && window.tf) {

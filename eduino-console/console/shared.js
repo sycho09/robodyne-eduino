@@ -9,7 +9,7 @@
    ║  2안에 동시에 반영된다.                                          ║
    ║                                                                  ║
    ║  공용 CSS 클래스는 각 안의 스타일과 겹치지 않도록 v- 접두사 사용.  ║
-   ║  (.track 같은 흔한 이름은 각 안의 레이아웃 CSS와 충돌한다)         ║
+   ║  (.track 같은 흔한 이름은 각 안의 레이아웃 CSS와 충돌)         ║
    ╚══════════════════════════════════════════════════════════════════╝ */
 (function () {
   'use strict';
@@ -76,7 +76,7 @@
   const VISIT_KEY = 'vision_visited';
   const PUI_KEY = 'vision_progress_ui';
 
-  /* 이 스크립트를 부르는 쪽이 인트로 정책을 정한다.
+  /* 이 스크립트를 부르는 쪽이 인트로 정책 설정.
        data-intro="always" → 그 화면에 들어올 때마다 재생 (콘솔 입구 entry.html)
        (기본)             → 세션당 1회만 재생 (허브 · 내부 이동에서는 대기 0) */
   const introMode = (document.currentScript && document.currentScript.dataset.intro) || 'once';
@@ -101,10 +101,10 @@
     return v.url + (hash ? '#' + hash : '');
   }
 
-  /* ── 인트로를 재생할지 여기서 확정한다 ──
-     "비전 콘솔"로 들어올 때마다 브랜드 연출을 보여주되(entry = always),
-     콘솔 안에서의 이동(← 모드 선택 / 실습 ↔ 허브 / 새로고침)에는 대기가 없어야 한다.
-     결정을 head 시점에 끝내야 인트로 자리가 깜빡이지 않는다. */
+  /* ── 인트로 재생 여부 확정 ──
+     "비전 콘솔"로 들어올 때마다 브랜드 연출 표시(entry = always),
+     콘솔 안에서의 이동(← 모드 선택 / 실습 ↔ 허브 / 새로고침)에는 대기 없음.
+     결정을 head 시점에 끝내야 인트로 자리가 깜빡이지 않음. */
   const alreadyBooted = ss.get(BOOT_KEY, '') === '1';
   const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
   const internalMove = ss.get(SKIP_KEY, '') === '1';
@@ -167,7 +167,7 @@
     enabled() { return true; },   /* 진행 완료 표시는 기본기능 — 토글 없이 항상 켜짐 */
   };
 
-  /* ── 파생 지표 — 새로 수집하지 않고 위 방문 기록에서만 계산한다 ──
+  /* ── 파생 지표 — 새로 수집하지 않고 위 방문 기록에서만 계산 ──
      (기록 지점은 launch() 한 곳뿐이라 stages/ 파일은 계속 무수정) */
   const TIERS = [
     { min: 0, key: 'bronze',   name: 'BRONZE',   color: '#c8874a', ic: '🥉' },
@@ -281,9 +281,9 @@
   /* ══════════════════════════════════════════════════════════
      8. HUD 주입
      ══════════════════════════════════════════════════════════ */
-  /* 카드 캐러셀 ↔ 스테이지 맵 전환. 두 화면에서 같은 자리(모드 선택 오른쪽)에 둔다 —
-     자리가 옮겨 다니면 토글로 읽히지 않는다. 지금 열린 화면은 주소로 판별한다
-     (claim() 이 hud() 보다 먼저 돌긴 하지만, 저장값보다 주소가 늘 옳다). */
+  /* 카드 캐러셀 ↔ 스테이지 맵 전환. 두 화면에서 같은 자리(모드 선택 오른쪽)에 둠 —
+     자리가 옮겨 다니면 토글로 읽히지 않음. 지금 열린 화면은 주소로 판별
+     (claim() 이 hud() 보다 먼저 돌긴 하지만, 저장값보다 주소가 늘 옳음). */
   function viewToggle() {
     const path = location.pathname;
     const here = VARIANTS.find(v => path.indexOf(v.url) !== -1);
@@ -333,7 +333,7 @@
     /* 사운드 토글 — 아이콘만 둔다. 옆 버튼들이 이미 글자라 하나는 기호로 쉬어 준다 */
     const sb = document.getElementById('vsound');
     if (sb) sb.addEventListener('click', () => { sb.textContent = sound.toggle() ? '🔊' : '🔇'; });
-    /* 뷰 전환 — 이동음만 얹는다. 목적지 쪽 claim() 이 선택된 안을 저장한다 */
+    /* 뷰 전환 — 이동음만 상향. 목적지 쪽 claim() 이 선택된 안 저장 */
     const vv = document.getElementById('vview');
     if (vv) vv.addEventListener('click', () => sound.tab());
   }
@@ -383,7 +383,7 @@
     if (!host) return;
     host.querySelectorAll('.v-tab').forEach(b => b.classList.toggle('on', b.dataset.track === key));
   }
-  /* 트랙 전환 키(↑↓[]) — 트랙이 늘어도 순환한다 */
+  /* 트랙 전환 키(↑↓[]) — 트랙이 늘어도 순환 */
   function nextTrackKey(key) {
     const i = TRACK_KEYS.indexOf(key);
     return TRACK_KEYS[(i + 1) % TRACK_KEYS.length];
@@ -438,7 +438,7 @@
       'radial-gradient(55% 50% at 80% 80%,' + track.glowB + ',transparent 62%),' +
       'linear-gradient(180deg,var(--bg-2),var(--bg))';
   }
-  /* 트랙 색을 문서 전체(--acc/--acc2/--accGlow)와 배경에 한 번에 반영한다 */
+  /* 트랙 색을 문서 전체(--acc/--acc2/--accGlow)와 배경에 한 번에 반영 */
   function paintTrack(track, ambEl) {
     const s = document.documentElement.style;
     s.setProperty('--acc', track.accent);
@@ -461,9 +461,9 @@
     document.body.style.opacity = '1';
   });
 
-  /* 지금 열린 안을 '선택된 안'으로 저장한다.
-     실습 화면의 콘솔 링크는 /studio.html 로 고정돼 있는데, 그 스텁이 이 값을 보고 되돌려 보낸다.
-     (변형끼리 서로 리다이렉트하지 않으므로 루프가 생길 수 없다) */
+  /* 지금 열린 안을 '선택된 안'으로 저장.
+     실습 화면의 콘솔 링크는 /studio.html 로 고정돼 있는데, 그 스텁이 이 값을 보고 되돌려 보냄.
+     (변형끼리 서로 리다이렉트하지 않으므로 루프가 생길 수 없음) */
   function claim(thisKey) {
     if (VARIANTS.some(v => v.key === thisKey)) ls.set(VKEY, thisKey);
   }

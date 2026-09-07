@@ -134,7 +134,7 @@ window.addEventListener('pointercancel', endClassCapture);
 
 /* 탭/서브탭을 떠날 때 활성 카메라·마이크·추론 루프를 일괄 정리.
    각 toggle 함수는 "켜져 있으면 끈다"는 토글 구조이므로,
-   활성 상태일 때만 호출하면 기존 teardown 로직(트랙 stop·RAF cancel)을 그대로 재사용한다. */
+   활성 상태일 때만 호출하면 기존 teardown 로직(트랙 stop·RAF cancel)을 그대로 재사용. */
 function stopAllActivity() {
   if (state.stream)    toggleCam();        // 이미지: 카메라 + stopInfer
   if (pose.stream)     poseToggleCam();    // 동작: 카메라 + 추론 + 오버레이 루프
@@ -150,7 +150,7 @@ function stopAllActivity() {
 }
 
 /* 좌측 사이드바 기능 선택 — 도메인(AI 학습/영상처리) 아래 기능들을 평면으로 전환.
-   각 기능은 기존 패널(+서브패널)을 재사용하고, 상단 정보 카드를 함께 갱신한다. */
+   각 기능은 기존 패널(+서브패널)을 재사용하고, 상단 정보 카드를 함께 갱신. */
 const IC = (p) => `<svg class="ni-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 
 /* 기능 메타데이터 — 사이드바/정보카드가 모두 이 config 에서 생성된다.

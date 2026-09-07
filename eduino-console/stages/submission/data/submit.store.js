@@ -5,7 +5,7 @@
     LKEY = "vision_locker";
   /* 제출·세션 식별자 (충돌 확률이 낮으면 되는 용도) */
   const genId = () => "s" + Date.now() + "_" + Math.floor(Math.random() * 1e4);
-  /* 학생 이름 보관 (UI 가 localStorage 를 직접 만지지 않게 한다) */
+  /* 학생 이름 보관 (UI 의 localStorage 미접근 처리) */
   const studentName = () => {
     try {
       return localStorage.getItem(NAMEKEY) || "";

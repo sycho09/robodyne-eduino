@@ -25,8 +25,8 @@ function applyGenUI() {
   $("btnGen").textContent = "이미지 다시 선택";
 }
 
-/* 실제 쓰기 · 타자마다 돌면 밀리므로 묶어서 실행한다
-   이미지는 아직 보관소에서 오는 중일 수 있으니 다 온 뒤에만 건드린다 */
+/* 실제 쓰기 · 타자마다 돌면 밀리므로 묶어서 실행
+   이미지는 아직 보관소에서 오는 중일 수 있으니 다 온 뒤에만 건드림 */
 let imgsRestored = false;
 const writeDraft = SC.debounce(
   () =>
@@ -48,7 +48,7 @@ const writeDraft = SC.debounce(
 );
 function saveDraft() {
   if (!ready) return;
-  keeper.markDirty(); /* 닫기 확인에 쓰이므로 즉시 표시한다 */
+  keeper.markDirty(); /* 닫기 확인에 쓰이므로 즉시 표시 */
   writeDraft();
 }
 function restoreDraft() {
@@ -89,7 +89,7 @@ function restoreDraft() {
       applyCapUI(capData.name, capData.acc);
     }),
     draw("genImg", (im, src) => {
-      genImgData = src; /* syncIdea 가 보므로 UI 갱신 전에 채운다 */
+      genImgData = src; /* syncIdea 가 보므로 UI 갱신 전에 채우기 */
       SC.coverDraw($("bGen"), im);
       applyGenUI();
     }),

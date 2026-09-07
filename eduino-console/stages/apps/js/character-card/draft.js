@@ -2,8 +2,8 @@
 const DKEY = "vision_draft_card:" + M.key;
 let ready = false;
 let keeper; /* 보관·종료 흐름 (아래에서 SC.keeper 로 만든다) */
-/* 실제 쓰기 · 특성 빈칸을 채울 때마다 돌면 밀리므로 묶어서 실행한다
-   이미지는 아직 보관소에서 오는 중일 수 있으니 다 온 뒤에만 건드린다 */
+/* 실제 쓰기 · 특성 빈칸을 채울 때마다 돌면 밀리므로 묶어서 실행
+   이미지는 아직 보관소에서 오는 중일 수 있으니 다 온 뒤에만 건드림 */
 let imgsRestored = false;
 const writeDraft = SC.debounce(() => {
   syncBlocks(); /* 입력 내용 갱신 */
@@ -22,7 +22,7 @@ const writeDraft = SC.debounce(() => {
 }, 400);
 function saveDraft() {
   if (!ready) return;
-  keeper.markDirty(); /* 닫기 확인에 쓰이므로 즉시 표시한다 */
+  keeper.markDirty(); /* 닫기 확인에 쓰이므로 즉시 표시 */
   writeDraft();
 }
 function restoreDraft() {

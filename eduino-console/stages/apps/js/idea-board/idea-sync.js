@@ -9,7 +9,7 @@ function syncIdea() {
 $("btnGen").addEventListener("click", () =>
   SC.pickImage((img) => {
     SC.coverDraw($("bGen"), img);
-    /* syncIdea 가 genImgData 를 보므로 UI 갱신 전에 먼저 채운다 */
+    /* syncIdea 가 genImgData 를 보므로 UI 갱신 전에 먼저 채우기 */
     genImgData = $("bGen").toDataURL("image/jpeg", 0.8);
     applyGenUI();
     saveDraft();

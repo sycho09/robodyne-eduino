@@ -183,7 +183,7 @@
      이미지는 width:100% + aspect-ratio 라 폭만 정하면 높이가 따라오므로 비율이 안 깨진다.
      192px = 화살표 52x2 + 간격 14x2 + 카드 안쪽 여백 30x2.
      상한 1060px 은 큰 화면에서의 현재 크기, 하한 700px 은 낮은 창에서의 바닥이다.
-     이렇게 두면 노트북에서도 점 인디케이터가 접힌 자리 위에 남는다 — 몇 장인지 보여야 한다. */
+     이렇게 두면 노트북에서도 점 인디케이터가 접힌 자리 위에 남는다 — 몇 장인지 표시. */
   .fcar { display: grid; grid-template-columns: 52px minmax(0, 1fr) 52px; align-items: center; gap: 14px;
     max-width: clamp(700px, calc(40vh * 1.6 + 192px), 1060px); margin: 0 auto; }
   /* 카드 테두리는 뷰포트가 갖는다 — 슬라이드는 이 틀 안에서만 움직인다.

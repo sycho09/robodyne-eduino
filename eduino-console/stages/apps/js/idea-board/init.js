@@ -32,7 +32,7 @@ keeper = SC.keeper({
   kind: "idea",
   title: "상상보드",
   render: renderBoard,
-  /* 담으려면 인식 결과 캡처 + 아이디어·설명·이미지 중 하나가 있어야 한다 */
+  /* 담으려면 인식 결과 캡처 + 아이디어·설명·이미지 중 하나 필수 */
   complete: () =>
     !!capImgData &&
     !!($("idea").value.trim() || $("prompt").value.trim() || genImgData),

@@ -51,7 +51,7 @@ async function segmentLoop() {
       const segmentation = await seg.net.segmentPerson(sEls.video, { internalResolution: 'medium', segmentationThreshold: 0.6 });
       const ctx = sEls.canvas.getContext('2d');
       const mask = segmentation.data;
-      // 비디오를 배경 레이어로 그대로 노출하고 캔버스는 투명 오버레이로만 사용한다.
+      // 비디오를 배경 레이어로 그대로 노출하고 캔버스는 투명 오버레이로만 사용.
       // (가려진 비디오를 drawImage 하면 일부 브라우저에서 검은 프레임이 나오는 문제 회피)
       const img = ctx.createImageData(vw, vh);
       const data = img.data;

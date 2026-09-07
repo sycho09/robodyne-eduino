@@ -3,7 +3,7 @@
 (function () {
   /* esc 는 submit.core.js · studio-common.js 에도 같은 구현이 있다.
      세 파일의 로더(index.html · stages/apps/*.html)가 전부 수정 금지라
-     공용 스크립트를 끼워 넣을 수 없어 부득이하게 복제한다.
+     공용 스크립트를 끼워 넣을 수 없어 부득이하게 복제.
      한 곳을 고치면 나머지 둘도 같이 고칠 것. */
   const esc = (s) =>
     String(s == null ? "" : s).replace(
@@ -55,7 +55,7 @@
       if (!document.body.contains(backdrop))
         document.body.appendChild(backdrop);
       const danger = !!options.danger;
-      /* 종류를 한 번만 정해 className·아이콘이 갈라지지 않게 한다 */
+      /* 종류를 한 번만 정해 className·아이콘이 갈라짐 방지 */
       const kind = danger ? "danger" : twoButtons ? "ask" : "info";
       const card = backdrop.querySelector("#vdCard");
       card.className = "vd-card " + kind;

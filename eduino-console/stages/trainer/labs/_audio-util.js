@@ -1,6 +1,6 @@
 /* ── 음성 녹음 관리 (스펙트로그램 썸네일 + 삭제) ─────────── */
 /* speech-commands 녹음은 오디오가 아닌 스펙트로그램이라 재생은 불가하고,
-   썸네일로 확인 + uid 기반 개별 삭제만 제공한다. */
+   썸네일로 확인 + uid 기반 개별 삭제만 제공. */
 function drawSpectrogram(canvas, spec) {
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;

@@ -1,4 +1,4 @@
-/* 진입점 — 기능(서비스) 탭 인터랙션과 동작 미리보기 캔버스 루프를 시작한다 */
+/* 진입점 — 기능(서비스) 탭 인터랙션과 동작 미리보기 캔버스 루프 시작 */
 (function () {
   const dkey = window.dkey;
   const FEATS = window.FEATS;

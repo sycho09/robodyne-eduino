@@ -1,6 +1,6 @@
 // Eduino AI Lab — Electron 데스크톱 래퍼
 // index.html 을 독립 앱 창으로 띄운다. file:// 은 보안 컨텍스트로 취급되고
-// 권한 핸들러가 카메라/마이크를 허용하므로 getUserMedia 가 정상 동작한다.
+// 권한 핸들러가 카메라/마이크를 허용하므로 getUserMedia 정상 동작.
 const { app, BrowserWindow, session, protocol, net } = require('electron');
 const path = require('path');
 

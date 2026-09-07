@@ -76,7 +76,7 @@ keeper = SC.keeper({
   kind: "character",
   title: "캐릭터 카드",
   render: renderCard,
-  /* 담으려면 이름 + 특성 한 줄이나 이미지 중 하나가 있어야 한다 */
+  /* 담으려면 이름 + 특성 한 줄이나 이미지 중 하나 필수 */
   complete: () =>
     !!$("name").value.trim() &&
     ($("cTraits").querySelectorAll(".tline:not(.empty)").length > 0 ||
