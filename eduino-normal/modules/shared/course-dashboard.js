@@ -2,12 +2,12 @@
 (function () {
   // 사이드바 "코스 목록" 순서 (platform/index.html 카탈로그와 일치해야 함)
   var COURSES = [
-    { key: 'concept', name: '머신러닝 개념 실험실', href: '/modules/concept/index.html', icon: '<circle cx="6" cy="6" r="2"/><circle cx="18" cy="7" r="2"/><circle cx="9" cy="17" r="2"/><path d="M8 7l8 0M8 16l8-8"/>' },
-    { key: 'data', name: '데이터 · 예측 AI (AIoT)', href: '/modules/data/index.html', icon: '<path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 4-5"/>' },
-    { key: 'text', name: '텍스트 · 언어 AI', href: '/modules/text/index.html', icon: '<path d="M4 6h16M4 12h16M4 18h10"/>' },
-    { key: 'vision', name: '비전 · 영상처리 AI', href: '/modules/vision/index.html', icon: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/>' },
-    { key: 'gesture', name: '제스처 · 동작 AI', href: '/modules/gesture/index.html', icon: '<circle cx="12" cy="4" r="2"/><path d="M12 6v6m0 0l-4 6m4-6l4 6M6 9l6 1 6-1"/>' },
-    { key: 'life', name: '생활 속 인식 AI', href: '/modules/life/index.html', icon: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h2v2H8zM14 8h2v2h-2zM8 14h2v2H8zM14 14h2v2h-2z"/>' }
+    { key: 'concept', name: '머신러닝 개념 실험실', href: window.AppBase.resolve('modules/concept/index.html'), icon: '<circle cx="6" cy="6" r="2"/><circle cx="18" cy="7" r="2"/><circle cx="9" cy="17" r="2"/><path d="M8 7l8 0M8 16l8-8"/>' },
+    { key: 'data', name: '데이터 · 예측 AI (AIoT)', href: window.AppBase.resolve('modules/data/index.html'), icon: '<path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 4-5"/>' },
+    { key: 'text', name: '텍스트 · 언어 AI', href: window.AppBase.resolve('modules/text/index.html'), icon: '<path d="M4 6h16M4 12h16M4 18h10"/>' },
+    { key: 'vision', name: '비전 · 영상처리 AI', href: window.AppBase.resolve('modules/vision/index.html'), icon: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/>' },
+    { key: 'gesture', name: '제스처 · 동작 AI', href: window.AppBase.resolve('modules/gesture/index.html'), icon: '<circle cx="12" cy="4" r="2"/><path d="M12 6v6m0 0l-4 6m4-6l4 6M6 9l6 1 6-1"/>' },
+    { key: 'life', name: '생활 속 인식 AI', href: window.AppBase.resolve('modules/life/index.html'), icon: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h2v2H8zM14 8h2v2h-2zM8 14h2v2H8zM14 14h2v2h-2z"/>' }
   ];
   var STEP_LABELS = ['사전 진단', '이론 학습', '실습 퀘스트', '최종 평가'];
   // 이론 상세 페이지 구성 (정의 → 예시 → 실무 활용)
@@ -180,7 +180,7 @@
 
       if (backBtn) {
         backBtn.className = 'dash-home-btn';
-        backBtn.innerHTML = '<img src="/platform/img/logo.webp" alt="Eduino AI" class="dash-home-logo" />';
+        backBtn.innerHTML = '<img src="' + window.AppBase.resolve('platform/img/logo.webp') + '" alt="Eduino AI" class="dash-home-logo" />';
         backBtn.removeAttribute('style'); // Remove inline styles if any
         sb.insertBefore(backBtn, sb.firstChild);
       }
