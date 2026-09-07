@@ -40,10 +40,13 @@ export function showChapterSelect(root, { chapter, onRoom, onExit, onChapter, sp
   });
 
   const bg = root.querySelector('#cs-bg');
-  const bgImg = new Image();
-  bgImg.onerror = () => { if (!bgImg._p) { bgImg._p = 1; bgImg.src = `/brand/stage-${chapter}-bg.png`; } };
-  bgImg.onload = () => { bg.style.backgroundImage = `url(${bgImg.src})`; };
-  bgImg.src = `/brand/stage-${chapter}-bg.webp`;
+  const gradients = {
+    ch1: 'linear-gradient(135deg, #5d4311, #351f04)',
+    ch2: 'linear-gradient(135deg, #651f35, #310c19)',
+    ch3: 'linear-gradient(135deg, #0e293d, #05141f)', // 더 어두운 다크 블루/보라
+    ch4: 'linear-gradient(135deg, #1f1136, #0e071c)', // 더 어두운 딥 바이올렛
+  };
+  bg.style.background = gradients[chapter] || '#2a2238';
 
   const track = root.querySelector('#cs-track');
   const cards = [...track.querySelectorAll('.cs-card')];
