@@ -71,12 +71,6 @@
     box-shadow:0 4px 12px rgba(0,0,0,.4), 0 0 0 3px rgba(66,226,155,.22); }
   body.show-progress .pack.done .pack-stamp { display:grid; }
 
-  /* 캐러셀 하단 통합 브랜딩 */
-  .cbrand { display:flex; align-items:center; justify-content:center; gap:9px; margin-top:6px;
-    font-size:19px; font-weight:800; letter-spacing:.01em; color:rgba(255,255,255,.55); }
-  .cbrand img { height:18px; opacity:.85; }
-  .cbrand b { color:#f0473a; }
-
   .arrow { position:absolute; top:50%; transform:translateY(-50%); z-index:8; width:auto; height:auto;
     padding:14px; border:0; background:none; color:rgba(255,255,255,.45); font-size:46px; line-height:0;
     font-weight:300; transition:color .15s, transform .15s; }
@@ -99,16 +93,12 @@
   .dots i { width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.22); transition:.2s; cursor:pointer; }
   .dots i.done { background:var(--green); }                          /* 완료한 스테이지 — 트랙 진도 한눈에 */
   .dots i.on { background:#fff; width:20px; border-radius:99px; }    /* 현재 위치는 흰색 우선 */
-  .legend { font-size:11.5px; color:var(--ink-3); margin-top:2px; }
-  .legend kbd { font-family:var(--mono); font-size:10.5px; color:var(--ink); background:rgba(255,255,255,.07);
-    border:1px solid var(--line-2); border-radius:5px; padding:2px 6px; }
 
   @media (max-width:560px) {
     .v-tab { padding:8px 11px; font-size:12px; }
     .stage-title { font-size:20px; }
     .arrow { padding:8px; font-size:34px; }
     .enter { font-size:15px; }
-    .cbrand { display:none; }
   }
 </style>
 </head>
@@ -139,8 +129,6 @@
   <div class="infobar" id="infobar"></div>
   <button class="enter" id="enter">입장하기 <span class="ar">→</span></button>
   <div class="dots" id="dots"></div>
-  <div class="legend"><kbd>←</kbd> <kbd>→</kbd> 넘기기 · <kbd>⏎</kbd> 입장 · <kbd>↑</kbd><kbd>↓</kbd> 트랙 · <kbd>ESC</kbd> 홈</div>
-  <div class="cbrand"><img src="/platform/img/logo-mark.webp" alt="" />Eduino <b>AI</b></div>
 </footer>
 
 <script src="/stages/core/ui/icons.js"></script>
@@ -271,7 +259,6 @@
   VStudio.onHashTrack((h) => setTrack(h, false));
 
   build(false);
-  VStudio.variantBar(() => build(false));
   VStudio.boot();
 })();
 </script>

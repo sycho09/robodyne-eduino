@@ -63,11 +63,11 @@
   const HOME = '/platform/index.html';   /* 플랫폼 홈 — HUD 로고·홈 버튼·ESC 키가 함께 쓴다 */
 
   /* ══════════════════════════════════════════════════════════
-     2. UI안 정의 — 데모 전환 바가 이 목록을 그린다
+     2. 화면 정의 — 상단바 뷰 토글이 이 목록으로 서로를 가리킨다
      ══════════════════════════════════════════════════════════ */
   const VARIANTS = [
-    { key: 'cards',      tag: 'A', label: '카드 캐러셀',   url: '/console/cards.html' },
-    { key: 'map',        tag: 'C', label: '스테이지 맵',   url: '/console/map.html' },
+    { key: 'cards', label: '카드 캐러셀', url: '/console/cards.html' },
+    { key: 'map',   label: '스테이지 맵', url: '/console/map.html' },
   ];
   const VKEY = 'vision_ui_variant';
   const BOOT_KEY = 'vision_boot_seen';
@@ -178,7 +178,6 @@
   .v-brand .sep{width:1px;height:18px;background:var(--line-2);}
   .v-brand .sys{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.18em;color:var(--ink-3);}
   .v-hud-r{display:flex;align-items:center;gap:10px;}
-  .v-clock{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink-2);letter-spacing:.04em;}
   .v-btn{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--ink-2);
     background:rgba(255,255,255,.05);border:0;border-radius:10px;padding:8px 12px;transition:.15s;}
   .v-btn:hover{color:var(--ink);background:rgba(255,255,255,.1);}
@@ -210,35 +209,13 @@
   .v-prog .pbar i{display:block;height:100%;width:0;border-radius:99px;transition:width .5s cubic-bezier(.2,.8,.3,1);}
   .v-prog b{font-family:var(--mono);font-weight:700;color:var(--ink-2);}
 
-  /* ── 데모 전환 바 (제안용 · 안이 확정되면 variantBar() 호출만 지우면 사라짐)
-        화면 콘텐츠를 가리지 않도록 하단에 도킹하고, body 에 그만큼 여백을 준다 ── */
-  .v-demo{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;align-items:center;justify-content:center;
-    gap:8px 18px;flex-wrap:wrap;padding:10px 18px;background:rgba(9,11,20,.94);backdrop-filter:blur(12px);
-    box-shadow:0 -1px 0 rgba(255,255,255,.09),0 -16px 40px rgba(0,0,0,.45);}
-  .v-demo-h{display:inline-flex;align-items:center;gap:10px;
-    font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.16em;color:var(--ink-3);text-transform:uppercase;}
-  .v-demo-h button{border:0;background:rgba(255,255,255,.06);color:var(--ink-3);font-size:13px;line-height:1;
-    width:22px;height:22px;border-radius:7px;}
-  .v-demo-h button:hover{color:var(--ink);background:rgba(255,255,255,.14);}
-  .v-demo-b{display:flex;align-items:center;gap:8px 18px;flex-wrap:wrap;justify-content:center;}
-  .v-demo.folded .v-demo-b{display:none;}
-  .v-vars{display:flex;gap:6px;}
-  .v-var{display:flex;align-items:center;gap:7px;padding:8px 14px;border:0;border-radius:10px;
-    background:rgba(255,255,255,.05);color:var(--ink-3);transition:.15s;}
-  .v-var:hover{background:rgba(255,255,255,.1);color:var(--ink-2);}
-  .v-var .tg{font-family:var(--mono);font-size:12px;font-weight:700;}
-  .v-var .lb{font-size:11.5px;font-weight:700;white-space:nowrap;}
-  .v-var.on{background:linear-gradient(135deg,var(--blue-2),var(--blue));color:#fff;box-shadow:0 6px 18px rgba(59,134,255,.35);}
-
   @media (max-width:560px){
     .v-tab .tno{display:none;}
     .v-hud{padding:12px 14px;gap:8px;flex-wrap:wrap;}
     .v-brand .bt{font-size:13px;white-space:nowrap;}
-    .v-brand .sys,.v-brand .sep,.v-clock{display:none;}
+    .v-brand .sys,.v-brand .sep{display:none;}
     .v-hud-r{gap:6px;flex-wrap:wrap;justify-content:flex-end;}
     .v-btn{padding:7px 9px;font-size:11.5px;white-space:nowrap;}
-    .v-demo{padding:8px 10px;gap:6px 10px;}
-    .v-var{padding:7px 10px;} .v-var .lb{font-size:11px;}
   }
   @media (prefers-reduced-motion:reduce){
     .v-seq .lg img,.v-scan-in::after,.v-splash img,.v-splash .w,.v-splash .s{animation:none!important;}
@@ -429,6 +406,20 @@
   /* ══════════════════════════════════════════════════════════
      8. HUD 주입
      ══════════════════════════════════════════════════════════ */
+  /* 카드 캐러셀 ↔ 스테이지 맵 전환. 두 화면에서 같은 자리(모드 선택 오른쪽)에 둔다 —
+     자리가 옮겨 다니면 토글로 읽히지 않는다. 지금 열린 화면은 주소로 판별한다
+     (claim() 이 hud() 보다 먼저 돌긴 하지만, 저장값보다 주소가 늘 옳다). */
+  function viewToggle() {
+    const path = location.pathname;
+    const here = VARIANTS.find(v => path.indexOf(v.url) !== -1);
+    if (!here) return '';                       /* 스테이지 화면 등에서는 안 그린다 */
+    const other = VARIANTS.find(v => v.key !== here.key);
+    if (!other) return '';
+    const label = other.key === 'map' ? '로드맵' : '카드';
+    return '<a class="v-btn" id="vview" href="' + other.url + (location.hash || '') + '"' +
+           ' title="' + other.label + ' 로 보기">' + label + '</a>';
+  }
+
   function hud() {
     const host = document.getElementById('vhud');
     if (!host) return;
@@ -441,9 +432,9 @@
       '</a>' +
       '<div class="v-hud-r">' +
         '<a class="v-btn" href="/entry.html" id="vback" title="모드 선택으로 돌아가기">← 모드 선택</a>' +
+        viewToggle() +
         '<span class="v-btn" id="vmode" style="cursor:default">체험 모드</span>' +
-        '<span class="v-clock" id="vclock">--:--</span>' +
-        '<button class="v-btn" id="vsound" title="효과음 켜기/끄기">🔊 사운드</button>' +
+        '<button class="v-btn" id="vsound" title="효과음 켜기/끄기">🔊</button>' +
         '<button class="v-btn" id="vboard" title="제출 게시판"><i data-ic="board"></i> 게시판</button>' +
         '<a class="v-btn" href="' + HOME + '"><i data-ic="home"></i> 홈</a>' +
       '</div>';
@@ -469,60 +460,12 @@
       else if (m.mode === 'teach') bb.title = '제출 게시판 (평가)';
       bb.addEventListener('click', () => { if (window.Board) Board.open(); });
     }
-    /* 사운드 토글 */
+    /* 사운드 토글 — 아이콘만 둔다. 옆 버튼들이 이미 글자라 하나는 기호로 쉬어 준다 */
     const sb = document.getElementById('vsound');
-    if (sb) sb.addEventListener('click', () => { sb.textContent = sound.toggle() ? '🔊 사운드' : '🔇 사운드'; });
-    /* 라이브 시계 */
-    const ck = document.getElementById('vclock');
-    if (ck) {
-      const tick = () => {
-        const d = new Date();
-        ck.textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-      };
-      tick(); setInterval(tick, 10000);
-    }
-  }
-
-  /* ══════════════════════════════════════════════════════════
-     9. 데모 전환 바 — 상사가 3안을 즉석에서 비교하는 패널
-        (안이 확정되면 각 HTML 의 VStudio.variantBar() 호출만 지우면 사라짐)
-     ══════════════════════════════════════════════════════════ */
-  function variantBar(onProgressToggle) {
-    const cur = variantKey();
-    const el = document.createElement('div');
-    el.className = 'v-demo';
-    el.innerHTML =
-      '<div class="v-demo-h"><span>UI 제안 · ' + VARIANTS.length + '안 비교</span>' +
-        '<button id="vfold" title="접기/펴기">–</button></div>' +
-      '<div class="v-demo-b">' +
-        '<div class="v-vars">' +
-          VARIANTS.map(v =>
-            '<button class="v-var' + (v.key === cur ? ' on' : '') + '" data-v="' + v.key + '">' +
-            '<span class="tg">' + v.tag + '</span><span class="lb">' + v.label + '</span></button>'
-          ).join('') +
-        '</div>' +
-      '</div>';
-    document.body.appendChild(el);
-
-    /* 바 높이만큼 본문에 여백을 줘서 콘텐츠를 가리지 않게 한다 */
-    const fitBody = () => { document.body.style.paddingBottom = el.offsetHeight + 'px'; };
-    fitBody();
-    window.addEventListener('resize', fitBody);
-
-    el.querySelector('#vfold').addEventListener('click', () => {
-      el.classList.toggle('folded');
-      el.querySelector('#vfold').textContent = el.classList.contains('folded') ? '+' : '–';
-      fitBody();
-    });
-    el.querySelectorAll('.v-var').forEach(b => b.addEventListener('click', () => {
-      const k = b.dataset.v;
-      ls.set(VKEY, k);
-      if (k === cur) return;
-      const v = VARIANTS.find(x => x.key === k);
-      sound.tab();
-      location.href = v.url + (location.hash || '');
-    }));
-    return el;
+    if (sb) sb.addEventListener('click', () => { sb.textContent = sound.toggle() ? '🔊' : '🔇'; });
+    /* 뷰 전환 — 이동음만 얹는다. 목적지 쪽 claim() 이 선택된 안을 저장한다 */
+    const vv = document.getElementById('vview');
+    if (vv) vv.addEventListener('click', () => sound.tab());
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -659,7 +602,7 @@
 
   window.VStudio = {
     TRACKS, TRACK_KEYS, VARIANTS, TIERS, HOME,
-    boot, guard, hud, variantBar,
+    boot, guard, hud,
     progress, stats, shortDate, allItems, sound, thumbs,
     tabs, wireTabs, syncTabs, nextTrackKey, keys, onHashTrack, showProgress,
     initTrack, rememberTrack, setAmbient, paintTrack, launch,

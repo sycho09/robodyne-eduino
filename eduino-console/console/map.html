@@ -135,7 +135,7 @@
 <header id="vhud"></header>
 
 <main class="stage">
-  <p class="eyebrow">VISION STUDIO CONSOLE · A안</p>
+  <p class="eyebrow">VISION STUDIO CONSOLE</p>
   <h1 class="title">스테이지를 <b>골라 바로</b> 시작하세요</h1>
 
   <!-- 탭 내용은 VStudio.tabs() 가 TRACKS 에서 그린다 (라벨·개수 복붙 금지) -->
@@ -296,7 +296,6 @@
   VStudio.onHashTrack((h) => setTrack(h, false));
 
   render(false);
-  VStudio.variantBar(() => { render(false); });
   VStudio.boot(() => drawPath());
 })();
 </script>
