@@ -30,6 +30,7 @@
     --coral: #ff8a3d; --coral-ink: #df7415; --coral-soft: #fff4e8;
     --green: #11a06f; --green-soft: #e6f6ef;
     --amber: #d98a1f; --amber-soft: #fcf3e2;
+    --violet: #6f4bd8; --violet-soft: #f1ecfe;   /* 투어 캐러셀의 네 번째 묶음 — amber 는 coral 과 너무 가깝다 */
     --shadow-sm: 0 1px 2px rgba(20,22,31,.05), 0 1px 3px rgba(20,22,31,.05);
     --shadow: 0 2px 6px rgba(20,22,31,.05), 0 12px 30px rgba(20,22,31,.07);
     --shadow-lg: 0 8px 18px rgba(20,22,31,.08), 0 30px 60px rgba(59,134,255,.12);
@@ -211,10 +212,14 @@
   .fs-badge { font-size: 11.5px; font-weight: 800; padding: 5px 10px; border-radius: 8px; }
   .fslide h3 { margin: 0 0 8px; font-size: 21px; font-weight: 800; letter-spacing: -0.02em; }
   .fslide p { margin: 0; font-size: 14.5px; color: var(--ink-2); line-height: 1.62; }
+  /* 색은 여섯 단계가 아니라 네 묶음을 가리킨다 — 시작 / 고르기(2) / 진행(2) / 운영.
+     같은 색 두 장은 순서가 아니라 갈래다: 카드↔로드맵, 체험↔제작. */
   .fs-t1 .fs-num { color: var(--green); }     .fs-t1 .fs-badge { color: var(--green); background: var(--green-soft); }
-  .fs-t2 .fs-num { color: var(--primary); }   .fs-t2 .fs-badge { color: var(--primary-ink); background: var(--primary-soft); }
-  .fs-t3 .fs-num { color: var(--coral-ink); } .fs-t3 .fs-badge { color: var(--coral-ink); background: var(--coral-soft); }
-  .fs-t4 .fs-num { color: var(--amber); }     .fs-t4 .fs-badge { color: var(--amber); background: var(--amber-soft); }
+  .fs-t2 .fs-num, .fs-t3 .fs-num { color: var(--primary); }
+  .fs-t2 .fs-badge, .fs-t3 .fs-badge { color: var(--primary-ink); background: var(--primary-soft); }
+  .fs-t4 .fs-num, .fs-t5 .fs-num { color: var(--coral-ink); }
+  .fs-t4 .fs-badge, .fs-t5 .fs-badge { color: var(--coral-ink); background: var(--coral-soft); }
+  .fs-t6 .fs-num { color: var(--violet); }    .fs-t6 .fs-badge { color: var(--violet); background: var(--violet-soft); }
   /* 실제 콘솔 화면 스크린샷 액자. aspect-ratio 를 16:10 으로 못 박는 게 핵심이다 —
      이미지가 늦게 와도 네 장의 높이가 같게 유지돼 넘길 때 안 튄다.
      (원본도 1200x750 = 16:10 이라 cover 가 아무것도 잘라내지 않는다) */
@@ -462,18 +467,19 @@
     </div>
   </section>
 
-  <!-- 화면 여정 — 스테이지를 고르기 전에 "콘솔이 어떻게 흘러가는지" 를 먼저 보여준다.
+  <!-- 콘솔 투어 — 스테이지를 고르기 전에 콘솔 안을 실제 화면으로 먼저 보여준다.
        normal 랜딩의 #flow 와 같은 컴포넌트다(CSS·동작 동일, 내용만 다르다).
-       normal 은 코스 '안'의 4단계지만 콘솔은 화면 '사이'의 여정이다. 03·04 는 순서가
-       아니라 갈래라, 배지가 단계 번호 대신 트랙 이름을 든다.
+       normal 은 여섯 코스가 모두 같은 4단계라 '단계'를 셀 수 있지만, 콘솔에는 그런
+       통일된 단계가 없다. 그래서 단계표가 아니라 둘러보기다 — 장수는 보여줄 화면
+       수에 맞추고, 같은 묶음(고르기 2장 · 진행 2장)은 색으로 묶는다.
        화면·문구가 바뀌면 스크린샷도 함께 다시 찍을 것 — platform/img/flow/ -->
   <section class="flow-band" id="flow"><div class="wrap">
     <div class="head">
-      <div class="kicker">How It Works</div>
-      <h2>콘솔은 이렇게 흘러갑니다</h2>
-      <p>입장 → 스테이지 고르기 → 진행. 마지막 한 번만 갈라져요 — 바로 관찰하는 <b>체험 5종</b>과, 내 데이터로 학습시키는 <b>제작 3종</b>.</p>
+      <div class="kicker">Product Tour</div>
+      <h2>콘솔 안을 미리 둘러보세요</h2>
+      <p>입장부터 수업 운영까지 전부 <b>실제 화면</b>입니다. 설치도 가입도 없이 브라우저에서 그대로 열려요.</p>
     </div>
-    <div class="fcar" id="flow-car" role="group" aria-roledescription="캐러셀" aria-label="콘솔 화면 여정">
+    <div class="fcar" id="flow-car" role="group" aria-roledescription="캐러셀" aria-label="콘솔 화면 둘러보기">
       <button class="fcar-nav prev" type="button" aria-label="이전"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
       <div class="fcar-view"><div class="fcar-track" id="flow-track"></div></div>
       <button class="fcar-nav next" type="button" aria-label="다음"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
@@ -672,31 +678,43 @@ document.getElementById('mock-side').innerHTML = SIDE.map((s,i)=>`<b class="${i=
   setInterval(() => { cur = (cur+1) % STAGES.length; tBase = now0(); panel(STAGES[cur]); }, 2800);
 })();
 
-/* ── 화면 여정 캐러셀 ──
+/* ── 콘솔 투어 캐러셀 ──
    normal/platform/index.html 의 같은 이름 블록과 동작 코드가 같다 — 내용만 다르다.
-   01·02 는 누가 오든 거치는 같은 길이고, 03·04 는 스테이지가 가질 수 있는 두 모양이다.
-   그래서 배지가 단계 수 대신 트랙 이름을 들고 있다.
-   문구는 console/shared.js 의 TRACKS[].desc 및 entry.html 의 모드 설명과 같은 뜻으로 유지할 것. */
+   장수는 '단계 수' 가 아니라 '보여줄 화면 수' 다. 02·03 은 같은 목록의 두 보기 방식,
+   04·05 는 스테이지가 가질 수 있는 두 모양이라 각각 한 묶음이고 색이 같다.
+   그래서 배지가 단계 번호 대신 트랙 이름이나 대상을 든다.
+   문구는 console/shared.js 의 TRACKS[].desc 및 entry.html 의 모드 설명과 같은 뜻으로
+   유지할 것. 화면이 바뀌면 platform/img/flow/ 의 스크린샷도 함께 다시 찍는다. */
 const FLOW = [
   {
     title: '입장', badge: '세 가지 모드',
     desc: '체험 · 수업 개설 · 수업 참여 중 하나를 고르면 바로 시작합니다. 가입도 설치도 없어요.',
-    shot: 'step-1', alt: '입장 화면 — 체험 모드 · 수업 개설 · 수업 참여 세 카드'
+    shot: 'tour-1-entry', alt: '입장 화면 — 체험 모드 · 수업 개설 · 수업 참여 세 카드'
   },
   {
-    title: '스테이지 고르기', badge: '8개 스테이지',
-    desc: '두 트랙에서 골라 입장합니다. 카드로 넘겨 보거나 로드맵으로 전체를 한눈에 볼 수 있어요.',
-    shot: 'step-2', alt: '스테이지 선택 화면 — 트랙을 고르고 스테이지 카드를 넘겨 보는 모습'
+    title: '카드로 고르기', badge: 'TRACK 01 · 체험 5종',
+    desc: '스테이지를 카드로 넘겨 보며 고릅니다. 학습 없이 바로 관찰하는 다섯 가지예요.',
+    shot: 'tour-2-cards', alt: '스테이지 선택 화면 — 체험 스테이지 카드를 좌우로 넘겨 보는 모습'
   },
   {
-    title: '기본기능 체험', badge: 'TRACK 01 · 5종',
-    desc: '학습 없이 카메라만 켜면 AI가 바로 작동합니다. 컴퓨터가 화면 속 세상을 어떻게 보는지 관찰해요.',
-    shot: 'step-3', alt: '객체 탐지 스테이지 화면 — 카메라를 켜면 사물을 실시간으로 찾아 박스로 표시한다'
+    title: '로드맵으로 보기', badge: 'TRACK 02 · 제작 3종',
+    desc: '같은 목록을 경로로 펼쳐 한눈에 봅니다. 카드와 로드맵은 상단바에서 바로 오갈 수 있어요.',
+    shot: 'tour-3-map', alt: '로드맵 화면 — 이미지 · 음성 · 동작 분류 세 미션이 경로로 이어진 모습'
   },
   {
-    title: '직접 제작', badge: 'TRACK 02 · 3종',
-    desc: '내가 모은 데이터로 학습시킵니다. 수집 → 학습 → 추론까지 나만의 AI를 완성해요.',
-    shot: 'step-4', alt: '이미지 분류 제작 화면 — 클래스 만들기부터 추론·평가까지 4단계 작업대'
+    title: '바로 관찰', badge: '학습 없이',
+    desc: '카메라만 켜면 AI가 바로 작동합니다. 컴퓨터가 화면 속 세상을 어떻게 보는지 관찰해요.',
+    shot: 'tour-4-stage', alt: '객체 탐지 스테이지 화면 — 카메라를 켜면 사물을 실시간으로 찾아 박스로 표시한다'
+  },
+  {
+    title: '직접 제작', badge: '내 데이터로',
+    desc: '클래스 만들기 → 데이터 수집 → 모델 학습 → 추론·평가. 나만의 AI를 완성해요.',
+    shot: 'tour-5-make', alt: '이미지 분류 제작 화면 — 클래스 만들기부터 추론·평가까지 4단계 작업대'
+  },
+  {
+    title: '수업 운영', badge: '교사용',
+    desc: '수업명을 적으면 6자리 코드가 발급됩니다. 학급 전체가 그 코드로 함께 들어와요.',
+    shot: 'tour-6-class', alt: '수업 개설 화면 — 수업명과 인원을 적고 코드를 발급받는 창'
   },
 ];
 
