@@ -1,0 +1,1186 @@
+    :root {
+      --bg: #f6f7fb;
+      --bg-soft: #eef1f7;
+      --bg-tint: #fbfcff;
+      --card: #ffffff;
+      --card-2: #f9fafd;
+      --line: #e9ebf2;
+      --line-2: #dfe2ec;
+      --ink: #14161f;
+      --ink-2: #50566a;
+      --ink-3: #868da3;
+      --ink-4: #aeb4c6;
+      --primary: #f0473a;
+      --primary-ink: #d12e1e;
+      --primary-2: #ff6a52;
+      --primary-soft: #fff1ee;
+      --primary-line: #ffd6cd;
+      --coral: #ff8a3d;
+      --coral-ink: #df7415;
+      --coral-soft: #fff4e8;
+      --green: #11a06f;
+      --green-soft: #e6f6ef;
+      --amber: #d98a1f;
+      --amber-soft: #fcf3e2;
+      --blue: #4d8dff;
+      --blue-ink: #2f6fd0;
+      --blue-soft: #eaf1ff;
+      --shadow-sm: 0 1px 2px rgba(20, 22, 31, .05), 0 1px 3px rgba(20, 22, 31, .05);
+      --shadow: 0 2px 6px rgba(20, 22, 31, .05), 0 12px 30px rgba(20, 22, 31, .07);
+      --shadow-lg: 0 8px 18px rgba(20, 22, 31, .08), 0 30px 60px rgba(240, 71, 58, .12);
+      --r: 16px;
+      --r-lg: 22px;
+      --sans: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 80px;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background:
+        radial-gradient(1100px 560px at 88% -8%, rgba(240, 71, 58, .10), transparent 62%),
+        radial-gradient(760px 460px at 2% 4%, rgba(255, 106, 82, .08), transparent 60%),
+        var(--bg);
+      font-size: 16px;
+      line-height: 1.62;
+      -webkit-font-smoothing: antialiased;
+      word-break: keep-all;
+      overflow-wrap: break-word;
+      letter-spacing: -0.011em;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .wrap {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── 헤더 ── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(246, 247, 251, .82);
+      backdrop-filter: blur(14px) saturate(1.4);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      height: 66px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .logo-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      background: linear-gradient(150deg, var(--primary-2), var(--primary));
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 20px;
+      box-shadow: 0 4px 12px rgba(240, 71, 58, .4), inset 0 1px 0 rgba(255, 255, 255, .4);
+    }
+
+    .logo-title {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-title span {
+      color: var(--primary);
+    }
+
+    .logo-img {
+      height: 36px;
+      width: auto;
+      display: block;
+    }
+
+    @media (max-width: 600px) {
+      .logo-img {
+        height: 30px;
+      }
+    }
+
+    .nav {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .nav a.link {
+      padding: 9px 13px;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink-2);
+      transition: .14s;
+    }
+
+    .nav a.link:hover {
+      color: var(--ink);
+      background: #fff;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 700;
+      font-size: 14.5px;
+      padding: 11px 20px;
+      border-radius: 11px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: .16s;
+    }
+
+    .btn-primary {
+      color: #fff;
+      background: linear-gradient(150deg, var(--primary-2), var(--primary));
+      box-shadow: 0 6px 18px rgba(240, 71, 58, .32);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(240, 71, 58, .42);
+    }
+
+    .btn-ghost {
+      color: var(--ink);
+      background: #fff;
+      border-color: var(--line-2);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--primary-line);
+      color: var(--primary-ink);
+    }
+
+    .nav .btn {
+      margin-left: 8px;
+    }
+
+    .btn-lg {
+      padding: 14px 26px;
+      font-size: 16px;
+      border-radius: 13px;
+    }
+
+    /* ── 히어로 (프리미엄 다크 패널) ── */
+    .hero-band {
+      position: relative;
+      margin: 16px auto 4px;
+      max-width: 1180px;
+      border-radius: 30px;
+      overflow: hidden;
+      background: linear-gradient(165deg, #14161f 0%, #1b1411 58%, #23101a 100%);
+      border: 1px solid rgba(255, 255, 255, .08);
+      box-shadow: 0 30px 80px rgba(20, 22, 31, .30), inset 0 1px 0 rgba(255, 255, 255, .06);
+    }
+
+    .hero-band::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: .5;
+      z-index: 0;
+      background-image: linear-gradient(rgba(255, 255, 255, .045) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .045) 1px, transparent 1px);
+      background-size: 34px 34px;
+      -webkit-mask-image: radial-gradient(120% 95% at 50% 0%, #000 28%, transparent 76%);
+      mask-image: radial-gradient(120% 95% at 50% 0%, #000 28%, transparent 76%);
+    }
+
+    .hero-band .aurora {
+      position: absolute;
+      inset: -30% -12% auto -12%;
+      height: 140%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(54px);
+      opacity: .55;
+      background:
+        radial-gradient(38% 50% at 16% 22%, rgba(240, 71, 58, .60), transparent 60%),
+        radial-gradient(42% 55% at 82% 16%, rgba(255, 138, 61, .45), transparent 60%),
+        radial-gradient(46% 62% at 64% 80%, rgba(124, 108, 255, .36), transparent 62%);
+      animation: drift 16s ease-in-out infinite alternate;
+    }
+
+    @keyframes drift {
+      0% {
+        transform: translate3d(0, 0, 0) scale(1)
+      }
+
+      100% {
+        transform: translate3d(-3%, 2%, 0) scale(1.09)
+      }
+    }
+
+    .hero {
+      position: relative;
+      z-index: 1;
+      padding: 58px 48px 54px;
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 46px;
+      align-items: center;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #ffd9d1;
+      background: rgba(240, 71, 58, .13);
+      border: 1px solid rgba(240, 71, 58, .34);
+      padding: 7px 14px;
+      border-radius: 999px;
+      backdrop-filter: blur(6px);
+    }
+
+    .pill .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--primary-2);
+      box-shadow: 0 0 10px 2px rgba(255, 106, 82, .7);
+    }
+
+    .hero h1 {
+      margin: 20px 0 16px;
+      font-size: 56px;
+      line-height: 1.05;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: #fff;
+    }
+
+    .hero h1 .g {
+      background: linear-gradient(100deg, #ff9a3d, #f0473a 52%, #ff6ab5);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero .lead {
+      font-size: 17px;
+      color: rgba(255, 255, 255, .74);
+      max-width: 520px;
+    }
+
+    .hero .lead b {
+      color: #fff;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 12px;
+      margin: 28px 0 22px;
+      flex-wrap: wrap;
+    }
+
+    .hero-band .mock-cap {
+      color: rgba(255, 255, 255, .5);
+    }
+
+    .hero-band .mock {
+      box-shadow: 0 24px 60px rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .06);
+    }
+
+    /* 일반모드 특성 4칩 — 히어로 하단. 별도 섹션을 두지 않고 여기서 끝낸다. */
+    .trust {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      color: rgba(255, 255, 255, .62);
+      font-size: 13px;
+      margin-top: 14px;
+    }
+
+    .trust b {
+      color: #fff;
+    }
+
+    .trust span {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .trust svg {
+      width: 16px;
+      height: 16px;
+      color: #34d399;
+    }
+
+    /* ── 히어로 제품 목업 ── */
+    .mock {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      transform: rotate(.4deg);
+    }
+
+    .mock .bar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--card-2);
+    }
+
+    .mock .bar i {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .mock .url {
+      margin-left: 10px;
+      flex: 1;
+      height: 22px;
+      border-radius: 7px;
+      background: #fff;
+      border: 1px solid var(--line);
+      font-size: 11px;
+      color: var(--ink-3);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-family: var(--sans);
+    }
+
+    .mock .body {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      height: 286px;
+    }
+
+    .mock .side {
+      border-right: 1px solid var(--line);
+      padding: 14px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      background: var(--card-2);
+    }
+
+    .mock .side b {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--bg-soft);
+      display: grid;
+      place-items: center;
+    }
+
+    .mock .side b.act {
+      background: var(--primary-soft);
+      box-shadow: inset 0 0 0 1px var(--primary-line);
+    }
+
+    .mock .side b svg {
+      width: 18px;
+      height: 18px;
+      color: var(--ink-3);
+    }
+
+    .mock .side b.act svg {
+      color: var(--primary);
+    }
+
+    .mock .stage {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1.3fr .9fr;
+      gap: 14px;
+    }
+
+    .mock .cam {
+      border-radius: 14px;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(150deg, #2a2f45, #161a29);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06);
+    }
+
+    .mock .cam::before {
+      content: '';
+      position: absolute;
+      inset: 28% 34% 22% 30%;
+      border: 2px solid rgba(255, 106, 82, .95);
+      border-radius: 10px;
+      box-shadow: 0 0 0 4px rgba(255, 106, 82, .22);
+    }
+
+    .mock .cam-tag {
+      position: absolute;
+      left: 30%;
+      top: calc(28% - 18px);
+      font-size: 9px;
+      color: #fff;
+      z-index: 1;
+      background: var(--primary);
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-weight: 700;
+      transition: all .4s;
+    }
+
+    .mock .panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .mock .donut {
+      width: 92px;
+      height: 92px;
+      margin: 2px auto 0;
+      position: relative;
+    }
+
+    .mock .donut svg {
+      width: 92px;
+      height: 92px;
+      transform: rotate(-90deg);
+    }
+
+    .mock .donut .ring-bg {
+      fill: none;
+      stroke: var(--bg-soft);
+      stroke-width: 9;
+    }
+
+    .mock .donut .ring-fg {
+      fill: none;
+      stroke: var(--primary);
+      stroke-width: 9;
+      stroke-linecap: round;
+      transition: stroke-dasharray .7s cubic-bezier(.16, 1, .3, 1), stroke .4s;
+    }
+
+    .mock .donut i {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 19px;
+      color: var(--primary-ink);
+    }
+
+    .mock .rows {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .mock .row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 10px;
+      color: var(--ink-2);
+      font-weight: 600;
+    }
+
+    .mock .row .lab {
+      width: 30px;
+    }
+
+    .mock .row .track {
+      flex: 1;
+      height: 8px;
+      border-radius: 5px;
+      background: var(--bg-soft);
+      overflow: hidden;
+    }
+
+    .mock .row .fill {
+      height: 100%;
+      border-radius: 5px;
+      width: 0;
+      background: linear-gradient(90deg, var(--primary), var(--primary-2));
+      transition: width .7s cubic-bezier(.16, 1, .3, 1);
+    }
+
+    /* ── 섹션 ── */
+    section {
+      padding: 56px 0;
+    }
+
+    .head {
+      text-align: center;
+      max-width: 680px;
+      margin: 0 auto 36px;
+    }
+
+    .head .kicker {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      color: var(--primary);
+      text-transform: uppercase;
+    }
+
+    .head h2 {
+      margin: 10px 0 12px;
+      font-size: 33px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .head p {
+      margin: 0;
+      color: var(--ink-2);
+      font-size: 16px;
+    }
+
+    .cat-note {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 16px;
+    }
+
+    .cat-note span {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--green);
+      background: var(--green-soft);
+      border: 1px solid rgba(17, 160, 111, .25);
+      border-radius: 999px;
+      padding: 5px 13px;
+    }
+
+    /* ── 진행 4단계 캐러셀 ──────────────────────────────────────────────
+       태블릿 색번짐(그라데이션 밴딩) 대책이 이 밴드 설계의 전제다.
+       · body 의 라디얼 그라데이션을 이 구간에서 불투명 단색으로 완전히 덮는다
+       · blur · backdrop-filter · 큰 소프트 그라데이션을 이 안에 쓰지 않는다
+       · 위아래 경계는 1px 실선 — 색이 서로 스며드는 면 자체를 만들지 않는다
+       강조색은 숫자·배지 같은 작은 칩에만 얹는다. */
+    .flow-band {
+      background: var(--bg-soft);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      /* 기본 section 여백(56)보다 좁게 — 카드가 큰 섹션이라 위아래를 조금 당긴다 */
+      padding: 44px 0;
+    }
+
+    .flow-band .head {
+      margin-bottom: 28px;
+    }
+
+    .fcar {
+      display: grid;
+      grid-template-columns: 52px minmax(0, 1fr) 52px;
+      align-items: center;
+      gap: 14px;
+      /* 카드 폭을 화면 높이에서 끌어낸다 — 이미지 높이가 화면의 44% 가 되게.
+         이미지는 width:100% + aspect-ratio 라 폭만 정하면 높이가 따라오므로 비율이 안 깨진다.
+         192px = 화살표 52x2 + 간격 14x2 + 카드 안쪽 여백 30x2.
+         상한 1060px 은 큰 화면에서의 현재 크기, 하한 700px 은 낮은 창에서의 바닥이다.
+         이렇게 두면 노트북에서도 점 인디케이터가 접힌 자리 위에 남는다 — 몇 장인지 보여야 한다. */
+      max-width: clamp(700px, calc(40vh * 1.6 + 192px), 1060px);
+      margin: 0 auto;
+    }
+
+    /* 카드 테두리는 뷰포트가 갖는다 — 슬라이드는 이 틀 안에서만 움직인다.
+       (슬라이드마다 테두리를 주면 넘길 때 선이 두 겹으로 스쳐 지나간다) */
+    .fcar-view {
+      overflow: hidden;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-sm);
+      touch-action: pan-y;
+    }
+
+    .fcar-track {
+      display: flex;
+      align-items: stretch;
+      transition: transform .42s cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .fslide {
+      flex: 0 0 100%;
+      min-width: 0;
+      padding: 28px 30px 30px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 20px;
+    }
+
+    .fs-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .fs-num {
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.05em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .fs-badge {
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 5px 10px;
+      border-radius: 8px;
+    }
+
+    .fslide h3 {
+      margin: 0 0 8px;
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .fslide p {
+      margin: 0;
+      font-size: 14.5px;
+      color: var(--ink-2);
+      line-height: 1.62;
+    }
+
+    .fs-t1 .fs-num {
+      color: var(--green);
+    }
+
+    .fs-t1 .fs-badge {
+      color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .fs-t2 .fs-num {
+      color: var(--primary);
+    }
+
+    .fs-t2 .fs-badge {
+      color: var(--primary-ink);
+      background: var(--primary-soft);
+    }
+
+    .fs-t3 .fs-num {
+      color: var(--coral-ink);
+    }
+
+    .fs-t3 .fs-badge {
+      color: var(--coral-ink);
+      background: var(--coral-soft);
+    }
+
+    .fs-t4 .fs-num {
+      color: var(--blue-ink);
+    }
+
+    .fs-t4 .fs-badge {
+      color: var(--blue-ink);
+      background: var(--blue-soft);
+    }
+
+    /* 실제 코스 화면 스크린샷 액자.
+       aspect-ratio 를 16:10 으로 못 박는 게 핵심이다 — 이미지가 늦게 와도,
+       네 장의 실제 픽셀이 조금씩 달라도 슬라이드 높이가 같게 유지돼 넘길 때 안 튄다.
+       (원본도 1200x750 = 16:10 으로 찍어 두어 cover 가 아무것도 잘라내지 않는다)
+       밴드의 색번짐 규칙대로 그림자·블러 없이 1px 테두리로만 끊는다. */
+    .fs-shot {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--card-2);
+      aspect-ratio: 16 / 10;
+    }
+
+    .fs-shot img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+    }
+
+    .fcar-nav {
+      width: 46px;
+      height: 46px;
+      padding: 0;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--card);
+      border: 1px solid var(--line-2);
+      color: var(--ink-2);
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: .16s;
+    }
+
+    .fcar-nav svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .fcar-nav:hover:not(:disabled) {
+      color: var(--primary-ink);
+      border-color: var(--primary-line);
+      transform: translateY(-1px);
+    }
+
+    .fcar-nav:disabled {
+      opacity: .35;
+      cursor: default;
+      box-shadow: none;
+    }
+
+    .fcar-nav.prev {
+      justify-self: end;
+    }
+
+    .fcar-nav.next {
+      justify-self: start;
+    }
+
+    .fcar-dots {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 9px;
+      margin-top: 16px;
+    }
+
+    .fcar-dot {
+      width: 9px;
+      height: 9px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: var(--line-2);
+      cursor: pointer;
+      transition: .18s;
+    }
+
+    .fcar-dot[aria-current="true"] {
+      width: 26px;
+      border-radius: 999px;
+      background: var(--primary);
+    }
+
+    /* 태블릿·모바일: 화살표를 카드 옆이 아니라 아래 점 인디케이터 양옆에 둔다.
+       (카드 위에 겹치면 손가락이 내용을 가리고, 옆에 두면 카드가 그만큼 좁아진다) */
+    @media (max-width: 900px) {
+      .fcar {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .fcar-nav {
+        grid-row: 2;
+        grid-column: 1;
+      }
+
+      .fcar-nav.prev {
+        justify-self: start;
+      }
+
+      .fcar-nav.next {
+        justify-self: end;
+      }
+
+      .fcar-dots {
+        grid-row: 2;
+        grid-column: 1;
+        align-self: center;
+        margin-top: 0;
+      }
+
+      .fslide {
+        gap: 18px;
+        padding: 24px 20px 26px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .fslide {
+        padding: 20px 16px 22px;
+      }
+
+      .fslide h3 {
+        font-size: 19px;
+      }
+    }
+
+    /* ── 코스 카탈로그 ── */
+    .cat {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+      gap: 18px;
+    }
+
+    .mod {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      transition: .18s;
+    }
+
+    .mod.live:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary-line);
+      box-shadow: 0 4px 14px rgba(20, 22, 31, .06), 0 22px 46px rgba(240, 71, 58, .17);
+    }
+
+    .mod.soon {
+      background: var(--card-2);
+    }
+
+    .mod-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .mod-ic {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(150deg, var(--primary-soft), #fff);
+      border: 1px solid var(--primary-line);
+      color: var(--primary);
+    }
+
+    .mod-ic svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    .tag {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 5px 11px;
+      border-radius: 999px;
+    }
+
+    .tag.on {
+      color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .tag.off {
+      color: var(--ink-3);
+      background: var(--bg-soft);
+    }
+
+    .mod h3 {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 800;
+    }
+
+    .mod .d {
+      font-size: 14px;
+      color: var(--ink-2);
+      line-height: 1.58;
+    }
+
+    .mod .lv {
+      display: flex;
+      flex-direction: column;
+      margin-top: 2px;
+    }
+
+    .mod .lv .r {
+      display: flex;
+      gap: 11px;
+      font-size: 13px;
+      padding: 9px 0;
+      align-items: center;
+    }
+
+    .mod .lv .r:not(:last-child) {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .mod .lv .r b {
+      flex: none;
+      width: 40px;
+      text-align: center;
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 3px 0;
+      border-radius: 6px;
+      background: var(--primary-soft);
+      color: var(--primary-ink);
+    }
+
+    .mod .lv .r.b1 b {
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .mod .lv .r.b3 b {
+      background: var(--coral-soft);
+      color: var(--coral-ink);
+    }
+
+    .mod .lv .r span {
+      color: var(--ink-2);
+    }
+
+    .mod .foot {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-top: 6px;
+    }
+
+    .mod .go {
+      font-weight: 800;
+      font-size: 14px;
+      color: var(--primary);
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .mod.soon .go {
+      color: var(--ink-4);
+    }
+
+    /* ── 푸터 ── */
+    footer {
+      border-top: 1px solid var(--line);
+      margin-top: 56px;
+      padding: 40px 0 32px;
+    }
+
+    .foot {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+
+    .foot-links {
+      display: flex;
+      gap: 22px;
+      flex-wrap: wrap;
+    }
+
+    .foot-links a {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--ink-2);
+    }
+
+    .foot-links a:hover {
+      color: var(--primary);
+    }
+
+    .foot .about {
+      font-size: 13.5px;
+      color: var(--ink-3);
+      max-width: 340px;
+      margin-top: 12px;
+    }
+
+    .foot-bot {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 12.5px;
+      color: var(--ink-4);
+    }
+
+    /* ── 마감 디테일: 접근성·스크롤·모션 ── */
+    .topbar {
+      transition: box-shadow .2s, background .2s;
+    }
+
+    .topbar.scrolled {
+      box-shadow: 0 6px 24px rgba(20, 22, 31, .07);
+      background: rgba(246, 247, 251, .92);
+    }
+
+    a:focus-visible,
+    .btn:focus-visible,
+    summary:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+
+    .mock-cap {
+      text-align: center;
+      font-size: 12px;
+      color: var(--ink-4);
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    .mock-cap i {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 3px var(--green-soft);
+      animation: blink 2s infinite;
+    }
+
+    /* 스크롤 등장 */
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity .6s cubic-bezier(.16, 1, .3, 1), transform .6s cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .reveal.in {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* 히어로 목업 라이브 모션 */
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .35
+      }
+    }
+
+    @keyframes detect {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 4px rgba(255, 106, 82, .22)
+      }
+
+      50% {
+        box-shadow: 0 0 0 7px rgba(255, 106, 82, .10)
+      }
+    }
+
+    .mock .cam::before {
+      animation: detect 2.4s ease-in-out infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+
+      .mock .cam::before,
+      .mock-cap i {
+        animation: none;
+      }
+
+      .fcar-track {
+        transition: none;
+      }
+
+      html {
+        scroll-behavior: auto;
+      }
+    }
+
+    /* ── 반응형 ── */
+    @media (max-width: 960px) {
+      .hero-band {
+        border-radius: 22px;
+        margin: 12px auto 4px;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 32px;
+        padding: 40px 22px;
+      }
+
+      .hero .mock-wrap {
+        max-width: 520px;
+        margin: 0 auto;
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .hero h1 {
+        font-size: 36px;
+      }
+
+      .head h2 {
+        font-size: 26px;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .hero-cta {
+        flex-direction: column;
+      }
+    }

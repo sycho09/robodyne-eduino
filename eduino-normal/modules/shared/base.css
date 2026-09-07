@@ -112,3 +112,7 @@ main { max-width:1140px; margin:0 auto; padding:26px 22px 22px; }
 .flow .fstep.active .fn { background:linear-gradient(150deg,var(--primary-2),var(--primary)); border-color:transparent; color:#fff; }
 .flow .fstep.done .fn { background:var(--green); border-color:transparent; color:#fff; }
 .flow .farrow { color:var(--ink-4); flex:none; padding:0 2px; }
+
+/* 로딩 스피너 회전 — gesture·life·vision 세 코스 app.js 가 동적으로 주입하던 것을
+   여기 한 번만 선언한다(6개 코스 index.html 모두 이 파일을 로드하므로 안전). */
+@keyframes spin { 100% { transform: rotate(360deg); } }
