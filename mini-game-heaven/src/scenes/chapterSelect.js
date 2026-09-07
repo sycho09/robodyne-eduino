@@ -40,13 +40,14 @@ export function showChapterSelect(root, { chapter, onRoom, onExit, onChapter, sp
   });
 
   const bg = root.querySelector('#cs-bg');
-  const gradients = {
-    ch1: 'linear-gradient(135deg, #5d4311, #351f04)',
-    ch2: 'linear-gradient(135deg, #651f35, #310c19)',
-    ch3: 'linear-gradient(135deg, #0e293d, #05141f)', // 더 어두운 다크 블루/보라
-    ch4: 'linear-gradient(135deg, #1f1136, #0e071c)', // 더 어두운 딥 바이올렛
-  };
-  bg.style.background = gradients[chapter] || '#2a2238';
+  bg.style.background = `
+    radial-gradient(900px 600px at 14% 12%, rgba(255,210,90,.30), transparent 60%),
+    radial-gradient(820px 620px at 88% 18%, rgba(255,122,184,.28), transparent 60%),
+    radial-gradient(900px 700px at 78% 92%, rgba(111,183,255,.30), transparent 60%),
+    radial-gradient(760px 640px at 10% 88%, rgba(155,140,255,.26), transparent 60%),
+    linear-gradient(160deg, #3a2230, #34202a 55%, #2a1a22)
+  `;
+  bg.style.backgroundColor = '#2b213e';
 
   const track = root.querySelector('#cs-track');
   const cards = [...track.querySelectorAll('.cs-card')];
