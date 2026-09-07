@@ -659,6 +659,12 @@
       background: var(--bg-soft);
       border-top: 1px solid var(--line);
       border-bottom: 1px solid var(--line);
+      /* 기본 section 여백(56)보다 좁게 — 카드가 큰 섹션이라 위아래를 조금 당긴다 */
+      padding: 44px 0;
+    }
+
+    .flow-band .head {
+      margin-bottom: 28px;
     }
 
     .fcar {
@@ -666,7 +672,12 @@
       grid-template-columns: 52px minmax(0, 1fr) 52px;
       align-items: center;
       gap: 14px;
-      max-width: 1060px;
+      /* 카드 폭을 화면 높이에서 끌어낸다 — 이미지 높이가 화면의 44% 가 되게.
+         이미지는 width:100% + aspect-ratio 라 폭만 정하면 높이가 따라오므로 비율이 안 깨진다.
+         192px = 화살표 52x2 + 간격 14x2 + 카드 안쪽 여백 30x2.
+         상한 1060px 은 큰 화면에서의 현재 크기, 하한 700px 은 낮은 창에서의 바닥이다.
+         이렇게 두면 노트북에서도 점 인디케이터가 접힌 자리 위에 남는다 — 몇 장인지 보여야 한다. */
+      max-width: clamp(700px, calc(40vh * 1.6 + 192px), 1060px);
       margin: 0 auto;
     }
 
@@ -835,7 +846,7 @@
       justify-content: center;
       align-items: center;
       gap: 9px;
-      margin-top: 20px;
+      margin-top: 16px;
     }
 
     .fcar-dot {

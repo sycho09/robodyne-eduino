@@ -197,9 +197,17 @@
      · blur · backdrop-filter · 큰 소프트 그라데이션을 이 안에 쓰지 않는다
      · 위아래 경계는 1px 실선 — 색이 서로 스며드는 면 자체를 만들지 않는다
      강조색은 숫자·배지 같은 작은 칩에만 얹는다. */
-  .flow-band { background: var(--bg-soft); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  /* 기본 section 여백(56)보다 좁게 — 카드가 큰 섹션이라 위아래를 조금 당긴다 */
+  .flow-band { background: var(--bg-soft); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    padding: 44px 0; }
+  .flow-band .head { margin-bottom: 28px; }
+  /* 카드 폭을 화면 높이에서 끌어낸다 — 이미지 높이가 화면의 44% 가 되게.
+     이미지는 width:100% + aspect-ratio 라 폭만 정하면 높이가 따라오므로 비율이 안 깨진다.
+     192px = 화살표 52x2 + 간격 14x2 + 카드 안쪽 여백 30x2.
+     상한 1060px 은 큰 화면에서의 현재 크기, 하한 700px 은 낮은 창에서의 바닥이다.
+     이렇게 두면 노트북에서도 점 인디케이터가 접힌 자리 위에 남는다 — 몇 장인지 보여야 한다. */
   .fcar { display: grid; grid-template-columns: 52px minmax(0, 1fr) 52px; align-items: center; gap: 14px;
-    max-width: 1060px; margin: 0 auto; }
+    max-width: clamp(700px, calc(40vh * 1.6 + 192px), 1060px); margin: 0 auto; }
   /* 카드 테두리는 뷰포트가 갖는다 — 슬라이드는 이 틀 안에서만 움직인다.
      (슬라이드마다 테두리를 주면 넘길 때 선이 두 겹으로 스쳐 지나간다) */
   .fcar-view { overflow: hidden; background: var(--card); border: 1px solid var(--line);
@@ -233,7 +241,7 @@
   .fcar-nav:hover:not(:disabled) { color: var(--primary-ink); border-color: var(--primary-line); transform: translateY(-1px); }
   .fcar-nav:disabled { opacity: .35; cursor: default; box-shadow: none; }
   .fcar-nav.prev { justify-self: end; } .fcar-nav.next { justify-self: start; }
-  .fcar-dots { grid-column: 1 / -1; display: flex; justify-content: center; align-items: center; gap: 9px; margin-top: 20px; }
+  .fcar-dots { grid-column: 1 / -1; display: flex; justify-content: center; align-items: center; gap: 9px; margin-top: 16px; }
   .fcar-dot { width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%; background: var(--line-2); cursor: pointer; transition: .18s; }
   .fcar-dot[aria-current="true"] { width: 26px; border-radius: 999px; background: var(--primary); }
   /* 태블릿·모바일: 화살표를 카드 옆이 아니라 아래 점 인디케이터 양옆에 둔다.
