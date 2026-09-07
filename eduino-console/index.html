@@ -23,15 +23,20 @@
     <!-- VISION AI · 수업/제출/게시판/확인서 공용 모듈 (체험 트랙과 동일한 제출 개념) -->
     <script src="stages/core/ui/icons.js"></script>
     <script src="stages/core/ui/dialog.js"></script>
+    <link rel="stylesheet" href="stages/core/ui/css/dialog.css" />
     <script src="stages/core/data/imagestore.js"></script>
     <script src="stages/core/session.js"></script>
     <script src="stages/admin/cert.js"></script>
     <script src="stages/submission/board.js"></script>
+    <link rel="stylesheet" href="stages/submission/css/board.css" />
     <script src="stages/submission/data/submit.store.js"></script>
   <script src="stages/submission/submit.core.js"></script>
   <script src="stages/submission/ui/submit.ui.js"></script>
+  <link rel="stylesheet" href="stages/submission/ui/css/submit.ui.css" />
     <script src="stages/studio/maker.js"></script>
+    <link rel="stylesheet" href="stages/studio/css/maker.css" />
     <script src="stages/studio/imagelab.js"></script>
+    <link rel="stylesheet" href="stages/studio/css/imagelab.css" />
     <script src="stages/studio/studio.js"></script>
 
     <!-- 폰트: Pretendard (한국어 본문) + JetBrains Mono (텔레메트리 데이터) -->
@@ -48,7 +53,11 @@
     />
 
     <link rel="stylesheet" href="stages/styles/tokens.css" />
-    <link rel="stylesheet" href="stages/styles/trainer.css" />
+    <link rel="stylesheet" href="stages/styles/layout.css" />
+    <link rel="stylesheet" href="stages/styles/panels.css" />
+    <link rel="stylesheet" href="stages/styles/results.css" />
+    <!-- studio.js 는 오버레이를 열 때(온디맨드) 스타일을 주입해 항상 다른 시트보다 뒤에 왔다 -->
+    <link rel="stylesheet" href="stages/studio/css/studio.css" />
   </head>
   <body>
     <!-- ──────────────────────── 콘솔 HUD ──────────────────────── -->
@@ -1499,7 +1508,16 @@
     <footer>© 2026 Eduino AI · 보고 만지며 배우는 AI 수업</footer>
 
     <script src="stages/trainer/trainer.core.js"></script>
-    <script src="stages/trainer/trainer.labs.js"></script>
+    <script src="stages/trainer/labs/_audio-util.js"></script>
+    <script src="stages/trainer/labs/pose-train.js"></script>
+    <script src="stages/trainer/labs/audio-train.js"></script>
+    <script src="stages/trainer/labs/detect.js"></script>
+    <script src="stages/trainer/labs/segment.js"></script>
+    <script src="stages/trainer/labs/filter.js"></script>
+    <script src="stages/trainer/labs/skeleton.js"></script>
+    <script src="stages/trainer/labs/face.js"></script>
+    <script src="stages/trainer/labs/colortrack.js"></script>
+    <script src="stages/trainer/labs/depth.js"></script>
     <script src="stages/trainer/trainer.init.js"></script>
 
     <!-- VISION AI · 제작 트랙 제출 연동 (체험 트랙과 동일한 모드별 제출 개념) -->
