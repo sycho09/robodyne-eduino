@@ -39,12 +39,9 @@
 
     var THEORY_LEN = (config.theory || []).length;
 
-    /* 무료/유료 접근 제한 로직 (단위 테스트 등 Access 객체가 없으면 잠금 해제) */
-    function paid() { return !window.Access || window.Access.isPaid(config.courseKey); }
-    function noticeStrip(key, info, text) {
-      return window.Access ? window.Access.notice(key, info, text) : '';
-    }
-    /* 사전 진단 분석 결과는 유료 기능이므로 화면 표시에만 이 함수를 사용합니다. */
+    /* 전 단계 무료 공개 — paid() 는 과거 접근 제한 분기의 흔적으로, 항상 열린 상태를 반환한다. */
+    function paid() { return true; }
+    function noticeStrip() { return ''; }
     function shownStatus(i) { return paid() ? (state.progress.conceptStatus[i] || '') : ''; }
 
     // 이전 버전이 남긴 저장 키 청소 — 프런트에는 더 이상 아무것도 저장하지 않는다.
@@ -144,9 +141,6 @@
     paintQuizQuestion();
     goTo(state.step);
 
-    /* 실습 퀘스트 탭 잠금 처리 (Access 모듈 연동) */
-    if (window.Access) window.Access.applyCourseGate({ scope: config.courseKey });
-
     /* 네 단계 간의 자유로운 이동을 지원합니다. (진행 상황은 사이드바에 표시) */
     function goTo(i) {
       var from = state.step;
@@ -211,11 +205,9 @@
       syncSidebar();
     }
 
-    /* 사이드바 진입 잠금 표시 (최종 평가 등) */
+    /* 사이드바 진입 잠금 표시 — 전 단계 무료 공개라 항상 잠그지 않는다. */
     function applySidebarLocks(sb) {
-      if (paid() || !window.Access) return;
-      var evalItem = sb.querySelector('[data-goto-step="3"]');
-      if (evalItem) window.Access.mark(evalItem);
+      if (paid()) return;
     }
 
     function syncSidebar() {

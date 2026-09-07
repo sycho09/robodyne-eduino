@@ -430,7 +430,6 @@
         '<span class="sep"></span><span class="sys">VISION&nbsp;AI</span>' +
       '</a>' +
       '<div class="v-hud-r">' +
-        '<a class="v-btn" href="/entry.html" id="vback" title="모드 선택으로 돌아가기">← 모드 선택</a>' +
         viewToggle() +
         '<span class="v-btn" id="vmode" style="cursor:default">체험 모드</span>' +
         '<button class="v-btn" id="vsound" title="효과음 켜기/끄기">🔊</button>' +
@@ -438,10 +437,6 @@
         '<a class="v-btn" href="' + HOME + '"><i data-ic="home"></i> 홈</a>' +
       '</div>';
     if (window.paintIcons) window.paintIcons(host);
-
-    /* 콘솔 안에서 입구로 되돌아가는 이동 — 인트로를 다시 재생하지 않는다 */
-    const back = document.getElementById('vback');
-    if (back) back.addEventListener('click', () => ss.set(SKIP_KEY, '1'));
 
     /* 진입 모드 배너 */
     const m = (window.Session && Session.getMode && Session.getMode()) || { mode: 'free' };

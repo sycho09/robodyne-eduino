@@ -359,15 +359,8 @@
   
   .gcard li b { color: var(--ink); }
 
-  /* ── 카탈로그 하단 무료 범위 안내 + 요금 진입 (요금표는 pricing.html) ── */
-  .buyline { margin-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
-    background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 20px; box-shadow: var(--shadow-sm); }
-  .buyline span { font-size: 13.5px; color: var(--ink-2); }
-  .buyline b { color: var(--ink); font-weight: 700; }
-
   @media (max-width: 900px) {
     .guide, .gnote { grid-template-columns: 1fr; }
-    .buyline { flex-direction: column; align-items: stretch; text-align: center; }
   }
   /* ── 푸터 ── */
   footer { border-top: 1px solid var(--line); margin-top: 56px; padding: 40px 0 32px; }
@@ -426,7 +419,6 @@
     <nav class="nav">
       <a class="link" href="#stages">스테이지</a>
       <a class="link" href="#guide">가이드</a>
-      <a class="link" href="/platform/pricing.html">요금</a>
       <a class="btn btn-console" href="/entry.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="11" rx="4"/><path d="M7 11v3M5.5 12.5h3M16.3 12h.01M18.3 14h.01"/></svg> 비전 콘솔 시작 <span class="beta">BETA</span></a>
     </nav>
   </div>
@@ -513,10 +505,6 @@
       <p>내 역할에 맞는 카드 하나만 따라가면 됩니다. 가입도 설정도 없습니다.</p>
     </div>
     <div class="guide" id="guide-grid"></div>
-    <div class="buyline">
-      <span>무료로 쓸 수 있는 기능과 수업용 라이선스 혜택을 비교해 보세요.</span>
-      <a class="btn btn-ghost" href="/platform/pricing.html">요금 안내 보기 →</a>
-    </div>
   </div></section>
 </main>
 
@@ -529,7 +517,6 @@
     <nav class="foot-links">
       <a href="#stages">스테이지</a>
       <a href="#guide">가이드</a>
-      <a href="/platform/pricing.html">요금</a>
       <a href="mailto:hello@eduino.kr?subject=Eduino%20AI%20%EB%8F%84%EC%9E%85%20%EB%AC%B8%EC%9D%98">문의</a>
     </nav>
   </div>

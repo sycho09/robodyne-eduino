@@ -616,39 +616,6 @@
       padding: 5px 13px;
     }
 
-    /* 카탈로그 하단 — 무료 범위 안내 + 요금 진입 (요금표는 pricing.html) */
-    .buyline {
-      margin-top: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      padding: 16px 20px;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .buyline span {
-      font-size: 13.5px;
-      color: var(--ink-2);
-    }
-
-    .buyline b {
-      color: var(--ink);
-      font-weight: 700;
-    }
-
-    @media (max-width: 640px) {
-      .buyline {
-        flex-direction: column;
-        align-items: stretch;
-        text-align: center;
-      }
-    }
-
     /* ── 진행 4단계 캐러셀 ──────────────────────────────────────────────
        태블릿 색번짐(그라데이션 밴딩) 대책이 이 밴드 설계의 전제다.
        · body 의 라디얼 그라데이션을 이 구간에서 불투명 단색으로 완전히 덮는다
@@ -1254,7 +1221,6 @@
       </a>
       <nav class="nav">
         <a class="link" href="#modules">코스</a>
-        <a class="link" href="/platform/pricing.html">요금</a>
       </nav>
     </div>
   </header>
@@ -1272,8 +1238,7 @@
           <div class="hero-cta">
             <a class="btn btn-primary btn-lg" href="#modules">6개 코스 둘러보기 →</a>
           </div>
-          <!-- CTA 바로 아래 자리 — "누르지 않을 이유"를 없애는 문장만 둔다(기능 소개 아님).
-           '한 차시의 2/3' 은 shared/access.js 의 "1차시 분량의 약 3분의 2" 와 같은 값이다. -->
+          <!-- CTA 바로 아래 자리 — "누르지 않을 이유"를 없애는 문장만 둔다(기능 소개 아님). -->
           <div class="trust">
             <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
                 stroke-linejoin="round">
@@ -1286,7 +1251,7 @@
             <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
                 stroke-linejoin="round">
                 <path d="M20 6 9 17l-5-5" />
-              </svg> <b>한 차시의 2/3 무료</b></span>
+              </svg> <b>전체 과정 무료</b></span>
           </div>
         </div>
 
@@ -1353,11 +1318,6 @@
           <div class="cat-note"><span>✓ 지금은 6개 코스 모두 공개</span></div>
         </div>
         <div class="cat" id="catalog"></div>
-
-        <div class="buyline">
-          <span>무료로 쓸 수 있는 기능과 수업용 라이선스 혜택을 비교해 보세요.</span>
-          <a class="btn btn-ghost" href="/platform/pricing.html">요금 안내 보기 →</a>
-        </div>
       </div>
     </section>
   </main>
@@ -1373,7 +1333,6 @@
         </div>
         <nav class="foot-links">
           <a href="#modules">코스</a>
-          <a href="/platform/pricing.html">요금</a>
           <a href="mailto:hello@eduino.kr?subject=Eduino%20AI%20%EB%8F%84%EC%9E%85%20%EB%AC%B8%EC%9D%98">문의</a>
         </nav>
       </div>

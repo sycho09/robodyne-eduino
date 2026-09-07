@@ -577,8 +577,6 @@
         m.mode === "teach" || m.mode === "class" || bagUI ? "" : "none";
       const teach = m.mode === "teach";
       bb.title = teach ? "제출 게시판 (평가)" : "내 제출 현황";
-      /* 내 현황 대시보드는 관리 기능이라 잠근다 (기준서 2-1). */
-      if (window.Access) window.Access.setLocked(bb, "mission", !window.Access.isPaid());
       if (bb.lastChild && bb.lastChild.nodeType === 3)
         bb.lastChild.textContent = teach ? " 게시판" : " 내 현황";
     }
@@ -652,18 +650,6 @@
               '<button class="sb-alt teach" data-a="create">＋ 클래스 미션 생성</button>'
             : ""
         }`;
-      /* 결과물 · 평가 · 관리 기능 잠금 (기준서 2-1).
-         3개 버튼 순서는 그대로 두고 이미지 저장하기만 활성으로 남긴다 (기준서 2-5). */
-      if (window.Access) {
-        const locked = !window.Access.isPaid();
-        area.querySelectorAll('[data-a="mk"]').forEach((b) => {
-          const def = KINDS.find((x) => x.k === b.dataset.k);
-          window.Access.setLocked(b, "output", locked && !(def && def.free));
-        });
-        window.Access.setLocked(area.querySelector(".sb-cap.bag"), "mission", locked);
-        window.Access.setLocked(area.querySelector('.sb-open[data-a="send"]'), "mission", locked);
-      }
-
       const note = area.querySelector(".sb-open-note");
       /* data-a 별 동작 (기본값 mk: 결과물 만들기) */
       const OPS = {

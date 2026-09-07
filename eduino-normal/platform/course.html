@@ -737,7 +737,6 @@
           alt="Eduino AI" /></a>
       <nav class="nav">
         <a class="link" href="/platform/index.html#modules">코스</a>
-        <a class="link" href="/platform/pricing.html">요금</a>
         <a class="btn btn-primary nav-cta" id="nav-cta" href="#">체험 시작 →</a>
       </nav>
     </div>
@@ -1015,9 +1014,7 @@
     document.head.appendChild(cfgScript);
 
     document.getElementById('c-freenote').innerHTML =
-      '<b>사전 진단부터 실습 ②단계까지</b> 는 결제 없이 진행되고, ' +
-      '<b>실습 ③ 과 최종 평가</b> 는 수업용 라이선스에 들어 있어요. ' +
-      '<a href="/platform/pricing.html">요금 보기 →</a>';
+      '<b>사전 진단부터 최종 평가까지 전체 단계</b> 가 결제 없이 열려 있어요.';
     document.getElementById('c-other').innerHTML = ORDER.filter(k => k !== dkey).map(k => `<a href="/platform/course.html?c=${k}">${COURSES[k].name}</a>`).join('');
 
     /* ───────────────── 동작 미리보기 캔버스 애니메이션 ─────────────────
@@ -1447,8 +1444,7 @@
       if (chipsEl) {
         chipsEl.innerHTML = feats.map((f, i) => {
           const d = DATA[f.id];
-          const lock = d && d.stage >= 3 ? `<i class="dlock" title="수업용 라이선스" aria-label="수업용 라이선스">${IC('<rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>')}</i>` : '';
-          return `<button type="button" class="dfeat${i === 0 ? ' on' : ''}" data-i="${i}">${esc(d ? d.label : f.label)}${lock}</button>`;
+          return `<button type="button" class="dfeat${i === 0 ? ' on' : ''}" data-i="${i}">${esc(d ? d.label : f.label)}</button>`;
         }).join('');
         chipsEl.querySelectorAll('.dfeat').forEach(b => b.addEventListener('click', () => select(+b.dataset.i)));
       }

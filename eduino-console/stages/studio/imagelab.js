@@ -292,18 +292,6 @@
       }),
     );
 
-    /* 유료 프리셋은 숨기지 않는다 — 라벨·클래스 설명을 선명하게 둔 채 잠금 표시만 붙이고,
-       눌러도 프리셋이 적용되지 않고 잠금 화면이 뜬다 (기준서 2-5).
-       "자유 주제" 는 값 문구가 달라 잠금 화면을 따로 쓴다. */
-    if (window.Access) {
-      box.querySelectorAll(".lab-sc").forEach((b) => {
-        const s = SCEN.find((x) => x.key === b.dataset.k);
-        if (!s || !s.paid) return;
-        const key = s.key.indexOf("custom") !== -1 ? "preset-custom" : "preset";
-        window.Access.setLocked(b, key, !window.Access.isPaid());
-      });
-    }
-
     /* 미션 키는 세 트랙이 함께 쓴다 — studio.js·submit.store.js 가 결과물에 붙일 이름을
        이 키 하나에서 읽기 때문이다. 그래서 지금 트랙의 미션일 때만 표시한다. */
     const key = curScen();
@@ -567,9 +555,6 @@
         cb._wired = true;
         cb.addEventListener("click", openChallenge);
       }
-    }
-    if (window.Access && window.Access.applyVisionGate) {
-      window.Access.applyVisionGate();
     }
   }
 
