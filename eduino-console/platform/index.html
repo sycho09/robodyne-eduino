@@ -189,6 +189,59 @@
   .mod .go { font-weight: 800; font-size: 14px; color: var(--primary); display: inline-flex; gap: 6px; align-items: center; }
   .mod.soon .go { color: var(--ink-4); }
 
+  /* ── 화면 여정 캐러셀 ──────────────────────────────────────────────
+     normal/platform/index.html 의 #flow 와 같은 컴포넌트다. 내용만 다르다.
+     태블릿 색번짐(그라데이션 밴딩) 대책이 이 밴드 설계의 전제다:
+     · body 의 라디얼 그라데이션을 이 구간에서 불투명 단색으로 완전히 덮는다
+     · blur · backdrop-filter · 큰 소프트 그라데이션을 이 안에 쓰지 않는다
+     · 위아래 경계는 1px 실선 — 색이 서로 스며드는 면 자체를 만들지 않는다
+     강조색은 숫자·배지 같은 작은 칩에만 얹는다. */
+  .flow-band { background: var(--bg-soft); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .fcar { display: grid; grid-template-columns: 52px minmax(0, 1fr) 52px; align-items: center; gap: 14px;
+    max-width: 1060px; margin: 0 auto; }
+  /* 카드 테두리는 뷰포트가 갖는다 — 슬라이드는 이 틀 안에서만 움직인다.
+     (슬라이드마다 테두리를 주면 넘길 때 선이 두 겹으로 스쳐 지나간다) */
+  .fcar-view { overflow: hidden; background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--r-lg); box-shadow: var(--shadow-sm); touch-action: pan-y; }
+  .fcar-track { display: flex; align-items: stretch; transition: transform .42s cubic-bezier(.16,1,.3,1); }
+  .fslide { flex: 0 0 100%; min-width: 0; padding: 28px 30px 30px; display: grid;
+    grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .fs-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .fs-num { font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: -0.05em; font-variant-numeric: tabular-nums; }
+  .fs-badge { font-size: 11.5px; font-weight: 800; padding: 5px 10px; border-radius: 8px; }
+  .fslide h3 { margin: 0 0 8px; font-size: 21px; font-weight: 800; letter-spacing: -0.02em; }
+  .fslide p { margin: 0; font-size: 14.5px; color: var(--ink-2); line-height: 1.62; }
+  .fs-t1 .fs-num { color: var(--green); }     .fs-t1 .fs-badge { color: var(--green); background: var(--green-soft); }
+  .fs-t2 .fs-num { color: var(--primary); }   .fs-t2 .fs-badge { color: var(--primary-ink); background: var(--primary-soft); }
+  .fs-t3 .fs-num { color: var(--coral-ink); } .fs-t3 .fs-badge { color: var(--coral-ink); background: var(--coral-soft); }
+  .fs-t4 .fs-num { color: var(--amber); }     .fs-t4 .fs-badge { color: var(--amber); background: var(--amber-soft); }
+  /* 실제 콘솔 화면 스크린샷 액자. aspect-ratio 를 16:10 으로 못 박는 게 핵심이다 —
+     이미지가 늦게 와도 네 장의 높이가 같게 유지돼 넘길 때 안 튄다.
+     (원본도 1200x750 = 16:10 이라 cover 가 아무것도 잘라내지 않는다) */
+  .fs-shot { border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+    background: var(--card-2); aspect-ratio: 16 / 10; }
+  .fs-shot img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .fcar-nav { width: 46px; height: 46px; padding: 0; border-radius: 50%; display: grid; place-items: center;
+    background: var(--card); border: 1px solid var(--line-2); color: var(--ink-2); cursor: pointer;
+    box-shadow: var(--shadow-sm); transition: .16s; }
+  .fcar-nav svg { width: 20px; height: 20px; }
+  .fcar-nav:hover:not(:disabled) { color: var(--primary-ink); border-color: var(--primary-line); transform: translateY(-1px); }
+  .fcar-nav:disabled { opacity: .35; cursor: default; box-shadow: none; }
+  .fcar-nav.prev { justify-self: end; } .fcar-nav.next { justify-self: start; }
+  .fcar-dots { grid-column: 1 / -1; display: flex; justify-content: center; align-items: center; gap: 9px; margin-top: 20px; }
+  .fcar-dot { width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%; background: var(--line-2); cursor: pointer; transition: .18s; }
+  .fcar-dot[aria-current="true"] { width: 26px; border-radius: 999px; background: var(--primary); }
+  /* 태블릿·모바일: 화살표를 카드 옆이 아니라 아래 점 인디케이터 양옆에 둔다.
+     (카드 위에 겹치면 손가락이 내용을 가리고, 옆에 두면 카드가 그만큼 좁아진다) */
+  @media (max-width: 900px) {
+    .fcar { grid-template-columns: minmax(0, 1fr); }
+    .fcar-nav { grid-row: 2; grid-column: 1; }
+    .fcar-nav.prev { justify-self: start; } .fcar-nav.next { justify-self: end; }
+    .fcar-dots { grid-row: 2; grid-column: 1; align-self: center; margin-top: 0; }
+    .fslide { gap: 18px; padding: 24px 20px 26px; }
+  }
+  @media (max-width: 560px) { .fslide { padding: 20px 16px 22px; } .fslide h3 { font-size: 19px; } }
+
   /* ── 스테이지 카탈로그 (트랙 머리 + .cat/.mod 카드 재사용) ── */
   .trk { margin-bottom: 34px; }
   .trk-h { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
@@ -332,6 +385,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .reveal { opacity: 1; transform: none; transition: none; }
+    .fcar-track { transition: none; }
     .mock-cap i { animation: none; }
     html { scroll-behavior: auto; }
   }
@@ -407,6 +461,25 @@
     </div>
     </div>
   </section>
+
+  <!-- 화면 여정 — 스테이지를 고르기 전에 "콘솔이 어떻게 흘러가는지" 를 먼저 보여준다.
+       normal 랜딩의 #flow 와 같은 컴포넌트다(CSS·동작 동일, 내용만 다르다).
+       normal 은 코스 '안'의 4단계지만 콘솔은 화면 '사이'의 여정이다. 03·04 는 순서가
+       아니라 갈래라, 배지가 단계 번호 대신 트랙 이름을 든다.
+       화면·문구가 바뀌면 스크린샷도 함께 다시 찍을 것 — platform/img/flow/ -->
+  <section class="flow-band" id="flow"><div class="wrap">
+    <div class="head">
+      <div class="kicker">How It Works</div>
+      <h2>콘솔은 이렇게 흘러갑니다</h2>
+      <p>입장 → 스테이지 고르기 → 진행. 마지막 한 번만 갈라져요 — 바로 관찰하는 <b>체험 5종</b>과, 내 데이터로 학습시키는 <b>제작 3종</b>.</p>
+    </div>
+    <div class="fcar" id="flow-car" role="group" aria-roledescription="캐러셀" aria-label="콘솔 화면 여정">
+      <button class="fcar-nav prev" type="button" aria-label="이전"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+      <div class="fcar-view"><div class="fcar-track" id="flow-track"></div></div>
+      <button class="fcar-nav next" type="button" aria-label="다음"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+      <div class="fcar-dots" id="flow-dots"></div>
+    </div>
+  </div></section>
 
   <!-- 스테이지 카탈로그 — 페이지의 척추. 카드 클릭은 상세 페이지 없이 바로 /entry.html 로 간다 -->
   <section id="stages"><div class="wrap">
@@ -599,6 +672,99 @@ document.getElementById('mock-side').innerHTML = SIDE.map((s,i)=>`<b class="${i=
   setInterval(() => { cur = (cur+1) % STAGES.length; tBase = now0(); panel(STAGES[cur]); }, 2800);
 })();
 
+/* ── 화면 여정 캐러셀 ──
+   normal/platform/index.html 의 같은 이름 블록과 동작 코드가 같다 — 내용만 다르다.
+   01·02 는 누가 오든 거치는 같은 길이고, 03·04 는 스테이지가 가질 수 있는 두 모양이다.
+   그래서 배지가 단계 수 대신 트랙 이름을 들고 있다.
+   문구는 console/shared.js 의 TRACKS[].desc 및 entry.html 의 모드 설명과 같은 뜻으로 유지할 것. */
+const FLOW = [
+  {
+    title: '입장', badge: '세 가지 모드',
+    desc: '체험 · 수업 개설 · 수업 참여 중 하나를 고르면 바로 시작합니다. 가입도 설치도 없어요.',
+    shot: 'step-1', alt: '입장 화면 — 체험 모드 · 수업 개설 · 수업 참여 세 카드'
+  },
+  {
+    title: '스테이지 고르기', badge: '8개 스테이지',
+    desc: '두 트랙에서 골라 입장합니다. 카드로 넘겨 보거나 로드맵으로 전체를 한눈에 볼 수 있어요.',
+    shot: 'step-2', alt: '스테이지 선택 화면 — 트랙을 고르고 스테이지 카드를 넘겨 보는 모습'
+  },
+  {
+    title: '기본기능 체험', badge: 'TRACK 01 · 5종',
+    desc: '학습 없이 카메라만 켜면 AI가 바로 작동합니다. 컴퓨터가 화면 속 세상을 어떻게 보는지 관찰해요.',
+    shot: 'step-3', alt: '객체 탐지 스테이지 화면 — 카메라를 켜면 사물을 실시간으로 찾아 박스로 표시한다'
+  },
+  {
+    title: '직접 제작', badge: 'TRACK 02 · 3종',
+    desc: '내가 모은 데이터로 학습시킵니다. 수집 → 학습 → 추론까지 나만의 AI를 완성해요.',
+    shot: 'step-4', alt: '이미지 분류 제작 화면 — 클래스 만들기부터 추론·평가까지 4단계 작업대'
+  },
+];
+
+(function () {
+  const car = document.getElementById('flow-car');
+  const track = document.getElementById('flow-track');
+  const dots = document.getElementById('flow-dots');
+  if (!car || !track || !dots) return;
+  const prev = car.querySelector('.fcar-nav.prev');
+  const next = car.querySelector('.fcar-nav.next');
+
+  /* lazy 를 쓰지 않는다. 2~4번 슬라이드는 트랙 안에서 오른쪽으로 한두 화면 밀려 있어
+     lazy 임계 밖이라, 화살표를 눌러야 그때 받아오기 시작해 빈 칸이 번쩍인다.
+     width/height 는 실제 파일 픽셀 — 이미지가 늦게 와도 자리가 안 흔들린다. */
+  track.innerHTML = FLOW.map((s, i) =>
+    `<article class="fslide fs-t${i + 1}" role="group" aria-roledescription="슬라이드" aria-label="${i + 1} / ${FLOW.length} · ${s.title}">
+      <div class="fs-text">
+        <div class="fs-head"><span class="fs-num">0${i + 1}</span><span class="fs-badge">${s.badge}</span></div>
+        <h3>${s.title}</h3><p>${s.desc}</p>
+      </div>
+      <div class="fs-shot">
+        <img src="/platform/img/flow/${s.shot}.webp" alt="${s.alt}" width="1200" height="750"
+          decoding="async" fetchpriority="${i === 0 ? 'high' : 'low'}">
+      </div>
+    </article>`).join('');
+
+  dots.innerHTML = FLOW.map((s, i) =>
+    `<button class="fcar-dot" type="button" data-go="${i}" aria-label="${i + 1}번째 ${s.title}"></button>`).join('');
+
+  const slides = [...track.children];
+  const dotEls = [...dots.children];
+  let idx = 0;
+
+  /* 앞에서 뒤로 흐르는 순서라 끝에서 처음으로 되감지 않는다 — 양끝에서 버튼을 끈다 */
+  function go(n) {
+    idx = Math.max(0, Math.min(FLOW.length - 1, n));
+    track.style.transform = `translateX(${-idx * 100}%)`;
+    slides.forEach((el, i) => el.setAttribute('aria-hidden', String(i !== idx)));
+    dotEls.forEach((el, i) => el.setAttribute('aria-current', String(i === idx)));
+    prev.disabled = idx === 0;
+    next.disabled = idx === FLOW.length - 1;
+  }
+
+  prev.addEventListener('click', () => go(idx - 1));
+  next.addEventListener('click', () => go(idx + 1));
+  dots.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-go]');
+    if (b) go(+b.dataset.go);
+  });
+  car.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(idx - 1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(idx + 1); }
+  });
+
+  /* 태블릿 스와이프. 세로 스크롤은 CSS touch-action:pan-y 가 그대로 넘겨준다 */
+  const view = car.querySelector('.fcar-view');
+  let x0 = null;
+  view.addEventListener('pointerdown', (e) => { x0 = e.clientX; });
+  view.addEventListener('pointerup', (e) => {
+    if (x0 === null) return;
+    const dx = e.clientX - x0; x0 = null;
+    if (Math.abs(dx) > 44) go(idx + (dx < 0 ? 1 : -1));
+  });
+  view.addEventListener('pointercancel', () => { x0 = null; });
+
+  go(0);
+})();
+
 /* ── 스테이지 카탈로그 ──────────────────────────────────────────────
    console/shared.js 의 TRACKS 와 동기화할 것 — 스테이지를 추가·수정하면 양쪽을 함께 고친다.
    shared.js 를 여기서 불러오지 않는 이유: 그 파일은 로드되는 순간 sessionStorage 의
@@ -682,7 +848,7 @@ document.getElementById('guide-grid').innerHTML = GUIDE.map(g => `
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   // 등장 대상: 섹션 헤더 + 카드 그룹들
   const groups = [
-    ['.head'], ['.trk-h'],
+    ['.head'], ['.fcar'], ['.trk-h'],
     ['#tracks .mod'], ['#guide-grid .gcard'],
     ['.mock-wrap'],
   ];
