@@ -1,7 +1,7 @@
 (function () {
   const APPS = {
-    idea: { url: "/stages/apps/idea-board.html", title: "AI 상상 보드" },
-    character: { url: "/stages/apps/character-card.html", title: "내 AI 캐릭터" },
+    idea: { url: AppBase.resolve("stages/apps/idea-board.html"), title: "AI 상상 보드" },
+    character: { url: AppBase.resolve("stages/apps/character-card.html"), title: "내 AI 캐릭터" },
   };
 
   /* 부모 화면의 활성 탭을 트랙 키로 옮긴다.

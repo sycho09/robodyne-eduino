@@ -26,19 +26,19 @@
       items: [
         { key: 'detect', stars: 1, mins: 5, reward: '관찰자', ic: 'detect', emoji: '🎯', name: '객체 탐지', badge: 'COCO-SSD',
           desc: '카메라에 잡힌 90종의 사물을 실시간으로 찾아내고 이름표를 붙여요.',
-          c1: 'rgba(59,134,255,.5)', c2: '#15233f', href: '/stages/apps/detect.html' },
+          c1: 'rgba(59,134,255,.5)', c2: '#15233f', href: AppBase.resolve('stages/apps/detect.html') },
         { key: 'face', stars: 1, mins: 5, reward: '얼굴 탐색가', ic: 'face', emoji: '🙂', name: '얼굴 검출', badge: 'BlazeFace',
           desc: '사람 얼굴의 위치와 눈·코·입 지점을 실시간으로 잡아냅니다.',
-          c1: 'rgba(120,180,255,.45)', c2: '#172a44', href: '/stages/apps/face.html' },
+          c1: 'rgba(120,180,255,.45)', c2: '#172a44', href: AppBase.resolve('stages/apps/face.html') },
         { key: 'skeleton', stars: 2, mins: 8, reward: '동작 분석가', ic: 'skeleton', emoji: '🦴', name: '뼈대 검출', badge: 'MoveNet',
           desc: '몸의 관절 17곳을 이어 사람의 자세를 뼈대로 그려냅니다.',
-          c1: 'rgba(80,220,200,.4)', c2: '#123433', href: '/stages/apps/skeleton.html' },
+          c1: 'rgba(80,220,200,.4)', c2: '#123433', href: AppBase.resolve('stages/apps/skeleton.html') },
         { key: 'colortrack', stars: 2, mins: 8, reward: '색채 연구원', ic: 'color', emoji: '🎨', name: '색상 추적', badge: 'RGB 임계값',
           desc: '고른 색만 남기고 지워, 컴퓨터가 색을 숫자로 다루는 방식을 봅니다.',
-          c1: 'rgba(180,120,255,.45)', c2: '#241a3a', href: '/stages/apps/colortrack.html' },
+          c1: 'rgba(180,120,255,.45)', c2: '#241a3a', href: AppBase.resolve('stages/apps/colortrack.html') },
         { key: 'filter', stars: 1, mins: 6, reward: '영상 편집자', ic: 'filter', emoji: '🌗', name: '영상 효과', badge: 'Canvas 필터',
           desc: '흑백·반전·엣지 같은 필터와 움직임 감지를 직접 걸어봅니다.',
-          c1: 'rgba(255,140,90,.4)', c2: '#3a2516', href: '/stages/apps/filter.html' },
+          c1: 'rgba(255,140,90,.4)', c2: '#3a2516', href: AppBase.resolve('stages/apps/filter.html') },
       ],
     },
     create: {
@@ -49,25 +49,25 @@
       items: [
         { key: 'image', stars: 3, mins: 15, reward: 'AI 조련사', ic: 'image', emoji: '🖼️', name: '이미지 분류', badge: 'MobileNet',
           desc: '사진을 직접 모아 학습시키고, 새 사진을 알아맞히는 AI를 만듭니다.',
-          c1: 'rgba(255,87,71,.5)', c2: '#3a1620', href: '/index.html#image' },
+          c1: 'rgba(255,87,71,.5)', c2: '#3a1620', href: AppBase.resolve('index.html#image') },
         { key: 'audio', stars: 3, mins: 15, reward: '소리 조련사', ic: 'audio', emoji: '🎙️', name: '음성 분류', badge: 'Speech Commands',
           desc: '소리와 단어를 녹음해 학습시키고, 목소리로 반응하는 AI를 만듭니다.',
-          c1: 'rgba(255,150,90,.45)', c2: '#3a2516', href: '/index.html#audio' },
+          c1: 'rgba(255,150,90,.45)', c2: '#3a2516', href: AppBase.resolve('index.html#audio') },
         { key: 'pose', stars: 3, mins: 15, reward: '동작 조련사', ic: 'pose', emoji: '🤸', name: '동작 분류', badge: 'MoveNet',
           desc: '몸 동작을 직접 보여주며 가르치고, 자세를 구분하는 AI를 만듭니다.',
-          c1: 'rgba(255,110,150,.45)', c2: '#3a1626', href: '/index.html#pose' },
+          c1: 'rgba(255,110,150,.45)', c2: '#3a1626', href: AppBase.resolve('index.html#pose') },
       ],
     },
   };
   const TRACK_KEYS = ['explore', 'create'];
-  const HOME = '/platform/index.html';   /* 플랫폼 홈 — HUD 로고·홈 버튼·ESC 키가 함께 쓴다 */
+  const HOME = AppBase.resolve('platform/index.html');   /* 플랫폼 홈 — HUD 로고·홈 버튼·ESC 키가 함께 쓴다 */
 
   /* ══════════════════════════════════════════════════════════
      2. 화면 정의 — 상단바 뷰 토글이 이 목록으로 서로를 가리킨다
      ══════════════════════════════════════════════════════════ */
   const VARIANTS = [
-    { key: 'cards', label: '카드 캐러셀', url: '/console/cards.html' },
-    { key: 'map',   label: '스테이지 맵', url: '/console/map.html' },
+    { key: 'cards', label: '카드 캐러셀', url: AppBase.resolve('console/cards.html') },
+    { key: 'map',   label: '스테이지 맵', url: AppBase.resolve('console/map.html') },
   ];
   const VKEY = 'vision_ui_variant';
   const BOOT_KEY = 'vision_boot_seen';
@@ -353,12 +353,12 @@
     host.innerHTML =
       '<div class="v-scan-in"></div>' +
       '<div class="v-splash" id="vsplash">' +
-        '<img src="/platform/img/logo-mark.webp" alt="Eduino AI" />' +
+        '<img src="' + AppBase.resolve('platform/img/logo-mark.webp') + '" alt="Eduino AI" />' +
         '<div class="w">Eduino <b>AI</b></div>' +
         '<div class="s">VISION&nbsp;AI&nbsp;CONSOLE · v1.0</div>' +
       '</div>' +
       '<div class="v-seq" id="vseq">' +
-        '<div class="lg"><img src="/platform/img/logo-mark.webp" alt="" />' +
+        '<div class="lg"><img src="' + AppBase.resolve('platform/img/logo-mark.webp') + '" alt="" />' +
           '<div class="lgt"><span class="bw">Eduino <b>AI</b></span>' +
           '<span class="sub">AIoT 학습 플랫폼</span></div></div>' +
         '<pre class="v-log" id="vlog"></pre>' +
@@ -425,7 +425,7 @@
     host.className = 'v-hud';
     host.innerHTML =
       '<a class="v-brand" href="' + HOME + '">' +
-        '<img src="/platform/img/logo-mark.webp" alt="Eduino AI" />' +
+        '<img src="' + AppBase.resolve('platform/img/logo-mark.webp') + '" alt="Eduino AI" />' +
         '<span class="bt">Eduino <span>AI</span></span>' +
         '<span class="sep"></span><span class="sys">VISION&nbsp;AI</span>' +
       '</a>' +

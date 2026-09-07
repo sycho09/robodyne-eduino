@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="icon" href="/favicon.png" />
+<link rel="icon" href="../../favicon.png" />
 <meta name="theme-color" content="#0a0b12" />
 <title>뼈대 검출 · VISION AI</title>
 
@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/stages/styles/stage.css" />
+<link rel="stylesheet" href="../styles/stage.css" />
 </head>
 <body>
 
@@ -24,12 +24,12 @@
 
 <header class="hud">
   <div class="hud-l">
-    <a class="back" href="/studio.html" onclick="try{sessionStorage.setItem(String.fromCharCode(118,111,115,95,112,97,115,115),String(1))}catch(e){}" title="콘솔(모드 선택)"><img src="/platform/img/logo-mark.webp" alt="콘솔" style="height:18px;display:block" /></a>
-    <a class="back" href="/explore.html">← 스테이지</a>
+    <a class="back" href="../../studio.html" onclick="try{sessionStorage.setItem(String.fromCharCode(118,111,115,95,112,97,115,115),String(1))}catch(e){}" title="콘솔(모드 선택)"><img src="../../platform/img/logo-mark.webp" alt="콘솔" style="height:18px;display:block" /></a>
+    <a class="back" href="../../explore.html">← 스테이지</a>
     <div class="title"><h1><i data-ic="skeleton"></i>뼈대 검출</h1><span class="tag">MoveNet · 알고리즘</span></div>
   </div>
   <div class="hud-r">
-    <a class="back" href="/platform/index.html" title="플랫폼 홈"><i data-ic="home"></i> 홈</a>
+    <a class="back" href="../../platform/index.html" title="플랫폼 홈"><i data-ic="home"></i> 홈</a>
     <button class="back" data-board id="boardBtn" title="제출 게시판" style="display:none"><i data-ic="board"></i> 게시판</button>
     <span class="chip idle" id="status">● IDLE</span>
     <span class="chip" id="fps">FPS <b>—</b></span>
@@ -99,13 +99,13 @@
   </div>
 </div>
 
-<script src="/stages/core/ui/icons.js"></script>
-<script src="/stages/core/session.js"></script>
-<script src="/stages/admin/cert.js"></script>
-<script src="/stages/submission/board.js"></script>
-<script src="/stages/submission/data/submit.store.js"></script>
-  <script src="/stages/submission/submit.core.js"></script>
-  <script src="/stages/submission/ui/submit.ui.js"></script>
+<script src="../core/ui/icons.js"></script>
+<script src="../core/session.js"></script>
+<script src="../admin/cert.js"></script>
+<script src="../submission/board.js"></script>
+<script src="../submission/data/submit.store.js"></script>
+  <script src="../submission/submit.core.js"></script>
+  <script src="../submission/ui/submit.ui.js"></script>
 <script>
   const $ = (id)=>document.getElementById(id);
   const els = { video:$('video'), overlay:$('overlay'), cover:$('cover'), start:$('start'), stop:$('stop'),

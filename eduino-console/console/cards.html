@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="icon" href="/favicon.png" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="icon" href="../favicon.png" />
+<link rel="apple-touch-icon" href="../apple-touch-icon.png" />
 <meta name="theme-color" content="#0a0b12" />
 <title>VISION STUDIO · 카드 캐러셀</title>
 <meta name="description" content="비전 스튜디오 콘솔 — 게임팩 카드를 넘겨 스테이지를 고르고 바로 시작합니다." />
@@ -16,7 +16,8 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 
 <!-- 공통 셸(항목 데이터·인트로·HUD·세션·사운드·진행)은 console/shared.js 하나에서 관리 -->
-<script src="/console/shared.js"></script>
+<script src="../shared/base-path.js"></script>
+<script src="shared.js"></script>
 
 <style>
   /* ══════ C안 · 예전 게임팩 캐러셀 복원 (허브 안으로 통합) ══════ */
@@ -131,10 +132,10 @@
   <div class="dots" id="dots"></div>
 </footer>
 
-<script src="/stages/core/ui/icons.js"></script>
-<script src="/stages/core/session.js"></script>
-<script src="/stages/admin/cert.js"></script>
-<script src="/stages/submission/board.js"></script>
+<script src="../stages/core/ui/icons.js"></script>
+<script src="../stages/core/session.js"></script>
+<script src="../stages/admin/cert.js"></script>
+<script src="../stages/submission/board.js"></script>
 <script>
 (function () {
   VStudio.claim('cards');   /* 실습 화면에서 /studio.html 로 돌아와도 이 안으로 온다 */
@@ -169,7 +170,7 @@
       <button class="pack" data-i="${i}" data-thumbhost style="--c1:${s.c1};--c2:${s.c2}">
         <div class="pack-inner">
           <div class="pack-art"></div>
-          <img class="pack-thumb" data-base="/platform/img/${t.thumb}-${s.key}" alt="" decoding="async" />
+          <img class="pack-thumb" data-base="../platform/img/${t.thumb}-${s.key}" alt="" decoding="async" />
           <div class="pack-scrim"></div>
           <span class="pack-stamp" aria-label="체험 완료">✓</span>
           <div class="pack-body">

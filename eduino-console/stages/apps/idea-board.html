@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="/favicon.png" />
+    <link rel="icon" href="../../favicon.png" />
     <meta name="theme-color" content="#0a0b12" />
     <title>AI 상상 보드 만들기 · VISION AI</title>
     <!--
@@ -13,7 +13,7 @@
   - 구성: <style>(#board 전용) → 본문 → #camOv 캡처 모달 → <script>(SC 의존)
   - 스타일 구조는 docs/result-studio.md 5장
 -->
-    <link rel="stylesheet" href="/stages/styles/studio.css" />
+    <link rel="stylesheet" href="../styles/studio.css" />
     <style>
       /* 좌측 컨트롤 영역 */
       .ctrl {
@@ -275,11 +275,11 @@
       rel="stylesheet"
     />
     <!-- html2canvas 만 사용 (자체 추론 없음 · 부모 페이지의 인식 결과를 읽어옴) -->
-    <link rel="stylesheet" href="/stages/styles/tokens.css" />
+    <link rel="stylesheet" href="../styles/tokens.css" />
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <!-- 임시저장 이미지는 localStorage 쿼터를 넘기므로 IndexedDB 에 둔다 -->
-    <script src="/stages/core/data/imagestore.js"></script>
-    <script src="/stages/studio/studio-common.js"></script>
+    <script src="../core/data/imagestore.js"></script>
+    <script src="../studio/studio-common.js"></script>
   </head>
   <body>
     <header class="top">

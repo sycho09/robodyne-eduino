@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="icon" href="/favicon.png" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="icon" href="../favicon.png" />
+<link rel="apple-touch-icon" href="../apple-touch-icon.png" />
 <meta name="theme-color" content="#0a0b12" />
 <title>VISION STUDIO · 스테이지 맵</title>
 <meta name="description" content="비전 스튜디오 콘솔 — 스테이지 맵에서 체험 5종과 제작 3종을 골라 바로 시작합니다." />
@@ -16,7 +16,8 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 
 <!-- 공통 셸(항목 데이터·인트로·HUD·세션·사운드·진행)은 console/shared.js 하나에서 관리 -->
-<script src="/console/shared.js"></script>
+<script src="../shared/base-path.js"></script>
+<script src="shared.js"></script>
 
 <style>
   /* ══════ 스테이지 맵 레이아웃 ══════ */
@@ -150,10 +151,10 @@
   </section>
 </main>
 
-<script src="/stages/core/ui/icons.js"></script>
-<script src="/stages/core/session.js"></script>
-<script src="/stages/admin/cert.js"></script>
-<script src="/stages/submission/board.js"></script>
+<script src="../stages/core/ui/icons.js"></script>
+<script src="../stages/core/session.js"></script>
+<script src="../stages/admin/cert.js"></script>
+<script src="../stages/submission/board.js"></script>
 <script>
 (function () {
   VStudio.claim('map');   /* 실습 화면에서 /studio.html 로 돌아와도 이 안으로 온다 */
@@ -194,7 +195,7 @@
         <span class="node-no">${t.unit} ${String(i + 1).padStart(2, '0')}</span>
         <span class="disc" data-thumbhost style="--c1:${s.c1};--c2:${s.c2}">
           <span class="disc-art"></span>
-          <img data-base="/platform/img/${t.thumb}-${s.key}" alt="" decoding="async" />
+          <img data-base="../platform/img/${t.thumb}-${s.key}" alt="" decoding="async" />
           <i class="ic" data-ic="${s.ic}"></i>
         </span>
         <span class="node-name">${s.name}</span>
