@@ -16,6 +16,7 @@ export function showChapterSelect(root, { chapter, onRoom, onExit, onChapter, sp
     <div class="chsel chsel--poster scene-fade">
       <div class="chsel-bg" id="cs-bg"></div>
       <div class="chsel-shade"></div>
+      <div class="chsel-stage-name" style="position: absolute; top: 28px; left: 116px; z-index: 10; font-weight: 700; font-size: 15px; color: rgba(255,255,255,0.5);">${ch.label}</div>
       <button class="snd-toggle" id="snd-toggle">${sfx.muted ? icon('volume-off', 18) : icon('speaker', 18)}</button>
       <div class="chsel-body">
         <button class="chsel-arw chsel-prev" id="cs-prev" aria-label="이전">◀</button>
