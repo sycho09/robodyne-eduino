@@ -6,7 +6,8 @@
   "main": "electron-main.js",
   "scripts": {
     "app": "electron .",
-    "dist": "electron-builder --win portable"
+    "dist": "electron-builder --win portable",
+    "test": "node --test test/"
   },
   "devDependencies": {
     "electron": "^43.4.1",
