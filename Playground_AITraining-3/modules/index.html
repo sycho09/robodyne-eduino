@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <meta name="theme-color" content="#f6f7fb" />
+  <title>인공지능 사전진단 (무료) — Eduino AI</title>
+  <meta name="description" content="머신러닝 개념부터 생활 속 AI까지 6개 파트 30문항으로 나의 AI 능력치를 확인하는 무료 사전진단." />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="stylesheet" href="./shared/base.css" />
+  <link rel="stylesheet" href="./shared/components.css" />
+  <link rel="stylesheet" href="./shared/course-dashboard.css" />
+  <link rel="stylesheet" href="./shared/precheck-hub.css" />
+</head>
+
+<body>
+  <div class="dash-shell">
+    <aside class="dash-sidebar" id="dash-sidebar"></aside>
+    <!-- base.css 의 bare `main` 규칙(max-width:1140px; margin:0 auto)이 그리드 칸을
+         좁혀 버리므로, 코스 대시보드와 똑같이 div 로 둔다. -->
+    <div class="dash-main" id="ph-main" role="main"></div>
+  </div>
+
+  <!-- 6개 코스의 course-config.js 는 로드되는 순간 CourseDashboard.init() 을 호출한다.
+       진단 허브는 대시보드를 띄우지 않고 문항 데이터만 필요하므로, 진짜 셸이 로드되기 전에
+       init 을 가로채는 수집용 스텁을 먼저 세운다. 문항을 이 파일로 복사해 오지 않기 위한 장치다. -->
+  <script>
+    window.__PRECHECK_CONFIGS = [];
+    window.CourseDashboard = { init: function (cfg) { window.__PRECHECK_CONFIGS.push(cfg); } };
+  </script>
+  <script src="./concept/course-config.js"></script>
+  <script src="./data/course-config.js"></script>
+  <script src="./text/course-config.js"></script>
+  <script src="./vision/course-config.js"></script>
+  <script src="./gesture/course-config.js"></script>
+  <script src="./life/course-config.js"></script>
+
+  <!-- 수집이 끝난 뒤 진짜 셸을 덮어씌운다 (사이드바 마크업을 여기서 빌려 쓴다). -->
+  <script src="./shared/course-dashboard.js"></script>
+  <script src="./shared/precheck-hub.js"></script>
+</body>
+
+</html>

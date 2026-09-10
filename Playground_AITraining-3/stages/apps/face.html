@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/favicon.png" />
+<meta name="theme-color" content="#0a0b12" />
+<title>얼굴 검출 · VISION AI</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.1.0/dist/blazeface.min.umd.js"></script>
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/stages/styles/stage.css" />
+</head>
+<body>
+
+<div class="ambient"></div>
+<div class="scanlines"></div>
+
+<header class="hud">
+  <div class="hud-l">
+    <a class="back" href="/studio.html" onclick="try{sessionStorage.setItem(String.fromCharCode(118,111,115,95,112,97,115,115),String(1))}catch(e){}" title="콘솔(모드 선택)"><img src="/platform/img/logo-mark.webp" alt="콘솔" style="height:18px;display:block" /></a>
+    <a class="back" href="/explore.html">← 스테이지</a>
+    <div class="title"><h1><i data-ic="face"></i>얼굴 검출</h1><span class="tag">BlazeFace · 알고리즘</span></div>
+  </div>
+  <div class="hud-r">
+    <a class="back" href="/platform/index.html" title="플랫폼 홈"><i data-ic="home"></i> 홈</a>
+    <button class="back" data-board id="boardBtn" title="제출 게시판" style="display:none"><i data-ic="board"></i> 게시판</button>
+    <span class="chip idle" id="status">● IDLE</span>
+    <span class="chip" id="fps">FPS <b>—</b></span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="stagecol">
+  <div class="viewport" id="viewport">
+    <video id="video" playsinline muted></video>
+    <div class="boxes" id="boxes"></div>
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <div class="cover" id="cover">
+      <div class="big"><i data-ic="face"></i></div>
+      <p>카메라를 켜면 화면 속 얼굴의 <b>위치</b>를 실시간 박스로 찾아요. 누구인지(신원)는 식별하지 않아요!</p>
+      <button class="startbtn" id="start">▶ 카메라 켜기 · 검출 시작</button>
+      <p style="font-size:11.5px;color:var(--ink-3)">카메라는 이 기기에서만 처리되고 어디에도 전송되지 않아요.</p>
+    </div>
+  </div>
+  </div>
+
+  <aside class="side">
+    <button class="theorybtn" id="codexBtn"><i data-ic="book"></i> 이론 학습하기</button>
+    <div class="card list-card" style="justify-content:center">
+      <h2>실시간 얼굴 검출</h2>
+      <div class="metric"><div class="v" id="count">0</div><div class="u">명 검출 중</div></div>
+      <div class="gauge" style="margin-top:16px"><div class="gauge-fill" id="bar" style="width:0%"></div></div>
+    </div>
+    <div class="card">
+      <h2>실시간 수치</h2>
+      <div class="telem">
+        <div class="t"><span class="tl">추론 시간</span><span class="tv acc" id="tInfer">— <small>ms</small></span></div>
+        <div class="t"><span class="tl">FPS</span><span class="tv" id="tFps">—</span></div>
+        <div class="t"><span class="tl">최고 신뢰도</span><span class="tv acc" id="tMax">—</span></div>
+        <div class="t"><span class="tl">평균 신뢰도</span><span class="tv" id="tAvg">—</span></div>
+        <div class="t"><span class="tl">처리 해상도</span><span class="tv" id="tRes" style="font-size:14px">—</span></div>
+        <div class="t"><span class="tl">처리 프레임</span><span class="tv" id="tFrames">0</span></div>
+      </div>
+    </div>
+    <div class="card ctrl">
+      <p style="font-size:12.5px;color:var(--ink-2);line-height:1.65;margin:0 0 12px">얼굴의 <b>위치</b>만 찾는 ‘검출’이에요. 누구인지 알아내는 ‘인식’과는 달라서 개인정보에 안전해요.</p>
+      <div id="actionArea"></div>
+      <button class="stopbtn" id="stop">⏹ 카메라 끄기</button>
+    </div>
+  </aside>
+</main>
+
+<div class="codex" id="codex" aria-hidden="true">
+  <div class="codex-card">
+    <button class="codex-x" id="codexX" aria-label="닫기">✕</button>
+    <div class="codex-head">
+      <span class="codex-ic"><i data-ic="face"></i></span>
+      <div><div class="codex-name">얼굴 검출</div><div class="codex-sub">BlazeFace · 영상처리 알고리즘</div></div>
+    </div>
+    <div class="codex-grid">
+      <div class="codex-sec">
+        <div class="codex-h">학습 정보</div>
+        <p>대규모 얼굴 데이터로 미리 학습된 모델을 그대로 사용해요. 목표는 <b>‘검출’(어디 있나)</b>과 <b>‘인식’(누구인가)</b>의 차이를 이해하는 거예요. 이 스테이지는 위치만 찾고 신원은 알지 못해요.</p>
+      </div>
+      <div class="codex-sec">
+        <div class="codex-h">알고리즘 정보</div>
+        <p>BlazeFace가 화면을 아주 빠르게 훑어 얼굴이 있을 법한 위치에 상자를 칩니다. 누구인지까지는 판단하지 않고 <b>‘위치’</b>만 찾아요. 그래서 가볍고 실시간으로 동작해요.</p>
+      </div>
+    </div>
+    <div class="codex-use">이런 곳에 쓰여요 · 카메라 얼굴 초점 · 인원 수 세기 · 출입 감지</div>
+  </div>
+</div>
+
+<script src="/stages/core/ui/icons.js"></script>
+<script src="/stages/core/session.js"></script>
+<script src="/stages/admin/cert.js"></script>
+<script src="/stages/submission/board.js"></script>
+<script src="/stages/submission/data/submit.store.js"></script>
+  <script src="/stages/submission/submit.core.js"></script>
+  <script src="/stages/submission/ui/submit.ui.js"></script>
+<script>
+  const $ = (id)=>document.getElementById(id);
+  const els = { video:$('video'), boxes:$('boxes'), cover:$('cover'), start:$('start'), stop:$('stop'),
+    status:$('status'), fps:$('fps'), count:$('count'), bar:$('bar'), viewport:$('viewport') };
+  const face = { model:null, stream:null, raf:null, lastT:0 };
+
+  function setStatus(t,cls){ els.status.textContent='● '+t; els.status.className='chip '+(cls||''); }
+  function setAR(){ const vw=els.video.videoWidth, vh=els.video.videoHeight; if(vw&&vh) els.viewport.style.setProperty('--ar', vw+' / '+vh); }
+
+  function faceBox(p){
+    const flat=(v)=>{ if(v==null) return []; if(typeof v.arraySync==='function'){ try{v=v.arraySync();}catch(e){return [];} }
+      const out=[]; (function rec(a){ if(Array.isArray(a)) a.forEach(rec); else if(typeof a==='number'&&Number.isFinite(a)) out.push(a); })(v); return out; };
+    const nums=flat(p.topLeft).concat(flat(p.bottomRight));
+    if(nums.length>=4){ const [x1,y1,x2,y2]=nums, w=x2-x1, h=y2-y1; if(w>0&&h>0) return {x:x1,y:y1,w,h}; }
+    let lm=p.landmarks; if(lm&&typeof lm.arraySync==='function'){ try{lm=lm.arraySync();}catch(e){lm=null;} }
+    if(Array.isArray(lm)&&lm.length){ const xs=lm.map(q=>q[0]).filter(Number.isFinite), ys=lm.map(q=>q[1]).filter(Number.isFinite);
+      if(xs.length&&ys.length){ const x0=Math.min(...xs),y0=Math.min(...ys),x1=Math.max(...xs),y1=Math.max(...ys);
+        return {x:x0-25,y:y0-45,w:(x1-x0)+50,h:(y1-y0)+75}; } }
+    return null;
+  }
+
+  async function startCam(){
+    if(face.stream) return;
+    els.start.classList.add('loading'); els.start.textContent='카메라 여는 중…'; setStatus('LOADING');
+    try{
+      face.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}});
+      els.video.srcObject=face.stream; await els.video.play().catch(()=>{});
+      setAR(); els.video.addEventListener('loadedmetadata', setAR, {once:true});
+      els.cover.classList.add('hide'); face.lastT=performance.now(); loop();
+    }catch(e){ console.error('[face cam]',e); setStatus('CAMERA DENIED','idle');
+      els.start.classList.remove('loading'); els.start.textContent='▶ 다시 시도'; return; }
+    try{
+      if(!window.blazeface){ setStatus('모델 없음','idle'); return; }
+      if(!face.model) face.model=await blazeface.load();
+      setStatus('LIVE','live');
+    }catch(e){ console.error('[face model]',e); setStatus('MODEL ERROR','idle'); }
+  }
+  function stopCam(){
+    if(face.stream){ face.stream.getTracks().forEach(t=>t.stop()); face.stream=null; }
+    els.video.srcObject=null; if(face.raf) cancelAnimationFrame(face.raf);
+    els.boxes.innerHTML=''; els.cover.classList.remove('hide');
+    els.start.classList.remove('loading'); els.start.textContent='▶ 카메라 켜기 · 검출 시작';
+    setStatus('IDLE','idle'); els.fps.innerHTML='FPS <b>—</b>'; els.count.textContent='0'; els.bar.style.width='0%';
+    face.frames=0; ['tFps','tMax','tAvg','tRes'].forEach(id=>$(id).textContent='—');
+    $('tInfer').innerHTML='— <small>ms</small>'; $('tFrames').textContent='0';
+  }
+  async function loop(){
+    if(!face.stream){ return; }
+    if(face.model && els.video.readyState>=2){
+      const vw=els.video.videoWidth, vh=els.video.videoHeight; setAR();
+      const W=els.boxes.clientWidth||vw, H=els.boxes.clientHeight||vh, sx=W/vw, sy=H/vh;
+      try{
+        const t0=performance.now();
+        const preds=await face.model.estimateFaces(els.video,false,false,true);
+        const inferMs=performance.now()-t0;
+        face.lastPreds=preds; face.frames=(face.frames||0)+1;
+        let html='', probs=[];
+        preds.forEach(p=>{ const box=faceBox(p); if(!box||!Number.isFinite(box.w)||box.w<=0) return;
+          const dw=box.w*sx, dh=box.h*sy, dx=box.x*sx, dy=box.y*sy, left=W-dx-dw;
+          const prob=Array.isArray(p.probability)?p.probability[0]:(typeof p.probability==='number'?p.probability:1); probs.push(prob);
+          html+=`<div class="det-box" style="left:${left.toFixed(1)}px;top:${dy.toFixed(1)}px;width:${dw.toFixed(1)}px;height:${dh.toFixed(1)}px"><span>FACE ${Math.round(prob*100)}%</span></div>`; });
+        els.boxes.innerHTML=html;
+        els.count.textContent=preds.length; els.bar.style.width=Math.min(100,preds.length*25)+'%';
+        const now=performance.now(), fps=1000/(now-face.lastT); face.lastT=now;
+        els.fps.innerHTML='FPS <b>'+fps.toFixed(1)+'</b>';
+        $('tInfer').innerHTML=inferMs.toFixed(0)+' <small>ms</small>'; $('tFps').textContent=fps.toFixed(1);
+        $('tMax').textContent=probs.length?Math.round(Math.max(...probs)*100)+'%':'—';
+        $('tAvg').textContent=probs.length?Math.round(probs.reduce((a,b)=>a+b,0)/probs.length*100)+'%':'—';
+        $('tRes').textContent=vw+'×'+vh; $('tFrames').textContent=face.frames;
+      }catch(e){ /* skip */ }
+    }
+    face.raf=requestAnimationFrame(loop);
+  }
+
+  els.start.addEventListener('click', startCam);
+  els.stop.addEventListener('click', stopCam);
+
+  /* 미션 제출 — 영상+얼굴 박스 스냅샷 */
+  function captureFrame(){
+    if(!face.stream) return null;
+    const vw=els.video.videoWidth||640, vh=els.video.videoHeight||480;
+    const sc=Math.min(1,480/vw), W=Math.round(vw*sc), H=Math.round(vh*sc);
+    const c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d');
+    x.save(); x.translate(W,0); x.scale(-1,1); x.drawImage(els.video,0,0,W,H); x.restore();
+    x.strokeStyle='#00e0a4'; x.lineWidth=Math.max(2,W/170);
+    (face.lastPreds||[]).forEach(p=>{ const b=faceBox(p); if(!b||b.w<=0) return;
+      const dw=b.w*sc, dh=b.h*sc, dx=b.x*sc, dy=b.y*sc, left=W-dx-dw; x.strokeRect(left,dy,dw,dh); });
+    return c.toDataURL('image/jpeg',0.8);
+  }
+  function summary(){ return ['얼굴 '+(els.count.textContent||'0')+'명']; }
+  if(window.Submit) Submit.init({ feature:'face', label:'얼굴 검출', capture:captureFrame, summary });
+
+  const codex=$('codex'); const openC=()=>codex.classList.add('on'), closeC=()=>codex.classList.remove('on');
+  $('codexBtn').addEventListener('click',openC); $('codexX').addEventListener('click',closeC);
+  codex.addEventListener('click',e=>{ if(e.target===codex) closeC(); });
+  window.addEventListener('keydown',e=>{ if(e.key==='Escape'){ codex.classList.contains('on')?closeC():location.href='/explore.html'; } });
+  window.addEventListener('pagehide', stopCam);
+  window.addEventListener('pageshow',()=>{ document.body.style.opacity='1'; });
+</script>
+</body>
+</html>

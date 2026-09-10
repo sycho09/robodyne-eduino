@@ -1,0 +1,102 @@
+/* 인공지능 사전진단(무료) 전용 스타일.
+   레이아웃 셸(.dash-shell/.dash-sidebar/.dash-main)과 문항 카드(.dash-quiz-card,
+   .dash-ox-option)는 course-dashboard.css 를 그대로 쓰고, 여기서는 이 화면에만
+   있는 것(시작 카드·파트 진행 표시·결과 모달)만 ph- 접두사로 둔다. */
+
+/* ── 시작 화면 ── */
+.ph-start { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 30px; max-width: 720px; margin: 8px auto 0; }
+.ph-parts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 24px; }
+.ph-part { border: 1px solid var(--line); background: var(--card-2); border-radius: 12px; padding: 12px 13px; display: flex; flex-direction: column; gap: 3px; }
+.ph-part-n { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: .05em; color: var(--ink-4); }
+.ph-part-t { font-size: 13px; font-weight: 700; }
+.ph-part-q { font-size: 11.5px; font-weight: 600; color: var(--ink-3); }
+
+.ph-meta { display: flex; justify-content: center; gap: 22px; flex-wrap: wrap; margin-bottom: 20px; }
+.ph-m { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.ph-m b { font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
+.ph-m span { font-size: 11.5px; font-weight: 600; color: var(--ink-3); }
+
+/* 시작 버튼 = 결과 모달의 이동 버튼과 같은 모양 (a/button 어느 쪽이든 동일하게 보이도록 고정) */
+.ph-cta { display: block; width: 100%; box-sizing: border-box; text-align: center; text-decoration: none;
+  color: #fff; font-family: inherit; font-size: 17px; font-weight: 800; letter-spacing: -.02em; line-height: 1.4;
+  padding: 16px 20px; border: 0; border-radius: 14px; cursor: pointer;
+  background: linear-gradient(150deg, var(--primary-2), var(--primary)); box-shadow: 0 8px 22px rgba(240,71,58,.32); transition: .16s; }
+.ph-cta:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(240,71,58,.42); }
+.ph-note { text-align: center; font-size: 12px; color: var(--ink-3); margin: 11px 0 0; }
+
+.ph-tiers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; max-width: 720px; margin: 18px auto 0; }
+.ph-tier { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 11px 10px; text-align: center; }
+.ph-tier .tn { font-size: 13px; font-weight: 800; }
+.ph-tier .tr { font-family: var(--mono); font-size: 10.5px; font-weight: 700; color: var(--ink-3); margin-top: 2px; }
+.ph-tier.t1 .tn { color: var(--ink-2); }
+.ph-tier.t2 .tn { color: var(--blue-ink); }
+.ph-tier.t3 .tn { color: var(--amber); }
+.ph-tier.t4 .tn { color: var(--primary-ink); }
+
+/* ── 문항 화면 ── */
+.ph-strip { display: flex; gap: 6px; max-width: 640px; margin: 0 auto 14px; }
+.ph-ps { flex: 1; min-width: 0; text-align: center; font-size: 10.5px; font-weight: 700; color: var(--ink-4);
+  padding: 6px 4px; border-radius: 8px; background: var(--card); border: 1px solid var(--line);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ph-ps.done { color: var(--green); background: var(--green-soft); border-color: rgba(17,160,111,.3); }
+.ph-ps.now { color: var(--primary-ink); background: var(--primary-soft); border-color: var(--primary-line); }
+
+.ph-prog { display: flex; align-items: center; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--ink-3); margin-bottom: 10px; }
+.ph-bar { height: 6px; border-radius: 4px; background: var(--bg-soft); overflow: hidden; margin-bottom: 16px; }
+.ph-bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--primary-2), var(--primary)); transition: width .25s; }
+
+/* O / X / 잘 모르겠어요 — 3지선다라 기본 2열 격자를 3열로 바꾼다. */
+.dash-ox-options.ph-ox3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.dash-ox-options.ph-ox3 .dash-ox-option { min-height: 96px; justify-content: center; }
+.dash-ox-options.ph-ox3 .dash-ox-option.selected { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+.dash-ox-options.ph-ox3 .dash-ox-option.selected .mark,
+.dash-ox-options.ph-ox3 .dash-ox-option.selected .lab { color: var(--primary-ink); }
+
+.ph-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; }
+.ph-gbtn { font-family: inherit; font-size: 13.5px; font-weight: 700; padding: 10px 18px; border-radius: 11px;
+  border: 1px solid var(--line-2); background: var(--card); color: var(--ink-2); cursor: pointer; transition: .15s; }
+.ph-gbtn:hover:not(:disabled) { border-color: var(--primary-line); color: var(--primary-ink); }
+.ph-gbtn:disabled { opacity: .4; cursor: default; }
+.ph-gbtn.primary { color: #fff; border-color: transparent; background: linear-gradient(150deg, var(--primary-2), var(--primary)); }
+.ph-gbtn.primary:hover:not(:disabled) { color: #fff; }
+
+/* ── 결과 알림 ── */
+.ph-dim { position: fixed; inset: 0; z-index: 100; background: rgba(20,22,31,.5); backdrop-filter: blur(3px);
+  display: grid; place-items: center; padding: 24px; overflow-y: auto; }
+.ph-modal { width: 100%; max-width: 430px; background: var(--card); border-radius: 20px; padding: 30px 28px;
+  text-align: center; box-shadow: 0 30px 70px rgba(0,0,0,.3); }
+.ph-lead { font-size: 13px; font-weight: 700; color: var(--ink-3); }
+.ph-grade { font-size: 44px; font-weight: 800; letter-spacing: -.03em; line-height: 1.2; margin: 4px 0 2px; }
+.ph-grade.t1 { color: var(--ink-2); }
+.ph-grade.t2 { color: var(--blue-ink); }
+.ph-grade.t3 { color: var(--amber); }
+.ph-grade.t4 { color: var(--primary-ink); }
+.ph-score { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--ink-3); }
+
+.ph-gauge { display: flex; gap: 2px; height: 9px; margin: 18px 0 8px; }
+.ph-gauge i { display: block; height: 100%; background: var(--line-2); }
+.ph-gauge i:first-child { border-radius: 6px 0 0 6px; }
+.ph-gauge i:last-child { border-radius: 0 6px 6px 0; }
+.ph-gauge i.t1.on { background: var(--ink-3); }
+.ph-gauge i.t2.on { background: var(--blue); }
+.ph-gauge i.t3.on { background: var(--amber); }
+.ph-gauge i.t4.on { background: var(--primary); }
+.ph-glab { display: flex; font-size: 10.5px; font-weight: 700; color: var(--ink-4); margin-bottom: 14px; }
+.ph-glab span { flex: 1; text-align: center; }
+.ph-glab span.on { color: var(--ink); }
+.ph-desc { font-size: 13px; color: var(--ink-2); margin: 0 0 18px; }
+
+.ph-mparts { display: flex; flex-direction: column; gap: 7px; margin-bottom: 20px; }
+.ph-mp { display: flex; align-items: center; gap: 9px; font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.ph-mp .mn { flex: 1; min-width: 0; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ph-mp .mb { width: 96px; flex: none; height: 6px; border-radius: 4px; background: var(--bg-soft); overflow: hidden; }
+.ph-mp .mb i { display: block; height: 100%; background: var(--primary-2); }
+.ph-mp .mv { font-family: var(--mono); font-size: 11px; color: var(--ink-3); width: 34px; flex: none; text-align: right; }
+
+.ph-modal-foot { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
+
+@media (max-width: 720px) {
+  .ph-parts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ph-tiers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ph-strip { display: none; }
+}

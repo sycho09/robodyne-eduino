@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta name="theme-color" content="#f6f7fb" />
+<title>머신러닝 개념 실험실 — Eduino AI</title>
+<meta name="description" content="결정 경계와 과적합, 지도학습 vs 비지도학습을 직접 그려보며 익히는 ML 개념 실험실." />
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="stylesheet" href="../shared/base.css" />
+<link rel="stylesheet" href="../shared/components.css" />
+<link rel="stylesheet" href="./style.css" />
+<link rel="stylesheet" href="../shared/course-dashboard.css" />
+<link rel="stylesheet" href="/shared/access.css" />
+</head>
+<body>
+<div id="practice-content">
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="back" href="/platform/index.html">← 플랫폼</a>
+    <img class="logo-mark-img" src="/platform/img/logo-mark.webp" alt="Eduino AI" />
+    <div>
+      <div class="logo-title">머신러닝 개념 <span>실험실</span></div>
+      <div class="logo-tag">경계·과적합·지도/비지도 직접 실험 · Eduino AI</div>
+    </div>
+    <div class="status" id="status">준비됨</div>
+  </div>
+</header>
+
+<main>
+  <div class="cintro">
+    <span class="eyebrow">머신러닝 개념 실험실</span>
+    <h1>직접 그려보는 ML 개념</h1>
+    <p>머신러닝의 핵심 개념을 손으로 그려 익혀요. 색(정답)을 칠해 <b>분류 경계</b>와 <b>과적합</b>을 보고, <b>지도 vs 비지도</b> 학습의 차이를 비교하고, 같은 데이터를 <b>묶은 결과와 실제 정답을 겹쳐</b> 봅니다.</p>
+  </div>
+
+  <div class="steps">
+    <button class="step active" data-step="boundary"><div class="n" data-ic="map"></div><div class="t"><b>분류 경계 그리기</b><span>지도학습 + 과적합 체험</span></div></button>
+    <button class="step" data-step="compare"><div class="n" data-ic="scale"></div><div class="t"><b>지도 vs 비지도</b><span>정답이 있을 때와 없을 때</span></div></button>
+    <button class="step" data-step="valid"><div class="n" data-ic="briefcase"></div><div class="t"><b>같은 데이터, 다른 질문</b><span>군집 결과와 정답을 겹쳐 보기</span></div></button>
+  </div>
+
+  <!-- 1. 분류 경계 -->
+  <section id="panel-boundary" class="layout">
+    <div class="card">
+      <h2>정답(색) 칠해서 데이터 만들기</h2>
+      <p class="sub">먼저 색(=정답)을 고르고 그래프를 클릭해 점을 찍어요. AI는 이 ‘정답이 붙은’ 점들을 보고 색을 나누는 <b>경계</b>를 배웁니다 — 이게 <b>지도학습</b>이에요.</p>
+      <div class="classpick" id="classpick"></div>
+      <div class="chart-wrap"><canvas class="chart" id="c-bd" width="600" height="430"></canvas></div>
+      <div class="tip"><span class="ic-inline" data-ic="lightbulb"></span> 색을 고르고 그래프를 클릭해 점을 찍어요</div>
+      <div class="ctrl">
+        <button class="btn" id="bd-sample">예시 채우기</button>
+        <button class="btn" id="bd-clear">모두 지우기</button>
+      </div>
+      <div class="row"><span>모델 복잡도</span><input type="range" id="bd-cx" min="1" max="3" step="1" value="2"><span class="val" id="bd-cxv">보통</span></div>
+    </div>
+    <div class="card">
+      <h2>경계 학습 &amp; 과적합</h2>
+      <p class="sub">학습하면 배경이 색으로 나뉘어요(=결정 경계). 복잡도를 올리면 경계가 점에 딱 달라붙어요.</p>
+      <div class="proc" id="bd-proc"><div class="p"><b>1</b>정답 칠하기</div><div class="p"><b>2</b>경계 학습</div><div class="p"><b>3</b>결과 보기</div></div>
+      <div class="say"><span class="ic" data-ic="bot"></span><span id="bd-say">두 가지 색 점을 각각 몇 개씩 찍어 주세요.</span></div>
+      <button class="btn primary block" id="bd-train" disabled>경계 학습하기</button>
+      <div class="metrics">
+        <div class="m"><span>학습 횟수</span><b id="bd-epoch">—</b></div>
+        <div class="m"><span>맞힌 비율(정확도)</span><b id="bd-acc" class="acc">—</b></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- 2. 지도 vs 비지도 -->
+  <section id="panel-compare" class="layout" hidden>
+    <div class="card">
+      <h2>같은 점, 두 가지 방법</h2>
+      <p class="sub">똑같은 점들을 ① <b>정답(색)을 알려주고</b> 배우는 방법과 ② <b>정답 없이</b> 비슷한 것끼리 묶는 방법으로 비교해 봐요.</p>
+      <div class="chart-wrap"><canvas class="chart" id="c-cmp" width="600" height="430"></canvas></div>
+      <div class="tip" id="cmp-tip">정답이 정해진 점들이에요</div>
+      <div class="ctrl">
+        <button class="btn" id="cmp-sample">점 다시 만들기</button>
+        <span class="seg-label" style="margin-left:auto">보기</span>
+        <span class="seg" id="cmp-seg">
+          <button data-m="sup" class="on">정답 있음(지도)</button>
+          <button data-m="unsup">정답 없음(비지도)</button>
+        </span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>무엇이 다를까?</h2>
+      <p class="sub">버튼을 바꿔가며 왼쪽 그래프가 어떻게 달라지는지 보세요.</p>
+      <div class="compare">
+        <div class="c sup"><h3><span class="ic-inline" data-ic="target"></span> 지도학습</h3><p>정답표(라벨)가 <b>있어요</b>. 사람이 ‘이건 빨강, 저건 파랑’이라 알려주면 AI가 <b>경계를 배워</b> 새 점도 분류해요.<br><br>예) 스팸/정상 메일 분류, 사진 속 동물 이름 맞히기</p></div>
+        <div class="c unsup"><h3><span class="ic-inline" data-ic="puzzle"></span> 비지도학습</h3><p>정답표가 <b>없어요</b>. AI가 <b>비슷한 것끼리 스스로 묶어요</b>(군집화). 무리에 ‘이름’은 사람이 나중에 붙여요.<br><br>예) 고객을 취향별로 자동 분류, 비슷한 뉴스 묶기</p></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- 3. 고급-응용 (모델 검증) -->
+  <section id="panel-valid" hidden>
+    <div class="flow" id="flow-valid">
+      <button class="fstep active" data-vw="1"><span class="fn">1</span><span class="ft"><b>데이터 고정</b><span>라벨(정답) 숨김 상태</span></span></button>
+      <span class="farrow">→</span>
+      <button class="fstep" data-vw="2"><span class="fn">2</span><span class="ft"><b>비지도로 묶기</b><span>패턴 기반 군집화</span></span></button>
+      <span class="farrow">→</span>
+      <button class="fstep" data-vw="3"><span class="fn">3</span><span class="ft"><b>정답과 비교</b><span>실제 라벨 공개 및 일치율</span></span></button>
+      <span class="farrow">→</span>
+      <button class="fstep" data-vw="4"><span class="fn">4</span><span class="ft"><b>개념 정리</b><span>과적합(Overfitting) 퀴즈</span></span></button>
+    </div>
+
+    <div class="card">
+
+      <!-- Step 1~3 (공통 차트 뷰) -->
+      <div id="vl-step-123">
+        <div class="vl-chart-top">
+          <h2 class="vl-chart-title" style="margin:0;">학생 34명의 (공부시간 vs 수면시간) 데이터</h2>
+          <div class="vl-badge" id="vl-badge">정답 숨김 상태 (비지도 학습용)</div>
+        </div>
+        
+        <div class="vl-chart-wrap">
+          <!-- 축 이름은 캔버스 여백(PAD 28px)에 들어가지 않아 HTML 로 두고,
+               눈금 숫자·격자선만 advanced.js 의 vlFrame() 이 캔버스에 그린다. -->
+          <div class="vl-plot">
+            <span class="vl-axis vl-axis-y">수면시간 (시간)</span>
+            <canvas id="c-vl1" width="600" height="430"></canvas>
+            <span class="vl-axis vl-axis-x">공부시간 (시간)</span>
+          </div>
+        </div>
+
+        <!-- Step 1 Control -->
+        <div class="vstep" data-vw="1">
+          <div class="btn-row lg"><button class="btn primary lg block" data-go-vl="2">정답 없이 '비지도학습'으로 무리 짓기 실행</button></div>
+        </div>
+
+        <!-- Step 2 Control -->
+        <div class="vstep" data-vw="2" hidden>
+          <!-- 무리별 인원 — advanced.js paintVlClusters() 가 채운다.
+               군집에는 이름이 없으므로 '무리 A/B'로만 부른다(합격/불합격 아님). -->
+          <div class="vl-clusters" id="vl-clusters"></div>
+          <p class="vl-note">AI가 정답을 모르는 채 <b>위치(거리)만 보고</b> <b class="c-primary">빨간색 무리</b>와 <b class="c-blue">파란색 무리</b>로 나누었습니다.<br>과연 이 무리가 실제 합격/불합격 결과와 얼마나 겹칠까요?</p>
+          <div class="btn-row"><button class="btn primary lg block" data-go-vl="3">실제 정답 라벨 공개 (오버레이 비교)</button></div>
+        </div>
+
+        <!-- Step 3 Control -->
+        <div class="vstep" data-vw="3" hidden>
+          <div class="vl-res-card">
+            <div class="vl-res-left">
+              <div class="vl-res-rate" id="vl-res-rate">—</div>
+              <div class="vl-res-cap">비지도학습(색상) vs 정답(O/X)</div>
+              <div class="vl-res-sub">겹친 비율</div>
+            </div>
+            <div class="vl-res-right"><span id="vl-res-text"></span></div>
+          </div>
+          <div class="btn-row lg"><button class="btn primary lg block" data-go-vl="4">다음: 모델 복잡도 개념 정리</button></div>
+        </div>
+      </div>
+
+      <!-- Step 4 (지도학습 과적합 및 퀴즈) -->
+      <div class="vstep" data-vw="4" hidden>
+        <div class="vl-chart-top">
+          <h2 class="vl-chart-title" style="margin:0;">다시 지도학습으로: 분류 경계와 과적합</h2>
+          <div class="vl-badge sup">지도학습 뷰</div>
+        </div>
+        <p class="vl-note">이번에는 34명의 합격(파란색 O)/불합격(빨간색 X) 정답을 AI에게 알려주고 <b>지도학습</b>으로 분류 경계를 그려보겠습니다. 복잡도를 <b>낮음 → 보통 → 높음</b>으로 옮기며 경계가 어떻게 달라지는지 보세요.</p>
+
+        <div class="vl-chart-wrap">
+          <div class="vl-plot">
+            <span class="vl-axis vl-axis-y">수면시간 (시간)</span>
+            <canvas id="c-vl4" width="600" height="430"></canvas>
+            <span class="vl-axis vl-axis-x">공부시간 (시간)</span>
+          </div>
+          <!-- 학습이 끝나야 경계·경고가 나오므로, 도는 동안 기다리는 중임을 알린다. -->
+          <div class="vl-train-overlay" id="vl-train-overlay" hidden>
+            <span class="ic-inline" data-ic="bot"></span>
+            <b>경계 학습 중…</b>
+            <span id="vl-train-pct">0%</span>
+          </div>
+        </div>
+
+        <!-- 과적합 경고 — 차트를 덮지 않는다. 경고가 말하는 '휜 경계'가 보여야 하므로
+             오버레이가 아니라 차트 바로 아래 배너로 둔다. -->
+        <div class="vl-warn" id="vl-warn">
+          <span class="ic-inline" data-ic="alert"></span>
+          <div class="vl-warn-body">
+            <h3>경고: 과적합(Overfitting) 발생!</h3>
+            <p>경계가 <b>공부시간·수면시간이 모두 적당한데도 불합격한 학생 1명</b>까지 맞히려고 그 학생 주위를 섬처럼 감쌌습니다. 이 예외 하나를 맞히려다 경계 전체가 뒤틀렸고, 그 대가로 앞으로 들어올 학생들을 틀리게 됩니다. 위 그래프에서 그 섬을 직접 확인해 보세요.</p>
+          </div>
+          <button class="btn accent" id="vl-warn-fix">복잡도 낮추기 (일반화)</button>
+        </div>
+
+        <div class="row vl-cx-row">
+          <span>모델 복잡도</span>
+          <input type="range" id="vl-cx" min="1" max="3" step="1" value="2">
+          <span class="val" id="vl-cxv">보통</span>
+        </div>
+        <div id="vl-cx-readout">경계 굴곡도 측정 중…</div>
+
+      </div>
+
+    </div>
+  </section>
+</main>
+</div>
+
+<script src="../shared/icons.js"></script>
+<script src="/shared/access.js"></script>
+<script src="./app.js"></script>
+<script src="./advanced.js"></script>
+<script src="../shared/course-preview.js"></script>
+<script src="../shared/course-dashboard.js"></script>
+<script src="./course-config.js"></script>
+</body>
+</html>

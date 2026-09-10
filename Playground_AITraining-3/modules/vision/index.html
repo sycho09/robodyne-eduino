@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <meta name="theme-color" content="#f6f7fb" />
+  <title>비전 · 영상처리 AI — Eduino AI</title>
+  <meta name="description" content="객체 탐지로 AI의 눈을 관찰하고, 전이학습으로 나만의 분류기를 만들어, 실제 판정 업무에 투입해 보는 체험형 AI 수업 코스." />
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="stylesheet" href="../shared/base.css" />
+  <link rel="stylesheet" href="../shared/components.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="../shared/course-dashboard.css" />
+  <link rel="stylesheet" href="/shared/access.css" />
+</head>
+
+<body>
+  <div id="practice-content">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="back" href="/platform/index.html">← 플랫폼</a>
+        <img class="logo-mark-img" src="/platform/img/logo-mark.webp" alt="Eduino AI" />
+        <div>
+          <div class="logo-title">비전 · 영상처리 <span>AI</span></div>
+          <div class="logo-tag">카메라로 보는 AI · Eduino AI</div>
+        </div>
+        <div class="status" id="status">대기 중</div>
+      </div>
+    </header>
+
+    <main>
+      <div class="banner" id="banner"></div>
+
+      <div class="cintro">
+        <span class="eyebrow">비전 · 영상처리 AI 코스</span>
+        <h1>카메라로 세상을 보는 AI</h1>
+        <p><b>객체 탐지</b>로 AI가 세상을 보는 방식을 관찰하고(초급), <b>내 사진으로 분류기를 학습</b>시킨 뒤(중급), 그 분류기를 <b>실제 판정 업무에 투입</b>해 봅니다(심화).</p>
+      </div>
+
+      <div class="steps">
+        <button class="step active" data-step="detect">
+          <div class="n">1</div>
+          <div class="t"><b>초급 · 체험</b><span>실시간 객체 탐지 · 픽셀과 임계값</span></div>
+        </button>
+        <button class="step" data-step="train">
+          <div class="n">2</div>
+          <div class="t"><b>중급 · 제작</b><span>내 분류기 만들기 · 전이학습</span></div>
+        </button>
+        <button class="step" data-step="mission">
+          <div class="n">3</div>
+          <div class="t"><b>심화 · 응용</b><span>자동 판정 시스템 도입 미션</span></div>
+        </button>
+      </div>
+
+      <!-- ══════════ 탭 1 · 초급 — 객체 탐지 + 픽셀·필터 ══════════ -->
+      <section id="panel-detect" class="layout">
+        <div class="card">
+          <h2>실시간 객체 탐지 <span class="cam-state" id="detect-state">대기</span></h2>
+          <p class="sub">COCO-SSD 가 학습한 <b>80종</b>만 찾습니다. 목록 밖 물건은 비춰도 잡히지 않아요.</p>
+          <div class="stage">
+            <video id="v-detect" playsinline muted></video>
+            <canvas id="c-detect"></canvas>
+            <div class="ph" id="ph-detect"><span class="ic-inline" data-ic="camera"></span> [카메라 켜기]를 누르고<br>주변 물건을 비춰주세요</div>
+          </div>
+
+          <!-- 필터를 걸어도 탐지는 계속 돈다 — 픽셀을 만졌을 때 AI 인식이 어떻게 바뀌는지 한 화면에서 본다 -->
+          <div class="fx-row" id="fx-row">
+            <button class="fx-btn on" data-fx="none">원본</button>
+            <button class="fx-btn" data-fx="gray">흑백</button>
+            <button class="fx-btn" data-fx="invert">색 반전</button>
+            <button class="fx-btn" data-fx="edge">윤곽선</button>
+          </div>
+
+          <div class="row thres-row">
+            <span>신뢰도 임계값</span>
+            <input type="range" id="thres" min="10" max="90" value="50" step="5">
+            <span class="val" id="thres-val">50%</span>
+          </div>
+          <div class="thres-note" id="thres-note"></div>
+
+          <div class="cam-ctrl">
+            <button class="btn lg block" id="detect-cam" style="width:100%">카메라 켜기</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>탐지 결과</h2>
+
+          <div class="det-counts">
+            <div class="det-c shown"><span>표시</span><b id="det-shown">0</b></div>
+            <div class="det-c dropped"><span>걸러짐</span><b id="det-hidden">0</b></div>
+          </div>
+
+          <div class="donut-wrap">
+            <div class="donut">
+              <svg width="92" height="92" viewBox="0 0 92 92">
+                <circle class="ring-bg" cx="46" cy="46" r="40" />
+                <circle class="ring-fg" id="det-arc" cx="46" cy="46" r="40" stroke-dasharray="0 251.3" />
+              </svg>
+              <div class="pct" id="det-pct">0%</div>
+            </div>
+            <div class="donut-lab">가장 확신하는 대상<b id="det-top">대기 중</b></div>
+          </div>
+
+          <div class="det-list" id="det-list">
+            <div class="empty">카메라를 켜고 물건을 비춰 보세요.</div>
+          </div>
+
+          <div class="learn fill">· <b>흑백·색 반전·윤곽선</b> 어디로 바꿔도 인식이 유지됩니다 — AI 는 색이 아니라 <b>형태</b>를 봅니다.<br>· 카메라를 <b>빈 벽</b>으로 돌리면 상자가 0개가 됩니다.</div>
+        </div>
+
+      </section>
+
+      <!-- ══════════ 탭 2 · 중급 — 전이학습 4단계 위저드 ══════════ -->
+      <section id="panel-train" style="display:none">
+        <div class="flow" id="flow">
+          <button class="fstep active" data-w="1"><span class="fn">1</span><span class="ft"><b>데이터 모으기</b><span>클래스별 이미지 수집</span></span></button>
+          <span class="farrow">→</span>
+          <button class="fstep" data-w="2"><span class="fn">2</span><span class="ft"><b>학습하기</b><span>전이학습으로 빠르고 똑똑하게</span></span></button>
+          <span class="farrow">→</span>
+          <button class="fstep" data-w="3"><span class="fn">3</span><span class="ft"><b>추론하기</b><span>학습한 AI로 실시간 인식</span></span></button>
+          <span class="farrow">→</span>
+          <button class="fstep" data-w="4"><span class="fn">4</span><span class="ft"><b>결과 분석</b><span>혼동행렬로 성능 읽기</span></span></button>
+        </div>
+
+        <div class="work">
+          <!-- 고정 카메라 -->
+          <div class="card camera-card">
+            <h2>카메라 <span class="cam-state" id="cam-state">대기</span></h2>
+            <div class="stage">
+              <video id="v-train" playsinline muted></video>
+              <canvas id="c-train"></canvas>
+              <div class="rec-dot" id="rec-dot"><i></i> 수집 중</div>
+              <div class="ph" id="ph-train"><span class="ic-inline" data-ic="camera"></span> [카메라 켜기]를 누르고<br>학습할 대상을 비춰주세요</div>
+            </div>
+            <div class="cam-ctrl">
+              <button class="btn lg block" id="train-cam" style="width:100%">카메라 켜기</button>
+            </div>
+            <div class="learn fill" style="margin-top:16px;"><b>좋은 데이터 모으는 법</b><br>· 대상의 <b>각도, 조명, 거리</b>를 바꿔가며 다양하게 모아요.<br>· <b>배경을 꼭 바꿔 주세요.</b> 한 배경에서만 모으면 AI 가 물체 대신 배경을 외웁니다.</div>
+          </div>
+
+          <!-- 단계별 패널 -->
+          <div class="phost">
+            <!-- 단계 1: 데이터 -->
+            <div class="wstep" data-w="1">
+              <div class="card">
+                <h2>① 데이터 모으기</h2>
+                <p class="sub">구분하고 싶은 대상(예: 훼손된 책 / 멀쩡한 책)을 각각 <b>30장 이상</b> 모아요.</p>
+                <div class="cls" id="cls-list"></div>
+                <button class="add-cls" id="add-cls">+ 클래스 추가</button>
+                <div class="hint" id="train-hint">클래스 2종 이상 + 각 10장 이상 샘플이 필요합니다.</div>
+                <button class="btn primary block lg" id="go-train" disabled style="margin-top:14px">학습하기 →</button>
+              </div>
+            </div>
+
+            <!-- 단계 2: 학습 -->
+            <div class="wstep" data-w="2" hidden>
+              <div class="card">
+                <h2>② 학습하기 (전이학습)</h2>
+                <p class="sub">ImageNet 128만 장을 학습한 모델의 지식을 빌려, 내 사진만 빠르게 추가 학습합니다.</p>
+                <div class="row"><span>학습 반복</span><input type="range" id="epochs" min="10" max="80" value="40"
+                    step="5"><span class="val" id="epochs-val">40</span></div>
+                <button class="btn primary block lg" id="btn-train" disabled>학습 시작</button>
+                <div class="train-bar"><i id="train-fill"></i></div>
+                <div class="metrics big">
+                  <div class="met"><span>학습 횟수</span><b id="m-epoch">— / —</b></div>
+                  <div class="met"><span>학습 정확도</span><b id="m-acc" class="acc">—</b></div>
+                  <div class="met"><span>틀린 정도</span><b id="m-loss" class="loss">—</b></div>
+                </div>
+                <svg class="curve" id="curve-svg" viewBox="0 0 300 120" preserveAspectRatio="none">
+                  <line class="grid" x1="10" y1="60" x2="290" y2="60" />
+                  <polyline id="curve-acc" fill="none" stroke="#11a06f" stroke-width="2.2" stroke-linejoin="round" />
+                  <polyline id="curve-loss" fill="none" stroke="#f0473a" stroke-width="2.2" stroke-linejoin="round" />
+                </svg>
+                <div class="curve-legend"><span><i style="background:#f0473a"></i>손실 (loss)</span><span><i
+                      style="background:#11a06f"></i>정확도 (accuracy)</span></div>
+              </div>
+            </div>
+
+            <!-- 단계 3: 추론 -->
+            <div class="wstep" data-w="3" hidden>
+              <div class="card">
+                <h2>③ 추론하기</h2>
+                <p class="sub">대상을 바꿔가며 비춰보세요. AI 가 무엇인지 분류합니다.</p>
+                <div class="rtop">
+                  <div class="donut">
+                    <svg width="92" height="92" viewBox="0 0 92 92">
+                      <circle class="ring-bg" cx="46" cy="46" r="40" />
+                      <circle class="ring-fg" id="r-arc" cx="46" cy="46" r="40" stroke-dasharray="0 251.3" />
+                    </svg>
+                    <div class="pct" id="r-pct">0%</div>
+                  </div>
+                  <div class="rlab"><b id="r-label">대기 중</b><span id="r-sub">[추론 시작]을 누르세요</span></div>
+                </div>
+                <div class="bars" id="bars">
+                  <div class="empty">학습하면 클래스별 예측 막대가 여기 표시됩니다.</div>
+                </div>
+                <button class="btn primary block lg" id="btn-infer" disabled style="margin-top:14px">추론 시작</button>
+                <div class="wnav">
+                  <button class="btn block" id="go-collect">← 데이터 더 모으기</button>
+                  <button class="btn accent block" id="go-analyze" disabled>결과 분석 →</button>
+                </div>
+                <div class="learn fill"><b>추론(inference)이란?</b><br>학습을 마친 AI 가 새로 들어온 사진을 보고 <b>어떤 클래스인지 실시간으로 예측</b>하는 단계예요.</div>
+              </div>
+            </div>
+
+            <!-- 단계 4: 결과 분석 -->
+            <div class="wstep" data-w="4" hidden>
+              <div class="card">
+                <h2>④ 결과 분석 (혼동행렬)</h2>
+
+                <div class="conf" id="conf">
+                  <div class="empty">②단계에서 학습을 완료하면 혼동행렬이 나타납니다.</div>
+                </div>
+
+                <div class="row thres-row"><span>확신도 임계값</span><input type="range" id="conf-thres" min="0" max="95"
+                    value="0" step="5"><span class="val" id="conf-thres-val">0%</span></div>
+                <div class="cm-verdict" id="cm-verdict"></div>
+
+                <div class="wnav">
+                  <button class="btn block" id="go-back-infer">← 추론으로</button>
+                  <button class="btn primary block" id="go-mission">이 분류기로 미션 하기 →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ══════════ 탭 3 · 심화 — 문제 해결 미션 ══════════ -->
+      <section id="panel-mission" style="display:none">
+        <div class="flow" id="flow-ms">
+          <button class="fstep active" data-m="1"><span class="fn">1</span><span class="ft"><b>미션 수령</b><span>놓치면 안 되는 쪽 정하기</span></span></button>
+          <span class="farrow">→</span>
+          <button class="fstep" data-m="2"><span class="fn">2</span><span class="ft"><b>실시간 라인 가동</b><span>기준선 딜레마 체험</span></span></button>
+          <span class="farrow">→</span>
+          <button class="fstep" data-m="3"><span class="fn">3</span><span class="ft"><b>도입 리포트</b><span>실무 지표(재현율/정밀도) 확인</span></span></button>
+        </div>
+
+        <div class="card" id="ms-host">
+          <!-- 학습 전에는 들어올 수 없다 -->
+          <div class="ms-gate" id="ms-gate">
+            <span class="ms-gate-ic" data-ic="alert"></span>
+            <h2>먼저 분류기를 학습시켜 주세요</h2>
+            <p>이 미션은 <b>여러분이 직접 학습시킨 분류기</b>를 실제 업무에 투입해 보는 단계입니다.<br>②단계에서 클래스 2개를 모아 학습을 마치면 자동으로 열립니다.</p>
+            <button class="btn primary lg" id="ms-to-train">중급 · 제작으로 가기</button>
+          </div>
+
+          <!-- ① 미션 수령 -->
+          <div class="msstep" data-m="1" hidden>
+            <span class="ms-badge">MISSION</span>
+            <h2>자동 판정 라인 감독관 배정</h2>
+            <p class="ms-lead">②단계에서 만든 분류기를 <b>자동 판정 라인</b>에 투입합니다. 라인 끝에는 통이 두 개 있고, <b>어느 쪽으로 잘못 보내든 대가가 따릅니다.</b></p>
+
+            <!-- 두 종류의 실수를 글 대신 통 두 개로 보여 준다 — ②③의 라인과 같은 그림 -->
+            <div style="background:var(--bg-soft); border-radius:8px; padding:12px 16px; display:flex; gap:20px; font-size:13px; color:var(--ink-2); margin-bottom: 24px;">
+              <div style="display:flex; align-items:center; gap:6px;"><span class="ic-inline" data-ic="trash"></span><b>폐기함</b>: 로봇 팔이 쳐냄</div>
+              <div style="display:flex; align-items:center; gap:6px;"><span class="ic-inline" data-ic="box"></span><b>출하구</b>: 그대로 통과시킴</div>
+            </div>
+
+            <div>
+              <b style="display:block; font-size:14px; color:var(--ink); margin-bottom:12px;">놓치면 안 되는 타겟(불량품)을 선택하세요</b>
+              <div class="ms-pick" id="ms-pick"></div>
+            </div>
+            
+            <div class="ms-goal" id="ms-goal" style="margin-top:16px;" hidden></div>
+
+            <div class="btn-row" style="margin-top:24px;">
+              <button class="btn primary lg" id="ms-go2" disabled>라인 가동하러 가기 →</button>
+            </div>
+          </div>
+
+          <!-- ② 실시간 라인 가동 -->
+          <div class="msstep" data-m="2" hidden>
+            <h2>실시간 기준선 조정</h2>
+            <p class="sub">웹캠에 물건을 비춰보세요. 기준선을 내리면 불량을 꽉 잡지만 정상품이 버려집니다. 두 마리 토끼를 잡는 최적의 선을 찾아보세요.</p>
+
+            <div class="ms-tune">
+              <div class="ms-tune-split">
+                <div class="ms-tune-left">
+                  <div class="stage" style="margin-bottom: 24px; width: 100%; min-height: 240px; border-radius: 12px; background: #0d1016;">
+                    <video id="v-mission" playsinline muted></video>
+                    <canvas id="c-mission" style="display:none;"></canvas>
+                    <div class="ph" id="ph-mission"><span class="ic-inline" data-ic="camera"></span> 카메라 대기중...</div>
+                  </div>
+
+                  <div style="margin-top:auto;">
+                    <div class="row thres-row" style="margin-bottom: 16px;">
+                      <span>로봇 팔 예민도</span>
+                      <input type="range" id="ms-thres" min="5" max="95" value="80" step="5">
+                      <span class="val" id="ms-thres-val">80%</span>
+                    </div>
+                    
+                    <div class="btn-row"><button class="btn primary lg block" id="ms-go3" style="width:100%">이 설정으로 결정하기 →</button></div>
+                  </div>
+                </div>
+
+                <div class="ms-tune-right">
+                  <div class="ms-line" id="ms-line-3">
+                      <div class="ms-line-hdr">
+                        <span>LINE 01 · 실시간 판정</span>
+                        <div style="margin-left:auto; display:flex; gap:10px; align-items:center;">
+                          <b style="font-size:12px; color:var(--ink-2)">예민도 <span id="ms-line-cut" style="color:var(--ink)">80%</span></b>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ③ 도입 리포트 -->
+          <div class="msstep" data-m="3" hidden>
+            <h2>자동 판정 도입 리포트</h2>
+            <div class="ms-report" id="ms-report"></div>
+
+            <!-- 실무에서는 어떻게 쓰이나 — 이 코스에서 유일하게 교실 밖을 보여주는 내용이라 남긴다.
+                 재현율·정밀도 정의 폴드는 1단계 목표 문장과 KPI 부제가 이미 하던 말이라 걷어냈다. -->
+            <details class="ms-fold" style="margin-top:16px;">
+              <summary>실무에서는 어떻게 쓰이나</summary>
+              <div>
+                <ul>
+                  <li><b>제조 품질 검사</b> — 불량을 놓치면 리콜. 재현율을 지키고 헛짚은 건 사람이 재확인합니다. (예민도 낮춤)</li>
+                  <li><b>의료 영상 판독 보조</b> — 병변 미탐이 치명적이라 기준선을 낮게 잡습니다. (예민도 낮춤)</li>
+                  <li><b>콘텐츠 자동 심사</b> — 오탐(정상 게시물 차단)이 더 큰 항의를 부르는 경우엔 기준선을 높입니다. (예민도 높임)</li>
+                </ul>
+              </div>
+            </details>
+
+            <div class="btn-row" style="margin-top:16px; display:flex; justify-content:center;">
+              <button class="btn border lg" onclick="msSetStep(2)" style="padding:12px 32px;">← 기준선 다시 조정</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="../shared/icons.js"></script>
+  <script src="/shared/access.js"></script>
+  <script src="./app.js"></script>
+  <script src="./advanced.js"></script>
+  <script src="./mission.js"></script>
+  <script src="../shared/course-preview.js"></script>
+  <script src="../shared/course-dashboard.js"></script>
+  <script src="./course-config.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta name="theme-color" content="#0a0b12" />
+<title>VISION STUDIO · 스테이지 맵</title>
+<meta name="description" content="비전 스튜디오 콘솔 — 스테이지 맵에서 체험 5종과 제작 3종을 골라 바로 시작합니다." />
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<!-- 공통 셸(항목 데이터·인트로·HUD·세션·사운드·진행)은 console/shared.js 하나에서 관리 -->
+<script src="/console/shared.js"></script>
+
+<style>
+  /* ══════ A안 · 스테이지 맵 레이아웃 ══════ */
+  .stage { position:relative; z-index:5; flex:1; width:100%; max-width:1120px; margin:0 auto;
+    padding:4px 26px 0; display:flex; flex-direction:column; align-items:center; min-height:0; }
+  .eyebrow { font-family:var(--mono); font-size:11.5px; font-weight:700; letter-spacing:.22em;
+    color:var(--ink-3); text-transform:uppercase; margin:4px 0 2px; }
+  .title { text-align:center; font-size:26px; font-weight:800; letter-spacing:-.02em; margin:4px 0 14px; }
+  .title b { background:linear-gradient(90deg,var(--blue-2),var(--red-2));
+    -webkit-background-clip:text; background-clip:text; color:transparent; }
+
+  /* 트랙 탭 — 마크업·기본 스타일은 shared.js (.v-tabs/.v-tab) 단일 소스 */
+  .topbar { display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:center; }
+  /* 트랙 학습목표 설명 — "무엇을 배우는 유닛인가" */
+  .track-desc { text-align:center; max-width:600px; margin:8px auto 0;
+    font-size:12.5px; line-height:1.5; color:var(--ink-3); }
+
+  /* ── 맵 ── */
+  .map { position:relative; width:100%; max-width:1000px; flex:1 1 auto; min-height:290px; margin:6px auto 0; }
+  .map svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
+  .map .seg { fill:none; stroke-width:3; stroke-linecap:round; }
+  .map .seg.todo { stroke:rgba(255,255,255,.16); stroke-dasharray:2 10; }
+  .map .seg.done { stroke:var(--acc,#6aa6ff); filter:drop-shadow(0 0 8px var(--acc,#6aa6ff)); opacity:.85; }
+
+  .node { position:absolute; transform:translate(-50%,-50%); border:0; background:none; padding:0;
+    display:flex; flex-direction:column; align-items:center; gap:9px; z-index:2;
+    transition:transform .24s cubic-bezier(.2,.7,.3,1.5);
+    opacity:0; animation:nodeIn .45s cubic-bezier(.2,.8,.3,1) forwards; }
+  @keyframes nodeIn { from{opacity:0; transform:translate(-50%,-50%) scale(.6);} to{opacity:1; transform:translate(-50%,-50%) scale(1);} }
+  .node-no { font-family:var(--mono); font-size:10.5px; font-weight:700; letter-spacing:.14em;
+    color:var(--ink-3); transition:color .2s; }
+  .disc { position:relative; width:96px; height:96px; border-radius:50%; overflow:hidden;
+    box-shadow:0 0 0 2px rgba(174,182,207,.32), 0 16px 34px rgba(0,0,0,.55); transition:box-shadow .24s; }
+  .disc-art { position:absolute; inset:0;
+    background:radial-gradient(120% 90% at 30% 15%, var(--c1), transparent 62%), linear-gradient(165deg, var(--c2), #0c1120); }
+  .disc img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform .4s ease; }
+  .disc::after { content:''; position:absolute; inset:0; background:rgba(6,8,16,.34); transition:background .24s; }
+  /* 아이콘은 포스터가 없을 때만 쓰는 폴백 — 이미지 위에 겹쳐 두지 않는다 */
+  .disc .ic { position:absolute; inset:0; z-index:2; display:grid; place-items:center;
+    font-size:34px; color:#fff; filter:drop-shadow(0 3px 10px rgba(0,0,0,.6)); }
+  .disc.has-thumb .ic { display:none; }
+  .node-name { font-size:14px; font-weight:800; color:var(--ink-2); letter-spacing:-.01em;
+    text-shadow:0 2px 10px rgba(0,0,0,.6); transition:color .2s; white-space:nowrap; }
+
+  /* 완료 표시 = 테두리 채움: 미완료는 회색(.disc 기본), 완료는 트랙색으로 채워 한눈에 구분 */
+  .node.done .disc { box-shadow:0 0 0 3px var(--acc,#6aa6ff), 0 0 20px -4px var(--acc,#6aa6ff), 0 16px 34px rgba(0,0,0,.55); }
+  .node:hover .disc, .node.sel .disc { box-shadow:0 0 0 3px var(--acc,#6aa6ff), 0 0 34px -4px var(--acc,#6aa6ff), 0 20px 44px rgba(0,0,0,.6); }
+  .node:hover .disc::after, .node.sel .disc::after { background:rgba(6,8,16,.05); }
+  .node:hover .disc img, .node.sel .disc img { transform:scale(1.1); }
+  .node:hover, .node.sel { transform:translate(-50%,-50%) scale(1.1); z-index:4; }
+  .node.sel .node-name, .node:hover .node-name { color:#fff; }
+  .node.sel .node-no { color:var(--acc,#6aa6ff); }
+  .node:focus-visible { outline:none; }
+  .node:focus-visible .disc { box-shadow:0 0 0 3px #fff, 0 20px 44px rgba(0,0,0,.6); }
+  /* 선택 노드 링 펄스 */
+  .node.sel .disc { animation:ring 2.2s ease-out infinite; }
+  @keyframes ring {
+    0%   { box-shadow:0 0 0 3px var(--acc,#6aa6ff), 0 0 0 0 rgba(255,255,255,.28), 0 20px 44px rgba(0,0,0,.6); }
+    70%  { box-shadow:0 0 0 3px var(--acc,#6aa6ff), 0 0 0 16px rgba(255,255,255,0),  0 20px 44px rgba(0,0,0,.6); }
+    100% { box-shadow:0 0 0 3px var(--acc,#6aa6ff), 0 0 0 0 rgba(255,255,255,0),     0 20px 44px rgba(0,0,0,.6); }
+  }
+  /* 다음 추천 스테이지 — 선택이 벗어나도 위치를 알려주는 은은한 링 (태그 없이 링만) */
+  body.show-progress .node.rec:not(.sel) .disc { animation:ring 2.2s ease-out infinite; }
+
+  /* ── 하단 상세 ── */
+  .detail { position:relative; z-index:5; flex:none; width:100%; max-width:1000px; margin:0 auto;
+    display:flex; align-items:center; gap:20px; padding:16px 20px; border-radius:16px;
+    background:rgba(255,255,255,.035); box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 10px 30px rgba(0,0,0,.28); }
+  .detail .kicker { font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--acc,#6aa6ff); }
+  .detail h2 { margin:5px 0 6px; font-size:19px; font-weight:800; letter-spacing:-.02em; }
+  .detail p { margin:0; font-size:13.5px; line-height:1.55; color:var(--ink-2); }
+  .detail .main { flex:1; min-width:0; }
+  .go { flex:none; display:inline-flex; align-items:center; gap:9px; font-size:15px; font-weight:800;
+    color:#fff; padding:14px 24px; border:0; border-radius:13px;
+    background:linear-gradient(135deg, var(--acc,#6aa6ff), var(--acc2,#3b86ff));
+    box-shadow:0 10px 26px rgba(0,0,0,.4); transition:transform .15s, filter .15s; }
+  .go:hover { transform:translateY(-2px); filter:brightness(1.07); }
+  .go kbd { font-family:var(--mono); font-size:11px; background:rgba(0,0,0,.22); border-radius:5px; padding:2px 6px; }
+
+  .legend { position:relative; z-index:5; display:flex; align-items:center; justify-content:center;
+    gap:20px; padding:14px 22px 20px; font-size:12.5px; color:var(--ink-3); flex-wrap:wrap; }
+  .legend b { display:inline-flex; align-items:center; gap:7px; font-weight:600; color:var(--ink-2); }
+  .legend kbd { font-family:var(--mono); font-size:11px; font-weight:700; color:var(--ink);
+    background:rgba(255,255,255,.07); border:1px solid var(--line-2); border-bottom-width:2px;
+    border-radius:6px; padding:3px 7px; min-width:22px; text-align:center; }
+  .legend .ver { font-family:var(--mono); }
+
+  @media (max-width:900px) {
+    .title { font-size:22px; }
+    .disc { width:74px; height:74px; }
+    .disc .ic { font-size:26px; }
+    .node-name { font-size:12.5px; }
+    .detail { flex-direction:column; align-items:stretch; text-align:left; }
+    .go { justify-content:center; }
+  }
+  @media (max-width:560px) {
+    .stage { padding:4px 14px 0; }
+    .v-tab { padding:9px 12px; font-size:12.5px; }
+    .disc { width:60px; height:60px; } .disc .ic { font-size:21px; }
+    .node-name { font-size:11.5px; }
+    .map { min-height:250px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .node { animation:none !important; opacity:1 !important; }
+    .node.sel .disc { animation:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="v-boot" id="vboot"></div>
+<div class="v-amb" id="vamb"></div>
+<div class="v-scan"></div>
+
+<header id="vhud"></header>
+
+<main class="stage">
+  <p class="eyebrow">VISION STUDIO CONSOLE · A안</p>
+  <h1 class="title">스테이지를 <b>골라 바로</b> 시작하세요</h1>
+
+  <!-- 탭 내용은 VStudio.tabs() 가 TRACKS 에서 그린다 (라벨·개수 복붙 금지) -->
+  <div class="topbar">
+    <div id="tabs"></div>
+  </div>
+  <p class="track-desc" id="trackDesc"></p>
+
+  <div class="map" id="map">
+    <svg id="path" aria-hidden="true"></svg>
+  </div>
+
+  <section class="detail" id="detail">
+    <div class="main">
+      <div class="kicker" id="dKicker">STAGE 01</div>
+      <h2 id="dName">객체 탐지</h2>
+      <p id="dDesc"></p>
+    </div>
+    <button class="go" id="dGo">▶ 시작 <kbd>ENTER</kbd></button>
+  </section>
+</main>
+
+<footer class="legend">
+  <b><kbd>←</kbd><kbd>→</kbd> 이동</b>
+  <b><kbd>↑</kbd><kbd>↓</kbd> 트랙 전환</b>
+  <b><kbd>⏎</kbd> 시작</b>
+  <b><kbd>ESC</kbd> 홈</b>
+  <span class="ver">VISION AI v1.0</span>
+</footer>
+
+<script src="/stages/core/ui/icons.js"></script>
+<script src="/stages/core/session.js"></script>
+<script src="/stages/admin/cert.js"></script>
+<script src="/stages/submission/board.js"></script>
+<script>
+(function () {
+  /* 저장된 안이 A가 아니면 그쪽으로 넘긴다 (실습 화면의 콘솔 링크는 /studio.html 고정) */
+  VStudio.claim('map');   /* 실습 화면에서 /studio.html 로 돌아와도 이 안으로 온다 */
+  VStudio.guard();
+  VStudio.hud();
+
+  const { TRACKS, progress, sound } = VStudio;
+  /* 노드 좌표(%) — 지그재그로 흐르는 코스 느낌 */
+  const LAYOUT = {
+    5: [[9,34],[30,66],[50,28],[71,64],[92,34]],
+    3: [[16,38],[50,66],[84,34]],
+  };
+
+  const mapEl    = document.getElementById('map');
+  const svgEl    = document.getElementById('path');
+  const tabsEl   = VStudio.tabs(document.getElementById('tabs'), { flow: true });
+  let track = VStudio.initTrack(), sel = 0, nodes = [];
+
+  function items() { return TRACKS[track].items; }
+  /* 다음 추천 = 현재 트랙에서 아직 안 한 첫 스테이지 (진행표시 꺼져 있으면 없음) */
+  function recommendedIndex() {
+    if (!progress.enabled()) return -1;
+    const list = items();
+    for (let k = 0; k < list.length; k++) if (!progress.has(list[k].key)) return k;
+    return -1;   /* 트랙 전부 완료 */
+  }
+
+  function render(sound_, keepSel) {
+    const t = TRACKS[track];
+    VStudio.paintTrack(t);
+    VStudio.syncTabs(tabsEl, track);
+    document.getElementById('trackDesc').textContent = t.desc;
+
+    const pos = LAYOUT[t.items.length] || LAYOUT[5];
+    mapEl.querySelectorAll('.node').forEach(n => n.remove());
+    mapEl.insertAdjacentHTML('beforeend', t.items.map((s, i) => `
+      <button class="node" data-i="${i}" style="left:${pos[i][0]}%;top:${pos[i][1]}%;animation-delay:${i * 0.06}s">
+        <span class="node-no">${t.unit} ${String(i + 1).padStart(2, '0')}</span>
+        <span class="disc" data-thumbhost style="--c1:${s.c1};--c2:${s.c2}">
+          <span class="disc-art"></span>
+          <img data-base="/platform/img/${t.thumb}-${s.key}" alt="" decoding="async" />
+          <i class="ic" data-ic="${s.ic}"></i>
+        </span>
+        <span class="node-name">${s.name}</span>
+      </button>`).join(''));
+
+    nodes = [...mapEl.querySelectorAll('.node')];
+    const rec = recommendedIndex();
+    nodes.forEach((n, i) => {
+      n.classList.toggle('done', progress.has(t.items[i].key));
+      n.classList.toggle('rec', i === rec);
+      n.addEventListener('mouseenter', () => select(i, false));
+      n.addEventListener('focus', () => select(i, false));
+      n.addEventListener('click', () => { sel = i; select(i, false); go(); });
+    });
+    if (window.paintIcons) window.paintIcons(mapEl);
+    VStudio.thumbs(mapEl, 'has-thumb');
+
+    if (!keepSel) sel = rec >= 0 ? rec : 0;   /* 초기·트랙전환 시 추천 스테이지에 초점 */
+    sel = Math.min(sel, t.items.length - 1);
+    select(sel, false);
+    drawPath();
+    VStudio.showProgress();
+    if (sound_) sound.tab();
+  }
+
+  /* 노드 중심을 이어 곡선 경로를 그린다 — 클리어한 구간은 실선+발광 */
+  function drawPath() {
+    const t = TRACKS[track];
+    const r = mapEl.getBoundingClientRect();
+    const pts = nodes.map(n => {
+      const d = n.querySelector('.disc').getBoundingClientRect();
+      return { x: d.left - r.left + d.width / 2, y: d.top - r.top + d.height / 2 };
+    });
+    svgEl.setAttribute('viewBox', `0 0 ${r.width} ${r.height}`);
+    svgEl.innerHTML = pts.slice(0, -1).map((p, i) => {
+      const q = pts[i + 1], mx = (p.x + q.x) / 2;
+      const done = progress.has(t.items[i].key) && progress.has(t.items[i + 1].key);
+      return `<path class="seg ${done ? 'done' : 'todo'}" d="M${p.x},${p.y} C${mx},${p.y} ${mx},${q.y} ${q.x},${q.y}" />`;
+    }).join('');
+  }
+
+  function select(i, snd) {
+    const list = items();
+    sel = (i + list.length) % list.length;
+    nodes.forEach((n, k) => n.classList.toggle('sel', k === sel));
+    const s = list[sel];
+    document.getElementById('dKicker').textContent =
+      `${TRACKS[track].unit} ${String(sel + 1).padStart(2, '0')} · ${s.badge}`;
+    document.getElementById('dName').textContent = s.name;
+    document.getElementById('dDesc').textContent = s.desc;
+    /* CTA 문구 — 완료/추천 상태에 따라 학습 흐름을 안내 */
+    let label = '시작';
+    if (progress.enabled()) {
+      if (progress.has(s.key)) label = '다시 하기';
+      else if (sel === recommendedIndex()) label = list.some(x => progress.has(x.key)) ? '이어서 하기' : '여기서 시작';
+    }
+    document.getElementById('dGo').innerHTML = '▶ ' + label + ' <kbd>ENTER</kbd>';
+    if (snd !== false) sound.move();
+  }
+
+  function go() { const s = items()[sel]; VStudio.launch(s.href, s.key); }
+
+  function setTrack(key, snd) {
+    if (!TRACKS[key] || key === track) return;
+    track = key; sel = 0;
+    VStudio.rememberTrack(key);
+    render(snd !== false);
+  }
+
+  VStudio.wireTabs(tabsEl, setTrack);
+  document.getElementById('dGo').addEventListener('click', go);
+
+  VStudio.keys({
+    next:  () => select(sel + 1),
+    prev:  () => select(sel - 1),
+    enter: go,
+    track: () => setTrack(VStudio.nextTrackKey(track)),
+    jump:  (i) => { if (i < items().length) select(i); },
+  });
+
+  window.addEventListener('resize', drawPath);
+  VStudio.onHashTrack((h) => setTrack(h, false));
+
+  render(false);
+  VStudio.variantBar(() => { render(false); });
+  VStudio.boot(() => drawPath());
+})();
+</script>
+</body>
+</html>

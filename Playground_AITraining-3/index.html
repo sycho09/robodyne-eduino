@@ -1,0 +1,1509 @@
+<!doctype html>
+<html lang="ko" data-ax-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#f6f7fb" />
+    <title>직접 제작 트랙 · VISION AI</title>
+
+    <!-- TensorFlow.js + Models -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.5.4/dist/speech-commands.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.2.0/dist/body-pix.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.1.0/dist/blazeface.min.umd.js"></script>
+
+    <!-- VISION AI · 수업/제출/게시판/확인서 공용 모듈 (체험 트랙과 동일한 제출 개념) -->
+    <script src="/stages/core/ui/icons.js"></script>
+    <script src="/stages/core/ui/dialog.js"></script>
+    <script src="/stages/core/data/imagestore.js"></script>
+    <script src="/stages/core/session.js"></script>
+    <script src="/stages/admin/cert.js"></script>
+    <script src="/stages/submission/board.js"></script>
+    <script src="/stages/submission/data/submit.store.js"></script>
+  <script src="/stages/submission/submit.core.js"></script>
+  <script src="/stages/submission/ui/submit.ui.js"></script>
+    <script src="/stages/studio/maker.js"></script>
+    <script src="/stages/studio/imagelab.js"></script>
+    <script src="/stages/studio/studio.js"></script>
+
+    <!-- 폰트: Pretendard (한국어 본문) + JetBrains Mono (텔레메트리 데이터) -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="/stages/styles/tokens.css" />
+    <link rel="stylesheet" href="/stages/styles/trainer.css" />
+    <link rel="stylesheet" href="/shared/access.css" />
+  </head>
+  <body>
+    <!-- ──────────────────────── 콘솔 HUD ──────────────────────── -->
+    <div class="scanlines"></div>
+    <header class="vhud">
+      <div class="vhud-l">
+        <a
+          class="vback"
+          href="/studio.html"
+          onclick="
+            try {
+              sessionStorage.setItem(
+                String.fromCharCode(118, 111, 115, 95, 112, 97, 115, 115),
+                String(1),
+              );
+            } catch (e) {}
+          "
+          title="콘솔(모드 선택)"
+          ><img src="/platform/img/logo-mark.webp" alt="콘솔"
+        /></a>
+        <a class="vback" href="/create.html">← 뒤로</a>
+        <span class="vdiv"></span>
+        <div class="vtitle">
+          <h1 id="vTitle"><i data-ic="image"></i> 이미지 분류</h1>
+          <span class="vt-tag">TRACK 02 · 직접 제작</span>
+        </div>
+      </div>
+      <div class="vhud-r">
+        <button class="vback" id="boardBtn" data-board style="display: none">
+          <i data-ic="board"></i> 게시판
+        </button>
+        <a class="vback" href="/platform/index.html" title="플랫폼 홈"
+          ><i data-ic="home"></i> 홈</a
+        >
+        <span id="lab-badges"></span>
+        <span class="vchip" id="vStatus">● READY</span>
+      </div>
+    </header>
+
+    <div id="insecure-warn" class="insecure-warn">
+      ⚠ 카메라·마이크는 <b>localhost</b> 또는 <b>HTTPS</b>에서만 동작합니다.
+      현재 주소(<code id="insecure-origin"></code>)에서는 권한 요청이 뜨지
+      않습니다 — <code>http://localhost:8000</code> 으로 접속하세요.
+    </div>
+
+    <!-- ────────────── 좌측 사이드바 + 콘텐츠 ────────────── -->
+    <div class="app-shell">
+      <nav class="sidebar" id="sidebar"></nav>
+
+      <div class="content">
+        <!-- 기능 정보 요약 카드 -->
+        <div class="feature-info">
+          <div class="fi-head">
+            <span class="fi-name" id="fi-name">이미지 분류</span>
+            <span class="fi-type" id="fi-type">지도학습 · 전이학습</span>
+            <span class="fi-model" id="fi-model">MobileNet v2</span>
+          </div>
+          <p class="fi-desc" id="fi-desc">
+            카메라로 직접 클래스를 만들어 사진을 분류합니다.
+          </p>
+          <button class="theorybtn-x" id="theoryToggle">
+            <i data-ic="book"></i> 이론 학습하기
+          </button>
+          <div class="fi-theory" id="fi-theory">
+            <div class="fi-tcard">
+              <div class="fi-th">📊 학습 정보</div>
+              <p id="fi-learn"></p>
+            </div>
+            <div class="fi-tcard">
+              <div class="fi-th">⚙️ 알고리즘 정보</div>
+              <p id="fi-algo"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 단계 네비 (기능별 진행 단계) -->
+        <div class="step-nav" id="step-nav"></div>
+        <div id="lab-scenarios"></div>
+
+        <!-- ──────────────────────── 메인 ──────────────────────── -->
+        <main>
+          <!-- ╔═════════════ 직접학습 탭 ═════════════╗ -->
+          <div id="panel-direct" class="tab-panel active">
+            <div class="sub-panel active">
+              <!-- 좌: 클래스 -->
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">CLASSES</span>
+                  <span class="meta" id="class-count-meta">0 / 4</span>
+                </div>
+                <div class="card-b">
+                  <div id="class-list"></div>
+                  <button
+                    class="btn ghost"
+                    id="add-class"
+                    style="width: 100%; margin-top: 6px"
+                  >
+                    + 클래스 추가
+                  </button>
+                  <p class="hint">
+                    분류할 종류를 만들고, 각 클래스의 <b>📷 촬영</b>을 누르세요.
+                    <b>탭</b>하면 1장, <b>길게</b> 누르면 연속으로 찍힙니다.
+                  </p>
+                  <div id="lab-coach"></div>
+                </div>
+              </aside>
+
+              <!-- 중: 카메라 + 단계 + 학습 -->
+              <section style="display: flex; flex-direction: column; gap: 14px">
+                <div class="card stage-card">
+                  <!-- 카메라 -->
+                  <div class="video-wrap">
+                    <video id="webcam" autoplay playsinline muted></video>
+                    <div class="corner tl"></div>
+                    <div class="corner tr"></div>
+                    <div class="corner bl"></div>
+                    <div class="corner br"></div>
+                    <div class="video-overlay" id="cam-overlay">
+                      <div>
+                        <div class="cover-ic"><i data-ic="camera"></i></div>
+                        <div class="ph">CAMERA · STANDBY</div>
+                        <div class="ph-msg">
+                          카메라를 켜면 미리보기가 표시됩니다
+                        </div>
+                      </div>
+                    </div>
+                    <div class="cam-overlay-top">
+                      <div class="cam-target">
+                        수집 대상 · <b id="cap-target-name">—</b>
+                      </div>
+                      <div class="live-dot" id="live-dot">REC</div>
+                    </div>
+                  </div>
+
+                  <!-- 카메라 컨트롤 (촬영은 왼쪽 클래스별 버튼으로) -->
+                  <div class="cam-controls">
+                    <button class="btn" id="cam-toggle">카메라 켜기</button>
+                  </div>
+                </div>
+
+                <!-- 학습 카드 -->
+                <div class="card">
+                  <div class="card-h">
+                    <span class="label">TRAINING</span>
+                    <span class="meta">MOBILENET · TRANSFER</span>
+                  </div>
+                  <div class="card-b">
+                    <div class="train-row">
+                      <label>학습 횟수</label>
+                      <input
+                        type="number"
+                        id="epochs"
+                        value="30"
+                        min="5"
+                        max="100"
+                      />
+                      <button class="btn primary" id="train" disabled>
+                        모델 학습 시작
+                      </button>
+                    </div>
+                    <div class="progress"><div id="train-bar"></div></div>
+                    <div class="metrics">
+                      <div>
+                        <span class="k">EPOCH</span
+                        ><span class="v" id="m-epoch">0 / 0</span>
+                      </div>
+                      <div>
+                        <span class="k">LOSS</span
+                        ><span class="v" id="m-loss">—</span>
+                      </div>
+                      <div>
+                        <span class="k">ACCURACY</span
+                        ><span class="v" id="m-acc">—</span>
+                      </div>
+                    </div>
+
+                    <div class="train-chart" id="train-chart-box">
+                      <div class="train-chart-head">
+                        <span class="train-chart-title">LEARNING CURVE</span>
+                        <div class="train-chart-legend">
+                          <span class="legend-acc">Accuracy</span>
+                          <span class="legend-loss">Loss</span>
+                        </div>
+                      </div>
+                      <svg
+                        id="train-chart-svg"
+                        viewBox="0 0 400 110"
+                        preserveAspectRatio="none"
+                      >
+                        <line
+                          class="train-chart-grid"
+                          x1="0"
+                          y1="20"
+                          x2="400"
+                          y2="20"
+                        />
+                        <line
+                          class="train-chart-grid"
+                          x1="0"
+                          y1="55"
+                          x2="400"
+                          y2="55"
+                        />
+                        <line
+                          class="train-chart-grid"
+                          x1="0"
+                          y1="90"
+                          x2="400"
+                          y2="90"
+                        />
+                        <polyline
+                          id="chart-acc"
+                          fill="none"
+                          stroke="#059669"
+                          stroke-width="2"
+                          stroke-linejoin="round"
+                          points=""
+                        />
+                        <polyline
+                          id="chart-loss"
+                          fill="none"
+                          stroke="#d97706"
+                          stroke-width="2"
+                          stroke-linejoin="round"
+                          points=""
+                        />
+                        <text class="train-chart-axis" x="4" y="18">100%</text>
+                        <text class="train-chart-axis" x="4" y="93">0</text>
+                      </svg>
+                    </div>
+
+                    <div class="confusion" id="confusion-box">
+                      <div class="confusion-head">
+                        <span>CONFUSION MATRIX</span>
+                        <span class="meta" id="confusion-meta"
+                          >SELF-PREDICTION</span
+                        >
+                      </div>
+                      <div id="confusion-table-wrap"></div>
+                    </div>
+
+                    <p class="hint" id="train-hint">
+                      클래스 2개 이상, 각각에 데이터가 있어야 학습할 수
+                      있습니다.
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- 우: 추론 -->
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">INFERENCE</span>
+                  <span class="meta" id="infer-meta">IDLE</span>
+                </div>
+                <div class="card-b">
+                  <div class="top-pred idle" id="top-pred">
+                    <svg class="donut" viewBox="0 0 120 120">
+                      <circle class="donut-track" cx="60" cy="60" r="50" />
+                      <circle
+                        class="donut-arc"
+                        cx="60"
+                        cy="60"
+                        r="50"
+                        id="top-donut-arc"
+                      />
+                      <text class="donut-pct" x="60" y="60" id="top-donut-pct">
+                        0%
+                      </text>
+                    </svg>
+                    <div class="tp-label">지금 무엇으로 보이나요?</div>
+                    <div class="tp-name">아직 학습 전</div>
+                    <div class="tp-conf"></div>
+                  </div>
+                  <div id="bars"></div>
+                  <button
+                    class="btn blue"
+                    id="infer-toggle"
+                    disabled
+                    style="width: 100%; margin-top: 14px"
+                  >
+                    추론 시작
+                  </button>
+                  <p class="hint">
+                    학습 후 실시간으로 카메라 영상을 분류합니다. 막대는 그
+                    클래스일 확률입니다.
+                  </p>
+                  <button
+                    class="btn"
+                    id="challengeBtn"
+                    style="
+                      display: none;
+                      width: 100%;
+                      margin-top: 10px;
+                      font-weight: 800;
+                    "
+                  >
+                    🎯 정확도 챌린지
+                  </button>
+                  <div id="actionArea" class="act-area"></div>
+                  <p class="hint" id="action-hint" style="margin-top: 6px"></p>
+                </div>
+              </aside>
+            </div>
+          </div>
+          <!-- ╚═════════════ /직접학습 ═════════════╝ -->
+
+          <!-- ╔═════════════ 지도학습 탭 ═════════════╗ -->
+          <div id="panel-supervised" class="tab-panel">
+            <div class="sub-tabs">
+              <button class="sub-tab active" data-sub="pose">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="5" r="2.2" />
+                  <path d="M12 7.5v5" />
+                  <path d="M7 10l5 2.5 5-2.5" />
+                  <path d="M12 12.5L9 21M12 12.5L15 21" />
+                </svg>
+                포즈 인식
+              </button>
+              <button class="sub-tab" data-sub="audio">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 3v18M7 8v8M17 8v8M3 11v2M21 11v2" />
+                </svg>
+                음성 학습
+              </button>
+            </div>
+
+            <!-- ─── 포즈 인식 sub-panel ─── -->
+            <div id="sub-pose" class="sub-panel active">
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">POSE CLASSES</span>
+                  <span class="meta" id="p-class-count-meta">0 / 4</span>
+                </div>
+                <div class="card-b">
+                  <div id="p-class-list"></div>
+                  <button
+                    class="btn ghost"
+                    id="p-add-class"
+                    style="width: 100%; margin-top: 6px"
+                  >
+                    + 클래스 추가
+                  </button>
+                  <p class="hint">
+                    동작을 만들고 각 클래스의 <b>📷 촬영</b>을 누르세요.
+                    <b>탭</b>=1장, <b>길게</b>=연속. (예: 팔 들기, 앉기, T자세)
+                  </p>
+                </div>
+              </aside>
+
+              <section style="display: flex; flex-direction: column; gap: 14px">
+                <div class="card stage-card">
+                  <div class="video-wrap">
+                    <video id="p-webcam" autoplay playsinline muted></video>
+                    <canvas id="p-pose-overlay" class="pose-overlay"></canvas>
+                    <div class="corner tl"></div>
+                    <div class="corner tr"></div>
+                    <div class="corner bl"></div>
+                    <div class="corner br"></div>
+                    <div class="video-overlay" id="p-cam-overlay">
+                      <div>
+                        <div class="ph">CAMERA · STANDBY</div>
+                        <div class="ph-msg">
+                          카메라를 켜면 키포인트가 표시됩니다
+                        </div>
+                      </div>
+                    </div>
+                    <div class="cam-overlay-top">
+                      <div class="cam-target">
+                        수집 대상 · <b id="p-cap-target-name">—</b>
+                      </div>
+                      <div class="live-dot" id="p-live-dot">REC</div>
+                    </div>
+                  </div>
+
+                  <div class="cam-controls">
+                    <button class="btn" id="p-cam-toggle">카메라 켜기</button>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-h">
+                    <span class="label">TRAINING</span>
+                    <span class="meta">MOVENET · KEYPOINT + DENSE</span>
+                  </div>
+                  <div class="card-b">
+                    <div class="train-row">
+                      <label>학습 횟수</label>
+                      <input
+                        type="number"
+                        id="p-epochs"
+                        value="40"
+                        min="5"
+                        max="100"
+                      />
+                      <button class="btn primary" id="p-train" disabled>
+                        모델 학습 시작
+                      </button>
+                    </div>
+                    <div class="progress"><div id="p-train-bar"></div></div>
+                    <div class="metrics">
+                      <div>
+                        <span class="k">EPOCH</span
+                        ><span class="v" id="p-m-epoch">0 / 0</span>
+                      </div>
+                      <div>
+                        <span class="k">LOSS</span
+                        ><span class="v" id="p-m-loss">—</span>
+                      </div>
+                      <div>
+                        <span class="k">ACCURACY</span
+                        ><span class="v" id="p-m-acc">—</span>
+                      </div>
+                    </div>
+
+                    <div class="train-chart" id="p-train-chart-box">
+                      <div class="train-chart-head">
+                        <span class="train-chart-title">LEARNING CURVE</span>
+                        <div class="train-chart-legend">
+                          <span class="legend-acc">Accuracy</span>
+                          <span class="legend-loss">Loss</span>
+                        </div>
+                      </div>
+                      <svg
+                        id="p-train-chart-svg"
+                        viewBox="0 0 400 110"
+                        preserveAspectRatio="none"
+                      >
+                        <line
+                          class="train-chart-grid"
+                          x1="0"
+                          y1="20"
+                          x2="400"
+                          y2="20"
+                        />
+                        <line
+                          class="train-chart-grid"
+                          x1="0"
+                          y1="55"
+                          x2="400"
+                          y2="55"
+                        />
+                        <line
+                          class="train-chart-grid"
+                          x1="0"
+                          y1="90"
+                          x2="400"
+                          y2="90"
+                        />
+                        <polyline
+                          id="p-chart-acc"
+                          fill="none"
+                          stroke="#059669"
+                          stroke-width="2"
+                          stroke-linejoin="round"
+                          points=""
+                        />
+                        <polyline
+                          id="p-chart-loss"
+                          fill="none"
+                          stroke="#d97706"
+                          stroke-width="2"
+                          stroke-linejoin="round"
+                          points=""
+                        />
+                        <text class="train-chart-axis" x="4" y="18">100%</text>
+                        <text class="train-chart-axis" x="4" y="93">0</text>
+                      </svg>
+                    </div>
+
+                    <div class="confusion" id="p-confusion-box">
+                      <div class="confusion-head">
+                        <span>CONFUSION MATRIX</span>
+                        <span class="meta" id="p-confusion-meta"
+                          >SELF-PREDICTION</span
+                        >
+                      </div>
+                      <div id="p-confusion-table-wrap"></div>
+                    </div>
+
+                    <p class="hint" id="p-train-hint">
+                      클래스 2개 이상, 각각에 자세 데이터가 있어야 학습할 수
+                      있습니다.
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">INFERENCE</span>
+                  <span class="meta" id="p-infer-meta">IDLE</span>
+                </div>
+                <div class="card-b">
+                  <div class="top-pred idle" id="p-top-pred">
+                    <svg class="donut" viewBox="0 0 120 120">
+                      <circle class="donut-track" cx="60" cy="60" r="50" />
+                      <circle
+                        class="donut-arc"
+                        cx="60"
+                        cy="60"
+                        r="50"
+                        id="p-top-donut-arc"
+                      />
+                      <text
+                        class="donut-pct"
+                        x="60"
+                        y="60"
+                        id="p-top-donut-pct"
+                      >
+                        0%
+                      </text>
+                    </svg>
+                    <div class="tp-label">지금 어떤 동작인가요?</div>
+                    <div class="tp-name">아직 학습 전</div>
+                    <div class="tp-conf"></div>
+                  </div>
+                  <div id="p-bars"></div>
+                  <button
+                    class="btn blue"
+                    id="p-infer-toggle"
+                    disabled
+                    style="width: 100%; margin-top: 14px"
+                  >
+                    추론 시작
+                  </button>
+                  <p class="hint">학습 후 실시간으로 자세를 분류합니다.</p>
+                  <div data-actions class="act-area"></div>
+                </div>
+              </aside>
+            </div>
+
+            <!-- ─── 음성 학습 sub-panel ─── -->
+            <div id="sub-audio" class="sub-panel" style="display: none">
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">CLASSES</span>
+                  <span class="meta" id="a-class-count-meta">0 / 4</span>
+                </div>
+                <div class="card-b">
+                  <div id="a-class-list"></div>
+                  <button
+                    class="btn ghost"
+                    id="a-add-class"
+                    style="width: 100%; margin-top: 6px"
+                  >
+                    + 클래스 추가
+                  </button>
+                  <p class="hint">
+                    클래스를 만들고 각 클래스의 <b>🎤 녹음</b>을 누르면 1초씩
+                    녹음됩니다. (예: 켜, 꺼, 시작)
+                  </p>
+                </div>
+              </aside>
+
+              <section style="display: flex; flex-direction: column; gap: 14px">
+                <div class="card stage-card">
+                  <div
+                    class="video-wrap"
+                    style="aspect-ratio: 16/8; background: #0a0e1a"
+                  >
+                    <canvas
+                      id="a-waveform"
+                      style="
+                        position: absolute;
+                        inset: 0;
+                        width: 100%;
+                        height: 100%;
+                        display: block;
+                      "
+                    ></canvas>
+                    <div class="video-overlay" id="a-mic-overlay">
+                      <div>
+                        <div class="ph">MIC · STANDBY</div>
+                        <div class="ph-msg">
+                          마이크를 켜면 파형이 표시됩니다
+                        </div>
+                      </div>
+                    </div>
+                    <div class="cam-overlay-top">
+                      <div class="cam-target">
+                        녹음 대상 · <b id="a-cap-target-name">—</b>
+                      </div>
+                      <div class="live-dot" id="a-live-dot">REC</div>
+                    </div>
+                  </div>
+
+                  <div class="cam-controls">
+                    <button class="btn" id="a-mic-toggle">마이크 켜기</button>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-h">
+                    <span class="label">TRAINING</span>
+                    <span class="meta">SPEECH COMMANDS · TRANSFER</span>
+                  </div>
+                  <div class="card-b">
+                    <div class="train-row">
+                      <label>학습 횟수</label>
+                      <input
+                        type="number"
+                        id="a-epochs"
+                        value="25"
+                        min="5"
+                        max="100"
+                      />
+                      <button class="btn primary" id="a-train" disabled>
+                        모델 학습 시작
+                      </button>
+                    </div>
+                    <div class="progress"><div id="a-train-bar"></div></div>
+                    <div class="metrics">
+                      <div>
+                        <span class="k">EPOCH</span
+                        ><span class="v" id="a-m-epoch">0 / 0</span>
+                      </div>
+                      <div>
+                        <span class="k">LOSS</span
+                        ><span class="v" id="a-m-loss">—</span>
+                      </div>
+                      <div>
+                        <span class="k">ACCURACY</span
+                        ><span class="v" id="a-m-acc">—</span>
+                      </div>
+                    </div>
+                    <p class="hint" id="a-train-hint">
+                      클래스 2개 이상, 각각에 최소 8회 녹음이 있어야 학습할 수
+                      있습니다.
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">INFERENCE</span>
+                  <span class="meta" id="a-infer-meta">IDLE</span>
+                </div>
+                <div class="card-b">
+                  <div class="top-pred idle" id="a-top-pred">
+                    <div class="tp-label">PREDICTION</div>
+                    <div class="tp-name">아직 학습 전</div>
+                    <div class="tp-conf"></div>
+                  </div>
+                  <div id="a-bars"></div>
+                  <button
+                    class="btn blue"
+                    id="a-infer-toggle"
+                    disabled
+                    style="width: 100%; margin-top: 14px"
+                  >
+                    추론 시작
+                  </button>
+                  <p class="hint">
+                    학습 후 마이크 입력을 실시간으로 분류합니다.
+                  </p>
+                  <div data-actions class="act-area"></div>
+                </div>
+              </aside>
+            </div>
+          </div>
+          <!-- ╚═════════════ /지도학습 ═════════════╝ -->
+
+          <!-- ╔═════════════ 사전학습 추론 탭 ═════════════╗ -->
+          <div id="panel-pretrained" class="tab-panel">
+            <div class="sub-tabs">
+              <button class="sub-tab active" data-sub="detect">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="4" y="4" width="16" height="16" rx="2" />
+                  <rect x="8" y="8" width="5" height="5" />
+                </svg>
+                객체 탐지
+              </button>
+              <button class="sub-tab" data-sub="segment">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="7" r="3" />
+                  <path d="M5 21v-2a7 7 0 0 1 14 0v2" />
+                </svg>
+                인물 분리
+              </button>
+            </div>
+
+            <!-- ─── 객체 탐지 ─── -->
+            <div id="sub-detect" class="sub-panel active">
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">MODEL</span
+                  ><span class="meta">COCO-SSD</span>
+                </div>
+                <div class="card-b">
+                  <p class="hint" style="margin: 0 0 12px">
+                    대규모 데이터(<b>COCO</b>) 90개 클래스로 사전 학습된 모델.
+                    카메라 영상에서 사람·차·동물 등을 실시간으로 박스
+                    표시합니다.
+                  </p>
+                  <div class="param">
+                    <label class="param-label"
+                      >신뢰도 임계값 <span id="d-thr-val">50%</span></label
+                    >
+                    <input
+                      type="range"
+                      id="d-thr"
+                      min="10"
+                      max="90"
+                      value="50"
+                      class="slider"
+                    />
+                    <p class="param-hint">
+                      값을 올리면 확실한 것만 남고, 내리면 더 많이(부정확해도)
+                      잡습니다.
+                    </p>
+                  </div>
+                  <div class="metrics" style="margin-top: 12px">
+                    <div>
+                      <span class="k">CLASSES</span><span class="v">90</span>
+                    </div>
+                    <div>
+                      <span class="k">STATUS</span
+                      ><span class="v" id="d-status">IDLE</span>
+                    </div>
+                    <div>
+                      <span class="k">FPS</span
+                      ><span class="v" id="d-fps">—</span>
+                    </div>
+                  </div>
+                </div>
+              </aside>
+              <section>
+                <div class="card stage-card">
+                  <div class="video-wrap">
+                    <video id="d-webcam" autoplay playsinline muted></video>
+                    <canvas
+                      id="d-overlay"
+                      class="pose-overlay"
+                      style="transform: translateZ(0)"
+                    ></canvas>
+                    <div class="video-overlay" id="d-cam-overlay">
+                      <div>
+                        <div class="ph">CAMERA · STANDBY</div>
+                        <div class="ph-msg">
+                          카메라를 켜면 객체가 탐지됩니다
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="cam-controls">
+                    <button
+                      class="btn primary"
+                      id="d-cam-toggle"
+                      style="width: 100%"
+                    >
+                      카메라 켜기 · 탐지 시작
+                    </button>
+                  </div>
+                </div>
+              </section>
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">DETECTED</span
+                  ><span class="meta" id="d-count">0</span>
+                </div>
+                <div class="card-b">
+                  <div
+                    id="d-list"
+                    style="display: flex; flex-direction: column; gap: 6px"
+                  ></div>
+                </div>
+              </aside>
+            </div>
+
+            <!-- ─── 인물 분리 ─── -->
+            <div id="sub-segment" class="sub-panel" style="display: none">
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">MODEL</span
+                  ><span class="meta">BODYPIX</span>
+                </div>
+                <div class="card-b">
+                  <p class="hint" style="margin: 0 0 12px">
+                    <b>BodyPix</b>는 사람의 윤곽을 픽셀 단위로 분리합니다.
+                    배경을 제거하거나 인물만 강조할 수 있어요.
+                  </p>
+                  <div class="metrics" style="margin-top: 8px">
+                    <div>
+                      <span class="k">MODE</span
+                      ><span class="v">PERSON SEG</span>
+                    </div>
+                    <div>
+                      <span class="k">STATUS</span
+                      ><span class="v" id="s-status">IDLE</span>
+                    </div>
+                    <div>
+                      <span class="k">FPS</span
+                      ><span class="v" id="s-fps">—</span>
+                    </div>
+                  </div>
+                </div>
+              </aside>
+              <section>
+                <div class="card stage-card">
+                  <div class="video-wrap">
+                    <video
+                      id="s-webcam"
+                      autoplay
+                      playsinline
+                      muted
+                      style="
+                        position: absolute;
+                        inset: 0;
+                        width: 100%;
+                        height: 100%;
+                        object-fit: fill;
+                        transform: scaleX(-1);
+                      "
+                    ></video>
+                    <canvas
+                      id="s-canvas"
+                      style="
+                        position: absolute;
+                        inset: 0;
+                        width: 100%;
+                        height: 100%;
+                        transform: scaleX(-1);
+                      "
+                    ></canvas>
+                    <div class="video-overlay" id="s-cam-overlay">
+                      <div>
+                        <div class="ph">CAMERA · STANDBY</div>
+                        <div class="ph-msg">
+                          카메라를 켜면 인물만 분리됩니다
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="cam-controls">
+                    <button
+                      class="btn primary"
+                      id="s-cam-toggle"
+                      style="flex: 1"
+                    >
+                      카메라 켜기 · 분리 시작
+                    </button>
+                    <button class="btn" id="s-mode-toggle">
+                      인물 강조로 전환
+                    </button>
+                  </div>
+                </div>
+              </section>
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">PIXELS</span
+                  ><span class="meta" id="s-meta">—</span>
+                </div>
+                <div class="card-b">
+                  <div class="metrics" style="grid-template-columns: 1fr">
+                    <div>
+                      <span class="k">PERSON PIXELS</span
+                      ><span class="v" id="s-person-px">—</span>
+                    </div>
+                    <div style="margin-top: 8px">
+                      <span class="k">RATIO</span
+                      ><span class="v" id="s-ratio">—</span>
+                      <div class="gauge">
+                        <div class="gauge-fill" id="s-ratio-bar"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="hint" style="margin-top: 12px">
+                    사람과 배경을 픽셀 단위로 <b>분리</b>하는 기능입니다(얼굴
+                    인식·분류 아님). 기본은 배경을 초록색으로 덮어
+                    가리고(크로마키), 버튼을 누르면 인물만 색으로 강조하는
+                    모드로 바뀝니다.
+                  </p>
+                </div>
+              </aside>
+            </div>
+
+            <!-- ─── 영상 필터 · 모션 ─── -->
+            <div id="sub-filter" class="sub-panel" style="display: none">
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">필터</span
+                  ><span class="meta">CANVAS</span>
+                </div>
+                <div class="card-b">
+                  <p class="hint" style="margin: 0 0 12px">
+                    고전 영상처리 효과를 실시간으로 적용합니다. 버튼으로 모드를
+                    바꿔보세요.
+                  </p>
+                  <div class="ff-grid">
+                    <button class="ff-mode active" data-fmode="none">
+                      원본
+                    </button>
+                    <button class="ff-mode" data-fmode="gray">흑백</button>
+                    <button class="ff-mode" data-fmode="invert">색 반전</button>
+                    <button class="ff-mode" data-fmode="contrast">
+                      고대비
+                    </button>
+                    <button class="ff-mode" data-fmode="blur">블러</button>
+                    <button class="ff-mode" data-fmode="motion">
+                      모션 감지
+                    </button>
+                  </div>
+                  <div class="param" style="margin-top: 14px">
+                    <label class="param-label"
+                      >밝기 <span id="ff-bright-val">100%</span></label
+                    >
+                    <input
+                      type="range"
+                      id="ff-bright"
+                      min="20"
+                      max="200"
+                      value="100"
+                      class="slider"
+                    />
+                    <label class="param-label" style="margin-top: 10px"
+                      >대비 <span id="ff-contrast-val">100%</span></label
+                    >
+                    <input
+                      type="range"
+                      id="ff-contrast"
+                      min="20"
+                      max="300"
+                      value="100"
+                      class="slider"
+                    />
+                    <label class="param-label" style="margin-top: 10px"
+                      >블러 <span id="ff-blur-val">0px</span></label
+                    >
+                    <input
+                      type="range"
+                      id="ff-blur"
+                      min="0"
+                      max="12"
+                      value="0"
+                      class="slider"
+                    />
+                    <p class="param-hint">
+                      슬라이더를 움직여 효과를 조절하세요. (모션 감지 모드에는
+                      적용되지 않습니다)
+                    </p>
+                    <button
+                      class="btn ghost"
+                      id="ff-compare"
+                      style="width: 100%; margin-top: 8px"
+                    >
+                      원본 보기 (누르는 동안)
+                    </button>
+                  </div>
+                </div>
+              </aside>
+              <section style="display: flex; flex-direction: column; gap: 14px">
+                <div class="card stage-card">
+                  <div class="video-wrap">
+                    <video id="ff-webcam" autoplay playsinline muted></video>
+                    <canvas id="ff-canvas" class="pose-overlay"></canvas>
+                    <div class="video-overlay" id="ff-cam-overlay">
+                      <div>
+                        <div class="ph">CAMERA · STANDBY</div>
+                        <div class="ph-msg">
+                          카메라를 켜면 필터가 적용됩니다
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="cam-controls">
+                    <button
+                      class="btn primary"
+                      id="ff-cam-toggle"
+                      style="width: 100%"
+                    >
+                      카메라 켜기
+                    </button>
+                  </div>
+                </div>
+              </section>
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">INFO</span
+                  ><span class="meta" id="ff-mode-name">원본</span>
+                </div>
+                <div class="card-b">
+                  <div class="metrics" style="grid-template-columns: 1fr 1fr">
+                    <div>
+                      <span class="k">STATUS</span
+                      ><span class="v" id="ff-status">IDLE</span>
+                    </div>
+                    <div>
+                      <span class="k">FPS</span
+                      ><span class="v" id="ff-fps">—</span>
+                    </div>
+                  </div>
+                  <div
+                    style="margin-top: 14px; display: none"
+                    id="ff-motion-row"
+                  >
+                    <div
+                      style="
+                        font-family: var(--mono);
+                        font-size: 10.5px;
+                        letter-spacing: 0.05em;
+                        text-transform: uppercase;
+                        color: var(--ink-4);
+                        display: flex;
+                        justify-content: space-between;
+                      "
+                    >
+                      <span>MOTION</span
+                      ><span id="ff-motion" style="color: var(--ink-2)">—</span>
+                    </div>
+                    <div class="gauge">
+                      <div
+                        class="gauge-fill"
+                        id="ff-motion-bar"
+                        style="
+                          background: linear-gradient(90deg, #e11d48, #f59e0b);
+                        "
+                      ></div>
+                    </div>
+                  </div>
+                  <p class="hint" style="margin-top: 12px">
+                    흑백·색반전·고대비·블러는 즉시 적용됩니다.
+                    <b>모션 감지</b>는 움직이는 부분을 빨갛게 표시합니다 —
+                    "멈추기 게임"에 활용해 보세요.
+                  </p>
+                </div>
+              </aside>
+            </div>
+
+            <!-- ─── 뼈대(포즈) 검출 ─── -->
+            <div id="sub-skeleton" class="sub-panel" style="display: none">
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">MODEL</span
+                  ><span class="meta">MOVENET</span>
+                </div>
+                <div class="card-b">
+                  <p class="hint" style="margin: 0 0 12px">
+                    <b>MoveNet</b>으로 사람의 관절 17개를 추정해 실시간 뼈대를
+                    그립니다. 학습 없이 바로 동작합니다.
+                  </p>
+                  <div class="param">
+                    <label class="param-label"
+                      >관절 표시 민감도 <span id="sk-min-val">30%</span></label
+                    >
+                    <input
+                      type="range"
+                      id="sk-min"
+                      min="10"
+                      max="70"
+                      value="30"
+                      class="slider"
+                    />
+                    <p class="param-hint">
+                      내리면 흐릿한 관절까지 표시, 올리면 확실한 관절만
+                      표시합니다.
+                    </p>
+                  </div>
+                  <div class="metrics" style="margin-top: 12px">
+                    <div>
+                      <span class="k">KEYPOINTS</span><span class="v">17</span>
+                    </div>
+                    <div>
+                      <span class="k">STATUS</span
+                      ><span class="v" id="sk-status">IDLE</span>
+                    </div>
+                    <div>
+                      <span class="k">FPS</span
+                      ><span class="v" id="sk-fps">—</span>
+                    </div>
+                  </div>
+                </div>
+              </aside>
+              <section style="display: flex; flex-direction: column; gap: 14px">
+                <div class="card stage-card">
+                  <div class="video-wrap">
+                    <video id="sk-webcam" autoplay playsinline muted></video>
+                    <canvas id="sk-canvas" class="pose-overlay"></canvas>
+                    <div class="video-overlay" id="sk-cam-overlay">
+                      <div>
+                        <div class="ph">CAMERA · STANDBY</div>
+                        <div class="ph-msg">
+                          카메라를 켜면 뼈대가 표시됩니다
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="cam-controls">
+                    <button
+                      class="btn primary"
+                      id="sk-cam-toggle"
+                      style="width: 100%"
+                    >
+                      카메라 켜기 · 뼈대 시작
+                    </button>
+                  </div>
+                </div>
+              </section>
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">DETECTED</span
+                  ><span class="meta" id="sk-count">—</span>
+                </div>
+                <div class="card-b">
+                  <div style="margin-bottom: 10px">
+                    <span
+                      style="
+                        font-family: var(--mono);
+                        font-size: 10.5px;
+                        letter-spacing: 0.05em;
+                        text-transform: uppercase;
+                        color: var(--ink-4);
+                      "
+                      >검출 신뢰 관절</span
+                    >
+                    <div class="gauge">
+                      <div class="gauge-fill" id="sk-conf-bar"></div>
+                    </div>
+                  </div>
+                  <p class="hint" style="margin-top: 12px">
+                    관절(파랑)과 뼈대(선)가 실시간으로 그려집니다. 팔다리를
+                    움직여 보세요.
+                  </p>
+                </div>
+              </aside>
+            </div>
+
+            <!-- ─── 얼굴 검출 ─── -->
+            <div id="sub-face" class="sub-panel" style="display: none">
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">MODEL</span
+                  ><span class="meta">BLAZEFACE</span>
+                </div>
+                <div class="card-b">
+                  <p class="hint" style="margin: 0 0 12px">
+                    <b>BlazeFace</b>로 화면 속 얼굴 위치를 실시간 박스로
+                    검출합니다(누구인지 식별하는 인식과는 다릅니다).
+                  </p>
+                  <div class="metrics" style="margin-top: 8px">
+                    <div>
+                      <span class="k">MODEL</span><span class="v">BLAZE</span>
+                    </div>
+                    <div>
+                      <span class="k">STATUS</span
+                      ><span class="v" id="fc-status">IDLE</span>
+                    </div>
+                    <div>
+                      <span class="k">FPS</span
+                      ><span class="v" id="fc-fps">—</span>
+                    </div>
+                  </div>
+                </div>
+              </aside>
+              <section style="display: flex; flex-direction: column; gap: 14px">
+                <div class="card stage-card">
+                  <div class="video-wrap">
+                    <video id="fc-webcam" autoplay playsinline muted></video>
+                    <div id="fc-boxes" class="det-boxes"></div>
+                    <div class="video-overlay" id="fc-cam-overlay">
+                      <div>
+                        <div class="ph">CAMERA · STANDBY</div>
+                        <div class="ph-msg">
+                          카메라를 켜면 얼굴이 검출됩니다
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="cam-controls">
+                    <button
+                      class="btn primary"
+                      id="fc-cam-toggle"
+                      style="width: 100%"
+                    >
+                      카메라 켜기 · 검출 시작
+                    </button>
+                  </div>
+                </div>
+              </section>
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">DETECTED</span
+                  ><span class="meta" id="fc-count">0</span>
+                </div>
+                <div class="card-b">
+                  <div style="margin-bottom: 10px">
+                    <span
+                      style="
+                        font-family: var(--mono);
+                        font-size: 10.5px;
+                        letter-spacing: 0.05em;
+                        text-transform: uppercase;
+                        color: var(--ink-4);
+                      "
+                      >검출된 얼굴 수</span
+                    >
+                    <div class="gauge">
+                      <div class="gauge-fill" id="fc-count-bar"></div>
+                    </div>
+                  </div>
+                  <p class="hint" style="margin-top: 12px">
+                    여러 명이 함께 화면에 들어오면 각 얼굴에 박스가 그려집니다.
+                  </p>
+                </div>
+              </aside>
+            </div>
+
+            <!-- ─── 색상 추적 ─── -->
+            <div id="sub-colortrack" class="sub-panel" style="display: none">
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">알고리즘</span
+                  ><span class="meta">RGB THRESHOLD</span>
+                </div>
+                <div class="card-b">
+                  <p class="hint" style="margin: 0 0 12px">
+                    선택한 색과 비슷한 픽셀만 남기고 배경을 어둡게 처리합니다.
+                    색을 고르거나 직접 입력하세요.
+                  </p>
+                  <div class="ct-swatches">
+                    <button
+                      class="ct-color active"
+                      data-r="220"
+                      data-g="50"
+                      data-b="50"
+                      style="background: #dc3232"
+                      title="빨강"
+                    ></button>
+                    <button
+                      class="ct-color"
+                      data-r="240"
+                      data-g="130"
+                      data-b="40"
+                      style="background: #f08228"
+                      title="주황"
+                    ></button>
+                    <button
+                      class="ct-color"
+                      data-r="235"
+                      data-g="210"
+                      data-b="55"
+                      style="background: #ebd237"
+                      title="노랑"
+                    ></button>
+                    <button
+                      class="ct-color"
+                      data-r="40"
+                      data-g="180"
+                      data-b="80"
+                      style="background: #28b450"
+                      title="초록"
+                    ></button>
+                    <button
+                      class="ct-color"
+                      data-r="50"
+                      data-g="190"
+                      data-b="220"
+                      style="background: #32bedc"
+                      title="하늘"
+                    ></button>
+                    <button
+                      class="ct-color"
+                      data-r="50"
+                      data-g="110"
+                      data-b="230"
+                      style="background: #326ee6"
+                      title="파랑"
+                    ></button>
+                    <button
+                      class="ct-color"
+                      data-r="140"
+                      data-g="70"
+                      data-b="200"
+                      style="background: #8c46c8"
+                      title="보라"
+                    ></button>
+                    <button
+                      class="ct-color"
+                      data-r="230"
+                      data-g="90"
+                      data-b="160"
+                      style="background: #e65aa0"
+                      title="분홍"
+                    ></button>
+                    <label class="ct-pick-wrap" title="직접 색 선택">
+                      <input type="color" id="ct-pick" value="#dc3232" />
+                      <span>＋</span>
+                    </label>
+                  </div>
+                  <div class="param" style="margin-top: 12px">
+                    <label class="param-label"
+                      >색 허용 범위 <span id="ct-tol-val">140</span></label
+                    >
+                    <input
+                      type="range"
+                      id="ct-tol"
+                      min="60"
+                      max="260"
+                      value="140"
+                      class="slider"
+                    />
+                    <p class="param-hint">
+                      올리면 비슷한 색까지 폭넓게, 내리면 정확히 같은 색만
+                      잡습니다.
+                    </p>
+                  </div>
+                  <div
+                    class="metrics"
+                    style="margin-top: 12px; grid-template-columns: 1fr 1fr"
+                  >
+                    <div>
+                      <span class="k">STATUS</span
+                      ><span class="v" id="ct-status">IDLE</span>
+                    </div>
+                    <div>
+                      <span class="k">FPS</span
+                      ><span class="v" id="ct-fps">—</span>
+                    </div>
+                  </div>
+                </div>
+              </aside>
+              <section style="display: flex; flex-direction: column; gap: 14px">
+                <div class="card stage-card">
+                  <div class="video-wrap">
+                    <video id="ct-webcam" autoplay playsinline muted></video>
+                    <canvas id="ct-canvas" class="pose-overlay"></canvas>
+                    <div class="video-overlay" id="ct-cam-overlay">
+                      <div>
+                        <div class="ph">CAMERA · STANDBY</div>
+                        <div class="ph-msg">카메라를 켜면 색을 추적합니다</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="cam-controls">
+                    <button
+                      class="btn primary"
+                      id="ct-cam-toggle"
+                      style="width: 100%"
+                    >
+                      카메라 켜기 · 추적 시작
+                    </button>
+                  </div>
+                </div>
+              </section>
+              <aside class="card">
+                <div class="card-h">
+                  <span class="label">MATCH</span
+                  ><span class="meta" id="ct-meta">—</span>
+                </div>
+                <div class="card-b">
+                  <div style="margin-bottom: 10px">
+                    <span
+                      style="
+                        font-family: var(--mono);
+                        font-size: 10.5px;
+                        letter-spacing: 0.05em;
+                        text-transform: uppercase;
+                        color: var(--ink-4);
+                      "
+                      >선택 색 매칭 비율</span
+                    >
+                    <div class="gauge">
+                      <div class="gauge-fill" id="ct-match-bar"></div>
+                    </div>
+                  </div>
+                  <p class="hint" style="margin-top: 12px">
+                    조명에 따라 인식이 달라집니다. 선명한 단색 물체가 가장 잘
+                    추적됩니다.
+                  </p>
+                </div>
+              </aside>
+            </div>
+          </div>
+          <!-- ╚═════════════ /사전학습 추론 ═════════════╝ -->
+        </main>
+      </div>
+      <!-- /content -->
+    </div>
+    <!-- /app-shell -->
+
+    <!-- ──────────────────────── 갤러리 모달 ──────────────────────── -->
+    <div class="gallery-overlay" id="gallery-overlay">
+      <div class="gallery-modal">
+        <div class="gallery-head">
+          <div class="gallery-title">
+            <span class="dot" id="gallery-dot"></span>
+            <span id="gallery-name">—</span>
+            <span class="count" id="gallery-count">0</span>
+          </div>
+          <button class="gallery-close" id="gallery-close" aria-label="닫기">
+            ✕
+          </button>
+        </div>
+        <div class="gallery-body">
+          <div class="gallery-grid" id="gallery-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────────────────── 음성 녹음 관리 모달 ──────────────────────── -->
+    <div class="gallery-overlay" id="audio-rec-overlay">
+      <div class="gallery-modal">
+        <div class="gallery-head">
+          <div class="gallery-title">
+            <span class="dot" id="audio-rec-dot"></span>
+            <span id="audio-rec-name">—</span>
+            <span class="count" id="audio-rec-count">0</span>
+          </div>
+          <button class="gallery-close" id="audio-rec-close" aria-label="닫기">
+            ✕
+          </button>
+        </div>
+        <div class="gallery-body">
+          <div class="gallery-grid" id="audio-rec-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer>© 2026 Eduino AI · 보고 만지며 배우는 AI 수업</footer>
+
+    <!-- 공통 접근 제어 레이어 -->
+    <script src="/shared/access.js"></script>
+
+    <script src="/stages/trainer/trainer.core.js"></script>
+    <script src="/stages/trainer/trainer.labs.js"></script>
+    <script src="/stages/trainer/trainer.init.js"></script>
+
+    <!-- VISION AI · 제작 트랙 제출 연동 (체험 트랙과 동일한 모드별 제출 개념) -->
+    <script src="/stages/submission/submit-integration.js"></script>
+  </body>
+</html>

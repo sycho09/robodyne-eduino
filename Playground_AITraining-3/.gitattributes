@@ -1,0 +1,24 @@
+# 줄바꿈 규칙 — 개발자마다 다른 core.autocrlf 설정에 휘둘리지 않도록 여기서 못 박는다.
+# 저장소에는 항상 LF 로 저장하고, 작업 폴더에는 각자의 OS 에 맞게 풀어 준다.
+* text=auto
+
+# 텍스트 파일 (명시해 두면 diff·병합이 항상 텍스트로 처리된다)
+*.js    text
+*.mjs   text
+*.html  text
+*.css   text
+*.json  text
+*.md    text
+*.svg   text
+*.txt   text
+
+# Windows 배치 파일은 CRLF 여야 실행된다
+*.bat   text eol=crlf
+
+# 이진 파일 — 변환하거나 diff 하지 않는다
+*.webp  binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.ico   binary
+*.bin   binary

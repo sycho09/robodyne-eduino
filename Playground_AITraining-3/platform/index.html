@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Eduino AI — 만지며 배우는 AI 수업 플랫폼</title>
+<meta name="description" content="설치 없이 브라우저에서 바로. 카메라·소리·데이터로 직접 AI를 학습시키는 교실용 체험형 AI 학습 플랫폼. 코스 단위로 골라 쓰는 수업 콘텐츠." />
+<link rel="icon" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta name="theme-color" content="#14161f" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Eduino AI" />
+<meta property="og:title" content="Eduino AI — 보고 만지며 배우는 AI 수업" />
+<meta property="og:description" content="설치 없이 브라우저에서 바로. 교실용 체험형 AI 학습 코스 6종." />
+<meta property="og:image" content="/og-image.svg" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Eduino AI — 보고 만지며 배우는 AI 수업" />
+<meta name="twitter:description" content="설치 없이 브라우저에서 바로. 교실용 체험형 AI 학습 코스 6종." />
+<meta name="twitter:image" content="/og-image.svg" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<style>
+  :root {
+    --bg: #f6f7fb; --bg-soft: #eef1f7; --bg-tint: #fbfcff;
+    --card: #ffffff; --card-2: #f9fafd;
+    --line: #e9ebf2; --line-2: #dfe2ec;
+    --ink: #14161f; --ink-2: #50566a; --ink-3: #868da3; --ink-4: #aeb4c6;
+    --primary: #f0473a; --primary-ink: #d12e1e; --primary-2: #ff6a52;
+    --primary-soft: #fff1ee; --primary-line: #ffd6cd;
+    --coral: #ff8a3d; --coral-ink: #df7415; --coral-soft: #fff4e8;
+    --green: #11a06f; --green-soft: #e6f6ef;
+    --amber: #d98a1f; --amber-soft: #fcf3e2;
+    --shadow-sm: 0 1px 2px rgba(20,22,31,.05), 0 1px 3px rgba(20,22,31,.05);
+    --shadow: 0 2px 6px rgba(20,22,31,.05), 0 12px 30px rgba(20,22,31,.07);
+    --shadow-lg: 0 8px 18px rgba(20,22,31,.08), 0 30px 60px rgba(240,71,58,.12);
+    --r: 16px; --r-lg: 22px;
+    --sans: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+  body {
+    margin: 0; font-family: var(--sans); color: var(--ink);
+    background:
+      radial-gradient(1100px 560px at 88% -8%, rgba(240,71,58,.10), transparent 62%),
+      radial-gradient(760px 460px at 2% 4%, rgba(255,106,82,.08), transparent 60%),
+      var(--bg);
+    font-size: 16px; line-height: 1.62; -webkit-font-smoothing: antialiased;
+    word-break:keep-all; overflow-wrap:break-word; letter-spacing: -0.011em;
+  }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+
+  /* ── 헤더 ── */
+  .topbar { position: sticky; top: 0; z-index: 50; background: rgba(246,247,251,.82);
+    backdrop-filter: blur(14px) saturate(1.4); border-bottom: 1px solid var(--line); }
+  .topbar-inner { display: flex; align-items: center; gap: 14px; height: 66px; }
+  .brand { display: flex; align-items: center; gap: 11px; }
+  .logo-mark { width: 38px; height: 38px; border-radius: 11px;
+    background: linear-gradient(150deg, var(--primary-2), var(--primary)); color: #fff;
+    display: grid; place-items: center; font-weight: 800; font-size: 20px;
+    box-shadow: 0 4px 12px rgba(240,71,58,.4), inset 0 1px 0 rgba(255,255,255,.4); }
+  .logo-title { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; }
+  .logo-title span { color: var(--primary); }
+  .logo-img { height: 36px; width: auto; display: block; }
+  @media (max-width: 600px) { .logo-img { height: 30px; } }
+  /* 로고 옆 한 줄 설명 — 메뉴를 걷어낸 헤더의 균형을 잡아 준다. */
+  .brand-tag { font-size: 12px; font-weight: 700; letter-spacing: .02em; color: var(--ink-3);
+    padding: 4px 10px; border-radius: 999px; background: #fff; border: 1px solid var(--line-2); box-shadow: var(--shadow-sm); }
+  @media (max-width: 600px) { .brand-tag { display: none; } }
+  .btn { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; font-size: 14.5px;
+    padding: 11px 20px; border-radius: 11px; cursor: pointer; border: 1px solid transparent; transition: .16s; }
+  .btn-primary { color: #fff; background: linear-gradient(150deg, var(--primary-2), var(--primary));
+    box-shadow: 0 6px 18px rgba(240,71,58,.32); }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(240,71,58,.42); }
+  .btn-ghost { color: var(--ink); background: #fff; border-color: var(--line-2); box-shadow: var(--shadow-sm); }
+  .btn-ghost:hover { border-color: var(--primary-line); color: var(--primary-ink); }
+  .btn-lg { padding: 14px 26px; font-size: 16px; border-radius: 13px; }
+  /* 비전 콘솔(실험) 진입 — 게임기 톤의 다크 버튼 */
+  .btn-console { color: #fff; background: linear-gradient(150deg, #1b1f33, #0c0e18);
+    border-color: rgba(120,150,255,.4); box-shadow: 0 6px 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.08); }
+  .btn-console:hover { transform: translateY(-1px); border-color: rgba(150,175,255,.7);
+    box-shadow: 0 10px 26px rgba(40,60,140,.4), inset 0 1px 0 rgba(255,255,255,.12); }
+  .hero-band .btn-console { background: linear-gradient(150deg, rgba(40,46,78,.85), rgba(12,14,24,.85)); backdrop-filter: blur(6px); }
+
+  /* ── 히어로 (프리미엄 다크 패널) ── */
+  /* 하위 섹션을 모두 걷어내 히어로 한 장으로 끝나므로, 화면 높이에 맞춰 세운다. */
+  .hero-band { position: relative; margin: 16px auto 22px; max-width: 1180px; border-radius: 30px; overflow: hidden;
+    /* min-height 는 max-height 를 이긴다. 그냥 100vh 로 두면 1080p 이상에서
+       패널만 늘어나고 가운데 내용은 그대로라 위아래가 텅 빈다. min() 으로 함께 묶는다. */
+    min-height: min(calc(100vh - 128px), 760px); display: flex; align-items: center;
+    background: linear-gradient(165deg, #14161f 0%, #1b1411 58%, #23101a 100%);
+    border: 1px solid rgba(255,255,255,.08);
+    box-shadow: 0 30px 80px rgba(20,22,31,.30), inset 0 1px 0 rgba(255,255,255,.06); }
+  .hero-band::before { content:''; position:absolute; inset:0; pointer-events:none; opacity:.5; z-index:0;
+    background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+    background-size: 34px 34px; -webkit-mask-image: radial-gradient(120% 95% at 50% 0%, #000 28%, transparent 76%); mask-image: radial-gradient(120% 95% at 50% 0%, #000 28%, transparent 76%); }
+  .hero-band .aurora { position:absolute; inset:-30% -12% auto -12%; height:140%; pointer-events:none; z-index:0; filter: blur(54px); opacity:.55;
+    background:
+      radial-gradient(38% 50% at 16% 22%, rgba(240,71,58,.60), transparent 60%),
+      radial-gradient(42% 55% at 82% 16%, rgba(255,138,61,.45), transparent 60%),
+      radial-gradient(46% 62% at 64% 80%, rgba(124,108,255,.36), transparent 62%);
+    animation: drift 16s ease-in-out infinite alternate; }
+  @keyframes drift { 0%{transform:translate3d(0,0,0) scale(1)} 100%{transform:translate3d(-3%,2%,0) scale(1.09)} }
+  .hero { position:relative; z-index:1; width: 100%; padding: 70px 56px; display: grid; grid-template-columns: 1.05fr .95fr; gap: 52px; align-items: center; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700;
+    color: #ffd9d1; background: rgba(240,71,58,.13); border: 1px solid rgba(240,71,58,.34);
+    padding: 7px 14px; border-radius: 999px; backdrop-filter: blur(6px); }
+  .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary-2); box-shadow: 0 0 10px 2px rgba(255,106,82,.7); }
+  .hero h1 { margin: 24px 0 20px; font-size: 64px; line-height: 1.05; font-weight: 800; letter-spacing: -0.04em; color: #fff; }
+  .hero h1 .g { background: linear-gradient(100deg, #ff9a3d, #f0473a 52%, #ff6ab5); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero .lead { font-size: 18px; color: rgba(255,255,255,.74); max-width: 552px; }
+  .hero .lead b { color: #fff; }
+  /* 진입 루트 2개 — 두 버튼의 높이·너비·정렬을 완전히 동일하게 고정한다.
+     라벨이 두 개 모두 7~8글자라 폰트는 버튼 높이에 맞춰 크게 잡는다. */
+  .hero-routes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 38px 0 30px; max-width: 560px; }
+  .btn-route { justify-content: center; min-height: 70px; padding: 0 18px; gap: 0;
+    font-size: 19px; font-weight: 800; letter-spacing: -0.025em; line-height: 1; white-space: nowrap; border-radius: 16px; }
+  .hero-band .btn-ghost { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.18); color: #fff; backdrop-filter: blur(6px); box-shadow: none; }
+  .hero-band .btn-ghost:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.34); color: #fff; }
+  .hero-band .mock-cap { color: rgba(255,255,255,.5); }
+  .hero-band .mock { box-shadow: 0 24px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06); }
+  .aud-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .aud-row .aud-lab { font-size: 12px; color: rgba(255,255,255,.5); font-weight: 600; }
+  .aud-row .aud { font-size: 12.5px; font-weight: 700; color: #fff; background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.16); border-radius: 999px; padding: 5px 12px; }
+
+  /* ── 히어로 제품 목업 ── */
+  .mock { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
+    box-shadow: var(--shadow-lg); overflow: hidden; transform: rotate(.4deg); }
+  .mock .bar { display: flex; align-items: center; gap: 7px; padding: 12px 14px; border-bottom: 1px solid var(--line);
+    background: var(--card-2); }
+  .mock .bar i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+  .mock .url { margin-left: 10px; flex: 1; height: 22px; border-radius: 7px; background: #fff; border: 1px solid var(--line);
+    font-size: 11px; color: var(--ink-3); display: flex; align-items: center; padding: 0 10px; font-family: var(--sans); }
+  .mock .body { display: grid; grid-template-columns: 64px 1fr; height: 380px; }
+  .mock .side { border-right: 1px solid var(--line); padding: 14px 0; display: flex; flex-direction: column; align-items: center; gap: 12px; background: var(--card-2); }
+  .mock .side b { width: 34px; height: 34px; border-radius: 10px; background: var(--bg-soft); display: grid; place-items: center; }
+  .mock .side b.act { background: var(--primary-soft); box-shadow: inset 0 0 0 1px var(--primary-line); }
+  .mock .side b svg { width: 18px; height: 18px; color: var(--ink-3); }
+  .mock .side b.act svg { color: var(--primary); }
+  .mock .stage { padding: 16px; display: grid; grid-template-columns: 1.3fr .9fr; gap: 14px; }
+  .mock .cam { border-radius: 14px; position: relative; overflow: hidden;
+    background: linear-gradient(150deg, #2a2f45, #161a29); box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+  .mock .cam::before { content:''; position: absolute; inset: 28% 34% 22% 30%; border: 2px solid rgba(255,106,82,.95); border-radius: 10px;
+    box-shadow: 0 0 0 4px rgba(255,106,82,.22); }
+  .mock .cam-tag { position: absolute; left: 30%; top: calc(28% - 18px); font-size: 9px; color: #fff; z-index: 1;
+    background: var(--primary); padding: 2px 7px; border-radius: 5px; font-weight: 700; transition: all .4s; }
+  .mock .panel { display: flex; flex-direction: column; gap: 12px; }
+  .mock .donut { width: 92px; height: 92px; margin: 2px auto 0; position: relative; }
+  .mock .donut svg { width: 92px; height: 92px; transform: rotate(-90deg); }
+  .mock .donut .ring-bg { fill: none; stroke: var(--bg-soft); stroke-width: 9; }
+  .mock .donut .ring-fg { fill: none; stroke: var(--primary); stroke-width: 9; stroke-linecap: round;
+    transition: stroke-dasharray .7s cubic-bezier(.16,1,.3,1), stroke .4s; }
+  .mock .donut i { position: absolute; inset: 0; display: grid; place-items: center;
+    font-weight: 800; font-size: 19px; color: var(--primary-ink); }
+  .mock .rows { display: flex; flex-direction: column; gap: 8px; }
+  .mock .row { display: flex; align-items: center; gap: 7px; font-size: 10px; color: var(--ink-2); font-weight: 600; }
+  .mock .row .lab { width: 30px; }
+  .mock .row .track { flex: 1; height: 8px; border-radius: 5px; background: var(--bg-soft); overflow: hidden; }
+  .mock .row .fill { height: 100%; border-radius: 5px; width: 0; background: linear-gradient(90deg, var(--primary), var(--primary-2));
+    transition: width .7s cubic-bezier(.16,1,.3,1); }
+
+  /* ── 마감 디테일: 접근성·스크롤·모션 ── */
+  .topbar { transition: box-shadow .2s, background .2s; }
+  .topbar.scrolled { box-shadow: 0 6px 24px rgba(20,22,31,.07); background: rgba(246,247,251,.92); }
+  a:focus-visible, .btn:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--primary); outline-offset: 3px; border-radius: 8px; }
+  .mock-cap { text-align: center; font-size: 12px; color: var(--ink-4); margin-top: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 7px; }
+  .mock-cap i { width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+    box-shadow: 0 0 0 3px var(--green-soft); animation: blink 2s infinite; }
+
+  /* 히어로 목업 라이브 모션 */
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+  @keyframes detect { 0%,100%{ box-shadow:0 0 0 4px rgba(255,106,82,.22) } 50%{ box-shadow:0 0 0 7px rgba(255,106,82,.10) } }
+  .mock .cam::before { animation: detect 2.4s ease-in-out infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mock .cam::before, .mock-cap i { animation: none; }
+    .hero-band .aurora { animation: none; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* ── 반응형 ── */
+  @media (max-width: 960px) {
+    .hero-band { border-radius: 22px; margin: 12px auto 16px; min-height: 0; max-height: none; }
+    .hero { grid-template-columns: 1fr; gap: 32px; padding: 40px 22px; }
+    .hero .mock-wrap { max-width: 520px; margin: 0 auto; width: 100%; }
+  }
+  @media (max-width: 560px) {
+    .hero h1 { font-size: 36px; }
+    .hero-routes { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="#top">
+      <img class="logo-img" src="/platform/img/logo.webp" alt="Eduino AI · AIoT 교육플랫폼" />
+    </a>
+      <span class="brand-tag">AIoT 교육플랫폼</span>
+    </a>
+  </div>
+</header>
+
+<main id="top">
+  <!-- 히어로 -->
+  <section class="hero-band">
+    <div class="aurora"></div>
+    <div class="wrap hero">
+    <div>
+      <span class="pill"><span class="dot"></span> 설치 없이 브라우저에서 바로 · 6개 코스 모두 공개</span>
+      <h1>AI를 <span class="g">만지면서</span><br>배우는 수업</h1>
+      <p class="lead">카메라·소리·데이터로 학생이 직접 AI를 학습시키고 결과를 눈으로 확인합니다. 교실에서 함께 체험하도록 설계한 <b>6개의 AI 학습 코스</b>를, 필요한 주제만 골라 쓰세요.</p>
+      <div class="hero-routes">
+        <a class="btn btn-primary btn-route" href="/modules/index.html">일반 사용자모드</a>
+        <a class="btn btn-console btn-route" href="/entry.html">수업전용 콘솔모드</a>
+      </div>
+      <div class="aud-row">
+        <span class="aud-lab">이런 분께</span>
+        <span class="aud">초등</span><span class="aud">중등</span><span class="aud">고교</span><span class="aud">대학</span><span class="aud">교사 연수</span>
+      </div>
+    </div>
+
+    <!-- 제품 목업 (CSS) -->
+    <div class="mock-wrap">
+    <div class="mock" aria-hidden="true">
+      <div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i>
+        <span class="url">eduino-ai.app / 비전 · 실시간 추론</span></div>
+      <div class="body">
+        <div class="side" id="mock-side"></div>
+        <div class="stage">
+          <div class="cam"><span class="cam-tag" id="m-tag">웃음</span></div>
+          <div class="panel">
+            <div class="donut">
+              <svg viewBox="0 0 92 92"><circle class="ring-bg" cx="46" cy="46" r="40"/><circle class="ring-fg" id="m-arc" cx="46" cy="46" r="40" stroke-dasharray="0 251.3"/></svg>
+              <i id="m-pct">0%</i>
+            </div>
+            <div class="rows" id="m-rows"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mock-cap"><i></i> 실제 화면 미리보기 · 라이브 데모</div>
+    </div>
+    </div>
+  </section>
+</main>
+<script>
+const IC = (p) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+/* 목업 사이드바 아이콘 */
+const SIDE = [
+  IC('<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/>'),
+  IC('<circle cx="12" cy="4" r="2"/><path d="M12 6v6m0 0l-4 6m4-6l4 6M6 9l6 1 6-1"/>'),
+  IC('<path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 4-5"/>'),
+  IC('<path d="M4 6h16M4 12h16M4 18h10"/>'),
+];
+document.getElementById('mock-side').innerHTML = SIDE.map((s,i)=>`<b class="${i===0?'act':''}">${s}</b>`).join('');
+
+/* ── 히어로 라이브 데모: 추론 결과를 순환 재생 ── */
+(function(){
+  const DC = 251.3; // 2πr (r=40)
+  const STATES = [
+    { tag:'웃음 😊',   labels:['웃음','무표정','놀람'], probs:[0.86,0.10,0.04] },
+    { tag:'놀람 😮',   labels:['웃음','무표정','놀람'], probs:[0.08,0.13,0.79] },
+    { tag:'무표정 😐', labels:['웃음','무표정','놀람'], probs:[0.12,0.74,0.14] },
+  ];
+  const rows = document.getElementById('m-rows');
+  const arc = document.getElementById('m-arc');
+  const pct = document.getElementById('m-pct');
+  const tag = document.getElementById('m-tag');
+  if (!rows || !arc) return;
+  // 막대 골격 생성(라벨은 고정)
+  rows.innerHTML = STATES[0].labels.map((l,i)=>
+    `<div class="row"><span class="lab">${l}</span><span class="track"><span class="fill" id="m-fill-${i}"></span></span></div>`).join('');
+  const fills = STATES[0].labels.map((_,i)=>document.getElementById('m-fill-'+i));
+
+  let cur = 0; // 현재 표시 중인 도넛 %
+  function apply(s){
+    const top = Math.round(Math.max(...s.probs) * 100);
+    s.probs.forEach((p,i)=>{ fills[i].style.width = Math.round(p*100)+'%'; });
+    arc.setAttribute('stroke-dasharray', (Math.max(...s.probs)*DC).toFixed(1)+' '+DC);
+    tag.textContent = s.tag;
+    const step = () => { if (cur === top) return; cur += (cur < top ? 1 : -1); pct.textContent = cur+'%'; requestAnimationFrame(step); };
+    step();
+  }
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let i = 0; apply(STATES[0]);
+  if (!reduce) setInterval(()=>{ i=(i+1)%STATES.length; apply(STATES[i]); }, 2600);
+})();
+
+/* ── 마감: 헤더 스크롤 상태 ── */
+/* 히어로 한 장으로 끝나 스크롤 등장(reveal)은 더 이상 쓰지 않는다. */
+(function(){
+  const bar = document.querySelector('.topbar');
+  const onScroll = () => bar.classList.toggle('scrolled', window.scrollY > 8);
+  window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+})();
+</script>
+</body>
+</html>

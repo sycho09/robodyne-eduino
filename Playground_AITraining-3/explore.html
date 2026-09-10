@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/favicon.png" />
+<meta name="theme-color" content="#0a0b12" />
+<title>기본기능 체험 · VISION AI</title>
+<meta name="robots" content="noindex" />
+<!-- 스테이지 선택은 허브(TRACK 01 탭)로 통합됨.
+     기존 링크·북마크 호환을 위해 URL 만 남겨두고, 현재 선택된 UI안으로 즉시 이동한다. -->
+<meta http-equiv="refresh" content="0; url=/console/cards.html#explore" />
+<style>
+  html,body{margin:0;height:100%;background:#0a0b12;color:#737c9c;
+    font-family:'Pretendard',system-ui,sans-serif;display:grid;place-items:center;}
+  a{color:#6aa6ff;font-size:14px;}
+</style>
+<script>
+  /* 공통 셸을 통째로 불러올 필요 없이 선택된 안만 읽는다 */
+  (function () {
+    var URLS = {
+      map: '/console/map.html', cards: '/console/cards.html'
+    };
+    var v; try { v = localStorage.getItem('vision_ui_variant'); } catch (e) {}
+    location.replace((URLS[v] || URLS.cards) + '#explore');
+  })();
+</script>
+</head>
+<body>
+<noscript><a href="/console/cards.html#explore">기본기능 체험으로 이동 →</a></noscript>
+</body>
+</html>
