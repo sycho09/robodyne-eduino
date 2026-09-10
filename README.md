@@ -2,7 +2,7 @@
 
 Eduino projects at Robodyne Systems (2026.06.25 - 2026.09.21)
 
-교육용 AI 학습 도구 모음. 독립 프로젝트 4개가 한 저장소에 있고, 각 폴더가
+교육용 AI 학습 도구 모음. 독립 프로젝트 5개가 한 저장소에 있고, 각 폴더가
 `package.json`·`vercel.json`·배포 단위를 따로 가진다.
 
 ## 폴더
@@ -13,11 +13,12 @@ Eduino projects at Robodyne Systems (2026.06.25 - 2026.09.21)
 | **`eduino-normal`** | 일반모드 — 브라우저 완결형 AI 학습 코스 6종 | 바닐라 JS · Electron |
 | `aiot-ai-trainer-studio` | 위 둘로 분리되기 전의 통합 원본 (참고용) | 바닐라 JS · Electron |
 | `mini-game-heaven` | 미니게임천국 — 아두이노 제어 AIoT 플랫폼 (별개) | ES Modules SPA · Vite |
+| `Playground_AITraining-3` | Eduino AI Lab — 브라우저 완결형 AI 학습·추론 + 영상처리 체험 (별개) | 바닐라 JS · Electron |
 
 ## 인계 대상
 
 웹사이트 이식 · 리팩토링 대상은 **`eduino-console`** 과 **`eduino-normal`** 둘뿐.
-나머지 둘은 무관하므로 건드리지 말 것.
+나머지 셋은 무관하므로 건드리지 말 것.
 
 읽는 순서 (해당 폴더 안):
 
