@@ -12,7 +12,7 @@ import { icon } from '../app/icons.js';
 import { results } from '../app/results.js';
 import { gradeOf } from '../engine/utils.js';
 
-const PINS = { r: 9, g: 10, b: 11 };
+const NEO = 6;                                               // 풀 컬러 RGB LED(WS2812) 데이터선
 const PASS_ACC = 0.85;
 const MAXD = Math.sqrt(3 * 255 * 255);                       // 색 최대 거리
 
@@ -47,14 +47,12 @@ export function showRgbGame(root, { onExit } = {}) {
         <div class="prep-card" style="max-width:580px;text-align:center">
           <h2>🌈 무지개 물감놀이</h2>
           <p class="prep-sub"><b>목표 색</b>을 보고 <b>R·G·B</b> 슬라이더를 섞어 똑같이 만들어봐! 빛은 섞을수록 밝아져 ✨</p>
-          <p class="prep-sub">RGB LED를 <b>R→D9 · G→D10 · B→D11</b>에 연결하면 실제로 같은 색이 켜져요. (없어도 화면으로 플레이)</p>
-          <div class="prep-wire"><b>🔌 결선</b>
+          <p class="prep-sub">풀 컬러 RGB LED를 <b>D6</b>에 연결하면 실제로 같은 색이 켜져요. (없어도 화면으로 플레이)</p>
+          <div class="prep-wire"><b>🔌 결선</b> <span style="opacity:.7;font-weight:600">(부품: 풀 컬러 RGB LED 1개)</span>
             <table class="prep-table prep-wire-t"><tbody>
-              <tr><td>🔴 빨강(R)</td><td><b>D9</b></td></tr>
-              <tr><td>🟢 초록(G)</td><td><b>D10</b></td></tr>
-              <tr><td>🔵 파랑(B)</td><td><b>D11</b></td></tr>
+              <tr><td>🌈 Grove 풀 컬러 RGB LED</td><td><b>D6</b> 포트</td></tr>
             </tbody></table>
-            <span class="prep-wire-note">공통 캐소드 RGB LED · 공통 핀 → GND</span>
+            <span class="prep-wire-note">3핀 케이블 하나를 D6 포트에 꽂기 — 신호선 1개로 R·G·B를 모두 제어해요</span>
           </div>
           <p class="prep-sub">1차·2차 모두 <b>평균 A등급(85%↑)</b>이면 🌈 무지개 메달!</p>
           <div class="prep-actions" style="justify-content:center">
@@ -94,7 +92,7 @@ export function showRgbGame(root, { onExit } = {}) {
   const elStage = root.querySelector('#rg-stage'), elRound = root.querySelector('#rg-round'), elRtot = root.querySelector('#rg-rtot'), elAvg = root.querySelector('#rg-avg');
   const skipBtn = root.querySelector('#rg-skip');
 
-  function sendRGB(r, g, b) { if (board.connected) { board.pwm(PINS.r, r).catch(() => {}); board.pwm(PINS.g, g).catch(() => {}); board.pwm(PINS.b, b).catch(() => {}); } }
+  function sendRGB(r, g, b) { if (board.connected) board.neoFill(NEO, r, g, b).catch(() => {}); }
   function mine() { return [+cr.value, +cg.value, +cb.value]; }
   function paintMine() {
     const [r, g, b] = mine();
