@@ -285,8 +285,11 @@
      자리가 옮겨 다니면 토글로 읽히지 않음. 지금 열린 화면은 주소로 판별
      (claim() 이 hud() 보다 먼저 돌긴 하지만, 저장값보다 주소가 늘 옳음). */
   function viewToggle() {
+    /* VARIANTS.url 은 AppBase 가 만든 절대 URL(프로토콜·호스트 포함) — pathname 로
+       환산해서 비교. 전체 URL 을 pathname 안에서 찾으면 항상 실패한다 */
     const path = location.pathname;
-    const here = VARIANTS.find(v => path.indexOf(v.url) !== -1);
+    const urlPath = (u) => { try { return new URL(u, location.href).pathname; } catch (e) { return u; } };
+    const here = VARIANTS.find(v => path === urlPath(v.url));
     if (!here) return '';                       /* 스테이지 화면 등에서는 안 그린다 */
     const other = VARIANTS.find(v => v.key !== here.key);
     if (!other) return '';
