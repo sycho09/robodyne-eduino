@@ -1,0 +1,558 @@
+{
+  "generated_by": "tools/render_iso_scene.py",
+  "frame_px": 256,
+  "ortho_width_mm": 1300,
+  "mm_per_px": 5.078125,
+  "pivot_px": [
+    128.0,
+    128.0
+  ],
+  "projection": {
+    "type": "isometric_ortho",
+    "azimuth_deg": 225.0,
+    "elevation_deg": 35.264389682754654
+  },
+  "sets": {
+    "pedestrian": {
+      "dirs": 8,
+      "steps": 2,
+      "frames": [
+        {
+          "dir": 0,
+          "angle_deg": 0.0,
+          "step": 0,
+          "file": "62fd8d63dc/ped-000-0.png"
+        },
+        {
+          "dir": 1,
+          "angle_deg": 45.0,
+          "step": 0,
+          "file": "62fd8d63dc/ped-045-0.png"
+        },
+        {
+          "dir": 2,
+          "angle_deg": 90.0,
+          "step": 0,
+          "file": "62fd8d63dc/ped-090-0.png"
+        },
+        {
+          "dir": 3,
+          "angle_deg": 135.0,
+          "step": 0,
+          "file": "62fd8d63dc/ped-135-0.png"
+        },
+        {
+          "dir": 4,
+          "angle_deg": 180.0,
+          "step": 0,
+          "file": "62fd8d63dc/ped-180-0.png"
+        },
+        {
+          "dir": 5,
+          "angle_deg": 225.0,
+          "step": 0,
+          "file": "62fd8d63dc/ped-225-0.png"
+        },
+        {
+          "dir": 6,
+          "angle_deg": 270.0,
+          "step": 0,
+          "file": "62fd8d63dc/ped-270-0.png"
+        },
+        {
+          "dir": 7,
+          "angle_deg": 315.0,
+          "step": 0,
+          "file": "62fd8d63dc/ped-315-0.png"
+        },
+        {
+          "dir": 0,
+          "angle_deg": 0.0,
+          "step": 1,
+          "file": "62fd8d63dc/ped-000-1.png"
+        },
+        {
+          "dir": 1,
+          "angle_deg": 45.0,
+          "step": 1,
+          "file": "62fd8d63dc/ped-045-1.png"
+        },
+        {
+          "dir": 2,
+          "angle_deg": 90.0,
+          "step": 1,
+          "file": "62fd8d63dc/ped-090-1.png"
+        },
+        {
+          "dir": 3,
+          "angle_deg": 135.0,
+          "step": 1,
+          "file": "62fd8d63dc/ped-135-1.png"
+        },
+        {
+          "dir": 4,
+          "angle_deg": 180.0,
+          "step": 1,
+          "file": "62fd8d63dc/ped-180-1.png"
+        },
+        {
+          "dir": 5,
+          "angle_deg": 225.0,
+          "step": 1,
+          "file": "62fd8d63dc/ped-225-1.png"
+        },
+        {
+          "dir": 6,
+          "angle_deg": 270.0,
+          "step": 1,
+          "file": "62fd8d63dc/ped-270-1.png"
+        },
+        {
+          "dir": 7,
+          "angle_deg": 315.0,
+          "step": 1,
+          "file": "62fd8d63dc/ped-315-1.png"
+        }
+      ]
+    },
+    "signal": {
+      "dirs": 4,
+      "colors": [
+        "green",
+        "yellow",
+        "red"
+      ],
+      "frames": [
+        {
+          "color": "green",
+          "dir": 0,
+          "angle_deg": 0.0,
+          "file": "62fd8d63dc/signal-green-000.png"
+        },
+        {
+          "color": "green",
+          "dir": 1,
+          "angle_deg": 90.0,
+          "file": "62fd8d63dc/signal-green-090.png"
+        },
+        {
+          "color": "green",
+          "dir": 2,
+          "angle_deg": 180.0,
+          "file": "62fd8d63dc/signal-green-180.png"
+        },
+        {
+          "color": "green",
+          "dir": 3,
+          "angle_deg": 270.0,
+          "file": "62fd8d63dc/signal-green-270.png"
+        },
+        {
+          "color": "yellow",
+          "dir": 0,
+          "angle_deg": 0.0,
+          "file": "62fd8d63dc/signal-yellow-000.png"
+        },
+        {
+          "color": "yellow",
+          "dir": 1,
+          "angle_deg": 90.0,
+          "file": "62fd8d63dc/signal-yellow-090.png"
+        },
+        {
+          "color": "yellow",
+          "dir": 2,
+          "angle_deg": 180.0,
+          "file": "62fd8d63dc/signal-yellow-180.png"
+        },
+        {
+          "color": "yellow",
+          "dir": 3,
+          "angle_deg": 270.0,
+          "file": "62fd8d63dc/signal-yellow-270.png"
+        },
+        {
+          "color": "red",
+          "dir": 0,
+          "angle_deg": 0.0,
+          "file": "62fd8d63dc/signal-red-000.png"
+        },
+        {
+          "color": "red",
+          "dir": 1,
+          "angle_deg": 90.0,
+          "file": "62fd8d63dc/signal-red-090.png"
+        },
+        {
+          "color": "red",
+          "dir": 2,
+          "angle_deg": 180.0,
+          "file": "62fd8d63dc/signal-red-180.png"
+        },
+        {
+          "color": "red",
+          "dir": 3,
+          "angle_deg": 270.0,
+          "file": "62fd8d63dc/signal-red-270.png"
+        }
+      ]
+    },
+    "crossing_gate": {
+      "steps": 5,
+      "dirs": 8,
+      "arm_mm": 470,
+      "frames": [
+        {
+          "dir": 0,
+          "angle_deg": 0.0,
+          "step": 0,
+          "drop": 0.0,
+          "file": "62fd8d63dc/gate-000-0.png"
+        },
+        {
+          "dir": 0,
+          "angle_deg": 0.0,
+          "step": 1,
+          "drop": 0.25,
+          "file": "62fd8d63dc/gate-000-1.png"
+        },
+        {
+          "dir": 0,
+          "angle_deg": 0.0,
+          "step": 2,
+          "drop": 0.5,
+          "file": "62fd8d63dc/gate-000-2.png"
+        },
+        {
+          "dir": 0,
+          "angle_deg": 0.0,
+          "step": 3,
+          "drop": 0.75,
+          "file": "62fd8d63dc/gate-000-3.png"
+        },
+        {
+          "dir": 0,
+          "angle_deg": 0.0,
+          "step": 4,
+          "drop": 1.0,
+          "file": "62fd8d63dc/gate-000-4.png"
+        },
+        {
+          "dir": 1,
+          "angle_deg": 45.0,
+          "step": 0,
+          "drop": 0.0,
+          "file": "62fd8d63dc/gate-045-0.png"
+        },
+        {
+          "dir": 1,
+          "angle_deg": 45.0,
+          "step": 1,
+          "drop": 0.25,
+          "file": "62fd8d63dc/gate-045-1.png"
+        },
+        {
+          "dir": 1,
+          "angle_deg": 45.0,
+          "step": 2,
+          "drop": 0.5,
+          "file": "62fd8d63dc/gate-045-2.png"
+        },
+        {
+          "dir": 1,
+          "angle_deg": 45.0,
+          "step": 3,
+          "drop": 0.75,
+          "file": "62fd8d63dc/gate-045-3.png"
+        },
+        {
+          "dir": 1,
+          "angle_deg": 45.0,
+          "step": 4,
+          "drop": 1.0,
+          "file": "62fd8d63dc/gate-045-4.png"
+        },
+        {
+          "dir": 2,
+          "angle_deg": 90.0,
+          "step": 0,
+          "drop": 0.0,
+          "file": "62fd8d63dc/gate-090-0.png"
+        },
+        {
+          "dir": 2,
+          "angle_deg": 90.0,
+          "step": 1,
+          "drop": 0.25,
+          "file": "62fd8d63dc/gate-090-1.png"
+        },
+        {
+          "dir": 2,
+          "angle_deg": 90.0,
+          "step": 2,
+          "drop": 0.5,
+          "file": "62fd8d63dc/gate-090-2.png"
+        },
+        {
+          "dir": 2,
+          "angle_deg": 90.0,
+          "step": 3,
+          "drop": 0.75,
+          "file": "62fd8d63dc/gate-090-3.png"
+        },
+        {
+          "dir": 2,
+          "angle_deg": 90.0,
+          "step": 4,
+          "drop": 1.0,
+          "file": "62fd8d63dc/gate-090-4.png"
+        },
+        {
+          "dir": 3,
+          "angle_deg": 135.0,
+          "step": 0,
+          "drop": 0.0,
+          "file": "62fd8d63dc/gate-135-0.png"
+        },
+        {
+          "dir": 3,
+          "angle_deg": 135.0,
+          "step": 1,
+          "drop": 0.25,
+          "file": "62fd8d63dc/gate-135-1.png"
+        },
+        {
+          "dir": 3,
+          "angle_deg": 135.0,
+          "step": 2,
+          "drop": 0.5,
+          "file": "62fd8d63dc/gate-135-2.png"
+        },
+        {
+          "dir": 3,
+          "angle_deg": 135.0,
+          "step": 3,
+          "drop": 0.75,
+          "file": "62fd8d63dc/gate-135-3.png"
+        },
+        {
+          "dir": 3,
+          "angle_deg": 135.0,
+          "step": 4,
+          "drop": 1.0,
+          "file": "62fd8d63dc/gate-135-4.png"
+        },
+        {
+          "dir": 4,
+          "angle_deg": 180.0,
+          "step": 0,
+          "drop": 0.0,
+          "file": "62fd8d63dc/gate-180-0.png"
+        },
+        {
+          "dir": 4,
+          "angle_deg": 180.0,
+          "step": 1,
+          "drop": 0.25,
+          "file": "62fd8d63dc/gate-180-1.png"
+        },
+        {
+          "dir": 4,
+          "angle_deg": 180.0,
+          "step": 2,
+          "drop": 0.5,
+          "file": "62fd8d63dc/gate-180-2.png"
+        },
+        {
+          "dir": 4,
+          "angle_deg": 180.0,
+          "step": 3,
+          "drop": 0.75,
+          "file": "62fd8d63dc/gate-180-3.png"
+        },
+        {
+          "dir": 4,
+          "angle_deg": 180.0,
+          "step": 4,
+          "drop": 1.0,
+          "file": "62fd8d63dc/gate-180-4.png"
+        },
+        {
+          "dir": 5,
+          "angle_deg": 225.0,
+          "step": 0,
+          "drop": 0.0,
+          "file": "62fd8d63dc/gate-225-0.png"
+        },
+        {
+          "dir": 5,
+          "angle_deg": 225.0,
+          "step": 1,
+          "drop": 0.25,
+          "file": "62fd8d63dc/gate-225-1.png"
+        },
+        {
+          "dir": 5,
+          "angle_deg": 225.0,
+          "step": 2,
+          "drop": 0.5,
+          "file": "62fd8d63dc/gate-225-2.png"
+        },
+        {
+          "dir": 5,
+          "angle_deg": 225.0,
+          "step": 3,
+          "drop": 0.75,
+          "file": "62fd8d63dc/gate-225-3.png"
+        },
+        {
+          "dir": 5,
+          "angle_deg": 225.0,
+          "step": 4,
+          "drop": 1.0,
+          "file": "62fd8d63dc/gate-225-4.png"
+        },
+        {
+          "dir": 6,
+          "angle_deg": 270.0,
+          "step": 0,
+          "drop": 0.0,
+          "file": "62fd8d63dc/gate-270-0.png"
+        },
+        {
+          "dir": 6,
+          "angle_deg": 270.0,
+          "step": 1,
+          "drop": 0.25,
+          "file": "62fd8d63dc/gate-270-1.png"
+        },
+        {
+          "dir": 6,
+          "angle_deg": 270.0,
+          "step": 2,
+          "drop": 0.5,
+          "file": "62fd8d63dc/gate-270-2.png"
+        },
+        {
+          "dir": 6,
+          "angle_deg": 270.0,
+          "step": 3,
+          "drop": 0.75,
+          "file": "62fd8d63dc/gate-270-3.png"
+        },
+        {
+          "dir": 6,
+          "angle_deg": 270.0,
+          "step": 4,
+          "drop": 1.0,
+          "file": "62fd8d63dc/gate-270-4.png"
+        },
+        {
+          "dir": 7,
+          "angle_deg": 315.0,
+          "step": 0,
+          "drop": 0.0,
+          "file": "62fd8d63dc/gate-315-0.png"
+        },
+        {
+          "dir": 7,
+          "angle_deg": 315.0,
+          "step": 1,
+          "drop": 0.25,
+          "file": "62fd8d63dc/gate-315-1.png"
+        },
+        {
+          "dir": 7,
+          "angle_deg": 315.0,
+          "step": 2,
+          "drop": 0.5,
+          "file": "62fd8d63dc/gate-315-2.png"
+        },
+        {
+          "dir": 7,
+          "angle_deg": 315.0,
+          "step": 3,
+          "drop": 0.75,
+          "file": "62fd8d63dc/gate-315-3.png"
+        },
+        {
+          "dir": 7,
+          "angle_deg": 315.0,
+          "step": 4,
+          "drop": 1.0,
+          "file": "62fd8d63dc/gate-315-4.png"
+        }
+      ]
+    }
+  },
+  "frames_sha256": {
+    "gate-000-0.png": "85d81ebf575fa4f10b17225739614a1c6fe050cf75c38af6ada1789ab8e1c795",
+    "gate-000-1.png": "63d82d939c32cb9cce6db562359010b62d5e161c95c1242d36f1762be4a80161",
+    "gate-000-2.png": "b2d377f5819a05ee163cb5ab3259fd3fc1a074b457aefa985046301a0fcfbfbc",
+    "gate-000-3.png": "d32d100fabf2a976bbf4e3d3fc2905b533b73f631577bdfa16a41212a6dc1e1c",
+    "gate-000-4.png": "866b53f553a50624c008ed61324abfb4dbe86ce618e400bb70440e5a8719b2bb",
+    "gate-045-0.png": "afab038df95fb96fcc8a3cef30d8513d1bd1df61c4354e3fbb1ed94c052757b9",
+    "gate-045-1.png": "a70ed99352b7cbbb6acbdd7bf1039eacc413272532270ac6ce6d12e84abddfa5",
+    "gate-045-2.png": "0ea17158cd90d9980abee77f72dac8d5b8e211a6f1151377ba034e26a0cca702",
+    "gate-045-3.png": "c89a89497afeb55e1c8420b6da781c2af910e6a7f65fa7df88cb33b4a77f2eb3",
+    "gate-045-4.png": "973af2168b5a9c7734eca42bdde31b96a7824d1369437afb67739804e171153e",
+    "gate-090-0.png": "f5916a4c2a15d395b832a7d8c7e40025a038587d99311eb843197184bb01fe97",
+    "gate-090-1.png": "065d7f6214a72803416d305d92e994a56033b11395cc00719ad600cb332dc906",
+    "gate-090-2.png": "1224d30cac20fc7b51f6b3d86022a8afcd625b8d81d4a0a2042eabb2c4be4078",
+    "gate-090-3.png": "01f0f245af41abb3970b13167bf6903983abc2bf0632fd2392a4a38e75013e3c",
+    "gate-090-4.png": "1dde866e90643d09b8ec3aee2a274d4cf6df0dde7266d2ea712af9f39a8f30c2",
+    "gate-135-0.png": "c2d8974d8ff6908a29e0af7d0405949883e353a87bc8372aef2b606353487966",
+    "gate-135-1.png": "602d264b6aabc5bd6b7e8f84b010d89914b3e9cfe27756a667a88125505cdfcf",
+    "gate-135-2.png": "fdf8731b32e9fe8df58e0b5b55b8a935133ca9e15f3996e873dfff67a28a46a2",
+    "gate-135-3.png": "eb69f28c06b1acfe5a6a37d7abf889937ff4102dd5c0805a0aeafdb16ee02855",
+    "gate-135-4.png": "aa291361de0eff57903ff5aede9e976f1a7d35a27e593e450ff32ca60d1de93b",
+    "gate-180-0.png": "4c533578ee0e05b2eb64beb700d42c64b9387180c28915606df76402e5688add",
+    "gate-180-1.png": "0ab510692dabe807b9d6d8c8fd6040bf2ff97844dd669462de7f375e1100a3ba",
+    "gate-180-2.png": "82c594d859ad82ebf4e6972200f0b20f7486c4542d8fc35508df7cf6af14139e",
+    "gate-180-3.png": "5a074e38b34bc0d1f71c03a58bdaebf079bf948e5bf60ce9d0f2cef806486b3d",
+    "gate-180-4.png": "71e2b9885a97d4fb9111dbdb4e90506c628d7ae96a6bd3bedcf4182c20f58b24",
+    "gate-225-0.png": "1d41473f45852ecabdc5f02db5fd306021c6c72eaa907f778094ec886f8188ba",
+    "gate-225-1.png": "d1dfbbe7fd6d07c080aa04e0497c0007215458d989788e6e60a955de5cf602ca",
+    "gate-225-2.png": "e8f843bfaa062dc1698942c5355be30e0b301e3da6b8fe3198d2f747aecdc5cd",
+    "gate-225-3.png": "bb00e321150ed3b0284cc1527ae156bd30571848bcbf4efb01e735bda7ca22cb",
+    "gate-225-4.png": "4b58e0799391c8fec956f979d0abf94bd0de700b0843f48bdf422e1aea1b8a08",
+    "gate-270-0.png": "06bddd38ff4d08262e6d7508af968d82cac0b3c9b1720cd2fd349f086757f25a",
+    "gate-270-1.png": "8d9ebc16b6645bce1b94af3f69dbc9e8a05affba0a7ecc97bcd1b52da314a736",
+    "gate-270-2.png": "46f4804270bda8fc762fc90fb45c3176df1014add1de77e02cee868f9dc50a29",
+    "gate-270-3.png": "8a32645b8e9d79f41bcf3a9cd0f361cb99fb94bdbe6cf653c4613d98ea5696dc",
+    "gate-270-4.png": "6c158f2b78d697f39b865522c40c69e7e54f4af15cd1b4da3f72500d9a391432",
+    "gate-315-0.png": "03995e6b1c67b5da237f3ab9632a36c7379a7a4ae569ea0168d616283aa5c4cb",
+    "gate-315-1.png": "0331bec1760ec451d6adfd8d53a46a79e6f9ed6b25ac9e51ecd3905d09b5d5ca",
+    "gate-315-2.png": "11309a3f72437a4f5cd97f4996ed5c61df40878e436c9dd445a9eccf902a5059",
+    "gate-315-3.png": "ec4d5bc8628d89a8bbe84a8b4f3849988eea0d6efe574bfd53931227bd3ce068",
+    "gate-315-4.png": "eec2ddbec7908ba7c709194c77b13b4619bf97da77a1cd68e783d5522be76a71",
+    "ped-000-0.png": "259a82a14835c2df57ffd7186a8a545866081e8f10030bc3f10303164d682c9f",
+    "ped-000-1.png": "3bbe1ca1a1b2503544374718728b0d7730b8a1a053862b06652defe1d9b5ab59",
+    "ped-045-0.png": "6919b1b54d5c88abfc3bf60b2df671eec8e31c17304ef8ea13ee0f8221acb5d5",
+    "ped-045-1.png": "288f9af4f6f4957e0ee2a9f970eeb1de5ee804f6dd998023fb4812e450e95127",
+    "ped-090-0.png": "805caf42205504cdac55e7020adb0bbac5f35155bf5a4a0fd06e366aaaa2c95e",
+    "ped-090-1.png": "909369c34d0756cfac3c77f6aa5768f347574ca6e89f7c0a93f7568e31152718",
+    "ped-135-0.png": "29fe6f60af2fe23af753166c6ddb8b14196f0afb4f0acd0200d375f9ba5ffb6c",
+    "ped-135-1.png": "cddebdc1e8e5c6a60a2756d14c65d4a3be29e5e2e5bed77dc10919fb56f0c168",
+    "ped-180-0.png": "3ba6bc040b26f13870d0bbb668e0c514f913889c14eba3f648c117577c8b10bd",
+    "ped-180-1.png": "3fd9443753f986379c05519daf51bb37830e47fe0ebc6256ec0c91c23157e8b7",
+    "ped-225-0.png": "cdc0c78b69b8d06b63d6487c54402c4074d999ea442c19420853d11e7a48aa57",
+    "ped-225-1.png": "3f560a3be558935c5f255849314342f43d147ab94a53b4a1074b846892731b22",
+    "ped-270-0.png": "c6172f72e930c1c6c9c149394f916ea86dc4aae0f9f502e6a3409de3872dbf6a",
+    "ped-270-1.png": "bb409e0f157fb156b666642693b42cdb2c067acd9709952a7d08f4eeb8acc82b",
+    "ped-315-0.png": "54e399fdf4c54c90f1d1ce6f7ecabc2b6e92cb41db1d1e3b0c2dbc9279b6391e",
+    "ped-315-1.png": "98c2fcd381f9faaf0e287d55d4895e3040b2b6d61fc571df98a332baaa00cc0d",
+    "signal-green-000.png": "fbdc0afeffd6993fe31e43aa05ceeea07d5a343f51c43347de2517f041c354c6",
+    "signal-green-090.png": "8675a4ecb2f59d2017fda3fd8e960c8793ca2c6fb1be6bfb74ac9128d257c61b",
+    "signal-green-180.png": "deca4442516e94dd4917e2d65420dd753fd9145fbbd8d72594b2594851671df8",
+    "signal-green-270.png": "aa84bc5df26de1b192cf228f1d84fd9e1e866e23417cbe8829fbc05d1b6b53ff",
+    "signal-red-000.png": "aeb9229c4687aa301019153ef378d1085fda9dbdc2e36709d0d104078e41f90a",
+    "signal-red-090.png": "eeba9204aa81ad241717e027b431bb3e74aad403264d2f17b645159e8a247a3c",
+    "signal-red-180.png": "8ad64d71ac31a4ffe686cae96127c9a49aa5bf124a0c62c2f51d8eecae78d74b",
+    "signal-red-270.png": "0d75911b94aa6075b7fa2ccb6300eabfcc11e45eefda5280293b6a93afa09de5",
+    "signal-yellow-000.png": "e8f2cc59887698f1dbdaaa290f42b0172dd9c9c667c02ed8b560d1a8ec27b99b",
+    "signal-yellow-090.png": "bb7effa835923f635be0ce2547fb5ac6e30676fc70b59b6df4a6dfccfe466522",
+    "signal-yellow-180.png": "e16852f7250ec650a39b96de2fed02d9c9e06be9eef4e301fc97fa302141abce",
+    "signal-yellow-270.png": "957e9d1d0ed2aa82c84b92b7a8d0859402e48f700f015d0c1ce7d8e33d5669e0"
+  }
+}

@@ -1,0 +1,426 @@
+{
+  "$schema": "../challenge.schema.json",
+  "kit_id": "esp32cam-2wd",
+  "challenge_id": "square-advanced",
+  "version": "1.0.0",
+  "mode": 1,
+  "title": "RC카 타임어택 — 사각 코스 · 상급",
+  "description": "같은 코스, 더 빡빡한 규칙. 이탈은 {{rules.offtrack.max_events}}회까지만 허용하고 {{derived.timeout_s}}초 안에 완주해야 한다. 기본값 그대로는 시간이 빠듯하니 SPEED 를 올리고 delay 를 맞춰야 한다.",
+  "scene": {
+    "units": "mm",
+    "track": {
+      "shape": "square",
+      "center_side_mm": 1200,
+      "width_mm": 360
+    },
+    "theme": "race",
+    "spawn": {
+      "x": -600,
+      "y": 600,
+      "heading_deg": 0
+    },
+    "checkpoints": [
+      {
+        "id": "cp0",
+        "x": 0,
+        "y": 600,
+        "normal_deg": 0,
+        "span_mm": 360
+      },
+      {
+        "id": "cp1",
+        "x": 600,
+        "y": 0,
+        "normal_deg": -90,
+        "span_mm": 360
+      },
+      {
+        "id": "cp2",
+        "x": 0,
+        "y": -600,
+        "normal_deg": 180,
+        "span_mm": 360
+      },
+      {
+        "id": "cp3",
+        "x": -600,
+        "y": 0,
+        "normal_deg": 90,
+        "span_mm": 360
+      }
+    ],
+    "lap": {
+      "direction": "cw",
+      "order": [
+        "cp0",
+        "cp1",
+        "cp2",
+        "cp3"
+      ],
+      "finish": "cp0",
+      "require_all": true
+    },
+    "assets": {
+      "track": "slot:track.square",
+      "car": "slot:car.2wd",
+      "background": "slot:track.iso.square-1200-drive"
+    },
+    "summary": "핀에 직접 값을 준다. 실물 배선 그대로 짜서 이탈 없이 가장 빠르게 한 바퀴를 돌자",
+    "props": [
+      {
+        "kind": "fence",
+        "x": -820,
+        "y": -1250,
+        "w": 760,
+        "d": 70,
+        "h": 170,
+        "tone": "white"
+      },
+      {
+        "kind": "fence",
+        "x": -820,
+        "y": 1250,
+        "w": 760,
+        "d": 70,
+        "h": 170,
+        "tone": "white"
+      },
+      {
+        "kind": "fence",
+        "x": -1250,
+        "y": -820,
+        "w": 70,
+        "d": 760,
+        "h": 170,
+        "tone": "white"
+      },
+      {
+        "kind": "fence",
+        "x": 1250,
+        "y": -820,
+        "w": 70,
+        "d": 760,
+        "h": 170,
+        "tone": "white"
+      },
+      {
+        "kind": "fence",
+        "x": 0,
+        "y": -1250,
+        "w": 760,
+        "d": 70,
+        "h": 170,
+        "tone": "red"
+      },
+      {
+        "kind": "fence",
+        "x": 0,
+        "y": 1250,
+        "w": 760,
+        "d": 70,
+        "h": 170,
+        "tone": "red"
+      },
+      {
+        "kind": "fence",
+        "x": -1250,
+        "y": 0,
+        "w": 70,
+        "d": 760,
+        "h": 170,
+        "tone": "red"
+      },
+      {
+        "kind": "fence",
+        "x": 1250,
+        "y": 0,
+        "w": 70,
+        "d": 760,
+        "h": 170,
+        "tone": "red"
+      },
+      {
+        "kind": "fence",
+        "x": 820,
+        "y": -1250,
+        "w": 760,
+        "d": 70,
+        "h": 170,
+        "tone": "white"
+      },
+      {
+        "kind": "fence",
+        "x": 820,
+        "y": 1250,
+        "w": 760,
+        "d": 70,
+        "h": 170,
+        "tone": "white"
+      },
+      {
+        "kind": "fence",
+        "x": -1250,
+        "y": 820,
+        "w": 70,
+        "d": 760,
+        "h": 170,
+        "tone": "white"
+      },
+      {
+        "kind": "fence",
+        "x": 1250,
+        "y": 820,
+        "w": 70,
+        "d": 760,
+        "h": 170,
+        "tone": "white"
+      },
+      {
+        "kind": "cone",
+        "x": -1330,
+        "y": -1330,
+        "w": 160,
+        "d": 160,
+        "h": 220,
+        "tone": "orange"
+      },
+      {
+        "kind": "tires",
+        "x": -1420,
+        "y": -1420,
+        "w": 200,
+        "d": 140,
+        "h": 130,
+        "tone": "dark"
+      },
+      {
+        "kind": "cone",
+        "x": -1330,
+        "y": 1330,
+        "w": 160,
+        "d": 160,
+        "h": 220,
+        "tone": "orange"
+      },
+      {
+        "kind": "tires",
+        "x": -1420,
+        "y": 1420,
+        "w": 200,
+        "d": 140,
+        "h": 130,
+        "tone": "dark"
+      },
+      {
+        "kind": "cone",
+        "x": 1330,
+        "y": -1330,
+        "w": 160,
+        "d": 160,
+        "h": 220,
+        "tone": "orange"
+      },
+      {
+        "kind": "tires",
+        "x": 1420,
+        "y": -1420,
+        "w": 200,
+        "d": 140,
+        "h": 130,
+        "tone": "dark"
+      },
+      {
+        "kind": "cone",
+        "x": 1330,
+        "y": 1330,
+        "w": 160,
+        "d": 160,
+        "h": 220,
+        "tone": "orange"
+      },
+      {
+        "kind": "tires",
+        "x": 1420,
+        "y": 1420,
+        "w": 200,
+        "d": 140,
+        "h": 130,
+        "tone": "dark"
+      },
+      {
+        "kind": "paint",
+        "x": 1780,
+        "y": 0,
+        "w": 640,
+        "d": 900,
+        "h": 1,
+        "tone": "yellow"
+      },
+      {
+        "kind": "fence",
+        "x": 1780,
+        "y": 640,
+        "w": 640,
+        "d": 70,
+        "h": 170,
+        "tone": "blue"
+      }
+    ],
+    "car_scale": 1.6,
+    "car_badge": "내 RC카",
+    "trail_points": 260,
+    "trail_arrow_mm": 250,
+    "ui": {
+      "code_panel": true,
+      "editor_theme": "ino",
+      "playback_speed": false,
+      "transport": "top",
+      "submit_label": "종료 & 제출하기",
+      "record_panel": "plain",
+      "hide_cards": [
+        "briefing",
+        "history"
+      ],
+      "columns": 300,
+      "code_columns": 380,
+      "columns_min": 280,
+      "motor_panel": "overlay",
+      "segmentbar_label": "구간",
+      "api_title": "코드 설명",
+      "api_doc": {
+        "setMotor": "두 바퀴에 서로 다른 값을 줍니다. -255~255.",
+        "stop": "두 바퀴를 모두 멈춥니다.",
+        "delay": "지금 상태를 그만큼 유지합니다. 10ms 단위입니다.",
+        "moveForward": "양쪽 바퀴를 같은 값으로 앞으로 돌립니다.",
+        "moveBackward": "양쪽 바퀴를 같은 값으로 뒤로 돌립니다.",
+        "turnLeft": "제자리에서 왼쪽으로 돕니다.",
+        "turnRight": "제자리에서 오른쪽으로 돕니다."
+      },
+      "howto_label": "📖 가이드라인",
+      "words": {
+        "laps": "돈 바퀴"
+      },
+      "compact_transport": true,
+      "submit_code": "SQ3",
+      "right_grow": "minimap"
+    },
+    "rules": {
+      "summary": "",
+      "steps": [
+        {
+          "image": "slot:guide.square-advanced.1",
+          "text": "핀 확인 — 네 개의 모터 핀이 어느 바퀴인지 코드 주석에서 봅니다."
+        },
+        {
+          "image": "slot:guide.square-advanced.2",
+          "text": "직접 쓰기 — analogWrite 로 핀에 값을 줘 바퀴를 돌립니다."
+        },
+        {
+          "image": "slot:guide.square-advanced.3",
+          "text": "한 바퀴 — 이탈 없이 네 변을 돌아 출발선으로 돌아옵니다."
+        },
+        {
+          "image": "slot:guide.square-advanced.4",
+          "text": "줄이기 — 주행이 끝나면 나오는 구간 표에서 가장 오래 걸린 구간을 줄여 봅니다."
+        }
+      ],
+      "tune": [
+        {
+          "name": "SPEED",
+          "effect": "직진할 때 두 바퀴에 주는 PWM."
+        },
+        {
+          "name": "TURN",
+          "effect": "제자리에서 돌 때 주는 PWM."
+        }
+      ]
+    }
+  },
+  "mission": {
+    "objective": "complete_lap",
+    "laps": 1,
+    "metrics": [
+      {
+        "id": "lap_time",
+        "source": "engine.lap.last",
+        "unit": "ms",
+        "label": "현재 랩"
+      },
+      {
+        "id": "best_lap_time",
+        "source": "engine.lap.best",
+        "unit": "ms",
+        "label": "베스트"
+      },
+      {
+        "id": "offtrack_count",
+        "source": "engine.events.offtrack",
+        "unit": "count",
+        "label": "이탈"
+      },
+      {
+        "id": "lap_count",
+        "source": "engine.lap.count",
+        "unit": "count",
+        "label": "완주 랩"
+      }
+    ]
+  },
+  "starter_code": {
+    "language": "ino-subset",
+    "version": 3,
+    "source": "#include \"kit.h\"\n\nint SPEED = {{kit.drive.default_pwm}};\nint TURN  = {{kit.drive.default_pwm}};\n\nvoid setup() {\n  stop();\n  delay(500);\n}\n\nvoid loop() {\n  for (int i = 0; i < 4; i++) {\n    moveForward(SPEED);\n    delay({{derived.side_ms}});\n\n    turnRight(TURN);\n    delay({{derived.turn90_ms}});\n  }\n}"
+  },
+  "allowed_api": [
+    "setMotor",
+    "stop",
+    "delay",
+    "moveForward",
+    "moveBackward",
+    "turnLeft",
+    "turnRight"
+  ],
+  "limits": {
+    "max_sim_ticks": 60000,
+    "max_catchup_ms": 20,
+    "max_code_bytes": 8192,
+    "max_ops_per_tick": 200000
+  },
+  "scoring": {
+    "primary": "best_lap_time",
+    "order": "asc",
+    "display": [
+      "lap_time",
+      "best_lap_time",
+      "offtrack_count",
+      "lap_count"
+    ],
+    "penalty": {
+      "offtrack_ticks": 200
+    },
+    "best_requires": {
+      "offtrack": 0,
+      "empty_text": "아직 없음 — 코스를 벗어나지 않고 완주해 보세요"
+    }
+  },
+  "rules": {
+    "offtrack": {
+      "mode": "count_and_end",
+      "max_events": 2
+    },
+    "timeout": {
+      "sim_ticks": 2500
+    },
+    "penalty": "none",
+    "respawn": false,
+    "record_incomplete": false
+  },
+  "series": "RC카 타임어택",
+  "track_label": "사각 코스 · 상급",
+  "record": {
+    "fields": [
+      "lap_total",
+      "lap_splits"
+    ]
+  }
+}

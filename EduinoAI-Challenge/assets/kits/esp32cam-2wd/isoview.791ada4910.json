@@ -1,0 +1,249 @@
+{
+  "kit_id": "esp32cam-2wd",
+  "generated_by": "tools/render_iso_scene.py",
+  "projection": {
+    "type": "isometric_ortho",
+    "azimuth_deg": 225.0,
+    "elevation_deg": 35.264389682754654
+  },
+  "frame_px": 384,
+  "mm_per_px": 0.8333333333333334,
+  "ortho_width_mm": 320.0,
+  "pivot_px": [
+    192.00018310546875,
+    191.9992904663086
+  ],
+  "heading_zero": "+x",
+  "rotation_dir": "ccw",
+  "step_deg": 11.25,
+  "frames": [
+    {
+      "index": 0,
+      "angle_deg": 0.0,
+      "file": "0000.png"
+    },
+    {
+      "index": 1,
+      "angle_deg": 11.25,
+      "file": "0112.png"
+    },
+    {
+      "index": 2,
+      "angle_deg": 22.5,
+      "file": "0225.png"
+    },
+    {
+      "index": 3,
+      "angle_deg": 33.75,
+      "file": "0338.png"
+    },
+    {
+      "index": 4,
+      "angle_deg": 45.0,
+      "file": "0450.png"
+    },
+    {
+      "index": 5,
+      "angle_deg": 56.25,
+      "file": "0562.png"
+    },
+    {
+      "index": 6,
+      "angle_deg": 67.5,
+      "file": "0675.png"
+    },
+    {
+      "index": 7,
+      "angle_deg": 78.75,
+      "file": "0788.png"
+    },
+    {
+      "index": 8,
+      "angle_deg": 90.0,
+      "file": "0900.png"
+    },
+    {
+      "index": 9,
+      "angle_deg": 101.25,
+      "file": "1012.png"
+    },
+    {
+      "index": 10,
+      "angle_deg": 112.5,
+      "file": "1125.png"
+    },
+    {
+      "index": 11,
+      "angle_deg": 123.75,
+      "file": "1238.png"
+    },
+    {
+      "index": 12,
+      "angle_deg": 135.0,
+      "file": "1350.png"
+    },
+    {
+      "index": 13,
+      "angle_deg": 146.25,
+      "file": "1462.png"
+    },
+    {
+      "index": 14,
+      "angle_deg": 157.5,
+      "file": "1575.png"
+    },
+    {
+      "index": 15,
+      "angle_deg": 168.75,
+      "file": "1688.png"
+    },
+    {
+      "index": 16,
+      "angle_deg": 180.0,
+      "file": "1800.png"
+    },
+    {
+      "index": 17,
+      "angle_deg": 191.25,
+      "file": "1912.png"
+    },
+    {
+      "index": 18,
+      "angle_deg": 202.5,
+      "file": "2025.png"
+    },
+    {
+      "index": 19,
+      "angle_deg": 213.75,
+      "file": "2138.png"
+    },
+    {
+      "index": 20,
+      "angle_deg": 225.0,
+      "file": "2250.png"
+    },
+    {
+      "index": 21,
+      "angle_deg": 236.25,
+      "file": "2362.png"
+    },
+    {
+      "index": 22,
+      "angle_deg": 247.5,
+      "file": "2475.png"
+    },
+    {
+      "index": 23,
+      "angle_deg": 258.75,
+      "file": "2588.png"
+    },
+    {
+      "index": 24,
+      "angle_deg": 270.0,
+      "file": "2700.png"
+    },
+    {
+      "index": 25,
+      "angle_deg": 281.25,
+      "file": "2812.png"
+    },
+    {
+      "index": 26,
+      "angle_deg": 292.5,
+      "file": "2925.png"
+    },
+    {
+      "index": 27,
+      "angle_deg": 303.75,
+      "file": "3038.png"
+    },
+    {
+      "index": 28,
+      "angle_deg": 315.0,
+      "file": "3150.png"
+    },
+    {
+      "index": 29,
+      "angle_deg": 326.25,
+      "file": "3262.png"
+    },
+    {
+      "index": 30,
+      "angle_deg": 337.5,
+      "file": "3375.png"
+    },
+    {
+      "index": 31,
+      "angle_deg": 348.75,
+      "file": "3488.png"
+    }
+  ],
+  "body_dir": "586a945c92/iso",
+  "shadow_dir": "586a945c92/iso-shadow",
+  "frames_sha256": {
+    "iso-shadow/0000.png": "a2432210e5c4612a3a5c77fd43cda1a688c617b2acda46d8ce6847a22585e6ef",
+    "iso-shadow/0112.png": "c38285134525fd7d40cab0b93c11414003c1ce9807211245ec5bf59e27b5843a",
+    "iso-shadow/0225.png": "2c642414d1266b1acd8a35bb569b6f86f6a556d6ff96cab5b5e03a89c32ab9db",
+    "iso-shadow/0338.png": "6bb251f45376a55a41106d2e3d74cf6384940be9bdeb95f0606f10cfdc4ef27d",
+    "iso-shadow/0450.png": "f2aff43067ee2cb670d4ab066f72b0cca42b7c9c6ace55667016deeca2c40cbe",
+    "iso-shadow/0562.png": "aa50bd5e6fbeb714bc536fcbf1a7ea43c2c1cf1dea4e377c38a48997a2aa84de",
+    "iso-shadow/0675.png": "352c12f34ce32a99b885f5cc6b036e4ace3a5fd62a33f6b557e06da3f8d34240",
+    "iso-shadow/0788.png": "d023fd1016e3ed81160b5e50b82e9a77f22699d6cb2884cccfbb44b5123f6c44",
+    "iso-shadow/0900.png": "8b288c826828270c5370108ae02cd280c7a4d106bb60d095de6ad8e79678257c",
+    "iso-shadow/1012.png": "f39b08092bf63b31bdb7241b7fc34f269a643c5d592682ba4e5ac6843d6fd8a7",
+    "iso-shadow/1125.png": "4cfd28e10753d6238ff827b24d4c9f6cd2a01230cd7cdb1266136e6ef76bfa3c",
+    "iso-shadow/1238.png": "fc48fdaf73f78e0c864db0d91cd5fc4bc5819115c434e996ff29affcb616b0a2",
+    "iso-shadow/1350.png": "54913274cbbc54a79c6ae3419baa9ad50e99ad485f11f3676b918a92b4c6bd6e",
+    "iso-shadow/1462.png": "5dbb450578b45741957fa10bda4e7ff2d1581ca0b1c3aa141fe762235d2e0a67",
+    "iso-shadow/1575.png": "60805a85b5bb388155b9dd2dacdb8ce64539ac9024e7044b7e65844c56225c9b",
+    "iso-shadow/1688.png": "dc0dba3d1ac4591d2d8164933944a4240d66bc11778b9665e8aa1c47318508f6",
+    "iso-shadow/1800.png": "bebc5111861e444675347f14c13598a136bb51b12630cdc397e248d9f8aa159e",
+    "iso-shadow/1912.png": "1a16dce0f8a20e5bed0c5145341a578c89032656c5c69cca615e7f034bf1ff51",
+    "iso-shadow/2025.png": "a2122c31dcba1e626aea51890704385019cdb4753b6228b6d6a6f05465891773",
+    "iso-shadow/2138.png": "bbb84cb4b513960a25968861f1a72b5b80c59b3fcbeb69fb7f08474b4f437edd",
+    "iso-shadow/2250.png": "b100dd1259cdbee1023dca952794ea498e37e5125c0180031a07845eb67f8f40",
+    "iso-shadow/2362.png": "7dd599daf4c51e2bdd0ebd472361d7bbf0fd60d6f7f0cc00a4fcb7790b156275",
+    "iso-shadow/2475.png": "e82683924da1afc3ef8bafba302a40b81e4935d41609a6a1da1f363d4e238087",
+    "iso-shadow/2588.png": "0b75db5b8f839bc4f83a70eeeb859822d48aeea04a9dd8a11dd83261feeee9be",
+    "iso-shadow/2700.png": "045760a4416218149618d925b5a62f28b4fe645bd92981e3021aa4eec2c0dd08",
+    "iso-shadow/2812.png": "70cb0e22a3d004d9ed00b1baec8a7249f976d8261651accf0cf51b996891b8bd",
+    "iso-shadow/2925.png": "247ab9ea5744f4155edf91e039bd78547926d6b9e33850a3572155f0ed578bd9",
+    "iso-shadow/3038.png": "a77ce48354f3ca9f88be5090928258d9f42f96cd2e1298492bfd089d719118a4",
+    "iso-shadow/3150.png": "2a6e8d4e8d1855f98c67e3803f43d3cb16e398c7b59080aa3dbe0851040d2711",
+    "iso-shadow/3262.png": "d964a6b7f64d8ba690e1d2bf0b10052df1e15229a5a3ca1b29aa1e02ad142ab2",
+    "iso-shadow/3375.png": "bdf5e1a26220928953429ce1fd48076f6dae92d174efd7ee6a513faa240314eb",
+    "iso-shadow/3488.png": "9265ad09cb0dbb5e46c532f67e179a6e928f7e263ef6cc17636b2c8f4ffe7478",
+    "iso/0000.png": "f5089d86a3d0d3f19a7bd159c1fe0d2e32fd85d013f45969c935c93bed7e371d",
+    "iso/0112.png": "4985cdded90c62616e211c24855059d196b6f4c03675009e7de8e59fa7e76445",
+    "iso/0225.png": "07c270fa6e3671ee3c0900b2a85b65d6c14c53483a166426920e3025cf1cc827",
+    "iso/0338.png": "079c693c121bfb53c61c30ddfcf9367f8270166a9ce5aeab4e93c503683cbf07",
+    "iso/0450.png": "fbe20b9a0781b790566ba9873cb9c6ece29192f3f5df88d22019e9570c344c44",
+    "iso/0562.png": "1ba08a8e50e976b1b6a779b67a5ac800aecbee5c5137ee6832205b8048025d51",
+    "iso/0675.png": "3edd43b538b1d6840c367289ef34ee3ac0bcfef0817ad3246fc57390af846935",
+    "iso/0788.png": "216e09ed32ae043d291665ed6419f4517685cc9c0ae54864d4b8c9395bffb3b5",
+    "iso/0900.png": "b0e7d6a72a59fff1bd2c03ca2067bf53aefd70891de80421643da001ccbcdae7",
+    "iso/1012.png": "96ef643fed2d25177bf86fc0b30f0b75b8f7b5685f1684ff970eba37fc1137b0",
+    "iso/1125.png": "16849b4f60ba15750c34a32ef8cbbf53f99eddd7a3a5fa64d35d475920948b20",
+    "iso/1238.png": "d38166b90a802602924e29865ea77a5553433a66e102d9fb9f0482fa610caa02",
+    "iso/1350.png": "62bee5134fa0d3df5e4bde97613c3989668ccaaf5c1986c6411c19143f3ec5b1",
+    "iso/1462.png": "457a78742495838f108f2345fd080cd2eb74bd87f586f3cfe6baef978b16a78d",
+    "iso/1575.png": "a6c657be1fa7e00dbedfc24ac127da9cfafb17211bfd2223048d1bc1823868cc",
+    "iso/1688.png": "9949fcb9d1747d7d90e311481a5aa3f4d7bcd653234463d36c0fab133643966f",
+    "iso/1800.png": "0d9b0c233e6130cfd56981aa9078c87083d201805d95f5eca139e6513bf31eed",
+    "iso/1912.png": "45f13388ec01a92f48d343c44619e487f46719d709c8705a761a1a1b1f72738b",
+    "iso/2025.png": "cd0b58c39b19c71d7ca6b96831b55f01ba752ebc8dd731e7ab5549a0334ebed4",
+    "iso/2138.png": "5554b6324d69706def5cd57a14290323ffbc3274fc240e9914844162776ef8fe",
+    "iso/2250.png": "504ca1df8558867c9ab0efc105ad12e7884312ae55d20a798de3263afffdda0d",
+    "iso/2362.png": "eeab1c64842fa63a83957834316a07a0747fce9fa15d3b43346f3e4733e243f9",
+    "iso/2475.png": "fca38c816aca2bd275b70477fe62277fbf211fa73c5bf3677eb671d2de29a4d4",
+    "iso/2588.png": "9f5d784180222d9fc90fb1c51adb337c2934d5b81fa7a7fc567fc810575098d9",
+    "iso/2700.png": "2df8c6d117eb18b96d6b9709618037317b5910a923da56f23bf393e706238c0e",
+    "iso/2812.png": "f4a49c6637b3a86f10d6d4e248a1907e9457aedcdfea9c47a38f053d6aa9aaa7",
+    "iso/2925.png": "b0e419783a3313276bfe29543c26269b48d1654366eae374ab9bfdd90abd40ca",
+    "iso/3038.png": "333ea588e8d14ea4fa97c7975b9d2115944a5417f64804b491e545abbd50e464",
+    "iso/3150.png": "0e4c557612360a6bc92bb408d1a52af4226648d10d036d77480df8b87fe90087",
+    "iso/3262.png": "6cbcadd751d6f5e6420693c2249f6fc19671513a674d332ffcac8d11ce2de8fb",
+    "iso/3375.png": "8e78bfef8045a8aba395249336d9e47a1a72a75d8b69f471b0c26d806166f6b6",
+    "iso/3488.png": "5996f15cb37fa6e655eb7126dd83b2a329bd77ae3c1720108f0ce99a7b1c0f88"
+  }
+}

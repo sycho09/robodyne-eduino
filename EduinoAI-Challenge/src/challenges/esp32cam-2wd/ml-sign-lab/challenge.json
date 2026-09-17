@@ -1,0 +1,487 @@
+{
+  "$schema": "../challenge.schema.json",
+  "kit_id": "esp32cam-2wd",
+  "challenge_id": "ml-sign-lab",
+  "version": "1.0.0",
+  "mode": 2,
+  "title": "RC카 테마학습제어 — 표지판 학습 실험실",
+  "description": "카메라로 장면을 담아 정지·서행·진행 세 가지를 구분하도록 학습시킨다. 학습은 코드가 아니라 [학습] 탭에서 하고, 코드에는 추론만 나온다. 샘플이 적으면 틀린다 — 골고루 많이 담을수록 정확해진다. 이탈 {{rules.offtrack.max_events}}회 또는 {{derived.timeout_s}}초를 넘기면 시도가 끝난다.",
+  "scene": {
+    "units": "mm",
+    "track": {
+      "shape": "square",
+      "center_side_mm": 1200,
+      "width_mm": 360
+    },
+    "theme": "city",
+    "spawn": {
+      "x": -600,
+      "y": 600,
+      "heading_deg": 0
+    },
+    "checkpoints": [
+      {
+        "id": "cp0",
+        "x": 0,
+        "y": 600,
+        "normal_deg": 0,
+        "span_mm": 360
+      },
+      {
+        "id": "cp1",
+        "x": 600,
+        "y": 0,
+        "normal_deg": -90,
+        "span_mm": 360
+      },
+      {
+        "id": "cp2",
+        "x": 0,
+        "y": -600,
+        "normal_deg": 180,
+        "span_mm": 360
+      },
+      {
+        "id": "cp3",
+        "x": -600,
+        "y": 0,
+        "normal_deg": 90,
+        "span_mm": 360
+      }
+    ],
+    "lap": {
+      "direction": "cw",
+      "order": [
+        "cp0",
+        "cp1",
+        "cp2",
+        "cp3"
+      ],
+      "finish": "cp0",
+      "require_all": true
+    },
+    "assets": {
+      "track": "slot:track.square",
+      "car": "slot:car.2wd",
+      "background": "slot:track.iso.square-1200"
+    },
+    "summary": "정지·서행·진행 세 표지판을 직접 학습시킨다. 샘플을 골고루 담을수록 잘 맞힌다",
+    "props": [
+      {
+        "kind": "paint",
+        "x": -480,
+        "y": 1210,
+        "w": 1060,
+        "d": 320,
+        "h": 1,
+        "tone": "walk"
+      },
+      {
+        "kind": "paint",
+        "x": 480,
+        "y": 1210,
+        "w": 1060,
+        "d": 320,
+        "h": 1,
+        "tone": "walk"
+      },
+      {
+        "kind": "paint",
+        "x": -480,
+        "y": -1210,
+        "w": 1060,
+        "d": 320,
+        "h": 1,
+        "tone": "walk"
+      },
+      {
+        "kind": "paint",
+        "x": 480,
+        "y": -1210,
+        "w": 1060,
+        "d": 320,
+        "h": 1,
+        "tone": "walk"
+      },
+      {
+        "kind": "paint",
+        "x": 1210,
+        "y": -480,
+        "w": 320,
+        "d": 1060,
+        "h": 1,
+        "tone": "walk"
+      },
+      {
+        "kind": "paint",
+        "x": 1210,
+        "y": 480,
+        "w": 320,
+        "d": 1060,
+        "h": 1,
+        "tone": "walk"
+      },
+      {
+        "kind": "paint",
+        "x": -1210,
+        "y": -480,
+        "w": 320,
+        "d": 1060,
+        "h": 1,
+        "tone": "walk"
+      },
+      {
+        "kind": "paint",
+        "x": -1210,
+        "y": 480,
+        "w": 320,
+        "d": 1060,
+        "h": 1,
+        "tone": "walk"
+      },
+      {
+        "kind": "paint",
+        "x": 1210,
+        "y": 1210,
+        "w": 320,
+        "d": 320,
+        "h": 1,
+        "tone": "walk"
+      },
+      {
+        "kind": "paint",
+        "x": -1210,
+        "y": 1210,
+        "w": 320,
+        "d": 320,
+        "h": 1,
+        "tone": "walk"
+      },
+      {
+        "kind": "paint",
+        "x": 1210,
+        "y": -1210,
+        "w": 320,
+        "d": 320,
+        "h": 1,
+        "tone": "walk"
+      },
+      {
+        "kind": "paint",
+        "x": -1210,
+        "y": -1210,
+        "w": 320,
+        "d": 320,
+        "h": 1,
+        "tone": "walk"
+      },
+      {
+        "kind": "crate",
+        "x": 1780,
+        "y": 0,
+        "w": 620,
+        "d": 820,
+        "h": 380,
+        "tone": "steel"
+      },
+      {
+        "kind": "crate",
+        "x": -1780,
+        "y": 0,
+        "w": 620,
+        "d": 820,
+        "h": 300,
+        "tone": "plastic"
+      },
+      {
+        "kind": "crate",
+        "x": 0,
+        "y": 1780,
+        "w": 820,
+        "d": 620,
+        "h": 280,
+        "tone": "plastic"
+      },
+      {
+        "kind": "crate",
+        "x": 0,
+        "y": -1780,
+        "w": 820,
+        "d": 620,
+        "h": 420,
+        "tone": "steel"
+      },
+      {
+        "kind": "plant",
+        "x": 700,
+        "y": 1480,
+        "w": 200,
+        "d": 200,
+        "h": 330
+      },
+      {
+        "kind": "plant",
+        "x": -700,
+        "y": 1480,
+        "w": 200,
+        "d": 200,
+        "h": 330
+      },
+      {
+        "kind": "plant",
+        "x": 700,
+        "y": -1480,
+        "w": 200,
+        "d": 200,
+        "h": 330
+      },
+      {
+        "kind": "plant",
+        "x": -700,
+        "y": -1480,
+        "w": 200,
+        "d": 200,
+        "h": 330
+      }
+    ],
+    "car_scale": 1.6,
+    "car_badge": "내 RC카",
+    "trail_points": 260,
+    "trail_arrow_mm": 250,
+    "ui": {
+      "code_panel": true,
+      "editor_theme": "ino",
+      "playback_speed": false,
+      "transport": "top",
+      "submit_label": "종료 & 제출하기",
+      "goal_banner": {
+        "goal": {
+          "label": "이번 챌린지",
+          "text": "표지판 읽고 완주"
+        },
+        "limit": {
+          "label": "제한 시간",
+          "text": "90초"
+        },
+        "fail": {
+          "label": "실패 조건",
+          "text": "코스 벗어남 3회"
+        },
+        "record": {
+          "label": "기록 인정",
+          "text": "코스 벗어남 0회 완주"
+        }
+      },
+      "advice": {
+        "slowest": "가장 오래 걸린 곳은 {segment} 구간({time}초)입니다. 그 구간의 delay 를 줄여 보세요.",
+        "drift": "이 킷은 좌우 모터 특성이 {gap}% 다릅니다. setMotor 로 한쪽 값을 올려 직진부터 맞춰 보세요.",
+        "offtrack": "{where} 에서 코스를 벗어났습니다. 그 앞 회전의 delay 를 다시 보세요.",
+        "stuck": "{where} 에서 멈춰 있었습니다. PWM 이 데드존({deadzone}) 아래인지 확인해 보세요.",
+        "violation": "{kind} 을(를) {count}번 어겼습니다. 그 구역에서 무엇을 보고 판단했는지 확인해 보세요."
+      },
+      "record_panel": "plain",
+      "hide_cards": [
+        "briefing",
+        "history"
+      ],
+      "columns": 300,
+      "code_columns": 380,
+      "columns_min": 280,
+      "motor_panel": true,
+      "segmentbar_label": "구간",
+      "api_title": "코드 설명",
+      "api_doc": {
+        "setMotor": "두 바퀴에 서로 다른 값을 줍니다. -255~255.",
+        "stop": "두 바퀴를 모두 멈춥니다.",
+        "delay": "지금 상태를 그만큼 유지합니다. 10ms 단위입니다.",
+        "moveForward": "양쪽 바퀴를 같은 값으로 앞으로 돌립니다.",
+        "moveBackward": "양쪽 바퀴를 같은 값으로 뒤로 돌립니다.",
+        "turnLeft": "제자리에서 왼쪽으로 돕니다.",
+        "turnRight": "제자리에서 오른쪽으로 돕니다.",
+        "mlBegin": "[학습] 탭에서 만든 모델을 쓰기 시작합니다.",
+        "mlClassify": "지금 보이는 것이 몇 번 칸인지. 0=모름 1=정지 2=서행 3=진행.",
+        "mlConfidence": "그 판단을 얼마나 믿는지. 0~100."
+      },
+      "howto_label": "📖 가이드라인",
+      "words": {
+        "laps": "돈 바퀴"
+      },
+      "compact_transport": true,
+      "submit_code": "MLS",
+      "right_grow": "record"
+    },
+    "rules": {
+      "summary": "카메라로 담은 장면으로 정지·서행·진행을 학습시킨다. 기록보다 학습이 목적이라 목표 시간이 없다.",
+      "steps": [
+        {
+          "image": "slot:guide.ml-sign-lab.1",
+          "text": "학습 탭으로 — [학습] 탭에서 카메라를 켜고 장면을 담습니다."
+        },
+        {
+          "image": "slot:guide.ml-sign-lab.2",
+          "text": "세 칸 채우기 — 정지·서행·진행 세 칸에 골고루 담습니다."
+        },
+        {
+          "image": "slot:guide.ml-sign-lab.3",
+          "text": "학습하기 — [학습하기] 를 누르면 지금 무엇으로 보이는지 나옵니다."
+        },
+        {
+          "image": "slot:guide.ml-sign-lab.4",
+          "text": "코드로 옮기기 — [코드] 탭에서 판단을 주행으로 옮깁니다."
+        }
+      ],
+      "tune": [
+        {
+          "name": "SPEED",
+          "effect": "진행일 때 주는 PWM."
+        },
+        {
+          "name": "SURE",
+          "effect": "이 확신도 아래면 모른다고 봅니다."
+        }
+      ]
+    }
+  },
+  "mission": {
+    "objective": "complete_lap",
+    "laps": 1,
+    "metrics": [
+      {
+        "id": "lap_time",
+        "source": "engine.lap.last",
+        "unit": "ms",
+        "label": "현재 랩"
+      },
+      {
+        "id": "best_lap_time",
+        "source": "engine.lap.best",
+        "unit": "ms",
+        "label": "베스트"
+      },
+      {
+        "id": "offtrack_count",
+        "source": "engine.events.offtrack",
+        "unit": "count",
+        "label": "이탈"
+      },
+      {
+        "id": "lap_count",
+        "source": "engine.lap.count",
+        "unit": "count",
+        "label": "완주 랩"
+      }
+    ]
+  },
+  "starter_code": {
+    "language": "ino-subset",
+    "version": 3,
+    "source": "#include \"kit.h\"\n\nint SPEED = {{kit.drive.default_pwm}};\nint SURE  = 60;\n\nvoid setup() {\n  mlBegin();\n  stop();\n  delay(500);\n}\n\nvoid loop() {\n  int what = mlClassify();\n  if (mlConfidence() < SURE) what = 0;\n  if (what == 3) {\n    moveForward(SPEED);\n  } else if (what == 2) {\n    moveForward(SPEED / 2);\n  } else {\n    stop();\n  }\n  delay(30);\n}"
+  },
+  "allowed_api": [
+    "setMotor",
+    "stop",
+    "delay",
+    "moveForward",
+    "turnLeft",
+    "turnRight",
+    "mlBegin",
+    "mlClassify",
+    "mlConfidence"
+  ],
+  "limits": {
+    "max_sim_ticks": 60000,
+    "max_catchup_ms": 20,
+    "max_code_bytes": 8192,
+    "max_ops_per_tick": 200000
+  },
+  "scoring": {
+    "primary": "best_lap_time",
+    "order": "asc",
+    "display": [
+      "lap_time",
+      "best_lap_time",
+      "offtrack_count",
+      "lap_count"
+    ],
+    "penalty": {
+      "offtrack_ticks": 200
+    },
+    "best_requires": {
+      "offtrack": 0,
+      "empty_text": "아직 없음 — 코스를 벗어나지 않고 완주해 보세요"
+    }
+  },
+  "rules": {
+    "offtrack": {
+      "mode": "count_and_end",
+      "max_events": 3,
+      "hint": "표지판을 잘못 읽으면 멈추거나 늦게 섭니다. [학습] 탭에서 샘플을 더 담아 보세요."
+    },
+    "timeout": {
+      "sim_ticks": 9000
+    },
+    "penalty": "none",
+    "respawn": false,
+    "record_incomplete": false
+  },
+  "series": "RC카 테마학습제어",
+  "track_label": "표지판 학습 실험실",
+  "guide": [
+    {
+      "text": "먼저 [학습] 탭에서 장면을 담아요.",
+      "target": {
+        "el": "tab-train"
+      }
+    },
+    {
+      "text": "카메라를 켜야 담을 수 있어요.",
+      "target": {
+        "el": "cam-start"
+      }
+    },
+    {
+      "text": "담을 칸을 고르고 [이 장면 담기] 를 눌러요.",
+      "target": {
+        "el": "grab"
+      }
+    },
+    {
+      "text": "세 칸을 다 모았으면 [학습하기] 를 눌러요.",
+      "target": {
+        "el": "learn"
+      }
+    },
+    {
+      "text": "여기에 지금 무엇으로 보이는지 나와요.",
+      "target": {
+        "el": "mlread"
+      }
+    },
+    {
+      "text": "[코드] 탭에서 판단을 코드로 옮겨요.",
+      "target": {
+        "el": "tab-code"
+      }
+    },
+    {
+      "text": "다 됐으면 이 버튼을 눌러요.",
+      "target": {
+        "el": "go"
+      }
+    }
+  ],
+  "camera_source": "webcam",
+  "ml": {
+    "classes": [
+      "정지",
+      "서행",
+      "진행"
+    ]
+  },
+  "record": {
+    "fields": [
+      "lap_total",
+      "lap_splits"
+    ]
+  }
+}

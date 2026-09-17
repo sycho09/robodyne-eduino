@@ -1,0 +1,229 @@
+{
+  "version": 2,
+  "note": "에셋 슬롯 대장. 매니페스트(scene.assets, kit.assets)는 'slot:<id>' 로만 참조한다. 실제 파일 경로는 여기에서만 바뀐다.",
+  "slots": {
+    "car.2wd": {
+      "type": "sprite_frames",
+      "path": "./kits/esp32cam-2wd/topview.af161c00ef.json",
+      "note": "esp32cam-2wd 탑뷰 프리렌더. 16방향 본체 + 그림자 시트. 각도·스케일은 topview.json 이 소유한다."
+    },
+    "track.square": {
+      "type": "texture",
+      "path": "./tracks/classroom/floor.png",
+      "tile_mm": 600,
+      "note": "교실 장판. 주행 대역을 채운다. 한 장이 실제 600mm x 600mm 를 덮는다."
+    },
+    "track.tape": {
+      "type": "texture",
+      "path": "./tracks/classroom/tape-black.png",
+      "length_mm": 200,
+      "width_mm": 25,
+      "tape_mm": 19,
+      "note": "검정 절연테이프. 주행 대역 경계선에 길이 방향으로 타일링한다."
+    },
+    "overlay.light": {
+      "type": "texture",
+      "path": "./tracks/classroom/light-overlay.png",
+      "note": "상단광 + 비네팅. 씬 위에 별도 레이어로 얹는다."
+    },
+    "marker.red": {
+      "type": "texture",
+      "path": "./tracks/classroom/marker-red.png",
+      "size_mm": 180,
+      "note": "모드2 색상 마커. 코너마다 바닥에 놓이며 배경 렌더에 함께 구워진다."
+    },
+    "ui.gauge": {
+      "type": "sprite",
+      "path": null,
+      "note": "아케이드 계기판 프레임. 아직 비어 있다 — 렌더러는 형상 플레이스홀더로 폴백한다."
+    },
+    "kit.esp32cam-2wd.thumb": {
+      "type": "sprite",
+      "path": "./kits/esp32cam-2wd/thumb.png",
+      "note": "허브 킷 카드 썸네일. 실물 45도 사진 — 탑뷰 렌더는 위에서 본 모습이라 교구 식별이 어렵다."
+    },
+    "track.iso.square-1200": {
+      "type": "scene_background",
+      "path": "./tracks/classroom/iso-square-1200.eea23d72f7.json",
+      "note": "아이소메트릭 트랙 배경 한 장. 사이드카 JSON 이 이미지 경로와 투영 축을 함께 들고 있다."
+    },
+    "car.2wd.iso": {
+      "type": "sprite_frames",
+      "path": "./kits/esp32cam-2wd/isoview.791ada4910.json",
+      "note": "아이소 카메라로 다시 렌더한 16방향. 탑뷰 에셋은 폴백·비교용으로 남겨 둔다."
+    },
+    "track.iso.square-1200-marker": {
+      "type": "scene_background",
+      "path": "./tracks/classroom/iso-square-1200-marker.fea4880a18.json",
+      "note": "모드2용 배경. 모드1 배경과 같은 트랙에 코너 마커만 더 구웠다. 투영 축은 사이드카 JSON 이 소유한다."
+    },
+    "marker.blue": {
+      "type": "texture",
+      "path": "./tracks/classroom/marker-blue.png",
+      "size_mm": 180,
+      "note": "모드2 색상 마커(파랑). 빨강과 같은 빌드 스크립트가 굽는다."
+    },
+    "track.iso.square-1200-marker-blue": {
+      "type": "scene_background",
+      "path": "./tracks/classroom/iso-square-1200-marker-blue.e35b114bc4.json",
+      "note": "파랑 마커 챌린지용 배경. 배경 렌더는 index.json 의 챌린지를 훑어 자동으로 굽는다."
+    },
+    "track.iso.figure8-1200": {
+      "type": "scene_background",
+      "path": "./tracks/classroom/iso-figure8-1200.c3ca3f3af6.json",
+      "note": "8자 코스 배경. 중심선 폴리라인을 그대로 구운다."
+    },
+    "track.iso.smartcity": {
+      "type": "scene_background",
+      "path": "./tracks/classroom/iso-smartcity.94229ca70b.json",
+      "note": "스마트시티 배경. 도로 폴리라인 + 인도·건물·횡단보도·신호등·가로수를 함께 굽는다."
+    },
+    "city.iso": {
+      "type": "sprite_sheet",
+      "path": "./sprites/city-iso/city-iso.sprites.3d72e4cc14.json",
+      "note": "살아 있는 도시(보행자·신호등·차단기) 아이소 스프라이트 시트. 프레임은 시트 JSON 이 소유한다."
+    },
+    "track.iso.square-1200-drive": {
+      "type": "scene_background",
+      "path": "./tracks/classroom/iso-square-1200-drive.6d4415be62.json",
+      "note": "이동제어 4종 전용. 추적 뷰가 코스 끝까지 움직여도 화면이 비지 않도록 보는 창의 절반만큼 더 넓게 굽는다."
+    },
+    "track.carpet": {
+      "type": "texture",
+      "path": "./tracks/classroom/floor-carpet.png",
+      "tile_mm": 600,
+      "note": "레이스장 카펫. 이동제어 3종 배경의 바닥이다. 한 장이 실제 600mm x 600mm 를 덮는다."
+    },
+    "track.concrete": {
+      "type": "texture",
+      "path": "./tracks/classroom/floor-concrete.png",
+      "tile_mm": 600,
+      "note": "물류창고 콘크리트. 색상제어 3종 배경의 바닥이다. 한 장이 실제 600mm x 600mm 를 덮는다."
+    },
+    "track.iso.square-1200-webcam": {
+      "type": "scene_background",
+      "path": "./tracks/classroom/iso-square-1200-webcam.2bbfbc3578.json",
+      "note": "웹캠 조종 챌린지 배경. 49차에 색 추적 코스가 직사각으로 바뀌면서 마커 배경을 더는 함께 쓸 수 없어 따로 굽는다."
+    },
+    "guide.square-beginner.1": {
+      "type": "sprite",
+      "path": "./guide/square-beginner-1.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.square-beginner.2": {
+      "type": "sprite",
+      "path": "./guide/square-beginner-2.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.square-beginner.3": {
+      "type": "sprite",
+      "path": "./guide/square-beginner-3.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.square-beginner.4": {
+      "type": "sprite",
+      "path": "./guide/square-beginner-4.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.square-basic.1": {
+      "type": "sprite",
+      "path": "./guide/square-basic-1.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.square-basic.2": {
+      "type": "sprite",
+      "path": "./guide/square-basic-2.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.square-basic.3": {
+      "type": "sprite",
+      "path": "./guide/square-basic-3.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.square-basic.4": {
+      "type": "sprite",
+      "path": "./guide/square-basic-4.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.figure8-basic.1": {
+      "type": "sprite",
+      "path": "./guide/figure8-basic-1.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.figure8-basic.2": {
+      "type": "sprite",
+      "path": "./guide/figure8-basic-2.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.figure8-basic.3": {
+      "type": "sprite",
+      "path": "./guide/figure8-basic-3.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.figure8-basic.4": {
+      "type": "sprite",
+      "path": "./guide/figure8-basic-4.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.webcam-drive-basic.1": {
+      "type": "sprite",
+      "path": "./guide/webcam-drive-basic-1.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.webcam-drive-basic.2": {
+      "type": "sprite",
+      "path": "./guide/webcam-drive-basic-2.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.webcam-drive-basic.3": {
+      "type": "sprite",
+      "path": "./guide/webcam-drive-basic-3.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.webcam-drive-basic.4": {
+      "type": "sprite",
+      "path": "./guide/webcam-drive-basic-4.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.smartcity-drive.1": {
+      "type": "sprite",
+      "path": "./guide/smartcity-drive-1.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.smartcity-drive.2": {
+      "type": "sprite",
+      "path": "./guide/smartcity-drive-2.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.smartcity-drive.3": {
+      "type": "sprite",
+      "path": "./guide/smartcity-drive-3.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    },
+    "guide.smartcity-drive.4": {
+      "type": "sprite",
+      "path": "./guide/smartcity-drive-4.png",
+      "lazy": true,
+      "note": "규칙 모달의 단계 그림. 그 챌린지를 열 때만 받는다(lazy)."
+    }
+  }
+}

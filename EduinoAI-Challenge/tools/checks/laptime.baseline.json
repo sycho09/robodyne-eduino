@@ -1,0 +1,123 @@
+{
+  "note": "48차 파트9 — 의도치 않게 바뀌면 안 되는 값. 바꿔야 하는 차수에는 --update 로 다시 적고 회신에 밝힌다.",
+  "skipped": [
+    "color-follow-basic(목록에서 내림)",
+    "color-follow-blue(목록에서 내림)",
+    "webcam-drive-basic(카메라 없음)",
+    "ml-sign-lab(목록에서 내림)"
+  ],
+  "row_keys": [
+    "color-follow-basic/기본",
+    "color-follow-basic/해답",
+    "color-follow-blue/기본",
+    "color-follow-blue/해답",
+    "figure8-basic/기본",
+    "figure8-basic/해답",
+    "smartcity-drive/기본",
+    "square-basic/기본",
+    "square-basic/해답",
+    "square-beginner/기본",
+    "square-beginner/해답"
+  ],
+  "rows": {
+    "square-beginner/기본": {
+      "finished": true,
+      "end": null,
+      "drive_ticks": 1707,
+      "penalty_ticks": 0,
+      "total_ticks": 1707,
+      "offtrack": 0,
+      "violations": 0
+    },
+    "square-beginner/해답": {
+      "finished": true,
+      "end": null,
+      "drive_ticks": 1164,
+      "penalty_ticks": 0,
+      "total_ticks": 1164,
+      "offtrack": 0,
+      "violations": 0
+    },
+    "square-basic/기본": {
+      "finished": false,
+      "end": "offtrack",
+      "drive_ticks": null,
+      "penalty_ticks": 600,
+      "total_ticks": null,
+      "offtrack": 3,
+      "violations": 0
+    },
+    "square-basic/해답": {
+      "finished": true,
+      "end": null,
+      "drive_ticks": 1711,
+      "penalty_ticks": 0,
+      "total_ticks": 1711,
+      "offtrack": 0,
+      "violations": 0
+    },
+    "figure8-basic/기본": {
+      "finished": false,
+      "end": "offtrack",
+      "drive_ticks": null,
+      "penalty_ticks": 400,
+      "total_ticks": null,
+      "offtrack": 2,
+      "violations": 0
+    },
+    "figure8-basic/해답": {
+      "finished": true,
+      "end": null,
+      "drive_ticks": 1771,
+      "penalty_ticks": 0,
+      "total_ticks": 1771,
+      "offtrack": 0,
+      "violations": 0
+    },
+    "color-follow-basic/기본": {
+      "finished": false,
+      "end": "offtrack",
+      "drive_ticks": null,
+      "penalty_ticks": 600,
+      "total_ticks": null,
+      "offtrack": 3,
+      "violations": 0
+    },
+    "color-follow-basic/해답": {
+      "finished": true,
+      "end": null,
+      "drive_ticks": 1582,
+      "penalty_ticks": 0,
+      "total_ticks": 1582,
+      "offtrack": 0,
+      "violations": 0
+    },
+    "color-follow-blue/기본": {
+      "finished": false,
+      "end": "offtrack",
+      "drive_ticks": null,
+      "penalty_ticks": 400,
+      "total_ticks": null,
+      "offtrack": 2,
+      "violations": 0
+    },
+    "color-follow-blue/해답": {
+      "finished": true,
+      "end": null,
+      "drive_ticks": 1331,
+      "penalty_ticks": 0,
+      "total_ticks": 1331,
+      "offtrack": 0,
+      "violations": 0
+    },
+    "smartcity-drive/기본": {
+      "finished": true,
+      "end": null,
+      "drive_ticks": 6250,
+      "penalty_ticks": 0,
+      "total_ticks": 6250,
+      "offtrack": 0,
+      "violations": 3
+    }
+  }
+}

@@ -1,0 +1,556 @@
+{
+  "$schema": "../challenge.schema.json",
+  "kit_id": "esp32cam-2wd",
+  "challenge_id": "figure8-basic",
+  "version": "2.0.0",
+  "mode": 1,
+  "title": "RC카 이동제어 · 상급 — 8자 코스",
+  "description": "직각 구간만으로 짜인 8자 코스다. 오른쪽으로 세 번, 왼쪽으로 세 번 돈다. 구간 길이가 제각각이라 직진 시간도 구간마다 다르다. 전체 중심선 길이는 {{derived.track_total_mm}}mm. 이탈 {{rules.offtrack.max_events}}회 또는 {{derived.timeout_s}}초를 넘기면 시도가 끝난다.",
+  "scene": {
+    "units": "mm",
+    "track": {
+      "shape": "polyline",
+      "points": [
+        [
+          0,
+          -600
+        ],
+        [
+          0,
+          600
+        ],
+        [
+          600,
+          600
+        ],
+        [
+          600,
+          0
+        ],
+        [
+          -600,
+          0
+        ],
+        [
+          -600,
+          -600
+        ]
+      ],
+      "width_mm": 360
+    },
+    "theme": "race",
+    "spawn": {
+      "x": 0,
+      "y": -600,
+      "heading_deg": 90
+    },
+    "checkpoints": [
+      {
+        "id": "cp0",
+        "x": 0,
+        "y": -300,
+        "normal_deg": 90,
+        "span_mm": 360
+      },
+      {
+        "id": "cp1",
+        "x": 300,
+        "y": 600,
+        "normal_deg": 0,
+        "span_mm": 360
+      },
+      {
+        "id": "cp2",
+        "x": 600,
+        "y": 300,
+        "normal_deg": -90,
+        "span_mm": 360
+      },
+      {
+        "id": "cp3",
+        "x": -300,
+        "y": 0,
+        "normal_deg": 180,
+        "span_mm": 360
+      },
+      {
+        "id": "cp4",
+        "x": -600,
+        "y": -300,
+        "normal_deg": -90,
+        "span_mm": 360
+      },
+      {
+        "id": "cp5",
+        "x": -300,
+        "y": -600,
+        "normal_deg": 0,
+        "span_mm": 360
+      }
+    ],
+    "lap": {
+      "direction": "mixed",
+      "order": [
+        "cp0",
+        "cp1",
+        "cp2",
+        "cp3",
+        "cp4",
+        "cp5"
+      ],
+      "finish": "cp0",
+      "require_all": true
+    },
+    "assets": {
+      "track": "slot:track.square",
+      "car": "slot:car.2wd",
+      "background": "slot:track.iso.figure8-1200"
+    },
+    "summary": "좌회전과 우회전이 번갈아 나온다. 8자 코스를 이탈 없이 가장 빠르게 한 바퀴 돌자",
+    "props": [
+      {
+        "kind": "fence",
+        "x": -820,
+        "y": -1250,
+        "w": 760,
+        "d": 70,
+        "h": 170,
+        "tone": "white"
+      },
+      {
+        "kind": "fence",
+        "x": -820,
+        "y": 1250,
+        "w": 760,
+        "d": 70,
+        "h": 170,
+        "tone": "white"
+      },
+      {
+        "kind": "fence",
+        "x": -1250,
+        "y": -820,
+        "w": 70,
+        "d": 760,
+        "h": 170,
+        "tone": "white"
+      },
+      {
+        "kind": "fence",
+        "x": 1250,
+        "y": -820,
+        "w": 70,
+        "d": 760,
+        "h": 170,
+        "tone": "white"
+      },
+      {
+        "kind": "fence",
+        "x": 0,
+        "y": -1250,
+        "w": 760,
+        "d": 70,
+        "h": 170,
+        "tone": "red"
+      },
+      {
+        "kind": "fence",
+        "x": 0,
+        "y": 1250,
+        "w": 760,
+        "d": 70,
+        "h": 170,
+        "tone": "red"
+      },
+      {
+        "kind": "fence",
+        "x": -1250,
+        "y": 0,
+        "w": 70,
+        "d": 760,
+        "h": 170,
+        "tone": "red"
+      },
+      {
+        "kind": "fence",
+        "x": 1250,
+        "y": 0,
+        "w": 70,
+        "d": 760,
+        "h": 170,
+        "tone": "red"
+      },
+      {
+        "kind": "fence",
+        "x": 820,
+        "y": -1250,
+        "w": 760,
+        "d": 70,
+        "h": 170,
+        "tone": "white"
+      },
+      {
+        "kind": "fence",
+        "x": 820,
+        "y": 1250,
+        "w": 760,
+        "d": 70,
+        "h": 170,
+        "tone": "white"
+      },
+      {
+        "kind": "fence",
+        "x": -1250,
+        "y": 820,
+        "w": 70,
+        "d": 760,
+        "h": 170,
+        "tone": "white"
+      },
+      {
+        "kind": "fence",
+        "x": 1250,
+        "y": 820,
+        "w": 70,
+        "d": 760,
+        "h": 170,
+        "tone": "white"
+      },
+      {
+        "kind": "cone",
+        "x": -1330,
+        "y": -1330,
+        "w": 160,
+        "d": 160,
+        "h": 220,
+        "tone": "orange"
+      },
+      {
+        "kind": "tires",
+        "x": -1420,
+        "y": -1420,
+        "w": 200,
+        "d": 140,
+        "h": 130,
+        "tone": "dark"
+      },
+      {
+        "kind": "cone",
+        "x": -1330,
+        "y": 1330,
+        "w": 160,
+        "d": 160,
+        "h": 220,
+        "tone": "orange"
+      },
+      {
+        "kind": "tires",
+        "x": -1420,
+        "y": 1420,
+        "w": 200,
+        "d": 140,
+        "h": 130,
+        "tone": "dark"
+      },
+      {
+        "kind": "cone",
+        "x": 1330,
+        "y": -1330,
+        "w": 160,
+        "d": 160,
+        "h": 220,
+        "tone": "orange"
+      },
+      {
+        "kind": "tires",
+        "x": 1420,
+        "y": -1420,
+        "w": 200,
+        "d": 140,
+        "h": 130,
+        "tone": "dark"
+      },
+      {
+        "kind": "cone",
+        "x": 1330,
+        "y": 1330,
+        "w": 160,
+        "d": 160,
+        "h": 220,
+        "tone": "orange"
+      },
+      {
+        "kind": "tires",
+        "x": 1420,
+        "y": 1420,
+        "w": 200,
+        "d": 140,
+        "h": 130,
+        "tone": "dark"
+      },
+      {
+        "kind": "paint",
+        "x": 1780,
+        "y": 0,
+        "w": 640,
+        "d": 900,
+        "h": 1,
+        "tone": "yellow"
+      },
+      {
+        "kind": "fence",
+        "x": 1780,
+        "y": 640,
+        "w": 640,
+        "d": 70,
+        "h": 170,
+        "tone": "blue"
+      }
+    ],
+    "car_scale": 1.6,
+    "car_badge": "내 RC카",
+    "trail_points": 260,
+    "trail_arrow_mm": 250,
+    "ui": {
+      "code_panel": true,
+      "editor_theme": "ino",
+      "playback_speed": false,
+      "transport": "top",
+      "submit_label": "종료 & 제출하기",
+      "goal_banner": {
+        "goal": {
+          "label": "이번 챌린지",
+          "text": "17초 안에 완주"
+        },
+        "limit": {
+          "label": "제한 시간",
+          "text": "24초"
+        },
+        "fail": {
+          "label": "실패 조건",
+          "text": "코스 벗어남 2회"
+        },
+        "record": {
+          "label": "기록 인정",
+          "text": "코스 벗어남 0회 완주"
+        }
+      },
+      "advice": {
+        "slowest": "가장 오래 걸린 곳은 {segment} 구간({time}초)입니다. 그 구간의 delay 를 줄여 보세요.",
+        "drift": "이 킷은 좌우 모터 특성이 {gap}% 다릅니다. setMotor 로 한쪽 값을 올려 직진부터 맞춰 보세요.",
+        "offtrack": "{where} 에서 코스를 벗어났습니다. 그 앞 회전의 delay 를 다시 보세요.",
+        "stuck": "{where} 에서 멈춰 있었습니다. PWM 이 데드존({deadzone}) 아래인지 확인해 보세요.",
+        "violation": "{kind} 을(를) {count}번 어겼습니다. 그 구역에서 무엇을 보고 판단했는지 확인해 보세요."
+      },
+      "record_panel": "plain",
+      "hide_cards": [
+        "briefing",
+        "history"
+      ],
+      "columns": 300,
+      "code_columns": 380,
+      "columns_min": 280,
+      "motor_panel": "overlay",
+      "segmentbar_label": "구간",
+      "api_title": "코드 설명",
+      "api_doc": {
+        "setMotor": "두 바퀴에 서로 다른 값을 줍니다. -255~255.",
+        "stop": "두 바퀴를 모두 멈춥니다.",
+        "delay": "지금 상태를 그만큼 유지합니다. 10ms 단위입니다.",
+        "moveForward": "양쪽 바퀴를 같은 값으로 앞으로 돌립니다.",
+        "moveBackward": "양쪽 바퀴를 같은 값으로 뒤로 돌립니다.",
+        "turnLeft": "제자리에서 왼쪽으로 돕니다.",
+        "turnRight": "제자리에서 오른쪽으로 돕니다.",
+        "pinMode": "핀 모드를 정합니다. 실물 코드 호환용입니다.",
+        "analogWrite": "그 핀에 0~255 세기를 줍니다.",
+        "digitalWrite": "analogWrite(핀,255) / analogWrite(핀,0) 과 같습니다."
+      },
+      "howto_label": "📖 가이드라인",
+      "words": {
+        "laps": "돈 바퀴"
+      },
+      "compact_transport": true,
+      "submit_code": "F8",
+      "right_grow": "minimap"
+    },
+    "rules": {
+      "summary": "편차가 더 크고 이탈 2회로 끝난다. 좌·우회전이 모두 필요하고 구간 길이도 제각각이다.",
+      "steps": [
+        {
+          "image": "slot:guide.figure8-basic.1",
+          "text": "코스 보기 — 좌회전과 우회전이 번갈아 나옵니다."
+        },
+        {
+          "image": "slot:guide.figure8-basic.2",
+          "text": "회전 맞추기 — 회전 PWM 과 시간을 맞춰 교차점을 통과합니다."
+        },
+        {
+          "image": "slot:guide.figure8-basic.3",
+          "text": "한 바퀴 — 이탈 없이 8자를 한 바퀴 돕니다."
+        },
+        {
+          "image": "slot:guide.figure8-basic.4",
+          "text": "줄이기 — 주행이 끝나면 나오는 구간 표에서 가장 오래 걸린 구간을 줄여 봅니다."
+        }
+      ],
+      "tune": [
+        {
+          "name": "SPEED",
+          "effect": "직진할 때 두 바퀴에 주는 PWM. 편차가 커서 그대로 두면 한쪽으로 휩니다."
+        },
+        {
+          "name": "TURN",
+          "effect": "제자리에서 돌 때 주는 PWM."
+        },
+        {
+          "name": "TURN_MS",
+          "effect": "한 번 돌 때 도는 시간(ms). 좌회전과 우회전이 번갈아 나오므로 여기가 어긋나면 8자가 안 닫힙니다."
+        }
+      ]
+    }
+  },
+  "motor_trim": {
+    "left": 0.955,
+    "right": 1.0
+  },
+  "mission": {
+    "objective": "complete_lap",
+    "laps": 1,
+    "metrics": [
+      {
+        "id": "lap_time",
+        "source": "engine.lap.last",
+        "unit": "ms",
+        "label": "현재 랩"
+      },
+      {
+        "id": "best_lap_time",
+        "source": "engine.lap.best",
+        "unit": "ms",
+        "label": "베스트"
+      },
+      {
+        "id": "offtrack_count",
+        "source": "engine.events.offtrack",
+        "unit": "count",
+        "label": "이탈"
+      },
+      {
+        "id": "lap_count",
+        "source": "engine.lap.count",
+        "unit": "count",
+        "label": "완주 랩"
+      }
+    ]
+  },
+  "starter_code": {
+    "language": "ino-subset",
+    "version": 3,
+    "source": "#include \"kit.h\"\n\nint SPEED   = {{kit.drive.default_pwm}};\nint TURN    = {{kit.drive.default_pwm}};\nint TURN_MS = {{derived.turn90_ms}};\n\nvoid setup() {\n  stop();\n  delay(500);\n}\n\nvoid loop() {\n  moveForward(SPEED); delay({{derived.seg1_ms}});\n  turnRight(TURN);    delay(TURN_MS);\n  moveForward(SPEED); delay({{derived.seg2_ms}});\n  turnRight(TURN);    delay(TURN_MS);\n  moveForward(SPEED); delay({{derived.seg3_ms}});\n  turnRight(TURN);    delay(TURN_MS);\n  moveForward(SPEED); delay({{derived.seg4_ms}});\n  turnLeft(TURN);     delay(TURN_MS);\n  moveForward(SPEED); delay({{derived.seg5_ms}});\n  turnLeft(TURN);     delay(TURN_MS);\n  moveForward(SPEED); delay({{derived.seg6_ms}});\n  turnLeft(TURN);     delay(TURN_MS);\n}"
+  },
+  "allowed_api": [
+    "setMotor",
+    "stop",
+    "delay",
+    "moveForward",
+    "moveBackward",
+    "turnLeft",
+    "turnRight",
+    "pinMode",
+    "analogWrite",
+    "digitalWrite"
+  ],
+  "limits": {
+    "max_sim_ticks": 60000,
+    "max_catchup_ms": 20,
+    "max_code_bytes": 8192,
+    "max_ops_per_tick": 200000
+  },
+  "scoring": {
+    "primary": "best_lap_time",
+    "order": "asc",
+    "display": [
+      "lap_time",
+      "best_lap_time",
+      "offtrack_count",
+      "lap_count"
+    ],
+    "penalty": {
+      "offtrack_ticks": 200
+    },
+    "best_requires": {
+      "offtrack": 0,
+      "empty_text": "아직 없음 — 코스를 벗어나지 않고 완주해 보세요"
+    },
+    "goal_ticks": 1700
+  },
+  "rules": {
+    "offtrack": {
+      "mode": "count_and_end",
+      "max_events": 2,
+      "hint": "편차가 중급보다 큽니다. setMotor(왼쪽, 오른쪽) 으로 직진을 먼저 맞추고, 회전 시간도 다시 잡으세요."
+    },
+    "timeout": {
+      "sim_ticks": 2400
+    },
+    "penalty": "none",
+    "respawn": false,
+    "record_incomplete": false
+  },
+  "series": "RC카 이동제어",
+  "track_label": "상급 · 8자 코스",
+  "solution_code": {
+    "language": "ino-subset",
+    "source": "// [설정] 느린 왼쪽 바퀴를 올려 직진을 맞춘다\nint L = {{derived.trim_left_pwm}};\nint R = {{kit.drive.default_pwm}};\nint TURN    = {{derived.spin_pwm}};\nint TURN_MS = {{derived.spin90_ms}};\n\n// [준비]\nvoid setup() {\n  stop();\n  delay(500);\n}\n\n// [주행] 구간마다 직진 시간이 다르다\nvoid loop() {\n  setMotor(L, R);        delay({{derived.seg1_ms}});\n  setMotor(TURN, -TURN); delay(TURN_MS);\n  setMotor(L, R);        delay({{derived.seg2_ms}});\n  setMotor(TURN, -TURN); delay(TURN_MS);\n  setMotor(L, R);        delay({{derived.seg3_ms}});\n  setMotor(TURN, -TURN); delay(TURN_MS);\n  setMotor(L, R);        delay({{derived.seg4_ms}});\n  setMotor(-TURN, TURN); delay(TURN_MS);\n  setMotor(L, R);        delay({{derived.seg5_ms}});\n  setMotor(-TURN, TURN); delay(TURN_MS);\n  setMotor(L, R);        delay({{derived.seg6_ms}});\n  setMotor(-TURN, TURN); delay(TURN_MS);\n}"
+  },
+  "guide": [
+    {
+      "text": "여기서 코드를 고쳐요.",
+      "target": {
+        "el": "editor-mount"
+      }
+    },
+    {
+      "text": "이 숫자가 속도예요.",
+      "target": {
+        "anchor": {
+          "find": "int SPEED",
+          "nth": 1
+        }
+      }
+    },
+    {
+      "text": "이 숫자가 시간이에요.",
+      "target": {
+        "anchor": {
+          "find": "delay(",
+          "nth": 2
+        }
+      }
+    },
+    {
+      "text": "다 고쳤으면 이 버튼을 눌러요.",
+      "target": {
+        "el": "go"
+      }
+    },
+    {
+      "text": "여기서 RC카가 달려요.",
+      "target": {
+        "el": "canvas"
+      }
+    },
+    {
+      "text": "여기서 기록을 봐요.",
+      "target": {
+        "el": "record-plain"
+      }
+    }
+  ],
+  "record": {
+    "fields": [
+      "lap_total",
+      "lap_splits"
+    ]
+  }
+}

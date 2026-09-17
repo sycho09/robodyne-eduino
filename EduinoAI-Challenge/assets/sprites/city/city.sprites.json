@@ -1,0 +1,59 @@
+{
+  "generated_by": "tools/render_iso_scene.py",
+  "px": 256,
+  "sprites": {
+    "signal.green": {
+      "image": "signal-green.png",
+      "height_mm": 330.0,
+      "width_mm": 330.0,
+      "lamp_y": 0.2785714285714286
+    },
+    "signal.yellow": {
+      "image": "signal-yellow.png",
+      "height_mm": 330.0,
+      "width_mm": 330.0,
+      "lamp_y": 0.2
+    },
+    "signal.red": {
+      "image": "signal-red.png",
+      "height_mm": 330.0,
+      "width_mm": 330.0,
+      "lamp_y": 0.12142857142857143
+    },
+    "building.a": {
+      "image": "building-a.png",
+      "height_mm": 1150.0,
+      "width_mm": 1150.0
+    },
+    "building.b": {
+      "image": "building-b.png",
+      "height_mm": 1700.0,
+      "width_mm": 1700.0
+    },
+    "building.c": {
+      "image": "building-c.png",
+      "height_mm": 800.0,
+      "width_mm": 800.0
+    },
+    "tree": {
+      "image": "tree.png",
+      "height_mm": 620.0,
+      "width_mm": 620.0
+    },
+    "sign": {
+      "image": "sign.png",
+      "height_mm": 250.0,
+      "width_mm": 250.0
+    },
+    "pedestrian": {
+      "image": "pedestrian.png",
+      "height_mm": 330.0,
+      "width_mm": 330.0
+    },
+    "barrier": {
+      "image": "barrier.png",
+      "height_mm": 259.2857142857143,
+      "width_mm": 259.2857142857143
+    }
+  }
+}

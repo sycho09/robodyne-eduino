@@ -1,0 +1,37 @@
+{
+  "generated_by": "tools/render_iso_scene.py",
+  "image": "iso-smartcity.0698580f97.jpg",
+  "image_px": [
+    2048,
+    1400
+  ],
+  "ground_z_mm": 3.0,
+  "track": {
+    "shape": "polyline",
+    "reach_mm": 1800,
+    "width_mm": 360
+  },
+  "projection": {
+    "type": "isometric_ortho",
+    "azimuth_deg": 225.0,
+    "elevation_deg": 35.264389682754654,
+    "ortho_width_mm": 7666.168866048001,
+    "origin_px": [
+      1024.0,
+      700.6542205810547
+    ],
+    "x_axis_px": [
+      0.188902099609375,
+      -0.109062659740448
+    ],
+    "y_axis_px": [
+      -0.1889019775390625,
+      -0.109062659740448
+    ],
+    "z_axis_px": [
+      0.0,
+      -0.21812523603439332
+    ]
+  },
+  "image_sha256": "0698580f971519cf80611a73eea68abc308994e5112dea9f9a067402255abc34"
+}

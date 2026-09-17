@@ -1,0 +1,7 @@
+.DS_Store
+node_modules/
+.vercel
+__pycache__/
+
+# 검사가 만든 색 기준값 (렌더 검사가 통과할 때만 갱신한다)
+tools/checks/.color-baseline.json

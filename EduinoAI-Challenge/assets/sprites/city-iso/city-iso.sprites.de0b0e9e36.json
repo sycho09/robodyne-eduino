@@ -1,0 +1,267 @@
+{
+  "generated_by": "tools/render_iso_scene.py",
+  "frame_px": 256,
+  "ortho_width_mm": 1300,
+  "mm_per_px": 5.078125,
+  "pivot_px": [
+    128.0,
+    128.0
+  ],
+  "projection": {
+    "type": "isometric_ortho",
+    "azimuth_deg": 225.0,
+    "elevation_deg": 35.264389682754654
+  },
+  "sets": {
+    "pedestrian": {
+      "dirs": 8,
+      "steps": 2,
+      "frames": [
+        {
+          "dir": 0,
+          "angle_deg": 0.0,
+          "step": 0,
+          "file": "ce66b3d8eb/ped-000-0.png"
+        },
+        {
+          "dir": 1,
+          "angle_deg": 45.0,
+          "step": 0,
+          "file": "ce66b3d8eb/ped-045-0.png"
+        },
+        {
+          "dir": 2,
+          "angle_deg": 90.0,
+          "step": 0,
+          "file": "ce66b3d8eb/ped-090-0.png"
+        },
+        {
+          "dir": 3,
+          "angle_deg": 135.0,
+          "step": 0,
+          "file": "ce66b3d8eb/ped-135-0.png"
+        },
+        {
+          "dir": 4,
+          "angle_deg": 180.0,
+          "step": 0,
+          "file": "ce66b3d8eb/ped-180-0.png"
+        },
+        {
+          "dir": 5,
+          "angle_deg": 225.0,
+          "step": 0,
+          "file": "ce66b3d8eb/ped-225-0.png"
+        },
+        {
+          "dir": 6,
+          "angle_deg": 270.0,
+          "step": 0,
+          "file": "ce66b3d8eb/ped-270-0.png"
+        },
+        {
+          "dir": 7,
+          "angle_deg": 315.0,
+          "step": 0,
+          "file": "ce66b3d8eb/ped-315-0.png"
+        },
+        {
+          "dir": 0,
+          "angle_deg": 0.0,
+          "step": 1,
+          "file": "ce66b3d8eb/ped-000-1.png"
+        },
+        {
+          "dir": 1,
+          "angle_deg": 45.0,
+          "step": 1,
+          "file": "ce66b3d8eb/ped-045-1.png"
+        },
+        {
+          "dir": 2,
+          "angle_deg": 90.0,
+          "step": 1,
+          "file": "ce66b3d8eb/ped-090-1.png"
+        },
+        {
+          "dir": 3,
+          "angle_deg": 135.0,
+          "step": 1,
+          "file": "ce66b3d8eb/ped-135-1.png"
+        },
+        {
+          "dir": 4,
+          "angle_deg": 180.0,
+          "step": 1,
+          "file": "ce66b3d8eb/ped-180-1.png"
+        },
+        {
+          "dir": 5,
+          "angle_deg": 225.0,
+          "step": 1,
+          "file": "ce66b3d8eb/ped-225-1.png"
+        },
+        {
+          "dir": 6,
+          "angle_deg": 270.0,
+          "step": 1,
+          "file": "ce66b3d8eb/ped-270-1.png"
+        },
+        {
+          "dir": 7,
+          "angle_deg": 315.0,
+          "step": 1,
+          "file": "ce66b3d8eb/ped-315-1.png"
+        }
+      ]
+    },
+    "signal": {
+      "dirs": 4,
+      "colors": [
+        "green",
+        "yellow",
+        "red"
+      ],
+      "frames": [
+        {
+          "color": "green",
+          "dir": 0,
+          "angle_deg": 0.0,
+          "file": "ce66b3d8eb/signal-green-000.png"
+        },
+        {
+          "color": "green",
+          "dir": 1,
+          "angle_deg": 90.0,
+          "file": "ce66b3d8eb/signal-green-090.png"
+        },
+        {
+          "color": "green",
+          "dir": 2,
+          "angle_deg": 180.0,
+          "file": "ce66b3d8eb/signal-green-180.png"
+        },
+        {
+          "color": "green",
+          "dir": 3,
+          "angle_deg": 270.0,
+          "file": "ce66b3d8eb/signal-green-270.png"
+        },
+        {
+          "color": "yellow",
+          "dir": 0,
+          "angle_deg": 0.0,
+          "file": "ce66b3d8eb/signal-yellow-000.png"
+        },
+        {
+          "color": "yellow",
+          "dir": 1,
+          "angle_deg": 90.0,
+          "file": "ce66b3d8eb/signal-yellow-090.png"
+        },
+        {
+          "color": "yellow",
+          "dir": 2,
+          "angle_deg": 180.0,
+          "file": "ce66b3d8eb/signal-yellow-180.png"
+        },
+        {
+          "color": "yellow",
+          "dir": 3,
+          "angle_deg": 270.0,
+          "file": "ce66b3d8eb/signal-yellow-270.png"
+        },
+        {
+          "color": "red",
+          "dir": 0,
+          "angle_deg": 0.0,
+          "file": "ce66b3d8eb/signal-red-000.png"
+        },
+        {
+          "color": "red",
+          "dir": 1,
+          "angle_deg": 90.0,
+          "file": "ce66b3d8eb/signal-red-090.png"
+        },
+        {
+          "color": "red",
+          "dir": 2,
+          "angle_deg": 180.0,
+          "file": "ce66b3d8eb/signal-red-180.png"
+        },
+        {
+          "color": "red",
+          "dir": 3,
+          "angle_deg": 270.0,
+          "file": "ce66b3d8eb/signal-red-270.png"
+        }
+      ]
+    },
+    "crossing_gate": {
+      "steps": 5,
+      "arm_mm": 470,
+      "frames": [
+        {
+          "step": 0,
+          "drop": 0.0,
+          "file": "ce66b3d8eb/gate-0.png"
+        },
+        {
+          "step": 1,
+          "drop": 0.25,
+          "file": "ce66b3d8eb/gate-1.png"
+        },
+        {
+          "step": 2,
+          "drop": 0.5,
+          "file": "ce66b3d8eb/gate-2.png"
+        },
+        {
+          "step": 3,
+          "drop": 0.75,
+          "file": "ce66b3d8eb/gate-3.png"
+        },
+        {
+          "step": 4,
+          "drop": 1.0,
+          "file": "ce66b3d8eb/gate-4.png"
+        }
+      ]
+    }
+  },
+  "frames_sha256": {
+    "gate-0.png": "e52c39227b9f8fad5b060d4f32c495847c1c5b850f0a6d61f2b823cdd88b6061",
+    "gate-1.png": "9609ed983218b7ffd104aed03784e2a5cf830f90b0e5ecc77588ad9a4f90dd2a",
+    "gate-2.png": "151ed83f3189ced3d71f05a029ddc6295df29b477d02aa52eb340cf350bcb031",
+    "gate-3.png": "a6f08ad343d8564485dfff5503e1de494f1d70276f674fb38357358293efedd5",
+    "gate-4.png": "ccf41545be72274120be22d1bb8bc4d75a2fd5d7f479b469ca9b01f4ff80bc78",
+    "ped-000-0.png": "2c85d15a8ed6673fdaab1a9b161841063445d048d0f4e3d662f61327f1154d05",
+    "ped-000-1.png": "a9a0189783c81dde5fdba95de993453e978cba956459b5b6b85643696836e043",
+    "ped-045-0.png": "4e0f22ae773e9bc4030056ee85b65edbe7ec8c6813d11cd6856c996f25e1c4cf",
+    "ped-045-1.png": "c0c676bc6c1bcc5a8e00ee07043887781042cb1e6a56ecf3fd6a93ea110cd8a6",
+    "ped-090-0.png": "b8237b42d1795dc6a7425d23dc55bc0adda70d6891943e0b1e3cf6f2ca305191",
+    "ped-090-1.png": "ead5325a9b8e582f33e129476b69df8d56aa754e435a63eda47401109af63b89",
+    "ped-135-0.png": "8f01e29330c14e8599f07208355de089714ab410e3fab59cdb283574b1cbdbd2",
+    "ped-135-1.png": "fee628295200e2c38da7f3b06ecdaac57614baead113ea36935767ffeb9f3cc5",
+    "ped-180-0.png": "4f11049548875e4598a5607e6d1b85120e7394968deafda9caa52cf220241fb0",
+    "ped-180-1.png": "01e6f05e95b1d727057fb792864415f9e5bffca119236fc6c81f811f5ca875c4",
+    "ped-225-0.png": "9db5b8d6180e688a6a3c912d9802d87700d1110caba0dc9c7a2cda7d95bfe632",
+    "ped-225-1.png": "9cc5c94178b0bf1b13f212c7ae3811ebe2c6d8106fb41dea803f84058db15414",
+    "ped-270-0.png": "750b4d9a1f19bdafd8d2252fb7bb38b251feb15191df41728251aa21025c757d",
+    "ped-270-1.png": "17fa0202d6496f1ce63543838651163013327ec671649adea98703ddeb8bef42",
+    "ped-315-0.png": "7e11e98de3636120d76e332ad478510e67dfd4ae6363398fd7c065692003a3aa",
+    "ped-315-1.png": "450b5dbdeaa9b8b36aebca5a4582634f08dd82803a6c8a936f1699836655a124",
+    "signal-green-000.png": "c6f0f598236119072a3cd7350b79af870a0fcd8ffbc518d0d28a20c31ee30dbd",
+    "signal-green-090.png": "1c6ea5891ab0d90087b5d7d48bdce786f23f28f804c0cf377b28713a2276d4e6",
+    "signal-green-180.png": "2b54857cf2d982a34a3de4c345e352e7aca8fda4e62ac5850fff5599b21ed99c",
+    "signal-green-270.png": "c96c8ebaf65ff4c2a2c643a4fb28ce9bf4eaa7c828b88110743cea06fcf57373",
+    "signal-red-000.png": "5f03c14d6b8f049e72dec5348a95b447ec3e3a465b680b5839bc7f01f5d3ec1a",
+    "signal-red-090.png": "83449a733863c06567cca5145cd421252cfd18a2db8334c8011879b086a365c4",
+    "signal-red-180.png": "8c982c2ae7bfdb0c07ca5c9032b64ab019007c26c43b138a0eba81ff77180752",
+    "signal-red-270.png": "565bd9188b5b9b2ba1271c674e6855a7e468db1ccf5572be3675772db09f9bd0",
+    "signal-yellow-000.png": "83d91f70fe0dea6eca91a97ace3392baf4b9f1c721fd94b953cc334fb5fb66d5",
+    "signal-yellow-090.png": "987a76ee9061aa4c50578fff24adfeb29ed15e50dec6ca9513af8bc6ed5da979",
+    "signal-yellow-180.png": "fdbf3ca912d765f553a3c1e9a51a224950572cc7a0b063dbba3ada672f27d215",
+    "signal-yellow-270.png": "f148a37e0cdf0c39128cdc5163e0138c9eec564b28502b31ecb6aaf0f25cd5a6"
+  }
+}

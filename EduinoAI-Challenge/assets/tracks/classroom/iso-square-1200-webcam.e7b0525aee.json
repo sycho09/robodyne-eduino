@@ -1,0 +1,37 @@
+{
+  "generated_by": "tools/render_iso_scene.py",
+  "image": "iso-square-1200-webcam.d7291e79e5.jpg",
+  "image_px": [
+    4234,
+    2894
+  ],
+  "ground_z_mm": 3.0,
+  "track": {
+    "shape": "square",
+    "reach_mm": 600.0,
+    "width_mm": 360
+  },
+  "projection": {
+    "type": "isometric_ortho",
+    "azimuth_deg": 225.0,
+    "elevation_deg": 35.264389682754654,
+    "ortho_width_mm": 4118.189886720001,
+    "origin_px": [
+      2117.0,
+      1449.5177493095398
+    ],
+    "x_axis_px": [
+      0.7269919357299804,
+      -0.41972895741462707
+    ],
+    "y_axis_px": [
+      -0.7269916833639145,
+      -0.41972895741462707
+    ],
+    "z_axis_px": [
+      0.0,
+      -0.8394577423334122
+    ]
+  },
+  "image_sha256": "d7291e79e5ab22273d54bbe7be8b3bb2d76c951bc34d24a05e95ed681d736e4d"
+}

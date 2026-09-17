@@ -1,0 +1,487 @@
+{
+  "$schema": "../challenge.schema.json",
+  "kit_id": "esp32cam-2wd",
+  "challenge_id": "color-follow-blue",
+  "version": "1.0.0",
+  "mode": 2,
+  "title": "RC카 색상제어 — 색 추적 · 파랑",
+  "description": "같은 규칙, 다른 코스다. 변 길이가 600mm 와 1300mm 로 빨강판과 길고 짧음이 뒤바뀌어 있고 마커도 파랗다. 빨강판에서 맞춘 NEAR 가 여기서도 맞는지 확인해 보자. 이탈 {{rules.offtrack.max_events}}회 · {{derived.timeout_s}}초를 넘기면 시도가 끝난다.",
+  "scene": {
+    "units": "mm",
+    "track": {
+      "shape": "polyline",
+      "points": [
+        [
+          -300,
+          -650
+        ],
+        [
+          300,
+          -650
+        ],
+        [
+          300,
+          650
+        ],
+        [
+          -300,
+          650
+        ]
+      ],
+      "width_mm": 360
+    },
+    "theme": "warehouse",
+    "spawn": {
+      "x": -300,
+      "y": -650,
+      "heading_deg": 0
+    },
+    "checkpoints": [
+      {
+        "id": "cp0",
+        "x": 0,
+        "y": -650,
+        "normal_deg": 0,
+        "span_mm": 360
+      },
+      {
+        "id": "cp1",
+        "x": 300,
+        "y": 0,
+        "normal_deg": 90,
+        "span_mm": 360
+      },
+      {
+        "id": "cp2",
+        "x": 0,
+        "y": 650,
+        "normal_deg": 180,
+        "span_mm": 360
+      },
+      {
+        "id": "cp3",
+        "x": -300,
+        "y": 0,
+        "normal_deg": -90,
+        "span_mm": 360
+      }
+    ],
+    "lap": {
+      "direction": "ccw",
+      "order": [
+        "cp0",
+        "cp1",
+        "cp2",
+        "cp3"
+      ],
+      "finish": "cp0",
+      "require_all": true
+    },
+    "assets": {
+      "track": "slot:track.square",
+      "car": "slot:car.2wd",
+      "background": "slot:track.iso.square-1200-marker-blue"
+    },
+    "markers": [
+      {
+        "id": "m0",
+        "x": 650,
+        "y": -650,
+        "color": [
+          58,
+          96,
+          190
+        ],
+        "size_mm": 200,
+        "asset": "slot:marker.blue"
+      },
+      {
+        "id": "m1",
+        "x": 300,
+        "y": 1000,
+        "color": [
+          58,
+          96,
+          190
+        ],
+        "size_mm": 200,
+        "asset": "slot:marker.blue"
+      },
+      {
+        "id": "m2",
+        "x": -650,
+        "y": 650,
+        "color": [
+          58,
+          96,
+          190
+        ],
+        "size_mm": 200,
+        "asset": "slot:marker.blue"
+      },
+      {
+        "id": "m3",
+        "x": -300,
+        "y": -1000,
+        "color": [
+          58,
+          96,
+          190
+        ],
+        "size_mm": 200,
+        "asset": "slot:marker.blue"
+      }
+    ],
+    "camera_view": {
+      "fov_deg": 60,
+      "range_mm": 1200
+    },
+    "summary": "같은 코스인데 마커가 파랗다. 찾을 색을 바꿔, 코드가 색 하나에 매이지 않게 만들자",
+    "props": [
+      {
+        "kind": "rack",
+        "x": 1250,
+        "y": 0,
+        "w": 280,
+        "d": 800,
+        "h": 360,
+        "tone": "blue"
+      },
+      {
+        "kind": "rack",
+        "x": -1250,
+        "y": 0,
+        "w": 280,
+        "d": 800,
+        "h": 360,
+        "tone": "blue"
+      },
+      {
+        "kind": "rack",
+        "x": 0,
+        "y": 1620,
+        "w": 800,
+        "d": 280,
+        "h": 360,
+        "tone": "blue"
+      },
+      {
+        "kind": "rack",
+        "x": 0,
+        "y": -1620,
+        "w": 800,
+        "d": 280,
+        "h": 360,
+        "tone": "blue"
+      },
+      {
+        "kind": "paint",
+        "x": 960,
+        "y": 0,
+        "w": 70,
+        "d": 1000,
+        "h": 1,
+        "tone": "yellow"
+      },
+      {
+        "kind": "paint",
+        "x": -960,
+        "y": 0,
+        "w": 70,
+        "d": 1000,
+        "h": 1,
+        "tone": "yellow"
+      },
+      {
+        "kind": "paint",
+        "x": 0,
+        "y": 1300,
+        "w": 900,
+        "d": 70,
+        "h": 1,
+        "tone": "yellow"
+      },
+      {
+        "kind": "paint",
+        "x": 0,
+        "y": -1300,
+        "w": 900,
+        "d": 70,
+        "h": 1,
+        "tone": "yellow"
+      },
+      {
+        "kind": "paint",
+        "x": 1600,
+        "y": 0,
+        "w": 700,
+        "d": 700,
+        "h": 1,
+        "tone": "blue"
+      },
+      {
+        "kind": "paint",
+        "x": -1600,
+        "y": 0,
+        "w": 700,
+        "d": 700,
+        "h": 1,
+        "tone": "green"
+      },
+      {
+        "kind": "forklift",
+        "x": 0,
+        "y": -1900,
+        "w": 760,
+        "d": 520,
+        "h": 360,
+        "tone": "yellow"
+      },
+      {
+        "kind": "pallet",
+        "x": -1600,
+        "y": 0,
+        "w": 500,
+        "d": 420,
+        "h": 130,
+        "tone": "wood"
+      },
+      {
+        "kind": "crate",
+        "x": 1600,
+        "y": 0,
+        "w": 380,
+        "d": 380,
+        "h": 300,
+        "tone": "wood"
+      },
+      {
+        "kind": "crate",
+        "x": 0,
+        "y": 1900,
+        "w": 320,
+        "d": 300,
+        "h": 260,
+        "tone": "wood"
+      }
+    ],
+    "car_scale": 1.6,
+    "car_badge": "내 RC카",
+    "trail_points": 260,
+    "trail_arrow_mm": 250,
+    "ui": {
+      "code_panel": true,
+      "editor_theme": "ino",
+      "playback_speed": false,
+      "transport": "top",
+      "submit_label": "종료 & 제출하기",
+      "goal_banner": {
+        "goal": {
+          "label": "이번 챌린지",
+          "text": "12.5초 안에 완주"
+        },
+        "limit": {
+          "label": "제한 시간",
+          "text": "70초"
+        },
+        "fail": {
+          "label": "실패 조건",
+          "text": "코스 벗어남 2회"
+        },
+        "record": {
+          "label": "기록 인정",
+          "text": "코스 벗어남 0회 완주"
+        }
+      },
+      "advice": {
+        "slowest": "가장 오래 걸린 곳은 {segment} 구간({time}초)입니다. 그 구간의 delay 를 줄여 보세요.",
+        "drift": "이 킷은 좌우 모터 특성이 {gap}% 다릅니다. setMotor 로 한쪽 값을 올려 직진부터 맞춰 보세요.",
+        "offtrack": "{where} 에서 코스를 벗어났습니다. 그 앞 회전의 delay 를 다시 보세요.",
+        "stuck": "{where} 에서 멈춰 있었습니다. PWM 이 데드존({deadzone}) 아래인지 확인해 보세요.",
+        "violation": "{kind} 을(를) {count}번 어겼습니다. 그 구역에서 무엇을 보고 판단했는지 확인해 보세요."
+      },
+      "record_panel": "plain",
+      "hide_cards": [
+        "briefing",
+        "history"
+      ],
+      "columns": 300,
+      "code_columns": 380,
+      "columns_min": 280,
+      "motor_panel": false,
+      "segmentbar_label": "구간",
+      "api_title": "코드 설명",
+      "api_doc": {
+        "setMotor": "두 바퀴에 서로 다른 값을 줍니다. -255~255.",
+        "stop": "두 바퀴를 모두 멈춥니다.",
+        "delay": "지금 상태를 그만큼 유지합니다. 10ms 단위입니다.",
+        "moveForward": "양쪽 바퀴를 같은 값으로 앞으로 돌립니다.",
+        "moveBackward": "양쪽 바퀴를 같은 값으로 뒤로 돌립니다.",
+        "turnLeft": "제자리에서 왼쪽으로 돕니다.",
+        "turnRight": "제자리에서 오른쪽으로 돕니다.",
+        "cameraSetTarget": "찾을 색을 정합니다. 빨강·초록·파랑을 0~255 로 줍니다.",
+        "cameraFound": "그 색이 카메라에 보이면 참입니다.",
+        "cameraOffset": "보이는 색이 화면 어디에 있는지. -100(왼쪽)~+100(오른쪽).",
+        "cameraArea": "보이는 색이 얼마나 큰지. 0~100, 가까울수록 커집니다."
+      },
+      "howto_label": "📖 가이드라인",
+      "words": {
+        "laps": "돈 바퀴"
+      },
+      "compact_transport": true,
+      "submit_code": "CFB",
+      "right_grow": "minimap"
+    },
+    "rules": {
+      "summary": "마커가 파랑이고 긴 변과 짧은 변이 빨강과 반대다. 같은 규칙이 다른 코스에서도 통하는지 본다.",
+      "steps": [
+        {
+          "image": "slot:guide.color-follow-blue.1",
+          "text": "색 바꾸기 — cameraSetTarget 의 세 숫자를 파란 쪽으로 바꿉니다."
+        },
+        {
+          "image": "slot:guide.color-follow-blue.2",
+          "text": "확인하기 — 카메라 시점에서 마커가 잡히는지 봅니다."
+        },
+        {
+          "image": "slot:guide.color-follow-blue.3",
+          "text": "나머지는 그대로 — 돌 자리를 정하는 규칙은 빨강 때와 같습니다."
+        },
+        {
+          "image": "slot:guide.color-follow-blue.4",
+          "text": "줄이기 — NEAR 와 회전 시간을 다듬어 기록을 줄입니다."
+        }
+      ],
+      "tune": [
+        {
+          "name": "SPEED",
+          "effect": "직진할 때 두 바퀴에 주는 PWM."
+        },
+        {
+          "name": "TURN",
+          "effect": "제자리에서 돌 때 주는 PWM."
+        },
+        {
+          "name": "TURN_MS",
+          "effect": "한 번 돌 때 도는 시간(ms)."
+        },
+        {
+          "name": "GAIN",
+          "effect": "마커 쪽으로 방향을 맞추는 세기. 키우면 더 크게 꺾습니다."
+        },
+        {
+          "name": "NEAR",
+          "effect": "마커가 이만큼 커지면 코너로 봅니다. 키우면 더 바짝 붙어서 돌고, 줄이면 더 일찍 돕니다."
+        }
+      ]
+    }
+  },
+  "mission": {
+    "objective": "complete_lap",
+    "laps": 1,
+    "metrics": [
+      {
+        "id": "lap_time",
+        "source": "engine.lap.last",
+        "unit": "ms",
+        "label": "현재 랩"
+      },
+      {
+        "id": "best_lap_time",
+        "source": "engine.lap.best",
+        "unit": "ms",
+        "label": "베스트"
+      },
+      {
+        "id": "offtrack_count",
+        "source": "engine.events.offtrack",
+        "unit": "count",
+        "label": "이탈"
+      },
+      {
+        "id": "lap_count",
+        "source": "engine.lap.count",
+        "unit": "count",
+        "label": "완주 랩"
+      }
+    ]
+  },
+  "starter_code": {
+    "language": "ino-subset",
+    "version": 3,
+    "source": "#include \"kit.h\"\n\nint SPEED = {{kit.drive.default_pwm}};\nint TURN  = {{derived.spin_pwm}};\nint TURN_MS = {{derived.spin90_ms}};\nint GAIN  = 60;\nint NEAR  = 25;\n\nvoid setup() {\n  cameraSetTarget(58, 96, 190);\n  stop();\n  delay(500);\n}\n\nvoid loop() {\n  int area = 0;\n  if (cameraFound()) area = cameraArea();\n  if (area >= NEAR) {\n    turnLeft(TURN);\n    delay(TURN_MS);\n  } else if (cameraFound()) {\n    int off = cameraOffset();\n    int turn = off * GAIN / 100;\n    setMotor(SPEED + turn, SPEED - turn);\n    delay(20);\n  } else {\n    moveForward(SPEED);\n    delay(20);\n  }\n}"
+  },
+  "allowed_api": [
+    "setMotor",
+    "stop",
+    "delay",
+    "moveForward",
+    "moveBackward",
+    "turnLeft",
+    "turnRight",
+    "cameraSetTarget",
+    "cameraFound",
+    "cameraOffset",
+    "cameraArea"
+  ],
+  "camera_source": "sim",
+  "limits": {
+    "max_sim_ticks": 60000,
+    "max_catchup_ms": 20,
+    "max_code_bytes": 8192,
+    "max_ops_per_tick": 200000
+  },
+  "scoring": {
+    "primary": "best_lap_time",
+    "order": "asc",
+    "display": [
+      "lap_time",
+      "best_lap_time",
+      "offtrack_count",
+      "lap_count"
+    ],
+    "penalty": {
+      "offtrack_ticks": 200
+    },
+    "best_requires": {
+      "offtrack": 0,
+      "empty_text": "아직 없음 — 코스를 벗어나지 않고 완주해 보세요"
+    },
+    "goal_ticks": 1250
+  },
+  "rules": {
+    "offtrack": {
+      "mode": "count_and_end",
+      "max_events": 2,
+      "hint": "NEAR 가 작으면 코너보다 한참 앞에서 돕니다. 마커가 코너에 닿을 때의 크기까지 올려 보세요."
+    },
+    "timeout": {
+      "sim_ticks": 7000
+    },
+    "no_progress": {
+      "sim_ticks": 1000,
+      "min_move_mm": 50,
+      "message": "마커를 놓치고 제자리를 맴돌고 있습니다",
+      "hint": "NEAR 가 너무 크면 코너를 지나쳐 마커를 잃습니다."
+    },
+    "penalty": "none",
+    "respawn": false,
+    "record_incomplete": false
+  },
+  "series": "RC카 색상제어",
+  "track_label": "색 추적 · 파랑",
+  "motor_trim": {
+    "left": 0.982,
+    "right": 1.0
+  },
+  "solution_code": {
+    "language": "ino-subset",
+    "source": "// [설정] NEAR 를 코너에 닿는 크기로 맞춘 코드\n//   마커는 코너를 지나 {{derived.marker_ahead_mm}}mm 앞에 서 있다.\n//   그 거리에서 마커가 화면에서 차지하는 크기가 {{derived.marker_near_area}} 이다.\nint SPEED = {{kit.drive.default_pwm}};\nint TURN  = {{derived.spin_pwm}};\nint TURN_MS = {{derived.spin90_ms}};\nint GAIN  = 60;\nint NEAR  = {{derived.marker_near_area}};   // 코너에 닿는 순간의 크기\n\n// [준비]\nvoid setup() {\n  cameraSetTarget(58, 96, 190);\n  stop();\n  delay(500);\n}\n\n// [주행] 이 킷은 좌우 모터 특성이 달라 그냥 두면 휜다.\n// 마커가 화면 가운데 오도록 좌우 바퀴를 조금씩 다르게 주는 것이 핵심이다.\nvoid loop() {\n  if (cameraFound() && cameraArea() >= NEAR) {\n    turnLeft(TURN);\n    delay(TURN_MS);\n  } else if (cameraFound()) {\n    int off = cameraOffset();\n    setMotor(SPEED + off * GAIN / 100, SPEED - off * GAIN / 100);\n    delay(20);\n  } else {\n    moveForward(SPEED);\n    delay(20);\n  }\n}"
+  },
+  "record": {
+    "fields": [
+      "lap_total",
+      "lap_splits"
+    ]
+  }
+}

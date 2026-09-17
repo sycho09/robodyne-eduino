@@ -1,0 +1,35 @@
+{
+  "generated_by": "tools/render_iso_scene.py",
+  "frame_px": [
+    400,
+    300
+  ],
+  "ortho_width_mm": 1150,
+  "projection": {
+    "type": "isometric_ortho",
+    "azimuth_deg": 225.0,
+    "elevation_deg": 35.264389682754654
+  },
+  "files": [
+    "square-beginner-1.png",
+    "square-beginner-2.png",
+    "square-beginner-3.png",
+    "square-beginner-4.png",
+    "square-basic-1.png",
+    "square-basic-2.png",
+    "square-basic-3.png",
+    "square-basic-4.png",
+    "figure8-basic-1.png",
+    "figure8-basic-2.png",
+    "figure8-basic-3.png",
+    "figure8-basic-4.png",
+    "webcam-drive-basic-1.png",
+    "webcam-drive-basic-2.png",
+    "webcam-drive-basic-3.png",
+    "webcam-drive-basic-4.png",
+    "smartcity-drive-1.png",
+    "smartcity-drive-2.png",
+    "smartcity-drive-3.png",
+    "smartcity-drive-4.png"
+  ]
+}

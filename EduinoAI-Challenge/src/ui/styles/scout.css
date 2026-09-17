@@ -1,0 +1,796 @@
+/*
+ * ui/styles/scout.css — 탐사 화면(모드3) 전용.
+ *
+ * 전부 .scout 아래에만 걸린다. 다른 챌린지의 화면은 이 파일을 한 줄도 타지 않는다.
+ * 색은 tokens.css 의 변수만 쓴다 — 여기서 새 색을 만들지 않는다.
+ */
+
+/* 화면 하나에 다 들어간다 — 세로 스크롤 0 이 기준이다. 넘치는 것은 열 안에서만 스크롤한다. */
+.scout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.scout .appbar,
+.scout .chbar,
+.scout .scout__row3 { flex: none; }
+
+/* ---- 3행 도구 줄 + 상태 줄 ---- */
+.scout .scout__row3 {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  border-bottom: 1px solid var(--c-line);
+}
+
+.scout .scout__tool {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border-right: 1px solid var(--c-line);
+  background: var(--c-surface-2);
+  min-width: 0;
+}
+
+.scout .tbtn {
+  appearance: none;
+  border: 1px solid var(--c-line-strong);
+  background: var(--c-surface);
+  color: var(--c-text);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font: 600 11.5px/1 -apple-system, system-ui, sans-serif;
+  cursor: pointer;
+  flex: none;
+}
+
+/* 주소 칸. 기기를 고를 때만 보인다 — 노트북 카메라에는 적을 주소가 없다. */
+.scout .tinput {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid var(--c-line-strong);
+  background: var(--c-surface);
+  color: var(--c-text);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font: 11.5px/1 ui-monospace, monospace;
+}
+
+/* 연결 상태와 실패 사유. 4분할 바로 아래에 둔다 — 사유 문장이 길어 도구 줄에 안 들어간다. */
+.scout .camsay {
+  margin: 0;
+  padding: 7px 12px;
+  background: #12161c;
+  border-top: 1px solid #262b33;
+  color: var(--c-stage-text-dim);
+  font: 11.5px/1.5 -apple-system, system-ui, sans-serif;
+  flex: none;
+}
+
+.scout .camsay.is-bad { background: #2a1417; color: #ffb3b6; }
+
+/* 상태는 여기 한 줄에만 있다. 같은 값을 우측 열에 또 두지 않는다. */
+/* 칸마다 폭을 못박는다. 값이 바뀔 때마다 칸이 늘었다 줄었다 하면 옆 칸이 좌우로 밀려
+   숫자를 눈으로 좇을 수가 없다 — 실물을 붙이자마자 그렇게 됐다(57-B 보강1).
+   그리드로 폭을 고정하고, 값은 등폭 글꼴로 오른쪽에 붙인다. */
+.scout .scout__hl {
+  display: grid;
+  grid-template-columns: 7rem 11.5rem 11rem 6.5rem 6rem 7rem 11rem;
+  align-items: center;
+  background: var(--c-stage);
+  color: var(--c-stage-text);
+  padding: 0 14px;
+  min-height: 50px;
+  overflow: hidden;
+}
+
+.scout .seg {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 0 10px;
+  border-right: 1px solid var(--c-stage-line);
+  height: 22px;
+  min-width: 0;
+}
+
+.scout .seg:first-child { padding-left: 0; }
+.scout .seg:last-child { border-right: 0; }
+
+.scout .seg__k {
+  font: 11px/1 -apple-system, system-ui, sans-serif;
+  color: var(--c-stage-text-faint);
+  flex: none;
+}
+
+/* 값은 칸 안에서 오른쪽 끝에 선다. 등폭이라 자릿수가 바뀌어도 폭이 그대로다. */
+.scout .seg__v {
+  margin-left: auto;
+  min-width: 0;
+  text-align: right;
+  font: 800 13px/1 ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scout .seg__v.is-ok { color: #7ee2a8; }
+.scout .seg__v.is-hot { color: #ff8a8f; }
+
+/* 안내 문구다. 버튼처럼 보이면 학생이 누른다. 한 줄에 선다. */
+.scout .scout__nore {
+  font: 11px/1.3 -apple-system, system-ui, sans-serif;
+  color: var(--c-text-faint);
+  white-space: nowrap;
+  flex: none;
+}
+
+/* ---- 3열 ---- */
+.scout .scout__grid {
+  display: grid;
+  grid-template-columns: 300px 1fr 320px;
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.scout .scout__colL {
+  border-right: 1px solid var(--c-line);
+  background: var(--c-surface-2);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.scout .scout__colC {
+  display: flex;
+  flex-direction: column;
+  background: #0d1014;
+  min-width: 0;
+  min-height: 0;
+}
+
+.scout .scout__colR {
+  border-left: 1px solid var(--c-line);
+  background: var(--c-surface);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* 일지 블록이 남는 세로 자리를 가져간다. 이 감싼 자리가 늘어나야 그 안의 일지 칸도 늘어난다 —
+   예전에는 리모컨이 margin-top:auto 로 바닥에 붙고 그 사이가 통째로 비었다(57차 보강3). */
+.scout .scout__colR > [data-el="log"] { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
+.scout .quad {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 1px;
+  background: #000;
+  min-height: 0;
+}
+
+.scout .qcell {
+  position: relative;
+  background: var(--c-stage);
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* 캔버스가 칸을 꽉 채운다. contain 으로 비율을 지키면 칸 좌우에 검은 띠가 생기고,
+   그 띠 위에 이름표가 얹혀 "그림 밖에 글자가 있는" 것처럼 보였다(57차 보강3).
+   늘려서 채우므로 잘리는 곳은 없다 — 비율만 조금 달라진다. */
+.scout .qcell canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.scout .qcell__name {
+  position: absolute;
+  left: 10px;
+  top: 9px;
+  font: 700 11.5px/1 -apple-system, system-ui, sans-serif;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .95), 0 0 8px rgba(0, 0, 0, .7);
+  pointer-events: none;
+}
+
+.scout .qcell__sub {
+  position: absolute;
+  right: 8px;
+  bottom: 7px;
+  font: 10px/1 ui-monospace, monospace;
+  color: var(--c-stage-text-faint);
+}
+
+.scout .qcell__pick {
+  position: absolute;
+  right: 8px;
+  top: 7px;
+  font: 11px/1 -apple-system, system-ui, sans-serif;
+  color: var(--c-stage-text);
+  background: rgba(8, 11, 17, .70);
+  border: 1px solid var(--c-stage-line-strong);
+  border-radius: 5px;
+  padding: 3px 5px;
+  max-width: 46%;
+}
+
+/* ---- 4분할 아래 한 줄 ---- */
+.scout .cbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #181c22;
+  border-top: 1px solid #262b33;
+  color: #c6cedb;
+  font: 11.5px/1 -apple-system, system-ui, sans-serif;
+  flex: none;
+}
+
+.scout .cbar b { color: #fff; font-weight: 700; }
+.scout .cbar b.is-bad { color: #ff8a8f; }
+
+.scout .cbar__estop {
+  border: 1px solid rgba(255, 138, 143, .5);
+  background: rgba(229, 72, 77, .18);
+  color: #ffb3b6;
+  border-radius: 6px;
+  padding: 3px 9px;
+  font: 800 11px/1.35 -apple-system, system-ui, sans-serif;
+}
+
+.scout .cbar__estop.is-on { background: #7a1d20; border-color: #7a1d20; color: #fff; }
+
+.scout .cbar__obs {
+  margin-left: auto;
+  border: 1px solid rgba(255, 255, 255, .18);
+  background: rgba(255, 255, 255, .06);
+  color: #fff;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font: 700 11.5px/1 -apple-system, system-ui, sans-serif;
+  cursor: pointer;
+  flex: none;
+}
+
+/* ---- 좌측 열 안의 구획 ---- */
+.scout .lsec { padding: 10px 12px; border-bottom: 1px solid var(--c-line); }
+.scout .lsec__t { font: 700 11.5px/1 -apple-system, system-ui, sans-serif; color: var(--c-text-dim); margin-bottom: 8px; }
+
+.scout .bigbtn {
+  appearance: none;
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 7px;
+  background: var(--c-accent);
+  color: var(--c-on-accent);
+  font: 700 12.5px/1 -apple-system, system-ui, sans-serif;
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+.scout .bigbtn--out { background: var(--c-text); }
+.scout .bigbtn:disabled { background: var(--c-surface-3); color: var(--c-text-faint); cursor: not-allowed; }
+
+/* ---- 십자 리모컨 (우측 열 맨 아래) ---- */
+.scout .scout__pad { flex: none; }
+
+.scout .rmt { padding: 10px 12px 12px; border-top: 1px solid var(--c-line); }
+
+.scout .rmt__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+  font: 700 10.5px/1 -apple-system, system-ui, sans-serif;
+  color: var(--c-text-faint);
+  letter-spacing: .04em;
+}
+
+.scout .rmt__head b { font: 700 12px/1 -apple-system, system-ui, sans-serif; color: var(--c-text); letter-spacing: 0; }
+
+.scout .pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 42px);
+  grid-template-areas: ". up ." "left stop right" ". down .";
+  gap: 6px;
+  max-width: 180px;
+  margin: 0 auto;
+}
+
+.scout .pad__key[data-act="forward"] { grid-area: up; }
+.scout .pad__key[data-act="left"] { grid-area: left; }
+.scout .pad__key[data-act="stop"] { grid-area: stop; }
+.scout .pad__key[data-act="right"] { grid-area: right; }
+.scout .pad__key[data-act="back"] { grid-area: down; }
+
+.scout .pad__key {
+  appearance: none;
+  border: 1px solid var(--c-line-strong);
+  background: var(--c-surface-2);
+  color: var(--c-text);
+  border-radius: 9px;
+  font-size: 15px;
+  cursor: pointer;
+  touch-action: none;
+}
+
+/* 키를 누르면 이 상태가 켜진다. 버튼을 눌러도 같은 상태다 — 둘은 한 벌이다. */
+.scout .pad__key.is-on {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+  color: var(--c-on-accent);
+}
+
+.scout .pad__key--stop { font: 800 10.5px/1 -apple-system, system-ui, sans-serif; color: var(--c-danger); }
+.scout .pad.is-estop .pad__key { opacity: .45; }
+
+.scout .rmt__foot {
+  margin: 8px 0 0;
+  font: 10.5px/1.5 -apple-system, system-ui, sans-serif;
+  color: var(--c-text-faint);
+  text-align: center;
+}
+
+/* ---- 배울 것 (수집) ---- */
+.scout .cls__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font: 11.5px/1 -apple-system, system-ui, sans-serif;
+  color: var(--c-text-dim);
+}
+
+/* 목업과 같은 2열. 클래스 넷이 두 줄에 들어간다. */
+.scout .cls__list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+/* 칸이 좁아 넘치면 카드가 열 밖으로 밀린다. 안에서 줄어들게 둔다. */
+.scout .cls { min-width: 0; padding: 7px 7px 8px; }
+.scout .cls__name { min-width: 0; font-size: 11.5px; }
+.scout .cls__shoot { margin: 6px 0 5px; padding: 5px 0; font-size: 11px; }
+.scout .cls__cnt { font-size: 10px; }
+
+.scout .cls {
+  border: 1px solid var(--c-line);
+  border-radius: 7px;
+  padding: 7px 8px 8px;
+  cursor: pointer;
+  background: var(--c-surface);
+}
+
+.scout .cls.is-sel { border-color: var(--c-accent); background: var(--c-accent-dim); }
+
+.scout .cls__top { display: flex; align-items: center; gap: 6px; }
+.scout .cls__dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+
+.scout .cls__name {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font: 600 12px/1.2 -apple-system, system-ui, sans-serif;
+  color: var(--c-text);
+  padding: 2px 0;
+}
+
+.scout .cls__x {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--c-text-faint);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 3px;
+}
+
+.scout .cls__x:hover { color: var(--c-danger); }
+
+.scout .cls__shoot {
+  display: block;
+  width: 100%;
+  margin: 7px 0 6px;
+  padding: 6px 0;
+  border: 1px solid var(--c-line-strong);
+  border-radius: 6px;
+  background: var(--c-surface-2);
+  color: var(--c-text);
+  font: 700 11.5px/1 -apple-system, system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.scout .cls__bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--c-surface-3);
+  overflow: hidden;
+}
+
+.scout .cls__bar i { display: block; height: 100%; background: var(--c-ok); }
+
+.scout .cls__cnt {
+  display: block;
+  margin-top: 4px;
+  font: 10.5px/1 ui-monospace, monospace;
+  color: var(--c-text-faint);
+}
+
+.scout .cls__hint {
+  margin: 8px 0 0;
+  padding: 7px 8px;
+  border-radius: 6px;
+  background: var(--c-surface-2);
+  font: 11.5px/1.55 -apple-system, system-ui, sans-serif;
+  color: var(--c-text-dim);
+}
+
+.scout .cls__hint--bad { background: var(--c-danger-bg); color: var(--c-danger); }
+
+/* 상태 한 줄. 위의 안내가 무엇으로 차 있든 늘 보인다 — 지금 상태는 가려지면 안 된다. */
+.scout .cls__state {
+  margin: 6px 0 0;
+  font: 11px/1.5 -apple-system, system-ui, sans-serif;
+  color: var(--c-text-faint);
+}
+.scout .cls__hint--soft { background: var(--c-warn-bg); color: var(--c-warn); }
+
+.scout .cls__undo {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: 800 11.5px/1 -apple-system, system-ui, sans-serif;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.scout .cls__soft { opacity: .75; }
+
+.scout .cls__acts { margin-top: 9px; }
+
+/* ---- 학습 결과 ---- */
+.scout .res__kpis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+  font: 10.5px/1 -apple-system, system-ui, sans-serif;
+  color: var(--c-text-faint);
+  margin-bottom: 8px;
+}
+
+.scout .res__kpis b {
+  font: 700 15px/1 ui-monospace, monospace;
+  color: var(--c-text);
+  margin-right: 3px;
+}
+
+.scout .res__hash { margin-left: auto; font-family: ui-monospace, monospace; }
+
+.scout .res__tabs { display: flex; gap: 3px; margin-bottom: 7px; }
+
+.scout .res__tab {
+  appearance: none;
+  flex: 1;
+  border: 1px solid var(--c-line);
+  border-radius: 5px;
+  background: var(--c-surface-2);
+  color: var(--c-text-dim);
+  font: 10.5px/1 -apple-system, system-ui, sans-serif;
+  padding: 5px 2px;
+  cursor: pointer;
+}
+
+.scout .res__tab.is-on { background: var(--c-text); color: var(--c-surface); border-color: var(--c-text); }
+
+.scout .res__canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  background: var(--c-stage);
+}
+
+.scout .cmx { width: 100%; border-collapse: collapse; font: 10.5px/1 ui-monospace, monospace; }
+.scout .cmx th { color: var(--c-text-faint); font-weight: 600; padding: 4px 3px; }
+.scout .cmx td { text-align: center; padding: 5px 3px; border: 1px solid var(--c-line); color: var(--c-text); }
+
+.scout .res__stale {
+  margin: 7px 0 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--c-warn-bg);
+  color: var(--c-warn);
+  font: 11px/1.5 -apple-system, system-ui, sans-serif;
+}
+
+.scout .res__note {
+  margin: 7px 0 0;
+  font: 10.5px/1.5 -apple-system, system-ui, sans-serif;
+  color: var(--c-text-faint);
+}
+
+/* ---- 탐사 일지 ---- */
+/* 우측 열에서 남는 세로 자리는 일지가 가져간다. 경로와 리모컨은 줄일 자리가 없다. */
+.scout .log { padding: 10px 12px; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
+.scout .log__head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 7px;
+  font: 10.5px/1 -apple-system, system-ui, sans-serif;
+  color: var(--c-text-faint);
+}
+
+.scout .log__head b { font: 700 15px/1 ui-monospace, monospace; color: var(--c-text); }
+
+/* 목업 기준 132px 에서 시작하되, 우측 열에 자리가 남으면 이 칸이 늘어나 그 자리를 채운다.
+   화면이 낮으면 반대로 이 칸이 먼저 줄어든다 — 경로와 리모컨은 줄일 자리가 없다. */
+.scout .log__rows {
+  flex: 1 1 132px;
+  min-height: 60px;
+  overflow-y: auto;
+  display: grid;
+  gap: 5px;
+  align-content: start;
+}
+
+.scout .log__empty,
+.scout .log__note {
+  margin: 0;
+  font: 10.5px/1.5 -apple-system, system-ui, sans-serif;
+  color: var(--c-text-faint);
+}
+
+.scout .log__note { margin-top: 7px; }
+
+.scout .logrow { display: flex; gap: 7px; align-items: center; }
+
+.scout .logrow__tile {
+  display: grid;
+  grid-template-columns: repeat(3, 8px);
+  grid-auto-rows: 8px;
+  gap: 1px;
+  flex: none;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.scout .logrow__tile i { display: block; }
+.scout .logrow__body { min-width: 0; }
+.scout .logrow__name { font: 600 11.5px/1.3 -apple-system, system-ui, sans-serif; color: var(--c-text); }
+.scout .logrow__meta { font: 10px/1.3 ui-monospace, monospace; color: var(--c-text-faint); }
+
+/* ---- 추정 경로 ---- */
+.scout .path { margin-top: 10px; flex: none; }
+
+.scout .path__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+  font: 700 11.5px/1 -apple-system, system-ui, sans-serif;
+  color: var(--c-text-dim);
+}
+
+/* "추정" 태그. 이 선을 측정한 위치로 읽지 않게 하는 것이 이 태그의 일이다. */
+.scout .path__tag {
+  font: 700 9.5px/1 -apple-system, system-ui, sans-serif;
+  color: var(--c-warn);
+  background: var(--c-warn-bg);
+  border-radius: 4px;
+  padding: 3px 5px;
+}
+
+.scout .path__c { display: block; width: 100%; height: auto; border-radius: 6px; }
+
+.scout .path__note {
+  margin: 6px 0 0;
+  font: 10.5px/1.5 -apple-system, system-ui, sans-serif;
+  color: var(--c-text-faint);
+}
+
+/* ---- 세 단계 ---- */
+
+.scout .stages {
+  display: flex;
+  flex: none;
+  border-bottom: 1px solid var(--c-line);
+  background: var(--c-surface-3);
+}
+
+.scout .stages__b {
+  appearance: none;
+  flex: 1;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--c-text-faint);
+  font: 700 11.5px/1 -apple-system, system-ui, sans-serif;
+  padding: 10px 3px;
+  cursor: pointer;
+}
+
+.scout .stages__b.is-on { color: var(--c-text); border-bottom-color: var(--c-accent); background: var(--c-surface); }
+.scout .stages__b:disabled { opacity: .5; cursor: not-allowed; }
+
+.scout .stage { min-width: 0; }
+.scout .stage[hidden] { display: none; }
+
+.scout .stage__lead {
+  margin: 0;
+  padding: 9px 12px;
+  font: 11.5px/1.55 -apple-system, system-ui, sans-serif;
+  color: var(--c-text-faint);
+}
+
+.scout [data-el="stage-table"],
+.scout [data-el="stage-code"] { padding: 10px 12px; }
+
+.scout .rt { width: 100%; border-collapse: collapse; font: 11.5px/1.3 -apple-system, system-ui, sans-serif; }
+.scout .rt th {
+  text-align: left;
+  color: var(--c-text-faint);
+  font-weight: 600;
+  font-size: 10.5px;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--c-line);
+}
+.scout .rt td { padding: 5px 6px; border-bottom: 1px solid var(--c-line); color: var(--c-text); }
+.scout .rt select,
+.scout .rt input {
+  width: 100%;
+  border: 1px solid var(--c-line-strong);
+  border-radius: 5px;
+  background: var(--c-surface);
+  color: var(--c-text);
+  font: 11.5px/1 -apple-system, system-ui, sans-serif;
+  padding: 4px 5px;
+}
+.scout .rt input:disabled { opacity: .45; }
+.scout .rt__cn { display: inline-flex; align-items: center; gap: 5px; }
+.scout .rt__cn i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+
+/* "그 밖에" 줄은 고정이라 학생이 고칠 수 없다. 그것이 코드의 else 다. */
+.scout .rt__else td { background: var(--c-surface-2); color: var(--c-text-dim); }
+
+.scout .code {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--c-stage);
+  color: var(--c-stage-text);
+  font: 11.5px/1.65 ui-monospace, monospace;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.scout .code__kw { color: #7aa2f7; }
+.scout .code__n { color: #ffb86c; }
+.scout .code__cm { color: var(--c-stage-text-faint); }
+
+/* ---- 탐사 보고서 ---- */
+.scout + [data-el="report"] .rep,
+.rep {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(8, 11, 17, .55);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 16px;
+  overflow-y: auto;
+}
+
+.rep__box {
+  width: min(760px, 100%);
+  background: var(--c-surface);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.rep__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--c-line);
+  font: 700 14px/1 -apple-system, system-ui, sans-serif;
+  color: var(--c-text);
+}
+
+.rep__x { appearance: none; border: 0; background: transparent; color: var(--c-text-faint); font-size: 14px; cursor: pointer; }
+.rep__body { padding: 14px; display: grid; gap: 14px; }
+
+.rep__badge {
+  padding: 9px 11px;
+  border-radius: 7px;
+  background: var(--c-surface-2);
+  font: 12.5px/1.4 -apple-system, system-ui, sans-serif;
+  color: var(--c-text-dim);
+}
+
+.rep__sectitle {
+  font: 700 11.5px/1 -apple-system, system-ui, sans-serif;
+  color: var(--c-text-dim);
+  margin-bottom: 8px;
+}
+
+.rep__block { margin-bottom: 12px; }
+.rep__block b { display: block; font: 700 11.5px/1 -apple-system, system-ui, sans-serif; color: var(--c-text); margin-bottom: 5px; }
+
+.rep__t { width: 100%; border-collapse: collapse; font: 11px/1.35 -apple-system, system-ui, sans-serif; }
+.rep__t th { text-align: left; font-size: 10px; color: var(--c-text-faint); padding: 4px 5px; border-bottom: 1px solid var(--c-line); }
+.rep__t td { padding: 4px 5px; border-bottom: 1px solid var(--c-line); color: var(--c-text); }
+.rep__tile { display: inline-grid; grid-template-columns: repeat(3, 6px); grid-auto-rows: 6px; gap: 1px; }
+.rep__tile i { display: block; }
+.rep__cn { display: inline-flex; align-items: center; gap: 5px; }
+.rep__cn i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+
+.rep__kv { display: flex; flex-wrap: wrap; gap: 12px; font: 11.5px/1.4 -apple-system, system-ui, sans-serif; color: var(--c-text-dim); }
+.rep__kv b { color: var(--c-text); }
+
+.rep__code {
+  margin: 0;
+  padding: 9px 11px;
+  border-radius: 6px;
+  background: var(--c-stage);
+  color: var(--c-stage-text);
+  font: 11px/1.6 ui-monospace, monospace;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.rep__field { display: block; margin-bottom: 8px; }
+.rep__field span { display: block; font: 11px/1 -apple-system, system-ui, sans-serif; color: var(--c-text-dim); margin-bottom: 4px; }
+.rep__field input,
+.rep__field textarea {
+  width: 100%;
+  border: 1px solid var(--c-line-strong);
+  border-radius: 6px;
+  background: var(--c-surface);
+  color: var(--c-text);
+  font: 12px/1.5 -apple-system, system-ui, sans-serif;
+  padding: 6px 8px;
+  resize: vertical;
+}
+
+.rep__check { display: flex; align-items: center; gap: 6px; font: 12px/1 -apple-system, system-ui, sans-serif; color: var(--c-text); }
+
+.rep__note { margin: 0 0 9px; font: 10.5px/1.5 -apple-system, system-ui, sans-serif; color: var(--c-text-faint); }
+.rep__note--strong { margin: 0; color: var(--c-text-dim); }
+
+/* 세로가 낮은 화면(1366x768 · 1280x720)에서도 우측 열이 한 화면에 들어가야 한다.
+   줄이는 순서는 일지 → 리모컨 키 높이다. 4분할과 경로는 줄이지 않는다. */
+@media (max-height: 860px) {
+  .scout .log__rows { flex-basis: 96px; }
+  .scout .pad { grid-template-rows: repeat(3, 36px); }
+  .scout .rmt { padding: 8px 12px 10px; }
+  .scout .rmt__foot { margin-top: 6px; }
+  .scout .log__note,
+  .scout .path__note { line-height: 1.4; }
+}
+
+/* 학습 전에는 결과 칸이 제목만 남아 빈다. 무엇을 해야 채워지는지 그 자리에서 말한다. */
+.scout .res__empty {
+  margin: 0;
+  font: 11.5px/1.6 -apple-system, system-ui, sans-serif;
+  color: var(--c-text-faint);
+}

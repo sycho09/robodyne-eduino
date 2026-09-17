@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/kit/:path*", "destination": "/index.html" },
+    { "source": "/challenge/:path*", "destination": "/index.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

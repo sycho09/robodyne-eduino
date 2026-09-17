@@ -1,0 +1,37 @@
+{
+  "generated_by": "tools/render_iso_scene.py",
+  "image": "iso-square-1200-marker-blue.290fcd37b8.jpg",
+  "image_px": [
+    4136,
+    2826
+  ],
+  "ground_z_mm": 3.0,
+  "track": {
+    "shape": "polyline",
+    "reach_mm": 650,
+    "width_mm": 360
+  },
+  "projection": {
+    "type": "isometric_ortho",
+    "azimuth_deg": 225.0,
+    "elevation_deg": 35.264389682754654,
+    "ortho_width_mm": 4023.154735488001,
+    "origin_px": [
+      2068.0,
+      1415.5176292061806
+    ],
+    "x_axis_px": [
+      0.7269405288696289,
+      -0.41969939213991164
+    ],
+    "y_axis_px": [
+      -0.7269402823448181,
+      -0.41969922369718554
+    ],
+    "z_axis_px": [
+      0.0,
+      -0.8393985316157341
+    ]
+  },
+  "image_sha256": "290fcd37b87e24b571c2fba037142bc49005ce60f58e6025d1589c33821adb6f"
+}

@@ -1,0 +1,910 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://eduino.local/schemas/scout.schema.json",
+  "title": "스마트탐사 챌린지 매니페스트 (mode 3)",
+  "description": "57차 — 탐사 챌린지의 계약. challenge.schema.json 과 갈라 두었다. 그쪽은 트랙·랩·채점을 필수로 요구하는데 탐사에는 그 셋이 아예 없다. 한 파일에 if/then 으로 우겨넣으면 모드1·2 의 계약이 느슨해진다 — 지금 지켜야 할 다섯 챌린지 쪽이 더 중요하다. 중복은 감수한다. 실제 검사는 src/challenges/loader.js 의 assertScout 가 한다.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kit_id",
+    "challenge_id",
+    "version",
+    "mode",
+    "title",
+    "camera_source",
+    "scene",
+    "mission",
+    "scout",
+    "drive",
+    "safety",
+    "controls",
+    "stages",
+    "log",
+    "path",
+    "submit",
+    "allowed_api",
+    "limits"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "kit_id": {
+      "type": "string"
+    },
+    "challenge_id": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "mode": {
+      "const": 3,
+      "description": "3 = 스마트탐사. 사람이 몰고 실물 카메라가 입력이라 결정론이 성립하지 않는다."
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "camera_source": {
+      "enum": [
+        "webcam",
+        "device",
+        "sim"
+      ],
+      "description": "어댑터가 어디서 프레임을 받는가. webcam 만 구현했고 device·sim 은 자리다. 코드에 기본값이 없으므로 이 값이 없으면 화면이 뜨지 않는다."
+    },
+    "deterministic": {
+      "const": false,
+      "description": "이 챌린지만 결정론이 아니다. 값이 false 라고 적어 두어 다른 챌린지와 헷갈리지 않게 한다."
+    },
+    "deterministic_note": {
+      "type": "string"
+    },
+    "_safety_note": {
+      "type": "string"
+    },
+    "scene": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "units",
+        "ui"
+      ],
+      "properties": {
+        "units": {
+          "const": "mm"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "ui": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "quad",
+            "hud",
+            "view_px",
+            "process_px",
+            "sample_px"
+          ],
+          "properties": {
+            "quad": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "slots",
+                "options",
+                "no_sensor_label",
+                "no_sensor_note"
+              ],
+              "properties": {
+                "slots": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "처음에 켜져 있는 네 칸. options 의 id 여야 한다."
+                },
+                "options": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "label",
+                      "sensor"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "label": {
+                        "type": "string"
+                      },
+                      "sensor": {
+                        "type": "string",
+                        "description": "이 화면에 필요한 센서. 'camera' 가 아니면 이 킷에 아직 없다는 뜻이고 화면은 「센서 없음」 자리만 그린다."
+                      },
+                      "grid": {
+                        "type": "array",
+                        "minItems": 2,
+                        "maxItems": 2,
+                        "items": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "description": "센서 격자 크기. 자리를 그릴 때만 쓴다."
+                      },
+                      "note": {
+                        "type": "string",
+                        "description": "이 화면이 무엇인지 칸 안에 적는 한 줄. 야간 보정을 적외선으로 읽지 않게 하는 것 같은 일을 한다."
+                      }
+                    }
+                  }
+                },
+                "no_sensor_label": {
+                  "type": "string"
+                },
+                "no_sensor_note": {
+                  "type": "string"
+                }
+              }
+            },
+            "hud": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "crosshair",
+                "corners",
+                "heading_ticks",
+                "heading_note"
+              ],
+              "properties": {
+                "crosshair": {
+                  "type": "boolean"
+                },
+                "corners": {
+                  "type": "boolean"
+                },
+                "heading_ticks": {
+                  "type": "boolean"
+                },
+                "heading_note": {
+                  "type": "string",
+                  "description": "방위 눈금 옆에 적는 말. 나침반이 아니라 명령을 적분한 추정값이라 그렇게 적는다."
+                }
+              }
+            },
+            "view_px": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "process_px": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "sample_px": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "mission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "goal",
+        "no_score"
+      ],
+      "properties": {
+        "goal": {
+          "type": "string"
+        },
+        "no_score": {
+          "type": "string",
+          "description": "채점이 없다는 사실을 화면이 읽어 적는다. 랩타임·순위·리더보드를 만들지 않는다."
+        }
+      }
+    },
+    "scout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "classes",
+        "sharpness_min",
+        "confidence_min",
+        "spread_factor",
+        "knn_k",
+        "grid",
+        "feature_len",
+        "hist_bins",
+        "palette",
+        "box_note"
+      ],
+      "properties": {
+        "classes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "max",
+            "min_samples"
+          ],
+          "properties": {
+            "max": {
+              "type": "integer",
+              "minimum": 2
+            },
+            "min_samples": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "sharpness_min": {
+          "type": "number",
+          "minimum": 0,
+          "description": "라플라시안 분산으로 잰 선명도의 문턱. 이보다 흐리면 표본을 받지 않는다."
+        },
+        "confidence_min": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "spread_factor": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "배운 것과 얼마나 멀면 버리는가. 그 클래스 표본 퍼짐의 몇 배까지 받아들일지."
+        },
+        "knn_k": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "grid": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "feature_len": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "grid x grid 칸 평균 RGB + hist_bins 와 반드시 맞아야 한다. 로더가 그것을 검사한다."
+        },
+        "hist_bins": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "palette": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "box_note": {
+          "type": "string",
+          "description": "네모가 격자 단위 근사라는 것을 화면에 적는 말."
+        }
+      }
+    },
+    "drive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "forward_mm_s",
+        "reverse_mm_s",
+        "turn_rad_s",
+        "path_note"
+      ],
+      "properties": {
+        "forward_mm_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "reverse_mm_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "turn_rad_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "path_note": {
+          "type": "string",
+          "description": "경로 옆에 적는 말. 명령을 적분한 추정값이지 측정한 위치가 아니다."
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "deadman_ms",
+        "estop_key",
+        "max_speed_pct",
+        "link_loss_ms",
+        "labels"
+      ],
+      "description": "안전은 선택이 아니다. 넷 중 하나라도 없으면 로더가 터진다.",
+      "properties": {
+        "deadman_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "키 신호가 이만큼 끊기면 스스로 선다. 운영체제의 키 되풀이 시작 지연보다 커야 한다."
+        },
+        "estop_key": {
+          "type": "string"
+        },
+        "max_speed_pct": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 100
+        },
+        "link_loss_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "프레임이 이만큼 안 들어오면 스스로 선다."
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "deadman",
+            "estop",
+            "speed_cap",
+            "link_loss"
+          ],
+          "properties": {
+            "deadman": {
+              "type": "string"
+            },
+            "estop": {
+              "type": "string"
+            },
+            "speed_cap": {
+              "type": "string"
+            },
+            "link_loss": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "forward",
+        "back",
+        "left",
+        "right",
+        "observe",
+        "stop"
+      ],
+      "description": "KeyboardEvent.code 목록. 키와 화면 버튼은 한 벌이라 키를 누르면 그 버튼도 함께 켜진다.",
+      "properties": {
+        "forward": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "back": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "left": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "right": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "observe": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "stop": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "stages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "order",
+        "labels",
+        "open",
+        "otherwise_row",
+        "otherwise",
+        "actions",
+        "table",
+        "code",
+        "locked_mark"
+      ],
+      "properties": {
+        "order": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "string"
+          }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "open": {
+          "type": "object",
+          "description": "각 단계가 열리는 조건. 값은 매니페스트가 소유한다."
+        },
+        "otherwise_row": {
+          "type": "string",
+          "description": "반응 표에 고정으로 두는 마지막 줄. 이것이 코드에서 else 가 된다."
+        },
+        "locked_mark": {
+          "type": "string",
+          "description": "잠긴 단계 이름 뒤에 붙는 표시."
+        },
+        "table": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "columns",
+            "defaults",
+            "note"
+          ],
+          "properties": {
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "defaults": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "action",
+                "speed",
+                "hold_s"
+              ],
+              "properties": {
+                "action": {
+                  "type": "string"
+                },
+                "speed": {
+                  "type": "number"
+                },
+                "hold_s": {
+                  "type": "number"
+                }
+              }
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        },
+        "actions": {
+          "type": "array",
+          "minItems": 1,
+          "description": "②에서 고를 수 있는 행동과, 그 행동이 ③에서 되는 코드 한 줄. 코드가 부르는 API 는 전부 allowed_api 안에 있어야 하고 로더가 그것을 검사한다.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label",
+              "code",
+              "uses_speed",
+              "hold"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string",
+                "description": "%s 자리에 표의 속도가 들어간다."
+              },
+              "uses_speed": {
+                "type": "boolean"
+              },
+              "hold": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "otherwise": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "label",
+            "action_label",
+            "speed",
+            "code",
+            "why"
+          ],
+          "description": "표에 고정으로 있는 마지막 줄. 학생이 지울 수 없고 ③에서 else 가 된다. label 은 otherwise_row 와 같아야 한다.",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "action_label": {
+              "type": "string"
+            },
+            "speed": {
+              "type": "number"
+            },
+            "code": {
+              "type": "string"
+            },
+            "why": {
+              "type": "string"
+            }
+          }
+        },
+        "code": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "var",
+            "classify_call",
+            "unknown_value",
+            "note"
+          ],
+          "properties": {
+            "var": {
+              "type": "string"
+            },
+            "classify_call": {
+              "type": "string"
+            },
+            "begin_call": {
+              "type": "string"
+            },
+            "unknown_value": {
+              "type": "integer"
+            },
+            "note": {
+              "type": "string",
+              "description": "③에서 고친 코드는 표로 돌아가지 않는다는 것을 화면이 적는 말. 표가 원본이다."
+            }
+          }
+        }
+      }
+    },
+    "allowed_api": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_source_bytes",
+        "max_statements",
+        "camera_hz",
+        "detect_hz"
+      ],
+      "properties": {
+        "max_source_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_statements": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "camera_hz": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "카메라 칸을 다시 그리는 주기. rAF 마다 그리면 화면이 프레임을 따라잡느라 다른 일을 못 한다."
+        },
+        "detect_hz": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "log": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "empty",
+        "columns",
+        "unknown",
+        "no_image"
+      ],
+      "description": "탐사 일지. 남는 것은 시각·이름·확신도·아홉 칸 평균색·명령뿐이고 이미지는 남지 않는다(원칙 7).",
+      "properties": {
+        "empty": {
+          "type": "string"
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unknown": {
+          "type": "string"
+        },
+        "no_image": {
+          "type": "string"
+        }
+      }
+    },
+    "path": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "note",
+        "explain",
+        "start_label",
+        "mark_unknown_color"
+      ],
+      "description": "추정 경로. 명령을 적분한 값이지 측정한 위치가 아니다 — 화면이 그렇게 적는다. 지도가 아니다.",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "explain": {
+          "type": "string"
+        },
+        "start_label": {
+          "type": "string"
+        },
+        "mark_unknown_color": {
+          "type": "string"
+        }
+      }
+    },
+    "submit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "engine_title",
+        "human_title",
+        "engine_rows",
+        "nickname_default",
+        "fields",
+        "badge",
+        "no_photo",
+        "name_note"
+      ],
+      "description": "탐사 보고서. 사진은 어디에도 넣지 않고, 실명을 유도하지 않으며(표시 이름 하나), 점수도 순위도 적지 않는다.",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "engine_title": {
+          "type": "string"
+        },
+        "human_title": {
+          "type": "string"
+        },
+        "engine_rows": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "nickname_default": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label",
+              "kind"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "text",
+                  "textarea",
+                  "check"
+                ]
+              },
+              "placeholder": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "badge": {
+          "type": "string",
+          "description": "게시판 카드 배지. {{obs}} · {{cls}} · {{stage}} 자리가 채워진다."
+        },
+        "no_photo": {
+          "type": "string"
+        },
+        "name_note": {
+          "type": "string"
+        }
+      }
+    },
+    "camera_sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "enum": [
+          "webcam",
+          "device",
+          "sim"
+        ]
+      },
+      "description": "학생이 고를 수 있는 소스. camera_source 는 이 목록 안의 처음 값이다."
+    },
+    "source_labels": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "소스마다 학생에게 보일 이름."
+    },
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stream_port",
+        "stream_path",
+        "capture_path",
+        "cmd_path",
+        "status_path",
+        "speed_pwm",
+        "resend_ms",
+        "connect_timeout_ms",
+        "frame_timeout_ms",
+        "host_label",
+        "host_placeholder",
+        "connect_label",
+        "hint",
+        "errors"
+      ],
+      "description": "실물 RC카 연결 규격. 주소(IP)는 여기 두지 않는다 — 공유기마다 달라지므로 화면에서 학생이 적는다.",
+      "properties": {
+        "stream_port": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "stream_path": {
+          "type": "string"
+        },
+        "capture_path": {
+          "type": "string"
+        },
+        "cmd_path": {
+          "type": "string"
+        },
+        "status_path": {
+          "type": "string"
+        },
+        "speed_pwm": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 255
+        },
+        "resend_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "펌웨어 데드맨(500ms)보다 짧아야 한다. 누르고 있는 동안 이 간격으로 같은 명령을 다시 보낸다."
+        },
+        "connect_timeout_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "frame_timeout_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "host_label": {
+          "type": "string"
+        },
+        "host_placeholder": {
+          "type": "string"
+        },
+        "connect_label": {
+          "type": "string"
+        },
+        "hint": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mixed_content",
+            "network",
+            "cors",
+            "no_frame"
+          ],
+          "description": "연결 실패 사유 넷. 뭉뚱그리면 학생이 무엇을 고쳐야 할지 알 수 없다.",
+          "properties": {
+            "mixed_content": {
+              "type": "string"
+            },
+            "network": {
+              "type": "string"
+            },
+            "cors": {
+              "type": "string"
+            },
+            "no_frame": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

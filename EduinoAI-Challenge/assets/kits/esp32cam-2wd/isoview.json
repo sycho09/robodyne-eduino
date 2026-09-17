@@ -1,0 +1,183 @@
+{
+  "kit_id": "esp32cam-2wd",
+  "generated_by": "tools/render_iso_scene.py",
+  "projection": {
+    "type": "isometric_ortho",
+    "azimuth_deg": 225.0,
+    "elevation_deg": 35.264389682754654
+  },
+  "frame_px": 384,
+  "mm_per_px": 0.8333333333333334,
+  "ortho_width_mm": 320.0,
+  "pivot_px": [
+    192.00018310546875,
+    191.9992904663086
+  ],
+  "heading_zero": "+x",
+  "rotation_dir": "ccw",
+  "step_deg": 11.25,
+  "frames": [
+    {
+      "index": 0,
+      "angle_deg": 0.0,
+      "file": "0000.png"
+    },
+    {
+      "index": 1,
+      "angle_deg": 11.25,
+      "file": "0112.png"
+    },
+    {
+      "index": 2,
+      "angle_deg": 22.5,
+      "file": "0225.png"
+    },
+    {
+      "index": 3,
+      "angle_deg": 33.75,
+      "file": "0338.png"
+    },
+    {
+      "index": 4,
+      "angle_deg": 45.0,
+      "file": "0450.png"
+    },
+    {
+      "index": 5,
+      "angle_deg": 56.25,
+      "file": "0562.png"
+    },
+    {
+      "index": 6,
+      "angle_deg": 67.5,
+      "file": "0675.png"
+    },
+    {
+      "index": 7,
+      "angle_deg": 78.75,
+      "file": "0788.png"
+    },
+    {
+      "index": 8,
+      "angle_deg": 90.0,
+      "file": "0900.png"
+    },
+    {
+      "index": 9,
+      "angle_deg": 101.25,
+      "file": "1012.png"
+    },
+    {
+      "index": 10,
+      "angle_deg": 112.5,
+      "file": "1125.png"
+    },
+    {
+      "index": 11,
+      "angle_deg": 123.75,
+      "file": "1238.png"
+    },
+    {
+      "index": 12,
+      "angle_deg": 135.0,
+      "file": "1350.png"
+    },
+    {
+      "index": 13,
+      "angle_deg": 146.25,
+      "file": "1462.png"
+    },
+    {
+      "index": 14,
+      "angle_deg": 157.5,
+      "file": "1575.png"
+    },
+    {
+      "index": 15,
+      "angle_deg": 168.75,
+      "file": "1688.png"
+    },
+    {
+      "index": 16,
+      "angle_deg": 180.0,
+      "file": "1800.png"
+    },
+    {
+      "index": 17,
+      "angle_deg": 191.25,
+      "file": "1912.png"
+    },
+    {
+      "index": 18,
+      "angle_deg": 202.5,
+      "file": "2025.png"
+    },
+    {
+      "index": 19,
+      "angle_deg": 213.75,
+      "file": "2138.png"
+    },
+    {
+      "index": 20,
+      "angle_deg": 225.0,
+      "file": "2250.png"
+    },
+    {
+      "index": 21,
+      "angle_deg": 236.25,
+      "file": "2362.png"
+    },
+    {
+      "index": 22,
+      "angle_deg": 247.5,
+      "file": "2475.png"
+    },
+    {
+      "index": 23,
+      "angle_deg": 258.75,
+      "file": "2588.png"
+    },
+    {
+      "index": 24,
+      "angle_deg": 270.0,
+      "file": "2700.png"
+    },
+    {
+      "index": 25,
+      "angle_deg": 281.25,
+      "file": "2812.png"
+    },
+    {
+      "index": 26,
+      "angle_deg": 292.5,
+      "file": "2925.png"
+    },
+    {
+      "index": 27,
+      "angle_deg": 303.75,
+      "file": "3038.png"
+    },
+    {
+      "index": 28,
+      "angle_deg": 315.0,
+      "file": "3150.png"
+    },
+    {
+      "index": 29,
+      "angle_deg": 326.25,
+      "file": "3262.png"
+    },
+    {
+      "index": 30,
+      "angle_deg": 337.5,
+      "file": "3375.png"
+    },
+    {
+      "index": 31,
+      "angle_deg": 348.75,
+      "file": "3488.png"
+    }
+  ],
+  "body_dir": "iso",
+  "shadow_dir": "iso-shadow"
+}

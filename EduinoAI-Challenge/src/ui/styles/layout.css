@@ -1,0 +1,134 @@
+/* ui/styles/layout.css — 3분할 셸의 골격만. 색은 tokens.css 가 소유한다. */
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--font-ui);
+  font-size: var(--fs-md);
+  line-height: var(--lh);
+  /* 48차 — 한국어 줄바꿈. 기본값은 한국어를 단어로 보지 않아 좁은 칸에서 음절 단위로
+     쪼갠다("채점 등 지 / 점 은 그대로예요"). 어절을 지키고, 정말 긴 토큰만 예외로 자른다. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  line-break: strict;
+}
+
+/* 제목은 줄 길이를 고르게, 본문은 마지막 줄에 한 단어만 남지 않게.
+   지원하지 않는 브라우저에서는 이 두 줄이 그냥 무시된다. */
+h1, h2, h3, .pane__title, .modal__title, .outcome__stamp, .viewhead__title, .header__title {
+  text-wrap: balance;
+}
+p, .modal__hint, .outcome__why, .rules__row dd, .api-item span {
+  text-wrap: pretty;
+}
+
+/* 코드는 어절이 없다. 에디터는 이 규칙에서 뺀다(줄 접힘도 47차에 껐다). */
+.editor, .editor__area, .editor__hl, .editor__gutter, .editor__rail {
+  word-break: normal;
+  overflow-wrap: normal;
+  line-break: auto;
+}
+
+#app { height: 100%; overflow: auto; }
+
+.shell {
+  display: grid;
+  /* 열을 적어 두지 않으면 암시적 열이 content 크기로 잡혀, 안쪽 어느 한 줄이 길면 껍데기째
+     화면 밖으로 밀린다. 47차에 1280x720 에서 오른쪽 열이 그렇게 잘렸다. */
+  grid-template-columns: minmax(0, 1fr);
+  /* 54차 — 1행 앱 바 · 2행 챌린지 바 · 3행 툴바+주제 줄 · 본문.
+     세 바 모두 내용만큼만 차지한다.
+     51차에 줄을 둘만 적어 두었더니 두 줄짜리 버튼이 그 자리에서 잘렸다. */
+  grid-template-rows: auto auto auto 1fr;
+  height: 100%;
+}
+
+.shell__header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-4);
+  border-bottom: var(--border);
+  background: var(--c-surface);
+}
+
+.shell__body {
+  display: grid;
+  grid-template-columns: var(--pane-left) minmax(0, 1fr) var(--pane-right);
+  min-height: 0;
+  min-width: 0;
+}
+
+/* 54차 3행. 왼쪽 칸 폭은 코드 칸과 같아야 한다 — 툴바가 자기가 다루는 칸 위에 서야
+   [→ 업로드] 가 무엇을 올리는지가 자리로 설명된다. */
+.topline {
+  display: grid;
+  grid-template-columns: var(--pane-left) minmax(0, 1fr);
+  min-width: 0;
+  border-bottom: var(--border);
+  background: var(--c-surface);
+}
+.topline > .edtoolbar { min-width: 0; border-bottom: 0; }
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pane + .pane { border-left: var(--border); }
+
+.pane__section {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-bottom: var(--border);
+}
+
+.pane__section--grow { flex: 1 1 auto; }
+
+/* 내용이 많아지면 패널 자체가 스크롤한다. 섹션끼리 겹치지 않게 한다. */
+.pane--scroll { overflow-y: auto; }
+/* 스크롤하는 패널에서는 어떤 섹션도 줄어들면 안 된다. 줄어들면 내용이 다음 섹션 위로 겹친다. */
+.pane--scroll .pane__section,
+.pane--scroll .pane__content { flex: 0 0 auto; overflow: visible; }
+
+.pane__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-text-dim);
+  background: var(--c-surface);
+  border-bottom: var(--border);
+}
+
+.pane__content {
+  min-height: 0;
+  overflow: auto;
+  padding: var(--sp-3);
+}
+
+.pane__content--flush { padding: 0; }
+
+/* 게이지처럼 높이를 양보하면 안 되는 블록 */
+.pane__content--fixed { flex: 0 0 auto; overflow: visible; }
+
+@media (max-width: 1180px) {
+  .shell__body {
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(320px, auto);
+    overflow: auto;
+  }
+  .pane + .pane { border-left: none; border-top: var(--border); }
+}

@@ -1,0 +1,2540 @@
+/* display 를 지정한 규칙이 [hidden] 을 덮어써 감춘 요소가 남는 일이 반복됐다.
+   숨김은 언제나 숨김이다 — 한 줄로 못박는다. */
+[hidden] { display: none !important; }
+
+/* ui/styles/components.css — 부품. 모든 값은 tokens.css 변수 참조. */
+
+/* 어두운 무대 위에 얹히는 것들은 여기서 토큰만 갈아탄다.
+   자식(카메라 미니창·처음 안내·종료 배너·에셋 칩)은 상속으로 따라온다 —
+   부품 규칙을 하나도 고치지 않고 밝은 UI 와 어두운 무대를 함께 유지하는 방법이다. */
+.view,
+.minimap,
+.recbadge {
+  --c-surface: var(--c-stage);
+  --c-surface-2: var(--c-stage-2);
+  --c-surface-3: var(--c-stage-3);
+  --c-line: var(--c-stage-line);
+  --c-line-strong: var(--c-stage-line-strong);
+  --c-text: var(--c-stage-text);
+  --c-text-dim: var(--c-stage-text-dim);
+  --c-text-faint: var(--c-stage-text-faint);
+  --c-accent-dim: #1e3f6d;
+  --c-gauge: var(--c-gauge-stage);
+  --border: 1px solid var(--c-stage-line);
+}
+
+/* ---- 헤더 ---- */
+.brand { font-weight: 700; letter-spacing: 0.02em; }
+.brand__mode { color: var(--c-accent); }
+.header__spacer { flex: 1; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 2px var(--sp-2);
+  border: var(--border);
+  border-radius: 999px;
+  font-size: var(--fs-xs);
+  color: var(--c-text-dim);
+  background: var(--c-surface-2);
+  white-space: nowrap;
+}
+.chip[hidden] { display: none; }
+.chip--busy { color: var(--c-accent); border-color: var(--c-accent-dim); }
+.chip--status[data-status="running"] { color: var(--c-ok); border-color: var(--c-ok); }
+.chip--status[data-status="idle"] { color: var(--c-text-dim); }
+.chip--status[data-status="error"] { color: var(--c-danger); border-color: var(--c-danger); }
+.chip--status[data-status="timeout"] { color: var(--c-warn); border-color: var(--c-warn); }
+.chip--status[data-status="finished"] { color: var(--c-accent); border-color: var(--c-accent); }
+
+/* ---- 버튼 ---- */
+.btn {
+  appearance: none;
+  border: var(--border);
+  border-radius: var(--r-sm);
+  background: var(--c-surface-2);
+  color: var(--c-text);
+  font: inherit;
+  font-size: var(--fs-sm);
+  padding: 6px 12px;
+  white-space: nowrap;   /* 가운데 패널이 좁아져도 '일시정지' 가 두 줄로 깨지지 않게 */
+  cursor: pointer;
+}
+.btn:hover:not(:disabled) { border-color: var(--c-line-strong); background: var(--c-surface-3); }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.btn--primary { border-color: var(--c-accent-strong); background: var(--c-accent-strong); color: var(--c-on-accent); font-weight: 700; }
+.btn--primary:hover { background: var(--c-accent-hover); border-color: var(--c-accent-hover); color: var(--c-on-accent); }
+.btn--primary:hover:not(:disabled) { border-color: var(--c-accent); }
+.btn-row { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+
+/* ---- 에디터 ---- */
+.editor {
+  display: grid;
+  grid-template-columns: auto auto 1fr;   /* 구간 레일 · 줄번호 · 코드 */
+  min-height: 0;
+  flex: 1 1 auto;
+  background: var(--c-surface);
+  font-family: var(--font-mono);
+  font-size: var(--fs-code);
+  font-weight: 500;   /* 한글 주석 획이 얇아 흐려 보이던 것을 굵기로 올린다 */
+}
+/* 구간 레일 — 마커 주석으로 나뉜 구간을 색 띠와 이름으로 보여 준다. */
+/* 52차 — 구간 색 구분 띠를 없앴다. 아두이노 IDE 에는 없는 것이고,
+   스타터 코드에서 주석을 걷어내면서 구간 마커 자체가 사라졌다. */
+.editor__rail {
+  position: relative;
+  width: 0;
+  background: var(--c-surface);
+  overflow: hidden;
+  user-select: none;
+}
+.editor__rail-inner { position: relative; width: 100%; }
+/* 코드 칸 뒤에 깔리는 구간 배경. 글자 뒤라 아주 옅게만 얹는다. */
+.editor__zones {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.45;
+  z-index: 0;
+}
+.editor__zones > div { position: relative; width: 100%; }
+.editor__zone { position: absolute; left: 0; right: 0; }
+.editor__band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-left: 6px solid var(--band);
+  background: var(--band-bg);
+  overflow: hidden;
+}
+.editor__band { border-left-width: 5px; }
+.editor__band span { display: none; }
+.editor__band span:not(:root) {
+  /* 구간 이름은 가로로 읽힌다. 세로쓰기는 폰트 세로 메트릭에 따라 글자가 겹쳐 쓰지 않는다. */
+  display: block;
+  padding: 6px 2px 0 6px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--band);
+  white-space: nowrap;
+}
+.editor__gutter {
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-3);
+  text-align: right;
+  color: var(--c-text-dim);
+  background: var(--c-surface);
+  border-right: var(--border);
+  overflow: hidden;
+  user-select: none;
+  line-height: 1.45;
+}
+/* 줄번호 한 칸의 높이는 그 줄이 실제로 차지한 높이(줄바꿈 포함)와 같아야 한다.
+   editor.js 가 미러 요소로 측정해 각 칸의 height 를 직접 지정한다. */
+.editor__num { display: block; }
+.editor__mirror {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+  top: 0;
+  left: -99999px;
+}
+.editor__gutter span.is-error { color: var(--c-danger); font-weight: 700; }
+.editor__area {
+  resize: none;
+  border: 0;
+  outline: none;
+  padding: var(--sp-2);
+  color: var(--c-text);
+  background: transparent;
+  font: inherit;
+  line-height: 1.45;
+  tab-size: 2;
+  position: relative;
+  z-index: 1;              /* 구간 배경 위에 글자가 온다 */
+  /* 47차: 접지 않고 가로로 민다. 아두이노 IDE 가 그렇고, 접으면 한 논리 줄이 두 줄을
+     차지해 줄번호와 본문이 어긋나 보인다 — 배포본에서 실제로 그렇게 읽혔다. */
+  white-space: pre;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+/* ---- 에디터 ino 테마 — 아두이노 IDE 2.x 배색 ----
+   실물 IDE 와 같은 색으로 칠해야 학생이 집에서 아두이노를 열었을 때 같은 화면을 본다.
+   45차에는 어두운 배색이었는데, 실물 IDE 2.x 의 기본은 라이트다(52차).
+   키워드는 청록, 문자열은 파랑, 숫자는 진회색. 켜고 끄는 것은 매니페스트가 정한다. */
+.editor--ino {
+  --ino-bg: #ffffff;          /* 코드 칸 바탕 */
+  --ino-gutter: #f2f3f4;      /* 줄번호 칸 */
+  --ino-text: #1f2328;
+  --ino-fn: #d35400;          /* 아두이노 함수(setup loop delay setMotor) */
+  --ino-ty: #00979c;          /* 자료형·흐름 제어(void int const) */
+  --ino-pp: #728e00;          /* 전처리기·상수(#include Serial HIGH) */
+  --ino-cn: #728e00;          /* 상수 — 전처리기와 같은 올리브 */
+  --ino-nu: #8a7b52;          /* 숫자 */
+  --ino-st: #005c5f;          /* 문자열 */
+  --ino-cm: #95a5a6;          /* 주석 — 회색 (스타터에는 남지 않는다) */
+  background: var(--ino-bg);
+}
+.editor--ino .editor__rail,
+.editor--ino .editor__gutter { background: var(--ino-gutter); border-right-color: #dcdfe1; }
+.editor--ino .editor__gutter { color: #8b969b; }
+.editor--ino .editor__num.is-cur { color: var(--ino-text); background: #e8eaec; }
+/* 구간은 코드 뒤 색조가 아니라 왼쪽 세로 막대 하나로만 알린다(45차-3). */
+.editor--ino .editor__band { background: transparent; }
+.editor--ino .editor__zones { opacity: 1; }
+.editor--ino .editor__curline { position: absolute; left: 0; right: 0; background: #eef1f2; }
+/* 지금 실행 중인 줄. 커서 줄보다 세게 짚어야 눈이 먼저 간다. */
+.editor--ino .editor__runline {
+  position: absolute; left: 0; right: 0;
+  background: #fff3d4; box-shadow: inset 3px 0 0 var(--ino-fn);
+}
+.editor--ino .editor__num.is-run { color: #a15c00; background: #fff3d4; font-weight: 700; }
+/* 색칠 층. textarea 와 같은 자리·같은 글꼴이라 글자가 정확히 겹친다. */
+.editor--ino .editor__hl {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+  color: var(--ino-text);
+}
+/* 51차 — 색칠 층의 오른쪽 여백을 없앤다.
+   textarea 의 scrollWidth 는 padding-right 를 빼고 재는데 div 는 넣어 잰다.
+   그래서 색칠 층이 8px 더 넓었고, 가장 긴 줄의 끝 글자가 끝까지 밀어도 닿지 않았다 —
+   배포본에서 "에디터 오른쪽 끝에서 글자가 잘린다" 로 보인 것이 이것이다. */
+.editor--ino .editor__hl { padding-right: 0; }
+.editor--ino textarea.editor__area {
+  z-index: 2;
+  color: transparent;          /* 글자는 색칠 층이 그린다 */
+  caret-color: #1f2328;
+  background: transparent;
+}
+.editor--ino textarea.editor__area::selection { background: #cfe3ff; }
+.editor__hl .tk-cm { color: var(--ino-cm); font-style: italic; }
+.editor__hl .tk-st { color: var(--ino-st); }
+.editor__hl .tk-nu { color: var(--ino-nu); }
+.editor__hl .tk-cn { color: var(--ino-cn); }
+.editor__hl .tk-ty { color: var(--ino-ty); }
+.editor__hl .tk-fn { color: var(--ino-fn); }
+.editor__hl .tk-pp { color: var(--ino-pp); }
+
+/* 47차 — 왼쪽 열 맨 아래 '오류' 칸이 눌려 잘리던 것.
+   코드 활용 가이드를 늘 펼쳐 두면서(45차) 함수가 많은 챌린지에서 이 칸이 300px 을 넘었고,
+   그만큼 아래의 시리얼·오류가 밀렸다. 가이드는 제 칸 안에서 굴리고, 아래 두 칸은 눌리지
+   않게 못 박는다. 에디터도 바닥까지 줄어들지 않도록 최소 높이를 준다. */
+.shell--v2 [data-el="api-fold"] { min-height: 0; }
+.shell--v2 [data-el="api-mount"] { max-height: 34vh; min-height: 0; overflow-y: auto; }
+.shell--v2 [data-el="serial-fold"],
+.shell--v2 [data-el="error-section"] { flex: 0 0 auto; }
+.shell--v2 [data-el="editor-mount"] { min-height: 180px; }
+
+/* ---- 과제물 만들기(48차) ----
+   세 걸음으로 끝낸다 — 결과 모달에서 들어와, 네 칸을 채우고, 한 번 눌러 저장한다.
+   나머지 산출물은 접어 둔다. 없애지 않되 주 통로를 가리지도 않게 한다. */
+.modal__fields { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2) var(--sp-3); }
+.modal__fields .modal__field:last-child { grid-column: 1 / -1; }
+.btn--save { padding: 10px 12px; font-size: var(--fs-code); }
+.modal__more > summary {
+  cursor: pointer; list-style: none;
+  font-size: var(--fs-sm); color: var(--c-text-dim); padding: 4px 0;
+}
+.modal__more > summary::-webkit-details-marker { display: none; }
+.modal__more > summary::after { content: " ▾"; color: var(--c-text-faint); }
+.modal__more[open] > summary::after { content: " ▴"; }
+.modal__more .modal__grid { margin-top: var(--sp-2); }
+@media (max-width: 520px) {
+  .modal__fields { grid-template-columns: 1fr; }
+}
+
+/* ---- 주행 결과 모달(48차) ----
+   기록이 나온 순간이 저장 의욕이 가장 높은 순간이라, 그 자리에 저장 버튼을 같이 둔다. */
+.outcome__box { position: relative; width: min(480px, 100%); gap: var(--sp-2); text-align: center; }
+.outcome__x {
+  position: absolute; top: 6px; right: 8px;
+  border: 0; background: transparent; color: var(--c-text-faint);
+  font: inherit; font-size: 18px; line-height: 1; cursor: pointer; padding: 4px 6px;
+}
+.outcome__x:hover { color: var(--c-text); }
+.outcome__stamp {
+  align-self: center; margin-top: var(--sp-2);
+  padding: 4px 14px; border-radius: 999px;
+  font-size: var(--fs-sm); font-weight: 800; letter-spacing: .02em;
+}
+.outcome__stamp.is-ok { background: var(--c-ok-bg); color: var(--c-ok); }
+.outcome__stamp.is-bad { background: var(--c-danger-bg); color: var(--c-danger); }
+.outcome__big { font: 800 40px/1.1 var(--font-gauge, var(--font-ui)); color: var(--c-text); font-variant-numeric: tabular-nums; }
+.outcome__big.is-plain { color: var(--c-text-faint); }
+.outcome__delta { font-size: var(--fs-sm); color: var(--c-text-dim); }
+.outcome__why { font-size: var(--fs-sm); color: var(--c-text); line-height: 1.5; margin: 0; }
+.outcome__stats {
+  display: grid; grid-template-columns: auto 1fr; gap: 4px var(--sp-3);
+  margin: 0; padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm); background: var(--c-surface-2); text-align: left;
+}
+.outcome__stats dt { font-size: var(--fs-sm); color: var(--c-text-dim); }
+.outcome__stats dd { margin: 0; font-size: var(--fs-sm); font-weight: 700; color: var(--c-text); text-align: right; }
+/* 조언은 엔진이 낸 값이 있을 때만 나온다. 없으면 이 칸이 통째로 사라진다. */
+.outcome__advice {
+  display: flex; flex-direction: column; gap: 2px; text-align: left;
+  padding: var(--sp-2) var(--sp-3); border-radius: var(--r-sm);
+  border-left: 3px solid var(--c-gauge, #e0a11e); background: var(--c-warn-bg);
+  font-size: var(--fs-sm); color: var(--c-text); line-height: 1.5;
+}
+.outcome__advice-cap { font-size: var(--fs-xs); font-weight: 700; color: var(--c-text-dim); }
+.outcome__actions { display: flex; gap: var(--sp-2); justify-content: center; flex-wrap: wrap; }
+.outcome__actions .btn { flex: 0 1 auto; }
+
+/* ---- 허브 챌린지 목록(49차) ----
+   처음 들어온 사람이 어디부터 할지 화면에서 알 수 있어야 한다. 계열로 묶고, 계열 안에서
+   난이도 순으로 세우고, 아직 목표를 못 넘긴 것 가운데 가장 앞에 '여기부터' 를 붙인다.
+   잠그지는 않는다 — 순서를 권할 뿐이다. */
+.series { margin-top: var(--sp-4); }
+.series__title {
+  display: flex; align-items: baseline; gap: var(--sp-2);
+  margin: 0 0 var(--sp-2); font-size: var(--fs-lg); font-weight: 700; color: var(--c-text);
+}
+.series__count { font-size: var(--fs-xs); font-weight: 500; color: var(--c-text-faint); }
+.row--next { border-color: var(--c-accent-strong); box-shadow: inset 3px 0 0 var(--c-accent-strong); }
+.row__learn {
+  display: flex; gap: 6px; align-items: baseline;
+  margin-top: 4px; font-size: var(--fs-sm); color: var(--c-text-dim);
+}
+.row__learn span {
+  flex: 0 0 auto; padding: 1px 6px; border-radius: 999px;
+  background: var(--c-surface-2); color: var(--c-text-faint); font-size: var(--fs-xs);
+}
+.row__goal { font-size: var(--fs-xs); color: var(--c-text-faint); }
+.row__goal b { color: var(--c-text-dim); font-weight: 700; }
+
+/* ---- 목표 배너(48차) ----
+   처음 들어온 사람이 "17초가 잘한 것인가" 를 알 수 없어서 둔다. 조작 줄 바로 아래 한 줄.
+   네 칸의 이름도 값도 매니페스트가 소유한다. */
+/* 54차 — 이 줄이 이 페이지의 주제다. 네 토막을 세로 구분선으로 나눈다.
+   오른쪽 관제 한 벌과 같은 바탕색이라 가운데부터 오른쪽 끝까지 한 덩어리로 읽힌다. */
+.goalbar {
+  display: flex; align-items: stretch;
+  height: 50px; min-height: 50px;
+  background: var(--c-board-bg);
+  overflow-x: auto; overflow-y: hidden;
+}
+.goalbar[hidden] { display: none; }
+.goalbar__cell {
+  display: flex; flex-direction: column; justify-content: center; gap: 2px;
+  white-space: nowrap; flex: 0 0 auto;
+  padding: 0 var(--sp-4);
+  border-right: 1px solid var(--c-board-line);
+}
+.goalbar__cell:last-child { border-right: 0; }
+.goalbar__key { font-size: 11px; color: var(--c-board-faint); line-height: 1.2; }
+.goalbar__val { font-size: 13.5px; color: #FFFFFF; font-weight: 700; line-height: 1.2; }
+/* 첫 칸이 이번 챌린지의 목표다. 나머지 셋보다 한눈에 먼저 들어와야 한다. */
+.goalbar__cell--goal .goalbar__val { color: var(--c-board-goal); }
+@media (max-width: 1600px) {
+  .goalbar__cell { padding: 0 var(--sp-3); }
+}
+
+/* ---- API 목록 ---- */
+.api-list { display: flex; flex-direction: column; gap: var(--sp-1); }
+.api-item {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: baseline;
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-sm);
+  background: var(--c-surface-2);
+}
+.api-item__sig { font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--c-accent); white-space: nowrap; }
+.api-item__doc { font-size: var(--fs-xs); color: var(--c-text-dim); }
+.api-note { margin-top: var(--sp-2); font-size: var(--fs-xs); color: var(--c-text-faint); }
+
+/* ---- 오류 패널 ---- */
+.errors { display: flex; flex-direction: column; gap: var(--sp-1); }
+.errors__empty { font-size: var(--fs-sm); color: var(--c-text-faint); }
+.pane__section[hidden] { display: none; }   /* 탭으로 감춘 칸이 display 규칙에 밀려 남지 않게 */
+.pane__section.is-collapsed > .pane__content { display: none; }
+.pane__section.is-collapsed >   /* 컨셉 톤: 패널 머리말은 얇고 낮은 채도로 */
+.pane__title { border-bottom: 0; }
+.pane__title .chip--ok { color: var(--c-ok); border-color: var(--c-line); }
+.error-item {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: baseline;
+  padding: var(--sp-2);
+  border: 1px solid var(--c-danger);
+  border-left-width: 3px;
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--c-danger) 10%, transparent);
+  font-size: var(--fs-sm);
+  text-align: left;
+  color: var(--c-text);
+  cursor: pointer;
+  font-family: inherit;
+}
+.error-item__loc { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--c-danger); white-space: nowrap; }
+.error-item--info { border-color: var(--c-warn); background: color-mix(in srgb, var(--c-warn) 10%, transparent); }
+.error-item--info .error-item__loc { color: var(--c-warn); }
+
+/* ---- 트랙 뷰 ---- */
+.view {
+  position: relative; flex: 1 1 auto; min-height: 0; background: var(--c-view-bg);
+  /* 밝은 대시보드 안에 박힌 어두운 무대 — 흰 카드 안에 넣고 옅은 그림자로 띄운다 */
+  margin: var(--sp-3); border-radius: var(--r-lg);
+  border: 1px solid var(--c-card-line); box-shadow: var(--shadow-stage); overflow: hidden;
+}
+.view__canvas { display: block; width: 100%; height: 100%; }
+/* 55차 보강2 마) — ?layer=1 에서만. 배경을 한 번만 떠 넣고 그 뒤로는 translate 만 받는다.
+   isolation 으로 이 안에 쌓기 맥락을 만든다 — 그래야 z-index -1 이 .view 밖으로 새지 않는다.
+   캔버스를 0 으로 올려도 비네트·오버레이는 DOM 순서가 뒤라 그대로 위에 남는다. */
+.view--layered { isolation: isolate; }
+.view--layered .view__canvas { position: relative; z-index: 0; }
+.view__bg {
+  position: absolute; left: 0; top: 0; z-index: -1;
+  max-width: none; transform-origin: 0 0; will-change: transform;
+  pointer-events: none; user-select: none;
+}
+/* 54차 파트G — 잘린 소품 단면을 가리는 안쪽 그림자. 눌리지 않게 이벤트는 통과시킨다. */
+.view__vignette {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  box-shadow: inset 0 0 90px 34px rgba(16, 19, 24, .62);
+}
+.view__overlay {
+  position: absolute;
+  left: var(--sp-3);
+  bottom: var(--sp-3);
+  display: flex;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--c-text-faint);
+  pointer-events: none;
+}
+.transport {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-top: var(--border);
+  background: var(--c-surface);
+  flex-wrap: wrap;
+}
+.transport__spacer { flex: 1; }
+.transport__tick {
+  font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--c-text-dim);
+  /* 47차: flex 가 이 칸부터 줄여 '0.00…' 이 되었다. 자릿수가 정해진 값이라 줄이지 않는다. */
+  flex: 0 0 auto; white-space: nowrap;
+}
+.speed { display: flex; gap: 2px; padding: 2px; border: var(--border); border-radius: var(--r-sm); background: var(--c-surface-2); }
+.speed__btn {
+  appearance: none;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--c-text-dim);
+  font: inherit;
+  font-size: var(--fs-sm);
+  padding: 3px 10px;
+  cursor: pointer;
+}
+.speed__btn[aria-pressed="true"] { background: var(--c-accent-dim); color: var(--c-accent-strong); font-weight: 700; }
+.speed__btn:hover:not([aria-pressed="true"]) { color: var(--c-text); }
+/* ---- 시리즈 맵 전환 바 ---- */
+.mapbar {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 6px var(--sp-3); border-bottom: var(--border);
+  background: var(--c-surface); overflow-x: auto;
+}
+.mapbar__label { font-size: var(--fs-xs); color: var(--c-text-faint); letter-spacing: .08em; white-space: nowrap; }
+.mapbar__item {
+  border: var(--border); border-radius: var(--r-sm); background: var(--c-surface-2);
+  color: var(--c-text-dim); font: inherit; font-size: var(--fs-xs);
+  padding: 4px 10px; cursor: pointer; white-space: nowrap; text-decoration: none;
+}
+.mapbar__item:hover { color: var(--c-text); }
+.mapbar__item[aria-current="true"] {
+  background: var(--c-accent-dim); color: var(--c-accent-strong); border-color: var(--c-accent);
+  font-weight: 700; border-left: 3px solid var(--c-accent);
+}
+
+/* 51차 — 계열 안의 세 단계. 폭을 같게 하고 위에 난이도 색 띠를 얹는다.
+   글자 수에 따라 폭이 제각각이면 셋이 한 계열의 세 단계로 읽히지 않는다.
+   색은 이미 있는 토큰을 쓴다 — 새 색을 만들지 않는다. */
+.mapbar__item--tier {
+  position: relative; flex: 0 0 152px; width: 152px;
+  display: flex; flex-direction: column; gap: 1px;
+  padding: 7px 10px 5px; border-left-width: 1px; text-align: left;
+}
+.mapbar__item--tier[aria-current="true"] { border-left-width: 1px; }
+.mapbar__item--tier::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px;
+  border-radius: var(--r-sm) var(--r-sm) 0 0; background: var(--c-line-strong);
+}
+.mapbar__item--tier[data-tier="basic"]::before { background: var(--c-ok); }
+.mapbar__item--tier[data-tier="intermediate"]::before { background: var(--c-warn); }
+.mapbar__item--tier[data-tier="advanced"]::before,
+.mapbar__item--tier[data-tier="expert"]::before { background: var(--c-accent); }
+.mapbar__tier { font-size: var(--fs-xs); color: var(--c-text-faint); font-weight: 600; }
+.mapbar__item--tier[aria-current="true"] .mapbar__tier { color: var(--c-accent-strong); }
+.mapbar__name { font-size: var(--fs-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---- 미니 탑뷰 ---- */
+.minimap {
+  background: var(--c-minimap-bg); margin: 0 var(--sp-3) var(--sp-3);
+  border-radius: var(--r-md); border: 1px solid var(--c-card-line);
+  box-shadow: var(--shadow-card); overflow: hidden;
+}
+.minimap__canvas { display: block; width: 100%; height: 176px; }
+/* 54차 파트E — 코스는 정사각(사각·8자 모두 외곽이 정사각)이라 창이 가로로 길면
+   좌우 여백만 넓어진다. 창을 정사각으로 세우고 사방 26px 여백을 그림 쪽에서 지킨다.
+   폭을 다 쓰면 창이 너무 높아져 오른쪽 칸이 세로로 넘친다 — 상한을 둔다. */
+.pane--board .minimap {
+  width: min(100%, 260px); margin-inline: auto;
+  background: var(--c-mini-bg); border-color: var(--c-mini-line); box-shadow: none;
+  /* 관제 한 벌 안으로 들어온다. 그리기 코드는 이 토큰만 읽으므로 색은 여기서 끝난다. */
+  --c-minimap-bg: var(--c-mini-bg);
+  --c-minimap-band: var(--c-mini-track);
+  --c-minimap-edge: var(--c-mini-line);
+  --c-minimap-center: var(--c-board-line);
+}
+.pane--board .minimap__canvas { height: auto; aspect-ratio: 1 / 1; }
+
+/* ---- 미션 브리핑 ---- */
+.brief { display: flex; flex-direction: column; gap: 6px; }
+.brief__row { display: grid; grid-template-columns: 40px 1fr; gap: var(--sp-2); font-size: var(--fs-sm); }
+.brief__key { color: var(--c-text-faint); font-size: var(--fs-xs); letter-spacing: .08em; padding-top: 2px; }
+.brief__val { color: var(--c-text); line-height: 1.45; }
+
+.camview {
+  position: absolute; top: var(--sp-2); right: var(--sp-2); width: 158px;
+  border: var(--border); border-radius: var(--r-sm); background: var(--c-surface);
+  overflow: hidden; z-index: 2;
+}
+.camview__head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-2); width: 100%;
+  padding: 6px var(--sp-2); border: 0; border-bottom: 1px solid var(--c-line);
+  background: var(--c-surface-2); color: var(--c-text-dim);
+  font: inherit; font-size: var(--fs-xs); cursor: pointer; text-align: left;
+}
+.camview__head:hover { color: var(--c-text); }
+.camview__mark { color: var(--c-text-faint); }
+.camview__body[hidden] { display: none; }
+.camview__canvas { display: block; width: 100%; height: 104px; }
+.camview__read {
+  padding: 4px var(--sp-2) 6px; font-family: var(--font-mono);
+  font-size: var(--fs-xs); color: var(--c-text-faint); font-variant-numeric: tabular-nums;
+}
+.camview__read--on { color: var(--c-marker); }
+
+.btn--sound { min-width: 74px; }
+.btn--sound[aria-pressed="true"] { border-color: var(--c-accent); color: var(--c-text); }
+
+/* 계기판 상단 상태 줄 (헤더에서 옮겨옴) */
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  padding: var(--sp-3) var(--sp-3) 0;
+}
+.status-row .chip--status { font-size: var(--fs-sm); padding: 4px var(--sp-3); }
+.notice {
+  padding: 4px var(--sp-2);
+  border: 1px solid var(--c-warn);
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--c-warn) 12%, transparent);
+  color: var(--c-warn);
+  font-size: var(--fs-xs);
+}
+.notice[hidden] { display: none; }
+
+/* ---- 계기판 ---- */
+.gauges { display: flex; flex-direction: column; gap: var(--sp-3); }
+/* 2열 배치 — 왼쪽에 큰 시계 하나, 오른쪽에 작은 칸을 쌓는다. 세로로 다 쌓으면 열이 다 찬다. */
+.gauges--grid {
+  display: grid; grid-template-columns: 1.15fr 1fr; grid-template-rows: repeat(3, 34px); gap: 5px;
+}
+.gauges--grid .gauge--wide {
+  grid-column: 1; grid-row: 1 / -1;
+  display: flex; flex-direction: column; justify-content: center; gap: 2px;
+}
+.gauges--grid .gauge { padding: 4px var(--sp-3) 5px; }
+.gauges--grid .gauge--accent .gauge__value { font-size: var(--fs-gauge-sm); line-height: 1.05; }
+/* 작은 칸은 라벨과 값을 한 줄에 둔다 */
+.gauges--grid .gauge:not(.gauge--wide) { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
+.gauges--grid .gauge:not(.gauge--wide) .gauge__label { font-size: var(--fs-xs); }
+.gauges--grid .gauge:not(.gauge--wide) .gauge__value { font-size: var(--fs-md); line-height: 1.1; }
+.gauges--grid .gauge:not(.gauge--wide) .gauge__unit { margin-left: 3px; font-size: var(--fs-xs); }
+/* 관제 화면에서는 상태 칩이 섹션 제목 줄로 올라간다 — 계기판만으로 열이 차면 안 된다. */
+.shell--dashboard .pane__title .status-row { margin-left: auto; padding: 0; border: 0; }
+.shell--dashboard .pane__content--fixed { padding-top: 4px; padding-bottom: 6px; }
+.gauge {
+  position: relative;
+  padding: var(--sp-3) var(--sp-3) var(--sp-3) var(--sp-4);
+  border: var(--border);
+  border-radius: var(--r-md);
+  background: linear-gradient(180deg, var(--c-surface-2), var(--c-surface));
+  overflow: hidden;
+}
+/* 컨셉 대시보드의 카드 위계: 좌측 얇은 강조 바 */
+.gauge::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--c-accent);
+  opacity: .55;
+}
+.gauge--danger::before { background: var(--c-danger); }
+.gauge--accent::before { background: var(--c-accent); opacity: .9; }
+.gauge__label {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c-text-dim);
+}
+.gauge__value {
+  font-family: var(--font-gauge);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-gauge);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--c-gauge);
+  text-shadow: none;
+}
+.gauge__value--sm { font-size: var(--fs-gauge-sm); }
+.gauge__empty { font-size: var(--fs-lg); font-weight: 600; color: var(--c-text-faint); }
+.gauge__unit { font-size: var(--fs-lg); font-weight: 600; color: var(--c-text-dim); margin-left: 6px; }
+.gauge--danger .gauge__value { color: var(--c-danger); text-shadow: none; }
+.gauge--accent .gauge__value { color: var(--c-gauge); text-shadow: none; }
+.gauge-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+
+/* ---- 시도 이력 ---- */
+.history { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
+.history th, .history td { padding: var(--sp-1) var(--sp-2); text-align: right; border-bottom: 1px solid var(--c-line); white-space: nowrap; }
+.history th:first-child, .history td:first-child { padding-left: var(--sp-3); }
+.history th:last-child, .history td:last-child { padding-right: var(--sp-4); }
+.history th { color: var(--c-text-dim); font-weight: 500; font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.06em; }
+.history td:first-child, .history th:first-child { text-align: left; }
+.history td { font-family: var(--font-mono); }
+.history tr.is-best td { color: var(--c-gauge); }
+.history__empty { padding: var(--sp-3); font-size: var(--fs-sm); color: var(--c-text-faint); }
+.history__note { padding: var(--sp-2) var(--sp-3); font-size: var(--fs-xs); color: var(--c-text-faint); border-top: var(--border); }
+
+/* ---- 시도 종료 안내 ---- */
+.result[hidden] { display: none; }
+
+/* ---- 알림 (오류가 아닌 것) ---- */
+.notice-bar {
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: var(--border);
+  background: color-mix(in srgb, var(--c-accent) 10%, transparent);
+  color: var(--c-text);
+  font-size: var(--fs-sm);
+}
+.notice-bar[hidden] { display: none; }
+.notice-bar--warn { background: color-mix(in srgb, var(--c-warn) 12%, transparent); }
+.history td.is-incomplete, .history tr.is-incomplete td { color: var(--c-text-faint); }
+
+/* ---- 허브 (홈 · 킷 상세) ---- */
+.hub { max-width: 1080px; margin: 0 auto; padding: var(--sp-5) var(--sp-4) 64px; display: flex; flex-direction: column; gap: var(--sp-4); }
+.hub__head { display: flex; flex-direction: column; gap: var(--sp-2); }
+.hub__title { font-size: 26px; font-weight: 700; letter-spacing: -.02em; }
+.hub__lede { margin: 0; color: var(--c-text-dim); font-size: var(--fs-lg); }
+
+.crumbs { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--c-text-dim); }
+.crumbs a { color: var(--c-accent); text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+.crumbs b { color: var(--c-text); font-weight: 600; }
+.crumbs--header { flex: 1; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 380px)); gap: var(--sp-4); }
+.card {
+  display: flex; flex-direction: column;
+  border: var(--border); border-radius: var(--r-md); background: var(--c-surface);
+  overflow: hidden; text-decoration: none; color: inherit;
+  transition: border-color .12s, transform .12s;
+}
+.card:hover { border-color: var(--c-accent-dim); transform: translateY(-2px); }
+.card__thumb { position: relative; aspect-ratio: 16 / 10; max-height: 220px; background: var(--c-surface-2); display: grid; place-items: center; overflow: hidden; }
+/* 교구가 잘리지 않게 전체를 담는다. 남는 자리는 카드 표면색으로 둔다. */
+.card__thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: var(--sp-2); }
+.card__thumb-ph { width: 56px; height: 56px; border: 2px dashed var(--c-line-strong); border-radius: 50%; }
+.card__body { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4) var(--sp-4); }
+.card__title { font-size: var(--fs-lg); font-weight: 700; }
+.card__summary { font-size: var(--fs-sm); color: var(--c-text-dim); }
+.card__stats { display: flex; gap: var(--sp-3); font-size: var(--fs-sm); color: var(--c-text-dim); flex-wrap: wrap; }
+.card__stats b { color: var(--c-text); font-variant-numeric: tabular-nums; }
+
+.toolbar { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
+.field { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--c-text-dim); }
+.field select {
+  border: var(--border); border-radius: var(--r-sm); background: var(--c-surface-2);
+  color: var(--c-text); font: inherit; font-size: var(--fs-sm); padding: 5px 8px;
+}
+
+.rows { display: flex; flex-direction: column; gap: var(--sp-2); }
+.row {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4); border: var(--border); border-radius: var(--r-md);
+  background: var(--c-surface); text-decoration: none; color: inherit;
+  transition: border-color .12s;
+}
+.row:hover { border-color: var(--c-accent-dim); }
+.row__main { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.row__title { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-lg); font-weight: 600; }
+.row__summary { font-size: var(--fs-sm); color: var(--c-text-dim); }
+.row__tags { display: flex; gap: var(--sp-1); flex-wrap: wrap; }
+.row__stats { text-align: right; flex: none; }
+.row__best { font-family: var(--font-gauge); font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700; color: var(--c-gauge); }
+.row__best span { font-size: var(--fs-sm); color: var(--c-text-dim); margin-left: 3px; }
+.row__best--none { color: var(--c-text-faint); font-size: var(--fs-md); font-weight: 600; }
+.row__attempts { font-size: var(--fs-xs); color: var(--c-text-faint); }
+
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--c-line-strong); font-size: var(--fs-xs); color: var(--c-text-dim);
+}
+.badge--ok { color: var(--c-ok); border-color: var(--c-ok); }
+.badge--next { background: var(--c-accent-strong); border-color: var(--c-accent-strong); color: var(--c-on-accent); font-weight: 700; }
+.badge--soft { border-style: dashed; }
+
+.empty {
+  padding: var(--sp-5); border: 1px dashed var(--c-line-strong); border-radius: var(--r-md);
+  color: var(--c-text-dim); font-size: var(--fs-md); text-align: center; line-height: 2;
+}
+.empty .btn { margin-left: var(--sp-2); text-decoration: none; }
+
+/* ---- 접이식 패널 (API 목록 · 규칙 카드) ---- */
+.pane__section > .pane__title,
+.pane__fold > summary { padding-top: 5px; padding-bottom: 5px; }
+.pane__fold > summary { cursor: pointer; list-style: none; }
+.pane__fold > summary::-webkit-details-marker { display: none; }
+.pane__fold > summary::after { content: "▾"; color: var(--c-text-faint); font-size: 10px; }
+.pane__fold:not([open]) > summary::after { content: "▸"; }
+.pane__fold:not([open]) > summary { border-bottom: 0; }
+.api-list { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-1); }
+.api-item { flex-direction: column; align-items: flex-start; gap: 1px; }
+
+/* ---- 기록 패널 ---- */
+.best { display: flex; flex-direction: column; gap: var(--sp-2); }
+.best__row { display: flex; align-items: baseline; gap: var(--sp-2); }
+.best__time { font-family: var(--font-gauge); font-variant-numeric: tabular-nums; font-size: 30px; font-weight: 800; color: var(--c-gauge); }
+.best__time span { font-size: var(--fs-md); color: var(--c-text-dim); margin-left: 3px; }
+.best__none { color: var(--c-text-faint); font-size: var(--fs-md); }
+.best__note { font-size: var(--fs-sm); color: var(--c-text); border-left: 2px solid var(--c-accent); padding-left: var(--sp-2); }
+.spark { width: 100%; height: 34px; display: block; }
+.spark path { fill: none; stroke: var(--c-accent); stroke-width: 1.5; }
+.spark circle { fill: var(--c-gauge); }
+
+.note-form { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-2); border: 1px dashed var(--c-accent-dim); border-radius: var(--r-sm); }
+.note-form__diff { font-size: var(--fs-xs); color: var(--c-accent); font-family: var(--font-mono); }
+.note-form input {
+  border: var(--border); border-radius: var(--r-sm); background: var(--c-surface-2);
+  color: var(--c-text); font: inherit; font-size: var(--fs-sm); padding: 6px 8px;
+}
+.note-form__row { display: flex; gap: var(--sp-2); }
+
+.log { display: flex; flex-direction: column; }
+.log__item {
+  display: grid; grid-template-columns: 1fr auto; gap: var(--sp-2); align-items: baseline;
+  padding: var(--sp-2) var(--sp-3); border-bottom: 1px solid var(--c-line);
+  background: none; border-left: 0; border-right: 0; border-top: 0;
+  color: inherit; font: inherit; text-align: left; cursor: pointer; width: 100%;
+}
+.log__item:hover { background: var(--c-surface-2); }
+.log__change { font-size: var(--fs-sm); color: var(--c-text); font-family: var(--font-mono); }
+.log__meta { font-size: var(--fs-xs); color: var(--c-text-faint); }
+.log__delta { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--fs-sm); white-space: nowrap; }
+.log__delta--down { color: var(--c-ok); }
+.log__delta--up { color: var(--c-danger); }
+.log__delta--flat { color: var(--c-text-dim); }
+.log__item--incomplete .log__change { color: var(--c-text-faint); }
+.log__empty { padding: var(--sp-3); font-size: var(--fs-sm); color: var(--c-text-faint); }
+
+.log__fold { display: flex; flex-direction: column; }
+.log__foldtoggle {
+  display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3); border: 0; border-bottom: 1px solid var(--c-line);
+  background: var(--c-surface-2); color: var(--c-text-dim);
+  font: inherit; font-size: var(--fs-xs); text-align: left; cursor: pointer; width: 100%;
+}
+.log__foldtoggle:hover { color: var(--c-text); }
+.log__foldmark { color: var(--c-text-faint); }
+.log__foldbody { display: flex; flex-direction: column; }
+.log__foldbody[hidden] { display: none; }
+.log__foldbody .log__item { padding-left: calc(var(--sp-3) + var(--sp-3)); }
+
+.rules { display: flex; flex-direction: column; gap: var(--sp-1); }
+.rules__row { display: flex; justify-content: space-between; gap: var(--sp-2); font-size: var(--fs-sm); }
+.rules__row dt { color: var(--c-text-dim); }
+.rules__row dd { margin: 0; color: var(--c-text); font-variant-numeric: tabular-nums; }
+
+/* ---- 허브 페이지 골격 (챌린지 화면과 같은 헤더·톤을 공유한다) ---- */
+.page { min-height: 100%; display: flex; flex-direction: column; background: var(--c-bg); }
+.page .hub { max-width: 1180px; width: 100%; }
+.card { position: relative; }
+.card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--c-accent); opacity: .5; }
+
+/* ---- 허브 상호작용 (카드·행 전체가 클릭 대상) ---- */
+.card, .row { cursor: pointer; }
+.card:focus-visible, .row:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
+.card:hover .card__title, .row:hover .row__title { color: var(--c-accent); }
+
+/* ---- 네이티브 셀렉트를 토큰 톤으로 ---- */
+.field select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 26px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--c-text-dim) 50%),
+                    linear-gradient(135deg, var(--c-text-dim) 50%, transparent 50%);
+  background-position: calc(100% - 14px) 52%, calc(100% - 9px) 52%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+.field select:hover { border-color: var(--c-line-strong); }
+.field select:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 1px; }
+.field select option { background: var(--c-surface); color: var(--c-text); }
+
+
+/* ---- 모달 (제출물 · 확인) ---- */
+.modal {
+  position: fixed; inset: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(4, 7, 12, .72); padding: var(--sp-3);
+}
+.modal[hidden] { display: none; }
+.modal__box {
+  width: min(560px, 100%); max-height: 90vh; overflow: auto;
+  border: var(--border); border-radius: var(--r-md, 8px);
+  background: var(--c-surface); padding: var(--sp-3); display: flex; flex-direction: column; gap: var(--sp-3);
+}
+.modal__box--sm { width: min(420px, 100%); }
+.modal__title { font-size: 15px; font-weight: 700; color: var(--c-text); }
+.modal__field { display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-sm); color: var(--c-text-dim); }
+.modal__field input {
+  border: var(--border); border-radius: var(--r-sm); background: var(--c-surface-2);
+  color: var(--c-text); font: inherit; font-size: var(--fs-sm); padding: 8px 10px;
+}
+.modal__hint { margin: 0; font-size: var(--fs-xs); color: var(--c-text-faint); line-height: 1.5; }
+.modal__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--sp-2); }
+.modal__grid .btn { width: 100%; }
+.modal__note { font-size: var(--fs-xs); color: var(--c-accent); min-height: 1em; }
+/* 상자 맨 아래 칸은 자리를 미리 비워 둘 이유가 없다 — 아래에서 밀려날 것이 없다. */
+.modal__note--collapse:empty { display: none; }
+.modal__row { display: flex; align-items: center; gap: var(--sp-2); }
+.modal__spacer { flex: 1; }
+.btn--danger { border-color: var(--c-danger); background: var(--c-danger-bg); color: var(--c-danger); }
+.chip--warn { border-color: var(--c-danger); background: var(--c-danger-bg); color: var(--c-danger); }
+
+/* ---- 녹화 표시 ---- */
+.recbadge {
+  position: fixed; top: 56px; left: 50%; transform: translateX(-50%); z-index: 40;
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px; border-radius: 999px; border: 1px solid var(--c-danger);
+  background: rgba(8, 10, 16, .9); color: var(--c-danger); font-size: var(--fs-xs); font-weight: 700;
+}
+.recbadge[hidden] { display: none; }
+.recbadge__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c-danger); }
+
+/* ---- 리포트 (화면에서는 오버레이, 인쇄하면 이것만 남는다) ---- */
+.report { position: fixed; inset: 0; z-index: 60; overflow: auto; background: #ffffff; color: #1f2536; }
+.report[hidden] { display: none; }
+.report__page { max-width: 820px; margin: 0 auto; padding: 32px 28px 64px; font-family: var(--font-ui); }
+.report__close, .report__print { position: absolute; top: 16px; }
+.report__close { right: 16px; }
+.report__print { right: 84px; }
+.report__h1 { font-size: 24px; margin: 0 0 20px; }
+.report__h2 { font-size: 15px; margin: 26px 0 10px; padding-bottom: 6px; border-bottom: 1px solid #dfe3ec; }
+.report__meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 20px; margin: 0; }
+.report__meta div { display: flex; gap: 10px; font-size: 13px; }
+.report__meta dt { color: #61687d; min-width: 64px; }
+.report__meta dd { margin: 0; font-weight: 600; }
+.report__score { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.report__score div { border: 1px solid #dfe3ec; border-radius: 6px; padding: 10px; }
+.report__score span { display: block; font-size: 11px; color: #61687d; }
+.report__score b { font-size: 18px; font-variant-numeric: tabular-nums; }
+.report__table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.report__table th, .report__table td { border-bottom: 1px solid #eff1f6; padding: 6px 8px; text-align: left; }
+.report__table th { color: #61687d; font-weight: 600; }
+.report__table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.report__spark { width: 100%; height: 60px; }
+.report__spark path { fill: none; stroke: #c42a2a; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.report__img { display: block; width: 100%; max-width: 520px; border: 1px solid #dfe3ec; border-radius: 6px; }
+.report__code {
+  white-space: pre-wrap; word-break: break-word; font-family: var(--font-mono); font-size: 11.5px;
+  background: #f6f7fb; border: 1px solid #dfe3ec; border-radius: 6px; padding: 12px; margin: 0;
+}
+.report__notes { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.7; }
+.report__empty { font-size: 12px; color: #61687d; }
+
+/* 세로가 짧은 화면(1280x720 프로젝터 등)에서는 스타터 전체가 보이도록 한 단계 조인다. */
+@media (max-height: 820px) {
+  .editor { font-size: 13.5px; }   /* 낮은 화면에서도 한 단계 키운다. 720p 프로젝터 기준 */
+  .editor__gutter, .editor__area { line-height: 1.25; }
+  .editor__gutter { padding-top: 6px; padding-bottom: 6px; }
+  .editor__area { padding: 6px var(--sp-2); }
+  .minimap__canvas { height: 148px; }
+}
+
+@media print {
+  body > *:not(.report) { display: none !important; }
+  .report { position: static; overflow: visible; }
+  .report__close, .report__print { display: none; }
+  .report__page { max-width: none; padding: 0; }
+  /* 코드·표·이미지가 페이지 경계에서 잘리지 않게 한다 */
+  .report__code, .report__img, .report__score, .report__spark { break-inside: avoid; page-break-inside: avoid; }
+  .report__table tr { break-inside: avoid; page-break-inside: avoid; }
+  .report__h2 { break-after: avoid; page-break-after: avoid; }
+  @page { margin: 14mm; }
+}
+
+
+/* ---- 버튼 위계 (19차) ----
+   가장 큰 주버튼 하나 + 나머지는 조용한 보조. 학생은 주버튼 하나만 보면 된다. */
+.btn--go {
+  font-size: var(--fs-lg); font-weight: 700; padding: 10px 20px;
+  border-color: var(--c-accent-strong); background: var(--c-accent-strong); color: var(--c-on-accent);
+  box-shadow: var(--shadow-card);
+}
+.btn--go:hover { background: var(--c-accent-hover); border-color: var(--c-accent-hover); }
+.btn--mini { font-size: var(--fs-xs); padding: 4px 9px; color: var(--c-text-dim); }
+.btn--mini:hover { color: var(--c-text); }
+/* .btn--mini 가 .btn--primary 뒤에 와서 글자색을 덮는다.
+   채운 버튼은 어디에 있든 흰 글자다(22차 확정). */
+.btn--primary.btn--mini,
+.btn--primary.btn--mini:hover,
+.btn--ready.btn--mini,
+.btn--go.btn--mini { color: var(--c-on-accent); }
+.btn--quiet { border-color: var(--c-line); background: transparent; color: var(--c-text-dim); }
+.btn--quiet:hover { color: var(--c-text); }
+/* 완주 기록이 생긴 뒤에만 눈에 띄게 한다 */
+.btn--ready { border-color: var(--c-accent-strong); background: var(--c-accent-strong); color: var(--c-on-accent); font-weight: 700; }
+.transport__adv { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+/* ---- 처음 안내 (모달 아님 — 화면을 막지 않는다) ---- */
+/* ---- 카메라 2분할 뷰 + 임계값 튜닝 (20차) ---- */
+.camview--wide { width: 320px; }
+.camview__split { display: flex; }
+.camview__cell { position: relative; flex: 1 1 0; min-width: 0; border-right: 1px solid var(--c-line); }
+.camview__cell:last-child { border-right: 0; }
+.camview__cell[hidden] { display: none; }
+
+/* 51차 — 카메라 2단. 두 화면 모두 열 폭을 다 쓰고 같은 크기다.
+   좌우로 반씩 나눠 놓으면 어느 쪽도 무엇을 보는 화면인지 알아볼 만큼 크지 않다. */
+.camstage { position: relative; border-bottom: 1px solid var(--c-line); }
+.camstage[hidden] { display: none; }
+.camstage__canvas {
+  display: block; width: 100%; aspect-ratio: 16 / 9; height: auto;
+  background: var(--c-camview-bg);
+}
+/* 어긋남 → 조향 막대 → 바퀴 값. 손의 움직임이 바퀴 값으로 바뀌는 경로를 한 줄로 잇는다. */
+.camsteer {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px var(--sp-2); font-size: var(--fs-xs); color: var(--c-text-dim);
+  border-bottom: 1px solid var(--c-line);
+}
+.camsteer[hidden] { display: none; }
+.camsteer__k { flex: 0 0 auto; color: var(--c-text-faint); }
+.camsteer__v,
+.camsteer__w {
+  flex: 0 0 auto; min-width: 30px; text-align: right;
+  font-family: var(--font-gauge); font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm); font-weight: 700; color: var(--c-text);
+}
+/* 막대는 가운데가 0 이다. 왼쪽으로 차면 좌회전, 오른쪽으로 차면 우회전이다. */
+.camsteer__bar {
+  position: relative; flex: 1 1 auto; min-width: 34px; height: 6px;
+  border-radius: 3px; background: var(--c-line);
+}
+.camsteer__bar::before {
+  content: ''; position: absolute; left: 50%; top: -2px; bottom: -2px;
+  width: 1px; background: var(--c-line-strong);
+}
+.camsteer__bar i {
+  position: absolute; top: 0; bottom: 0; left: 50%; width: 0;
+  border-radius: 3px; background: var(--c-marker);
+}
+.camview__cap {
+  position: absolute; top: 3px; left: 5px; z-index: 1;
+  font-size: 10px; color: var(--c-text-dim); background: rgba(6,10,18,.7); padding: 1px 5px; border-radius: 3px;
+}
+.camtune { display: flex; flex-direction: column; gap: 4px; padding: 6px var(--sp-2) 8px; border-top: 1px solid var(--c-line); }
+.camtune[hidden] { display: none; }
+/* 51차 — 두 조각이 한 줄에 안 들어가면 눌리지 말고 다음 줄로 내려간다.
+   "인식률 0% · 연습 모드(카메라 없음)" 이 좁은 열에서 한 줄에 눌려 보였다. */
+.camtune__rate {
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2px var(--sp-2);
+  font-size: var(--fs-xs); color: var(--c-text-dim);
+}
+.camtune__rate b { color: var(--c-accent); font-variant-numeric: tabular-nums; }
+.camtune__row { display: grid; grid-template-columns: 26px 1fr 30px; align-items: center; gap: 6px; font-size: 10px; color: var(--c-text-faint); }
+.camtune__row input { width: 100%; accent-color: var(--c-accent); }
+.camtune__row b { text-align: right; font-family: var(--font-mono); color: var(--c-text-dim); font-size: 10px; }
+.camtune .btn--mini { margin-top: 2px; }
+
+
+/* ---- 카메라 시작·상태 (21차) ---- */
+.camstate {
+  display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap;
+  padding: 8px var(--sp-2); border-top: 1px solid var(--c-line);
+}
+.camstate[hidden] { display: none; }
+.camstate__label { font-size: var(--fs-xs); color: var(--c-text-dim); }
+.camstate__label[data-state="on"] { color: var(--c-ok); font-weight: 700; }
+.camstate__label[data-state="denied"] { color: var(--c-danger); }
+.btn--cam { font-size: var(--fs-sm); padding: 7px 14px; }
+.btn--cam[disabled] { opacity: .6; cursor: default; }
+.camtune__active {
+  display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;
+  font-size: var(--fs-xs); color: var(--c-text-faint);
+}
+.camtune__active b { font-family: var(--font-mono); color: var(--c-text-dim); }
+.camtune__diff {
+  padding: 1px 6px; border-radius: 999px;
+  border: 1px solid var(--c-danger); color: var(--c-danger); font-size: 10px;
+}
+.camtune__diff[hidden] { display: none; }
+
+/* 해답 보기 — 코드에 덮어쓰지 않고 보여 주기만 한다. */
+.solution {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(31, 37, 54, .55);
+  display: grid; place-items: center;
+  padding: var(--sp-4);
+}
+.solution__box {
+  width: min(720px, 100%); max-height: 86vh;
+  display: flex; flex-direction: column;
+  background: var(--c-surface); color: var(--c-text);
+  border: 1px solid var(--c-card-line); border-radius: var(--r-lg);
+  box-shadow: var(--shadow-stage); overflow: hidden;
+}
+.solution__head {
+  display: flex; align-items: baseline; gap: var(--sp-2);
+  padding: var(--sp-3); border-bottom: var(--border);
+}
+.solution__head span { color: var(--c-text-dim); font-size: var(--fs-sm); }
+.solution__code {
+  margin: 0; padding: var(--sp-3); overflow: auto;
+  font-family: var(--font-mono); font-size: var(--fs-code); line-height: 1.45;
+  white-space: pre-wrap; background: var(--c-surface-2);
+}
+.solution__foot {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2);
+  padding: var(--sp-3); border-top: var(--border);
+}
+.solution__mark { color: var(--c-accent-strong); font-size: var(--fs-sm); font-weight: 700; }
+.btn--seen { color: var(--c-accent-strong); border-color: var(--c-accent-strong); }
+.log__solution {
+  padding: var(--sp-2) var(--sp-3);
+  color: var(--c-accent-strong); background: var(--c-accent-dim);
+  border-radius: var(--r-md); font-size: var(--fs-sm); font-weight: 700;
+  margin-bottom: var(--sp-2);
+}
+
+/* 가이드 퀘스트 — 대상만 남기고 나머지를 덮는다. 화면을 막지 않는다. */
+.quest { position: fixed; inset: 0; z-index: 70; pointer-events: none; }
+.quest__hole {
+  position: absolute;
+  border-radius: var(--r-md);
+  box-shadow: 0 0 0 3px var(--c-accent), 0 0 0 9999px rgba(31, 37, 54, 0.62);
+  transition: top .16s ease, left .16s ease, width .16s ease, height .16s ease;
+}
+.quest__bubble {
+  position: absolute;
+  width: 300px;
+  pointer-events: auto;
+  background: var(--c-surface);
+  color: var(--c-text);
+  border: 1px solid var(--c-card-line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-stage);
+  padding: var(--sp-3);
+}
+.quest__text { margin: 0 0 var(--sp-3); font-size: var(--fs-md); font-weight: 700; line-height: 1.4; white-space: pre-wrap; }
+.quest__foot { display: flex; align-items: center; gap: var(--sp-2); }
+.quest__count { color: var(--c-text-dim); font-size: var(--fs-sm); margin-right: auto; }
+
+/* 주행 결과 카드 — 가운데 화면 위에 뜬다. 다시 달리거나 코드를 고치면 닫힌다. */
+.result {
+  position: absolute;
+  left: var(--sp-4); right: var(--sp-4); bottom: var(--sp-4);
+  z-index: 5;
+  background: var(--c-surface);
+  color: var(--c-text);
+  border: 1px solid var(--c-card-line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-stage);
+  padding: var(--sp-3);
+}
+.result__title { font-size: var(--fs-lg); font-weight: 700; }
+.result__hint { color: var(--c-text-dim); margin-top: 4px; }
+.result__stats { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin-top: var(--sp-2); }
+.result__stat { display: flex; align-items: baseline; gap: 6px; }
+.result__stat span { color: var(--c-text-dim); font-size: var(--fs-sm); }
+.result__stat b { font-family: var(--font-gauge); font-size: var(--fs-lg); color: var(--c-gauge); }
+.result__stat b.is-plain { color: var(--c-text); }
+.result__actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-3); }
+
+/* ---- 왼쪽 패널 탭 ([학습] / [코드]) ---- */
+.panetabs { display: flex; gap: 4px; }
+.panetab {
+  border: var(--border); border-radius: var(--r-sm); background: var(--c-surface-2);
+  color: var(--c-text-dim); font: inherit; font-size: var(--fs-sm); font-weight: 700;
+  padding: 4px 12px; cursor: pointer;
+}
+.panetab:hover { color: var(--c-text); }
+.panetab.is-on { background: var(--c-accent-dim); border-color: var(--c-accent-strong); color: var(--c-accent-strong); }
+
+/* ---- [학습] 탭 ---- */
+.train { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-3); overflow: auto; min-height: 0; }
+
+
+
+
+
+
+
+.train__row { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+
+.train__result {
+  border: var(--border); border-radius: var(--r-md); background: var(--c-surface-2);
+  padding: var(--sp-3); display: flex; flex-direction: column; gap: 4px;
+}
+.train__acc { display: flex; align-items: baseline; gap: var(--sp-2); }
+.train__acc span { color: var(--c-text-dim); font-size: var(--fs-sm); }
+.train__acc b { font-family: var(--font-gauge); font-size: 28px; color: var(--c-gauge); }
+.train__meta { color: var(--c-text-dim); font-size: var(--fs-sm); }
+.train__meta code { font-family: var(--font-mono); color: var(--c-text); }
+.train__meta--hint { color: var(--c-accent-strong); }
+
+
+
+.train__mosaic { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; height: 100%; }
+.train__mosaic i { display: block; }
+
+
+
+/* ---- 추론 결과 (카메라 시점 안) ---- */
+.mlread { padding: var(--sp-2) var(--sp-3); border-top: var(--border); }
+.mlread__top { display: flex; align-items: baseline; justify-content: space-between; }
+.mlread__top span { font-weight: 700; color: var(--c-text); }
+.mlread__top b { font-family: var(--font-gauge); color: var(--c-gauge); }
+.mlread__bars { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; }
+.mlread__bar { display: grid; grid-template-columns: 54px 1fr 28px; align-items: center; gap: 6px; font-size: var(--fs-xs); color: var(--c-text-dim); }
+.mlread__bar i { display: block; height: 6px; border-radius: 3px; background: var(--c-surface-3); overflow: hidden; }
+.mlread__bar b { display: block; height: 100%; background: var(--c-text-faint); }
+.mlread__bar em { font-style: normal; text-align: right; font-family: var(--font-gauge); }
+.mlread__bar.is-on { color: var(--c-text); }
+.mlread__bar.is-on b { background: var(--c-gauge); }
+
+/* ---- 판단 지점 안내 띠 (캔버스 위쪽) ---- */
+.zonebar {
+  position: absolute; top: var(--sp-3); left: 50%; transform: translateX(-50%);
+  z-index: 4; display: flex; align-items: center; gap: var(--sp-2);
+  padding: 6px var(--sp-3); border-radius: 999px;
+  background: var(--c-stage-2); border: 1px solid var(--c-stage-line-strong);
+  box-shadow: var(--shadow-stage); white-space: nowrap;
+}
+.zonebar__tag {
+  font-size: var(--fs-xs); font-weight: 700; padding: 2px 8px; border-radius: 999px;
+  background: var(--c-stage-3); color: var(--c-stage-text);
+}
+.zonebar[data-expect="stop"] .zonebar__tag { background: #5a1d1d; color: #ffc9c0; }
+.zonebar[data-expect="slow"] .zonebar__tag { background: #5a4413; color: #ffe0a3; }
+.zonebar[data-expect="go"] .zonebar__tag { background: #14442e; color: #a9e9c8; }
+.zonebar__label { color: var(--c-stage-text); font-weight: 700; }
+.zonebar__dist { color: var(--c-stage-text-dim); font-family: var(--font-gauge); }
+.zonebar.is-active { border-color: var(--c-gauge-stage); }
+
+/* ---- 결과 카드 닫기 · 접힘 칩 ---- */
+.result__close {
+  position: absolute; top: 6px; right: 8px;
+  width: 26px; height: 26px; line-height: 1;
+  border: var(--border); border-radius: 50%;
+  background: var(--c-surface-2); color: var(--c-text-dim);
+  font-size: 17px; cursor: pointer;
+}
+.result__close:hover { color: var(--c-text); }
+.resultchip {
+  position: absolute; left: var(--sp-4); bottom: var(--sp-4); z-index: 5;
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--c-card-line); background: var(--c-surface); color: var(--c-text);
+  font: inherit; font-weight: 700; box-shadow: var(--shadow-card);
+}
+.resultchip[hidden] { display: none; }
+.resultchip::after { content: '펼치기'; color: var(--c-text-dim); font-weight: 400; font-size: var(--fs-sm); }
+
+/* ---- 미션 상황판 ---- */
+.hudboard { display: flex; flex-direction: column; gap: var(--sp-2); }
+.hudboard__top { display: flex; gap: var(--sp-2); align-items: flex-start; }
+.hudboard__thumb {
+  flex: 0 0 auto; width: 132px; height: 92px; border-radius: var(--r-sm);
+  border: 1px solid var(--c-card-line); background: var(--c-minimap-bg);
+}
+.hudboard__lede { margin: 0; font-size: var(--fs-sm); color: var(--c-text-dim); line-height: 1.45; }
+.hudboard__tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 6px; }
+.hudtile {
+  display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto;
+  align-items: baseline; column-gap: 5px;
+  padding: 6px 8px; border: var(--border); border-radius: var(--r-sm); background: var(--c-surface-2);
+}
+.hudtile__icon { grid-row: 1 / 3; font-size: 15px; align-self: center; }
+.hudtile__label { font-size: var(--fs-xs); color: var(--c-text-dim); }
+.hudtile__value { grid-column: 2; font-family: var(--font-gauge); font-size: 19px; color: var(--c-text); }
+.hudtile__value.is-warn { color: var(--c-danger); }
+.hudtile__unit { grid-column: 2; font-size: var(--fs-xs); color: var(--c-text-dim); }
+.hudboard.is-live .hudtile { border-color: var(--c-accent-strong); background: var(--c-accent-dim); }
+.hudboard.is-live .hudtile__value { color: var(--c-gauge); }
+.hudboard__goal { font-size: var(--fs-sm); color: var(--c-text); }
+.hudboard__hint > summary { cursor: pointer; font-size: var(--fs-sm); color: var(--c-accent-strong); font-weight: 700; }
+.hudboard__hint > p { margin: 6px 0 0; font-size: var(--fs-sm); color: var(--c-text-dim); line-height: 1.5; }
+
+/* ---- 학습 탭: 단계 ---- */
+.steps { display: flex; gap: 6px; margin: 0; padding: 0; list-style: none; flex-wrap: wrap; }
+.step {
+  display: flex; align-items: center; gap: 5px;
+  /* 줄바꿈으로 넘기지, 알약을 줄여서 글자를 자르지 않는다 — 좁은 열에서 '카메라' 가
+     '카메' 로 잘리고 있었다(48차). */
+  flex: 0 0 auto;
+  padding: 5px 10px; border: var(--border); border-radius: 999px;
+  background: var(--c-surface-2); color: var(--c-text-dim); font-size: var(--fs-sm);
+}
+.step b {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--c-surface-3); color: var(--c-text-dim); font-size: var(--fs-xs);
+}
+.step.is-now { border-color: var(--c-accent-strong); background: var(--c-accent-dim); color: var(--c-accent-strong); font-weight: 700; }
+.step.is-now b { background: var(--c-accent-strong); color: var(--c-on-accent); }
+.step.is-done { border-color: var(--c-ok); background: var(--c-ok-bg); color: var(--c-ok); }
+.step.is-done b { background: var(--c-ok); color: #fff; font-size: 0; }
+.step.is-done b::after { content: '✓'; font-size: 11px; }
+
+/* ---- 학습 탭: 칸 카드 ---- */
+.train__cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.traincard {
+  display: flex; flex-direction: column; gap: 5px; padding: 8px; min-width: 0; overflow: hidden;
+  border: var(--border); border-radius: var(--r-md); background: var(--c-surface-2);
+}
+.traincard.is-on { border-color: var(--c-accent-strong); background: var(--c-accent-dim); }
+.traincard.is-ready { border-color: var(--c-ok); }
+.traincard.is-on.is-ready { border-color: var(--c-accent-strong); }
+.traincard__head {
+  display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap;
+  border: 0; background: none; padding: 0; cursor: pointer; font: inherit; text-align: left;
+}
+.traincard__name { font-weight: 700; color: var(--c-text); }
+.traincard__count { font-family: var(--font-gauge); font-size: 17px; color: var(--c-gauge); margin-left: auto; }
+.traincard__need { font-size: var(--fs-xs); color: var(--c-text-dim); }
+.traincard__bar { display: block; height: 5px; border-radius: 3px; background: var(--c-surface-3); overflow: hidden; }
+.traincard__bar i { display: block; height: 100%; background: var(--c-ok); }
+.traincard__strip { display: flex; gap: 3px; min-height: 28px; align-items: center; overflow: hidden; }
+/* 빈 자리 표시는 기본 화면에서는 쓰지 않는다. 켜는 곳에서만 보인다. */
+.traincard__slot { display: none; }
+.traincard__thumb {
+  position: relative; flex: 0 0 auto; width: 34px; height: 26px; overflow: hidden;
+  border-radius: var(--r-sm); border: 1px solid var(--c-line); background: var(--c-surface);
+}
+.traincard__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.traincard__del {
+  position: absolute; top: 1px; right: 1px; width: 15px; height: 15px; line-height: 1;
+  border: 0; border-radius: 50%; background: rgba(31, 37, 54, .72); color: #fff; font-size: 11px; cursor: pointer;
+}
+.traincard__empty { font-size: var(--fs-xs); color: var(--c-text-faint); }
+/* 55차 파트E — 미리보기에서 접힌 장수. 머리의 숫자와 칸 수가 어긋나 보이지 않게 한다. */
+/* 55차 보강5 5-1 — 되살렸다는 한 줄. 정확도 앞에 놓여 먼저 읽힌다. */
+.train__meta--back {
+  padding: 5px 8px; margin-bottom: 6px; border-radius: 6px;
+  background: var(--c-accent-dim); color: var(--c-text);
+  border: 1px solid var(--c-accent-strong); line-height: 1.4;
+}
+.traincard__more {
+  flex: 0 0 auto; font-size: 10px; line-height: 1; color: var(--c-text-dim);
+  font-variant-numeric: tabular-nums; padding: 0 2px;
+}
+.traincard__foot { display: flex; }
+.train__lock { font-size: var(--fs-sm); color: var(--c-text-dim); }
+.train__hash { font-size: var(--fs-xs); color: var(--c-text-dim); margin-left: auto; }
+.train__hash code { font-family: var(--font-mono); }
+.train__mosaic { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; height: 100%; }
+.train__mosaic i { display: block; }
+
+/* ---- 학습 탭: 그래프 ---- */
+.trainchart { display: flex; flex-direction: column; gap: 4px; margin-top: var(--sp-2); }
+.trainchart__title { font-size: var(--fs-xs); color: var(--c-text-dim); font-weight: 700; }
+.chart { width: 100%; height: auto; overflow: visible; }
+.chart__grid { stroke: var(--c-line); stroke-width: 1; }
+.chart__tick { fill: var(--c-text-faint); font-size: 9px; font-family: var(--font-gauge); }
+.chart__line { fill: none; stroke: var(--c-accent-strong); stroke-width: 2; stroke-linejoin: round; }
+.chart__dot { fill: var(--c-accent-strong); }
+.chart__dot.is-last { fill: var(--c-gauge); }
+.chart__last { fill: var(--c-gauge); font-size: 11px; font-weight: 700; font-family: var(--font-gauge); }
+.trainbar { display: grid; grid-template-columns: 54px 1fr 44px; align-items: center; gap: 6px; font-size: var(--fs-xs); color: var(--c-text-dim); }
+.trainbar i { display: block; height: 8px; border-radius: 4px; background: var(--c-surface-3); overflow: hidden; }
+.trainbar b { display: block; height: 100%; background: var(--c-accent-strong); }
+.trainbar em { font-style: normal; text-align: right; font-family: var(--font-gauge); color: var(--c-text); }
+
+/* ---- 시리얼 모니터 ---- */
+/* 52-1차 — 여섯 줄 이상 보이게 한다. 44px 두 줄로는 로그를 읽을 수 없다.
+   [코드 설명] 이 접혀 있어 자리가 있고, 에디터는 flex 로 자라므로 그만큼만 양보한다. */
+.serial {
+  min-height: 116px; max-height: 220px; overflow: auto;
+  font-family: var(--font-mono); font-size: var(--fs-xs); line-height: 1.5;
+  background: var(--c-surface-2); border-radius: var(--r-sm);
+}
+/* 52차 — 줄이 세 칸(시간·종류·내용)으로 갈렸다. 자세한 규칙은 아래 52차 블록에 있다. */
+.serial__line { color: var(--c-text); white-space: pre-wrap; }
+.serial__skip { color: var(--c-text-dim); font-style: italic; }
+[data-el="serial-fold"] > summary .btn--mini { margin-left: auto; }
+
+/* ---- 1인칭 뷰 — 우측 '카메라 시점' 패널 안. 분류기가 보는 화면 옆에 나란히 선다 ---- */
+.camfpv { position: relative; border-bottom: 1px solid var(--c-line); }
+.camfpv[hidden] { display: none; }
+.camfpv__canvas { display: block; width: 100%; aspect-ratio: 16 / 9; height: auto; background: var(--c-fpv-ground); }
+.camfpv__read {
+  position: absolute; left: 6px; bottom: 6px; display: flex; align-items: baseline; gap: 6px;
+  padding: 3px 8px; border-radius: var(--r-sm); background: rgba(6, 10, 18, .78);
+  font-size: var(--fs-xs); color: var(--c-stage-text);
+}
+.camfpv__read b { font-size: var(--fs-sm); font-weight: 800; }
+.camfpv__read[data-label="1"] b { color: #ff7a6a; }
+.camfpv__read[data-label="2"] b { color: #ffcc4d; }
+.camfpv__read[data-label="3"] b { color: #3ce398; }
+.camfpv__read span { color: var(--c-text-dim); font-variant-numeric: tabular-nums; }
+
+/* ---- 관제 대시보드 레이아웃 (스마트시티 전용) ---- */
+/* 고정 px 3열을 쓰지 않는다. 좌우는 늘고 줄되 한계를 넘지 않고, 남는 폭은 전부 1인칭이 가져간다.
+   1280 폭에서 좌 360 · 우 260 이 되어 1인칭이 640 이상을 확보한다. */
+.shell--dashboard .shell__body {
+  /* 가운데 최소값은 1인칭 캔버스 640px 에서 역산한 값이다(무대 카드의 여백·테두리 20px 포함). */
+  grid-template-columns: minmax(360px, var(--pane-left)) minmax(660px, 1fr) minmax(260px, var(--pane-right));
+}
+/* 1인칭 640px 를 지킬 수 없는 폭에서는 3열을 포기하고 위아래로 쌓는다. */
+@media (max-width: 1279px) {
+  .shell--dashboard .shell__body {
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(320px, auto);
+    overflow: auto;
+  }
+}
+/* 살아 있는 계기·전체뷰·이벤트·카메라가 한 화면에 다 들어와야 관제가 된다.
+   브리핑과 접이식 기록은 그 아래로 밀려 스크롤로 닿는다. */
+/* 1인칭은 열 폭을 최대한 쓴다 — 1280 폭에서 캔버스 자체가 640px 를 넘어야 한다. */
+.shell--dashboard .view { margin: var(--sp-2) var(--sp-2) var(--sp-3); }
+.shell--dashboard .pane--scroll > * { flex-shrink: 0; }
+
+.shell--dashboard .evlog { max-height: 100px; }
+/* 카메라 패널: RC카 화면 + 분류기가 보는 화면. 숫자 줄과 확률 막대는 화면 위 배지가 대신한다. */
+.shell--dashboard .camview__read { display: none; }
+.shell--dashboard .mlread { display: none; }
+.shell--dashboard .camview__canvas { height: 44px; }
+/* 51차 — 스마트시티도 같은 2단이다. 시연에서 가장 많이 보이는 화면이라 크게 둔다.
+   1인칭은 가로가 길지 않아도 되므로 두 칸을 1:1 로 맞춘다. */
+.shell--dashboard .camstage__canvas { aspect-ratio: 1 / 1; }
+.shell--dashboard .camview {
+  position: static; width: auto; margin: 0;
+  border: 0; border-radius: 0; box-shadow: none; background: transparent;
+}
+.shell--dashboard .camview__head { border-radius: 0; }
+.shell--dashboard .camview--wide { width: auto; }
+
+/* 46차 — 카메라 시점을 오른쪽 열의 한 칸으로 세운다.
+   원래는 시뮬레이션 위에 떠 있던 창이라 절대 위치였다. 열로 옮기면 위치 기준이 사라져
+   헤더 위로 떠오른다 — 실제로 그렇게 떴다. 열 안에서는 보통 칸처럼 흐르게 둔다. */
+.pane--board .camview {
+  position: static; width: auto; margin: 0;
+  border: 0; border-bottom: var(--border); border-radius: 0;
+  background: transparent; box-shadow: none;
+  /* 떠 있을 때는 넘치는 부분을 잘라야 했다. 열 안에서는 잘리면 화면이 통째로 사라진다 —
+     세로 열은 flex 라 잘리는 칸이 머리말 높이까지 쪼그라든다. */
+  overflow: visible; flex: 0 0 auto;
+}
+.pane--board .camview--wide { width: auto; }
+.pane--board .camview__head { border-radius: 0; background: transparent; }
+.pane--board .camview__canvas { height: 132px; }
+/* 2단 캔버스는 높이를 박지 않는다 — 열 폭에서 16:9 로 따라온다. */
+.pane--board .camstage__canvas { height: auto; }
+
+/* ---- 전체뷰 ---- */
+.overview {
+  background: var(--c-minimap-bg); margin: 0 var(--sp-3) var(--sp-3);
+  border-radius: var(--r-md); border: 1px solid var(--c-card-line);
+  box-shadow: var(--shadow-card); overflow: hidden;
+}
+.overview__canvas { display: block; width: 100%; aspect-ratio: 3 / 2; height: auto; }
+
+/* ---- 이벤트 로그 ---- */
+.evlog { max-height: 132px; overflow: auto; }
+.evlog__row {
+  display: grid; grid-template-columns: 40px 1fr; gap: 6px;
+  padding: 3px var(--sp-3); font-size: var(--fs-xs); line-height: 1.45;
+}
+.evlog__time { color: var(--c-text-faint); font-family: var(--font-gauge); }
+.evlog__text { color: var(--c-text-dim); }
+.evlog__row.is-hit .evlog__text { color: var(--c-ok); font-weight: 700; }
+.evlog__row.is-miss .evlog__text { color: var(--c-danger); font-weight: 700; }
+.evlog__row.is-signal .evlog__text { color: var(--c-text); }
+
+/* ---- 없는 주소 / 열기 실패 화면 ---- */
+.miss { text-align: left; max-width: 560px; }
+.miss__lead { margin: 0 0 var(--sp-3); }
+.miss__cap { margin: var(--sp-4) 0 var(--sp-2); font-size: var(--fs-sm); color: var(--c-text-dim); }
+.miss__list { display: flex; flex-direction: column; gap: 6px; }
+.miss__row {
+  display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-3);
+  padding: 8px var(--sp-3); border: var(--border); border-radius: var(--r-sm);
+  background: var(--c-surface); color: var(--c-text); text-decoration: none;
+}
+.miss__row:hover { border-color: var(--c-accent); }
+.miss__row span { font-size: var(--fs-xs); color: var(--c-text-dim); }
+
+/* ── 40차 : 스마트시티 전용 화면 ──────────────────────────────
+   이 아래 규칙은 매니페스트가 켠 요소(hidden 해제)에만 걸린다.
+   다른 챌린지는 그 요소를 만들지 않으므로 화면이 그대로다. */
+
+/* 카메라 줄 — 버튼은 인라인 크기, 옆에 지금 상태를 적는다 */
+.camline { display: flex; align-items: center; gap: var(--sp-2); margin: var(--sp-2) var(--sp-3) 0; }
+.camline__state { flex: 1 1 0; min-width: 0; font: 600 11.5px/1.3 var(--font-ui); color: var(--c-text-dim); }
+.camline__state.is-on { color: var(--c-ok); }
+
+/* 1~4단계 — 한 줄 카드 안에 네 칸. 칸 사이 구분선이 있어야 단계로 읽힌다. */
+.shell--nocode .steps {
+  flex-wrap: nowrap; gap: 0; margin: var(--sp-2) var(--sp-3) 0;
+  border: 1px solid var(--c-line-strong); border-radius: 9px;
+  background: var(--c-surface); overflow: hidden;
+}
+.shell--nocode .step {
+  flex: 1 1 0; min-width: 0; justify-content: center;
+  border: 0; border-right: 1px solid var(--c-line); border-radius: 0;
+  background: transparent;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.shell--nocode .step:last-child { border-right: 0; }
+/* 네 칸이 한 줄에 들어가느라 '카메라' 가 '카메' 로 잘렸다. 이름을 줄이는 대신(문구는
+   매니페스트 것이다) 여백과 번호 동그라미를 줄여 자리를 만든다. 이 열은 폭이 매니페스트로
+   고정이라 화면 크기와 무관하게 늘 좁다 — 화면 폭으로 가르지 않는다. */
+.shell--nocode .step { padding-left: 3px; padding-right: 3px; gap: 2px; }
+.shell--nocode .step b { width: 14px; height: 14px; }
+
+/* 담을 칸 — 셋 다 같은 테두리 카드. 고른 칸만 강조한다. */
+.shell--nocode .traincard {
+  border: 1px solid var(--c-line-strong); border-radius: 9px; background: var(--c-surface);
+}
+.shell--nocode .traincard.is-on { border-color: var(--c-accent-strong); background: var(--c-accent-dim); }
+
+/* 학습 결과 — 빈 자리를 안내와 막대로 채운다. 수치는 엔진이 낸 값 그대로다. */
+.trainresult__body { padding: 0 var(--sp-3) var(--sp-2); }
+.trainresult__empty {
+  margin: 0; padding: var(--sp-3) 0; text-align: center;
+  font: 500 12px/1.5 var(--font-ui); color: var(--c-text-dim);
+}
+.trbar { display: flex; align-items: center; gap: var(--sp-2); padding: 3px 0; }
+.trbar__name { flex: 0 0 42px; font: 600 12px/1.2 var(--font-ui); color: var(--c-text); }
+.trbar__track { flex: 1 1 auto; height: 8px; border-radius: 4px; background: var(--c-surface-3); overflow: hidden; }
+.trbar__track i { display: block; height: 100%; background: var(--c-accent); }
+.trbar__v { flex: 0 0 38px; text-align: right; font: 700 12px/1.2 var(--font-ui); color: var(--c-text-dim); }
+
+/* 속도 조절 */
+.speedcard__row { display: flex; align-items: center; gap: var(--sp-2); padding: 0 var(--sp-3) 2px; }
+.speedcard__row input[type="range"] { flex: 1 1 auto; min-width: 0; }
+.speedcard__note {
+  margin: var(--sp-2) var(--sp-3);
+  padding: 8px 10px; border-radius: 8px;
+  background: #fff8e1; border: 1px solid #f0dda3; color: #6b5310;
+  font: 600 11px/1.5 var(--font-ui);
+}
+.speedcard.is-locked { opacity: .55; }
+
+/* 제목 두 줄 */
+.viewhead { padding: var(--sp-3) var(--sp-3) 0; }
+.viewhead__title { margin: 0; font: 800 20px/1.25 var(--font-ui); color: var(--c-text); }
+.viewhead__sub { margin: 4px 0 0; font: 700 13px/1.4 var(--font-ui); color: var(--c-text-dim); }
+
+/* 기록 패널 — 박스 대신 선으로만 나눈다 */
+.record__best, .record__now, .record__line { padding: var(--sp-2) var(--sp-3); border-top: 1px solid var(--c-line); }
+.record__cap { display: block; font: 600 11px/1.2 var(--font-ui); color: var(--c-text-dim); }
+.record__big { display: block; margin-top: 2px; font: 800 26px/1.1 var(--font-num, var(--font-ui)); color: var(--c-text); }
+.record__now b { font: 700 15px/1.2 var(--font-num, var(--font-ui)); }
+.record__line { display: flex; gap: var(--sp-3); font: 600 12px/1.2 var(--font-ui); color: var(--c-text-dim); }
+.record__line b { color: var(--c-text); font-weight: 800; }
+.record__prev { margin: 0; padding: var(--sp-2) var(--sp-3); list-style: none; border-top: 1px solid var(--c-line); }
+.record__prev li {
+  display: flex; justify-content: space-between; gap: var(--sp-2);
+  font: 500 11px/1.7 var(--font-ui); color: var(--c-text-dim);
+}
+.record__prev li b { font-weight: 700; color: var(--c-text); }
+.record__prev:empty { display: none; }
+
+/* 사용법 팝업 */
+.howto {
+  position: fixed; inset: 0; z-index: 40;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(6, 9, 16, .62); padding: var(--sp-3);
+}
+.howto__box {
+  width: min(560px, 100%); max-height: min(76vh, 640px);
+  display: flex; flex-direction: column;
+  background: var(--c-surface); border: 1px solid var(--c-line-strong);
+  border-radius: 12px; overflow: hidden;
+}
+.howto__head {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-3); border-bottom: 1px solid var(--c-line);
+  font: 800 15px/1.2 var(--font-ui);
+}
+.howto__head b { flex: 1 1 auto; }
+.modal__x,
+.howto__x {
+  appearance: none; border: 0; background: transparent; cursor: pointer;
+  width: 28px; height: 28px; border-radius: 8px;
+  font: 400 20px/1 var(--font-ui); color: var(--c-text-dim);
+}
+.modal__x:hover,
+.howto__x:hover { background: var(--c-surface-2); color: var(--c-text); }
+.howto__tabs { display: flex; gap: 4px; padding: var(--sp-2) var(--sp-3) 0; }
+.howto__tab {
+  appearance: none; border: 0; cursor: pointer;
+  padding: 7px 12px; border-radius: 8px 8px 0 0;
+  background: transparent; color: var(--c-text-dim);
+  font: 700 12px/1.2 var(--font-ui);
+}
+.howto__tab.is-on { background: var(--c-surface-2); color: var(--c-text); }
+
+/* 담을 칸 — 글자보다 색이 먼저 읽혀야 한다. 색은 판정 구간 색과 같은 뜻이다. */
+.shell--nocode .traincard__name::before {
+  content: ''; display: inline-block; width: 9px; height: 9px; margin-right: 6px;
+  border-radius: 50%; vertical-align: -1px; background: var(--c-text-dim);
+}
+.shell--nocode .traincard:nth-child(1) .traincard__name::before { background: #e03a2e; }
+.shell--nocode .traincard:nth-child(2) .traincard__name::before { background: #eca422; }
+.shell--nocode .traincard:nth-child(3) .traincard__name::before { background: #1cd6dc; }
+.howto__body { flex: 1 1 auto; overflow: auto; padding: var(--sp-3); }
+.howto__body ul { margin: 0; padding-left: 1.1em; }
+.howto__body li { font: 500 13px/1.75 var(--font-ui); color: var(--c-text); }
+.howto__foot {
+  display: flex; align-items: center; gap: 7px;
+  padding: var(--sp-2) var(--sp-3) var(--sp-3);
+  border-top: 1px solid var(--c-line);
+}
+.howto__skip {
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+  font: 500 12px/1.2 var(--font-ui); color: var(--c-text-dim);
+}
+.howto__gap { flex: 1 1 auto; }
+
+/* 이렇게 해요 — 번호 + 소제목 + 문장 */
+.howcard { display: flex; gap: 10px; padding: 9px 0; border-top: 1px solid var(--c-line); }
+.howcard:first-child { border-top: 0; padding-top: 0; }
+.howcard__n {
+  flex: 0 0 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--c-accent-strong); color: #fff;
+  font: 800 12px/1 var(--font-ui);
+}
+.howcard__t { display: block; font: 800 13px/1.4 var(--font-ui); color: var(--c-text); }
+.howcard__p { margin: 2px 0 0; font: 500 12.5px/1.65 var(--font-ui); color: var(--c-text-dim); }
+
+/* 조심할 점 — 옅은 노랑 박스 */
+.howto__body--warn ul {
+  margin: 0; padding: 12px 14px 12px 30px;
+  background: #fff8e1; border: 1px solid #f0dda3; border-radius: 9px;
+}
+.howto__body--warn li { color: #5c4a12; }
+
+/* 기록 카드 제목 줄의 상태 칩 */
+.record__slot { margin-left: auto; display: flex; }
+.record__state { display: block; margin-top: 2px; font: 500 11px/1.3 var(--font-ui); color: var(--c-text-dim); }
+
+/* 41차 파트5 — 헤더의 과제물 버튼. 이 화면에서 가장 중요한 행동이라 주버튼으로 둔다. */
+.shell--v2 .shell__header { padding-right: 20px; }
+/* 학습 화면만 있는 열에서는 학습 패널이 늘어나지 않는다. 남는 자리는 학습 결과가 쓴다. */
+.shell--nocode [data-el="train-mount"] { flex: 0 0 auto; }
+.shell--nocode [data-el="train-result"] { flex: 1 1 auto; display: flex; flex-direction: column; }
+.shell--nocode [data-el="train-result"] .trainresult__body { flex: 1 1 auto; }
+.shell--v2 [data-el="submit-open"] {
+  background: var(--c-accent-strong); border-color: var(--c-accent-strong); color: #fff;
+}
+.shell--v2 [data-el="submit-open"]:hover { background: var(--c-accent-hover); border-color: var(--c-accent-hover); }
+
+/* ── 42차 : v6 레이아웃 (스마트시티 전용) ─────────────────── */
+
+/* 54차 — 코드 칸만 줄이고 그만큼 시뮬이 가져간다(420 → 380). 오른쪽 칸은 그대로다.
+   47차에는 좌우를 같은 값으로 묶어 가운데를 정중앙에 두었는데, 지금은 시뮬이 트랙을
+   자기 안에서 가운데에 놓으므로(53차 고정 확대) 열이 어긋나도 그림은 가운데에 온다.
+   왼쪽 폭은 매니페스트(ui.code_columns)가, 오른쪽은 ui.columns 가 소유한다. */
+.shell--v2 .shell__body {
+  grid-template-columns: minmax(var(--v2-min, 260px), var(--v2-left, var(--v2-col, 296px)))
+    minmax(0, 1fr) minmax(var(--v2-min, 260px), var(--v2-col, 296px));
+}
+.shell--v2 .topline {
+  grid-template-columns: minmax(var(--v2-min, 260px), var(--v2-left, var(--v2-col, 296px))) minmax(0, 1fr);
+}
+/* 파트1 — 중앙 열: 위아래 바의 높이가 같아야 시뮬이 세로 정중앙에 온다. */
+/* 47차 — 좁은 화면에서는 두 열이 함께 최소 폭으로 줄어든다.
+   가운데가 1fr 이라 남는 자리를 전부 가져가고, 그 바람에 좌우가 늘 최대 폭에 머물렀다.
+   1280x720 에서 가운데가 440px 밖에 안 되어 조작 줄이 한 줄에 안 들어갔다.
+   폭 값은 그대로 매니페스트(columns · columns_min)가 소유한다. */
+@media (max-width: 1366px) {
+  .shell--v2 .shell__body {
+    grid-template-columns: var(--v2-left-min, var(--v2-min, 260px)) minmax(0, 1fr) var(--v2-min, 260px);
+  }
+  .shell--v2 .topline {
+    grid-template-columns: var(--v2-left-min, var(--v2-min, 260px)) minmax(0, 1fr);
+  }
+}
+
+/* 47차 — 좁은 화면에서 조작 줄이 한 줄에 안 들어갔다. 버튼을 없애거나 이름을 줄이지 않고
+   여백만 좁혀 넣는다. 글자 크기는 그대로다 — 뒤에서 읽어야 하는 화면이다. */
+@media (max-width: 1600px) {
+  .shell--v2 .transport .btn { padding-left: 7px; padding-right: 7px; }
+  .shell--v2 .transport .btn--go { padding-left: 10px; padding-right: 10px; }
+  .shell--v2 .transport { gap: 4px; padding-left: 6px; padding-right: 6px; }
+  .shell--v2 .transport__adv { gap: 3px; }
+}
+
+/* 47차 — 조작 줄은 한 줄이다. 감싸도록 두면 두 번째 줄이 56px 밖으로 밀려 잘린다 —
+   배포본에서 [📖 가이드라인] 이 그렇게 반쯤 잘려 있었다. */
+.shell--v2 .transport__adv { flex-wrap: nowrap; flex: 0 0 auto; gap: 4px; }
+/* 조작 줄의 시간 표시는 내린다. 오른쪽 기록 카드의 '지금 한 바퀴' 가 같은 값을 더 크게
+   보여 주고 있어서, 두 번 적으면 자리만 먹고 좁은 화면에서 버튼을 밀어낸다(41차 계기 중복
+   제거와 같은 이유다). 남겨 두면 1280·1440 에서 한 줄에 32px 이 모자란다. */
+.shell--v2 .transport__tick { display: none; }
+.shell--v2 .transport { gap: 6px; padding: 3px var(--sp-2); }
+
+.shell--v2 .transport,
+.shell--v2 .coursebar {
+  flex: 0 0 56px; height: 56px; min-height: 56px;
+  flex-wrap: nowrap; overflow: hidden;
+}
+.shell--v2 .transport { border-top: 0; border-bottom: var(--border); }
+.shell--v2 .view { flex: 1 1 auto; margin: var(--sp-2); min-height: 0; }
+
+/* 파트2 — 헤더: 좌우 블록이 같은 폭이라야 가운데 제목이 화면 정중앙에 온다. */
+.header__side { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: var(--sp-3); }
+.header__side .crumbs { min-width: 0; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.header__side .crumbs > * { flex: 0 0 auto; }
+/* 마지막 조각(챌린지 이름)은 헤더 가운데에 크게 나와 있다. 좁아지면 이쪽을 먼저 줄인다. */
+.header__side .crumbs > b { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.header__side .brand { flex: 0 0 auto; white-space: nowrap; }
+/* 48차 — 좁은 화면에서는 킷 조각을 접는다. 킷은 허브와 과제물에도 적혀 있고, 이 자리에서
+   가장 덜 급한 정보다. 접어야 트랙 이름이 말줄임 없이 다 나온다. */
+@media (max-width: 1600px) {
+  .header__side .crumbs__kit { display: none; }
+}
+.header__side--end { justify-content: flex-end; }
+.header__mid {
+  flex: 0 1 auto; min-width: 0; text-align: center;
+  display: flex; flex-direction: column; justify-content: center; line-height: 1.2;
+}
+.header__title {
+  font: 800 17px/1.25 var(--font-ui); color: var(--c-text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.header__sub {
+  font: 700 11.5px/1.35 var(--font-ui); color: var(--c-text-dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* 파트3 — 코스 진행바 */
+.coursebar {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 0 var(--sp-3); border-top: var(--border); background: var(--c-surface);
+}
+.coursebar__cap {
+  flex: 0 0 auto; font: 700 11px/1.2 var(--font-ui); color: var(--c-text-dim);
+  white-space: nowrap;
+}
+/* 칸이 많아지면 글자부터 줄인다. 칸 수는 매니페스트가 정하므로 폭을 고정하지 않는다. */
+.coursebar__steps {
+  flex: 1 1 auto; min-width: 0; display: flex; gap: 4px;
+  margin: 0; padding: 0; list-style: none;
+}
+.cstep {
+  flex: 1 1 0; min-width: 0;
+  display: flex; align-items: center; gap: 4px;
+  padding: 5px 5px; border-radius: 7px; background: var(--c-surface-2);
+}
+.cstep__n {
+  flex: 0 0 17px; height: 17px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--c-line-strong); color: var(--c-text-dim);
+  font: 700 10px/1 var(--font-ui);
+}
+.cstep__t {
+  min-width: 0; font: 600 10.5px/1.2 var(--font-ui); color: var(--c-text-dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cstep.is-done .cstep__n { background: var(--c-ok); color: #fff; }
+.cstep.is-now .cstep__n { background: var(--c-accent-strong); color: #fff; }
+.cstep.is-now .cstep__t { color: var(--c-text); font-weight: 800; }
+/* 주행이 끝난 뒤, 걸린 칸. 어디서 규칙을 어겼는지 바로 보여야 한다. */
+.cstep.is-bad { box-shadow: inset 0 0 0 2px var(--c-accent-strong); }
+.cstep.is-bad .cstep__n { background: var(--c-accent-strong); color: #fff; }
+
+/* 최고 기록이 아직 없을 때의 안내. 기록 숫자만큼 크면 숫자로 읽힌다. */
+.record__big.is-hint { font: 700 13px/1.45 var(--font-ui); }
+
+/* 파트4·5 — 담을 칸을 세로 3행으로, 한 행은 한 줄로 압축한다.
+   이름 줄 / 안내 줄 / 비우기 줄로 3단이 되면 정작 썸네일이 안 보인다. */
+.shell--nocode .train__cards { grid-template-columns: 1fr; gap: 5px; }
+.shell--nocode .traincard {
+  flex-direction: row; align-items: center; gap: 7px;
+  flex-wrap: nowrap; padding: 5px 7px; max-height: 48px;
+}
+.shell--nocode .traincard__head { flex: 0 0 auto; gap: 5px; }
+.shell--nocode .traincard__name { font-size: 12px; }
+.shell--nocode .traincard__count { font-size: 14px; margin-left: 4px; }
+.shell--nocode .traincard__need { display: none; }   /* 점선 자리 다섯 칸이 같은 말을 한다 */
+.shell--nocode .traincard__bar { display: none; }
+.shell--nocode .traincard__strip {
+  flex: 1 1 auto; min-width: 0; min-height: 0;
+  justify-content: flex-end; gap: 3px; overflow: visible;
+}
+.shell--nocode .traincard__empty { display: none; }
+/* 아직 담기지 않은 칸도 점선으로 자리를 그린다 — 몇 장 더 담아야 하는지가 숫자 없이 보인다. */
+.shell--nocode .traincard__slot {
+  display: block; flex: 0 0 auto; width: 22px; height: 22px; border-radius: 5px;
+  border: 1px dashed var(--c-line-strong);
+}
+.shell--nocode .traincard__thumb { flex: 0 0 auto; width: 22px; height: 22px; }
+.shell--nocode .traincard__more { font-size: 10px; padding: 0 1px; }
+/* [이 칸 비우기] 는 한 줄을 차지하면 안 된다. 같은 행 안의 작은 버튼으로 줄인다. */
+.shell--nocode .traincard__foot .btn.btn--mini {
+  font-size: 0; line-height: 0; padding: 4px 6px;
+}
+.shell--nocode .traincard__foot .btn.btn--mini::after {
+  content: '비움'; font-size: 10px; line-height: 1.2;
+}
+.shell--nocode .traincard__foot { flex: 0 0 auto; }
+.shell--nocode .traincard__foot .btn { padding: 3px 6px; font-size: 10px; }
+
+/* 54차 파트D — 42차의 기록 패널 검적색 반전을 되돌린다.
+   계기가 여럿이던 때의 결정이고, 칸이 둘뿐인 지금은 그 면만 튄다.
+   오른쪽 칸 전체가 관제 한 벌이라 기록도 같은 카드색을 쓴다. */
+.pane--board {
+  background: var(--c-board-bg); color: var(--c-board-text);
+  border-left-color: var(--c-board-line);
+}
+.pane--board .pane__section { border-bottom-color: var(--c-board-line); }
+.pane--board .pane__title {
+  background: var(--c-board-bg); color: var(--c-board-faint);
+  border-bottom-color: var(--c-board-line);
+}
+.pane--board .pane__title span,
+.pane--board .pane__title > span:first-child { color: var(--c-board-faint); }
+.pane--board .chip {
+  background: var(--c-board-card); border-color: var(--c-board-line); color: var(--c-board-text);
+}
+.pane--board .record,
+.pane--board .motor,
+.pane--board .camview,
+.pane--board [data-el="minimap-section"],
+.pane--board [data-el="overview-section"] { background: var(--c-board-bg); }
+.pane--board .record__best,
+.pane--board .record__now,
+.pane--board .record__recent { border-top: 1px solid var(--c-board-line); }
+.pane--board .record__cap { color: var(--c-board-faint); }
+.pane--board .record__big { color: #FFFFFF; font-size: 26px; font-weight: 800; }
+/* 기록이 아직 없을 때 자리에 오는 안내는 기록이 아니다 — 26px 로 키우면 석 줄이 된다. */
+.pane--board .record__big.is-hint {
+  font-size: var(--fs-sm); font-weight: 600; color: var(--c-board-faint);
+}
+.pane--board .record__now {
+  display: flex; align-items: baseline; gap: var(--sp-2);
+}
+.pane--board .record__now b { color: var(--c-board-text); }
+.pane--board .mbar__n { color: var(--c-board-faint); }
+.pane--board .mbar__t { background: var(--c-board-card); }
+.pane--board .mbar b { color: var(--c-board-text); }
+.pane--board .motor__say { color: var(--c-board-faint); }
+.pane--board .camview__head,
+.pane--board .camview__cap { color: var(--c-board-faint); }
+.pane--board .camsteer { color: var(--c-board-faint); border-top-color: var(--c-board-line); }
+.pane--board .camsteer b { color: var(--c-board-text); }
+
+/* '지금 한 바퀴' 는 한 줄 테두리 칸으로 세운다 — 달리는 동안 눈이 여기로 온다. */
+.pane--board .record__now b {
+  border: 1px solid var(--c-board-line); border-radius: var(--r-sm);
+  background: var(--c-board-card); padding: 4px 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 최근 시도 — [회차] [배지] [기록] 세 칸. 다섯 줄까지. */
+.tries { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.try {
+  display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: var(--sp-2);
+  padding: 5px 8px; border-radius: var(--r-sm);
+  background: var(--c-board-card); border: 1px solid var(--c-board-line);
+}
+.try__no { font-size: var(--fs-xs); color: var(--c-board-faint); }
+.try__badge {
+  justify-self: start; font-size: 11px; padding: 1px 7px; border-radius: 999px;
+  border: 1px solid var(--c-board-line); color: var(--c-board-faint);
+}
+.try__badge--best { border-color: var(--c-ok); color: var(--c-ok); font-weight: 700; }
+.try__badge--off { border-color: var(--c-danger); color: var(--c-danger); }
+.try__t { color: var(--c-board-text); font-variant-numeric: tabular-nums; font-weight: 700; }
+.try--none {
+  display: block; text-align: center; color: var(--c-board-faint);
+  background: transparent; border-style: dashed;
+}
+
+/* ── 45차 : 이동제어 4종 (v2 레이아웃 확장) ───────────────── */
+
+/* 모터 상태 — 값은 엔진이 낸 것만 옮긴다. 화면에서 만들지 않는다. */
+.motor__body { padding: var(--sp-2) var(--sp-3) var(--sp-3); }
+.mbar { display: flex; align-items: center; gap: var(--sp-2); padding: 3px 0; }
+.mbar__n { flex: 0 0 44px; font: 600 12px/1.2 var(--font-ui); color: var(--c-text-dim); }
+.mbar__t { flex: 1 1 auto; height: 9px; border-radius: 5px; background: var(--c-surface-3); overflow: hidden; }
+.mbar__t i { display: block; height: 100%; background: var(--c-accent); transition: width .08s linear; }
+.mbar__t i.is-back { background: var(--c-text-dim); }
+.mbar b { flex: 0 0 42px; text-align: right; font: 700 13px/1.2 var(--font-gauge, var(--font-ui)); color: var(--c-text); }
+.motor__say {
+  margin: var(--sp-2) 0 0; padding: 7px 9px; border-radius: 8px;
+  background: var(--c-surface-2); font: 600 11.5px/1.5 var(--font-ui); color: var(--c-text-dim);
+}
+.motor__say.is-warn { background: #fff8e1; border: 1px solid #f0dda3; color: #6b5310; }
+
+/* 구간 진행바 — 가장 오래 걸린 구간은 주행이 끝난 뒤에만 표시한다. */
+/* 구간 진행바는 칸이 여덟(8자는 열둘)이라 이름과 시간을 한 줄에 못 넣는다. 두 줄로 쌓는다.
+   판단 지점 진행바(스마트시티)는 칸이 여섯이라 한 줄 그대로 둔다. */
+.cstep__box { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
+/* 구간 진행바는 번호까지 위로 올려 세 줄로 쌓는다. 한 줄이면 이름이 '직..' 으로 잘린다. */
+.is-stack .cstep { flex-direction: column; gap: 0; padding: 3px 2px; align-items: center; }
+/* 세로로 쌓으면 flex-basis 가 높이가 된다. 폭을 따로 주지 않으면 동그라미가 타원이 된다. */
+.is-stack .cstep__n { flex: 0 0 14px; width: 14px; height: 14px; font-size: 9px; }
+.is-stack .cstep__box { align-items: center; gap: 0; }
+.is-stack .cstep__t { font-size: 9.5px; }
+.is-stack .cstep__ms { font-size: 9px; }
+.cstep__box .cstep__t { line-height: 1.1; }
+.cstep.is-slowest { box-shadow: inset 0 0 0 2px var(--c-gauge, #e0a11e); }
+.cstep__ms { flex: 0 0 auto; font: 700 10px/1.2 var(--font-gauge, var(--font-ui)); color: var(--c-text-dim); }
+.cstep.is-now .cstep__ms { color: var(--c-text); }
+
+
+/* ---- 52차 공통 셸 ---- */
+/* 1행 앱 바 — 어느 챌린지에서나 같다. 스크롤해도 따라온다. */
+.appbar {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: 0 var(--sp-3); height: var(--header-h);
+  background: var(--c-surface); border-bottom: var(--border);
+  position: sticky; top: 0; z-index: 30;
+}
+.appbar__spacer { flex: 1 1 auto; }
+/* 2행 챌린지 바 — 지금 보고 있는 챌린지의 것. 따라오지 않는다. */
+.chbar {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 6px var(--sp-3); background: var(--c-surface);
+  border-bottom: var(--border); min-width: 0;
+}
+.chbar__title {
+  font: 800 15px/1.3 var(--font-ui); color: var(--c-text);
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.chbar__spacer { flex: 1 1 auto; min-width: var(--sp-2); }
+.chbar__goal { font-size: var(--fs-xs); color: var(--c-text-dim); white-space: nowrap; }
+.chbar__goal::before { content: ''; }
+.chbar .badge[data-tier="basic"] { color: var(--c-ok); border-color: var(--c-ok); }
+.chbar .badge[data-tier="intermediate"] { color: var(--c-warn); border-color: var(--c-warn); }
+.chbar .badge[data-tier="advanced"],
+.chbar .badge[data-tier="expert"] { color: var(--c-accent-strong); border-color: var(--c-accent); }
+
+/* 에디터 툴바 — 주버튼 둘과 오른쪽 끝 작은 링크들. */
+/* 툴바가 열 폭보다 길면 두 줄로 접힌다. 밀어내면 링크가 옆 칸을 덮는다. */
+.edtoolbar { flex-wrap: wrap; gap: 6px; }
+/* "코드 에디터" 라벨은 v2 셸에서 뺀다 — 툴바 자리를 주버튼 둘에 내준다. */
+.shell--v2 .edtoolbar > [data-el="pane-label"] { display: none; }
+/* 54차 — 3행은 한 줄이다. 툴바와 하이라이트 바가 같은 높이여야 한 줄로 읽힌다. */
+.topline > .edtoolbar {
+  height: 50px; min-height: 50px; padding: 0 var(--sp-3);
+  flex-wrap: nowrap; gap: 6px; white-space: nowrap;
+}
+.topline .edlinks { gap: 10px; }
+.topline .edlink { font-size: 11px; }
+.edtoolbar__spacer { flex: 1 1 auto; min-width: 6px; }
+.btn--tool { display: inline-flex; align-items: center; gap: 4px; }
+.edlinks { display: inline-flex; align-items: center; gap: var(--sp-2); flex: 0 0 auto; }
+.edlink {
+  border: 0; background: none; padding: 0; cursor: pointer;
+  font: inherit; font-size: var(--fs-xs); color: var(--c-text-faint);
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.edlink:hover { color: var(--c-text-dim); }
+.edlink[hidden] { display: none; }
+
+/* 아이콘만 남긴 버튼(소리·가이드라인). */
+.btn--icon { padding-left: 8px; padding-right: 8px; font-size: 14px; line-height: 1; }
+
+/* 시리얼 모니터 — 늘 열려 있다. 줄 앞에 종류가 붙는다. */
+.serialbox .pane__title { gap: var(--sp-2); }
+/* 54차 — 종류 칸이 46px 이라 '[업로드]' 가 그 안에서 끊겨 ']' 만 다음 줄로 내려갔다.
+   종류는 절대 끊기지 않는다 — 칸을 글자에 맞추고 줄바꿈을 막는다. */
+.serial__line {
+  display: grid; grid-template-columns: 52px 56px minmax(0, 1fr); gap: 6px;
+  align-items: baseline; width: 100%; text-align: left;
+  border: 0; background: none; padding: 1px 0; font: inherit;
+}
+.serial__t { color: var(--c-text-faint); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); }
+.serial__k { color: var(--c-text-faint); font-size: var(--fs-xs); white-space: nowrap; }
+/* 화면이 붙이는 줄은 한국어 문장이다 — 어절을 지킨다.
+   프로그램 출력([출력])은 어절이 없어 긴 토큰을 잘라야 칸을 넘지 않는다. */
+.serial__m { min-width: 0; word-break: keep-all; overflow-wrap: break-word; }
+.serial__line--out .serial__m { word-break: break-all; }
+button.serial__line { cursor: pointer; }
+button.serial__line:hover .serial__m { text-decoration: underline; }
+.serial__line--오류 .serial__k,
+.serial__line--오류 .serial__m { color: var(--c-danger); }
+.serial__line--컴파일 .serial__k { color: var(--c-ok); }
+.serial__line--업로드 .serial__k { color: var(--c-accent-strong); font-weight: 700; }
+.serial__line--기록 .serial__k { color: var(--c-accent-strong); }
+
+/* 구간 표 — 52차. 구간 8칸 띠를 대신한다. */
+.segtable { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
+.segtable[hidden] { display: none; }
+.segtable th, .segtable td { padding: 3px 8px; text-align: left; border-bottom: 1px solid var(--c-line); }
+.segtable th { font-size: var(--fs-xs); font-weight: 600; color: var(--c-text-faint); }
+.segtable td:first-child, .segtable th:first-child { width: 48px; }
+.segtable td:last-child, .segtable th:last-child {
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+/* 가장 오래 걸린 구간. 어디를 줄일지가 한눈에 보여야 한다. */
+.segtable tr.is-slowest td { color: var(--c-accent-strong); font-weight: 700; }
+
+/* 제출 모달 본문(57-C 파트4 에서 좌측 세로 스텝 2단계로 바뀌었다. 아래 .sub2 블록 참조). */
+.sub2__pane .outcome__stats { margin: 0 0 var(--sp-2); }
+.sub2__pane .segtable { margin-bottom: var(--sp-3); }
+/* 라벨과 '선택' 은 굵기로 가른다 — 같은 굵기면 '학교 선택' 이 한 덩어리로 읽힌다. */
+.modal__field > span { font-weight: 600; color: var(--c-text); }
+.modal__field i { font-style: normal; font-weight: 400; color: var(--c-text-faint); font-size: var(--fs-xs); }
+.modal__field input[readonly] { background: var(--c-surface-2); color: var(--c-text-dim); }
+
+/* 챌린지 규칙 모달(52-1차). 가이드라인과 다른 것을 맡는다 —
+   저기는 "어떻게 조작하는가", 여기는 "무엇이 성공이고 무엇이 실패인가" 다. */
+.rules__h {
+  margin: var(--sp-5) 0 var(--sp-1); font-size: var(--fs-sm); font-weight: 700; color: var(--c-text);
+}
+/* 합격과 실패 · 킷 스펙 — 시뮬레이터 화면에 이미 떠 있는 값이라 접어 둔다. */
+/* 구분선 위아래 간격은 summary 의 padding 하나가 정한다. 여기에 margin 을 더하면
+   위(8px)와 아래(8+margin)가 어긋난다. 위쪽 표와의 사이만 첫 칸이 따로 벌린다. */
+.rfold { border-top: 1px solid var(--c-line); }
+.rfold:first-of-type { margin-top: var(--sp-4); }
+.rfold__sum {
+  padding: var(--sp-2) 0; cursor: pointer; list-style: none;
+  font-size: var(--fs-sm); font-weight: 700; color: var(--c-text);
+  display: flex; align-items: center; gap: 6px;
+}
+.rfold__sum::-webkit-details-marker { display: none; }
+/* 삼각형은 글자가 아니라 테두리로 그린다 — ▸ 는 없는 글꼴에서 대시로 떨어진다. */
+.rfold__sum::before {
+  content: ''; flex: none; width: 0; height: 0;
+  border-left: 5px solid var(--c-text-faint);
+  border-top: 4px solid transparent; border-bottom: 4px solid transparent;
+}
+.rfold[open] .rfold__sum::before { transform: rotate(90deg); }
+.rfold__dl {
+  display: grid; grid-template-columns: auto 1fr; gap: 4px var(--sp-3);
+  margin: 0 0 var(--sp-2); font-size: var(--fs-sm);
+}
+.rfold__dl dt { color: var(--c-text-faint); white-space: nowrap; font-size: var(--fs-sm); }
+.rfold__dl dd { margin: 0; color: var(--c-text); font-size: var(--fs-sm); }
+
+/* ---- 52-1차 조작 줄·툴바 크기 ---- */
+/* 빨강 채움은 화면에 [▶ 실행] 하나뿐이다. 채운 빨강이 둘이면 어느 것이 주버튼인지 알 수 없다.
+   [→ 업로드] 는 빨간 테두리에 속은 흰색이다. */
+.btn--go.btn--tool {
+  background: var(--c-surface); color: var(--c-accent-strong);
+  border: 1px solid var(--c-accent-strong); font-weight: 700;
+}
+.btn--go.btn--tool:hover { background: var(--c-accent-dim); }
+/* 짝이 되는 두 버튼은 크기까지 같다 — [✓ 컴파일] ↔ [→ 업로드] 는 104 x 32px 로 나란하다.
+   하는 일이 이어지는 두 단계라 크기가 다르면 하나가 곁다리로 보인다. */
+.edtoolbar .btn--tool {
+  width: 104px; height: 32px; padding: 0;
+  justify-content: center; font-size: var(--fs-sm);
+}
+.transport .btn--go,
+.transport [data-el="reset-sim"] { height: 40px; padding: 0 16px; display: inline-flex; align-items: center; gap: 5px; }
+/* 아이콘 버튼은 정사각으로. 32px 아래로는 누를 자리가 좁다. */
+.transport .btn--icon {
+  width: 32px; height: 32px; min-width: 32px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+/* 주행음이 켜졌는지 꺼졌는지를 색으로도 가른다 — 그림만으로는 둘이 비슷하게 보인다. */
+.transport .btn--sound[aria-pressed="true"] {
+  background: var(--c-accent-dim); border-color: var(--c-accent); color: var(--c-accent-strong);
+}
+.transport .btn--sound[aria-pressed="false"] { color: var(--c-text-faint); }
+
+/* 주행이 처음으로 돌아간 자리. 시각이 0 으로 되감기는 곳을 표시한다(53차). */
+.serial__divider {
+  padding: 3px 0; text-align: center;
+  font-size: var(--fs-xs); color: var(--c-text-faint);
+  border-top: 1px dashed var(--c-line-strong);
+  border-bottom: 1px dashed var(--c-line-strong);
+  margin: 3px 0;
+}
+
+
+/* ================================================================
+   54차 — 시뮬 위 오버레이 (조작 알약 · 상태 한 줄)
+   조작을 시뮬 밖에 두면 그 높이만큼 시뮬이 눌린다. 안쪽으로 넣고 반투명으로 띄운다.
+   뒤 트랙이 비쳐야 계기가 화면을 가리지 않는다 — 불투명하게 하지 않는다.
+   ================================================================ */
+/* 알약은 이 칸이다. 안쪽 .transport 는 투명한 줄일 뿐이라 배경을 여기에 둔다 —
+   버튼마다 배경이 있고 알약이 없으면 아이콘이 뒤 트랙에 묻힌다(54차 보강1 실측). */
+.simctl {
+  position: absolute; left: 14px; top: 14px; z-index: 3;
+  display: flex; align-items: center; width: max-content; max-width: calc(100% - 28px);
+  padding: 5px;
+  border-radius: 10px;
+  background: rgba(24, 28, 35, .72);
+  border: 1px solid rgba(255, 255, 255, .10);
+  backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+}
+.simctl .transport {
+  /* .shell--v2 .transport 가 세로 줄이던 시절의 'flex: 0 0 56px' 을 들고 있다.
+     가로 알약 안에서는 그 값이 폭 56px 이 되어 [▶ 실행] 이 잘렸다. */
+  flex: 0 0 auto; height: auto; min-height: 0; overflow: visible;
+  border: 0; background: transparent; padding: 0; gap: 6px;
+  flex-wrap: nowrap; width: auto; white-space: nowrap;
+  justify-content: flex-start;
+}
+.simctl .transport__spacer { display: none; }
+.simctl .transport__tick {
+  color: var(--c-board-text); font-variant-numeric: tabular-nums;
+  padding-left: var(--sp-2); margin-left: 2px; border-left: 1px solid var(--c-glass-line);
+}
+.simctl .btn { height: 32px; }
+.simctl .btn--go {
+  background: var(--c-accent-strong); border-color: var(--c-accent-strong); color: var(--c-on-accent);
+}
+/* [■ 정지] 는 투명하다. 채운 빨강은 [▶ 실행] 하나뿐이다. */
+.simctl .btn--mini {
+  background: transparent; border-color: var(--c-glass-line); color: var(--c-board-text);
+}
+.simctl .btn--mini:hover { background: rgba(255, 255, 255, .08); color: #FFFFFF; }
+/* 54차 보강5 — 알약에는 [▶ 실행] [■ 정지] 둘뿐이다. 소리·가이드라인 아이콘은 뺐다.
+   앞에 있던 세로 구분선도 함께 없앤다. 검수용(?dev=1) 단추만 이 칸에 남는다. */
+.simctl .transport__adv { gap: 4px; padding-left: 0; border-left: 0; }
+.simctl .transport__adv:empty { display: none; }
+
+/* 상태 한 줄. 7종 전부에 있다 — 초급에는 모터 상태 칸이 없어 여기가 유일한 창이다. */
+.simsay {
+  position: absolute; left: 14px; top: 60px; z-index: 3;
+  padding: 5px 10px; border-radius: 8px;
+  background: rgba(24, 28, 35, .72);
+  border: 1px solid rgba(255, 255, 255, .10);
+  backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+  color: var(--c-board-text); font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+
+
+/* ================================================================
+   54차 파트H — 규칙 모달 한 장. 탭 없이 다섯 덩어리를 위에서 아래로 읽는다.
+   ================================================================ */
+.modal__box--rules { width: min(760px, 96vw); display: flex; flex-direction: column; max-height: 88vh; }
+.rules__scroll { overflow-y: auto; min-height: 0; padding-right: 4px; }
+/* margin-top 을 두지 않는다 — .modal__box 가 이미 flex gap 으로 같은 간격을 준다. */
+.rules__foot {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding-top: var(--sp-3); border-top: 1px solid var(--c-line);
+}
+
+/* 1 이번 챌린지 — 차콜 박스. 목표가 가장 크고, 오른쪽에 내 최고 기록. */
+.rbox {
+  display: flex; align-items: center; gap: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4); border-radius: var(--r-md);
+  background: var(--c-board-bg); color: var(--c-board-text);
+}
+.rbox > div:first-child { flex: 1 1 auto; min-width: 0; }
+.rbox__goal { display: block; font-size: 20px; font-weight: 800; color: var(--c-board-goal); }
+.rbox__sum { margin: 4px 0 0; font-size: var(--fs-sm); color: var(--c-board-faint); line-height: 1.5; }
+.rbox__best { flex: 0 0 auto; text-align: right; }
+.rbox__best span { display: block; font-size: 11px; color: var(--c-board-faint); }
+.rbox__best b { font-size: 18px; color: #FFFFFF; font-variant-numeric: tabular-nums; }
+
+/* 2 이렇게 깹니다 — 그림은 4:3 에셋 슬롯이다. 파일이 없으면 점선 자리로 비워 둔다. */
+.rsteps { display: flex; gap: var(--sp-2); padding-bottom: 4px; }
+/* 넉 장이 줄을 나눠 갖는다. 168px 로 고정하면 오른쪽에 34px 이 남아 아래 표와 끝이 어긋난다. */
+.rstep { flex: 1 1 0; min-width: 0; margin: 0; }
+.rstep__art {
+  aspect-ratio: 4 / 3; border-radius: var(--r-sm); overflow: hidden;
+  background: var(--c-surface-2); border: 1px solid var(--c-line);
+}
+.rstep__art img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.rstep__art--empty {
+  border: 1px dashed var(--c-line-strong); background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--c-text-faint); font-size: 18px; font-weight: 700;
+}
+.rstep figcaption {
+  margin-top: 6px; font-size: var(--fs-xs); color: var(--c-text-dim); line-height: 1.45;
+}
+
+/* 3 이 값을 바꿔 보세요 — 이름 · 지금 값 · 바꾸면 어떻게 되는지. */
+.rtune {
+  display: grid; grid-template-columns: auto auto 1fr; gap: 6px var(--sp-3);
+  align-items: baseline; font-size: var(--fs-sm);
+}
+.rtune__k { font-size: var(--fs-xs); color: var(--c-text-faint); }
+.rtune code { font-family: var(--font-mono); color: var(--c-text); }
+.rtune__v { font-variant-numeric: tabular-nums; color: var(--c-accent-strong); }
+
+
+/* ================================================================
+   54차 묶음2 — 시뮬 위 계기 카드 (모터 상태 · 색 인식 · 모델 판단 · 기록 시트)
+   전부 같은 반투명 재질이다. 뒤 트랙이 비쳐야 계기가 화면을 가리지 않는다.
+   ================================================================ */
+.simcard {
+  position: absolute; right: 14px; top: 14px; z-index: 3;
+  padding: 8px 10px; border-radius: 10px;
+  background: rgba(24, 28, 35, .72);
+  border: 1px solid rgba(255, 255, 255, .10);
+  backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+  color: var(--c-board-text); font-size: var(--fs-xs);
+}
+.simcard[hidden] { display: none; }
+.simcard__head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-3);
+  padding-bottom: 6px; margin-bottom: 6px; border-bottom: 1px solid rgba(255, 255, 255, .10);
+}
+.simcard__head span { color: var(--c-board-faint); }
+.simcard__head b { font-variant-numeric: tabular-nums; color: #FFFFFF; }
+.simcard__say { margin: 6px 0 0; color: var(--c-board-faint); line-height: 1.45; }
+.simcard__say.is-warn { color: var(--c-danger); }
+
+.simmotor { width: 206px; }
+.simmotor__row {
+  display: grid; grid-template-columns: 40px 1fr 30px; align-items: center; gap: 6px;
+  padding: 3px 0;
+}
+.simmotor__n { color: var(--c-board-faint); }
+.simmotor__row b { text-align: right; font-variant-numeric: tabular-nums; }
+/* 가운데 0선. 막대는 이 선에서 좌우로 뻗는다 — 앞으로 돌면 오른쪽, 뒤로 돌면 왼쪽이다. */
+.simmotor__t {
+  position: relative; height: 9px; border-radius: 5px;
+  background: rgba(255, 255, 255, .08);
+}
+.simmotor__t::before {
+  content: ''; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px;
+  background: rgba(255, 255, 255, .34);
+}
+.simmotor__t i {
+  position: absolute; top: 0; bottom: 0; width: 0;
+  background: var(--c-accent); border-radius: 3px;
+}
+.simmotor__t i.is-back { background: var(--c-board-faint); }
+
+.simcolor { width: 214px; }
+.simcolor__chip {
+  width: 18px; height: 18px; border-radius: 5px; display: inline-block;
+  border: 1px solid rgba(255, 255, 255, .26); background: transparent;
+}
+.simcolor__row {
+  display: grid; grid-template-columns: 14px 1fr 30px; align-items: center; gap: 6px; padding: 3px 0;
+}
+.simcolor__row > span:first-child { color: var(--c-board-faint); }
+.simcolor__row b { text-align: right; font-variant-numeric: tabular-nums; }
+.simcolor__t { height: 9px; border-radius: 5px; background: rgba(255, 255, 255, .08); overflow: hidden; }
+.simcolor__t i { display: block; height: 100%; width: 0; background: var(--c-accent); }
+.simcolor__foot {
+  display: flex; justify-content: space-between; gap: 6px;
+  padding-top: 6px; margin-top: 6px; border-top: 1px solid rgba(255, 255, 255, .10);
+  color: var(--c-board-faint);
+}
+.simcolor__foot b { color: var(--c-board-text); font-variant-numeric: tabular-nums; }
+
+.pane--board .simcolor {
+  position: static; width: auto;
+  background: transparent; border: 0; border-radius: 0;
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+  padding: 16px 20px; margin: 0; border-bottom: 1px solid var(--c-line);
+}
+.pane--board .simcolor__head {
+  padding-bottom: 0; border-bottom: 0; margin-bottom: 8px;
+}
+.pane--board .simcolor__head span {
+  color: var(--c-text); font-weight: 500; font-size: var(--fs-sm);
+}
+.pane--board .simcolor__head b {
+  color: var(--c-text);
+}
+
+/* 54차 파트L — 탑뷰가 빠진 자리를 카메라 두 칸이 나눠 갖는다.
+   "내가 든 물체가 어떻게 인식되는지" 를 보는 화면이라 둘이 같은 크기여야 한다. */
+.pane--board .camview { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+.pane--board .camview__body { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+/* 세로로 쌓는 챌린지(스마트시티)는 남는 자리를 두 칸이 반씩 나눠 갖는다.
+   높이를 박아 두면 720p 에서 오른쪽 칸이 세로로 넘친다. */
+.pane--board .camview:not(.camview--row) .camview__stages {
+  flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0;
+}
+.pane--board .camview:not(.camview--row) .camstage { flex: 1 1 0; min-height: 96px; }
+.pane--board .camview:not(.camview--row) .camstage__canvas { height: 100%; aspect-ratio: auto; }
+/* 가로로 세우는 챌린지(색으로 조종하기)는 4:3 두 칸이 자기 높이를 지킨다. */
+.pane--board .camview--row .camview__stages { flex: 0 0 auto; }
+/* 보강6-1 — 세로 2단으로 쌓고 남는 자리를 나눠 갖게 했더니 칸이 300x95(3.16:1)로 눌렸다.
+   웹캠 원본 비율과 어긋나 화면이 가로로 늘어나고, 인식 결과도 같이 눌려 원본과의 대응이
+   흐려진다. 가로 2칸으로 세운다 — 두 칸이 같은 크기(4:3)이고 좌우가 정확히 맞는다.
+   어느 쪽으로 세울지는 매니페스트가 고른다(ui.camera_layout). 스마트시티는 세로 그대로다. */
+/* 55차 — 두 칸 폭을 1fr 로 나누면 열 폭이 홀수일 때 149/150 으로 갈린다.
+   1px 이 달라도 인식 결과 박스가 원본과 어긋나므로, 정수 폭을 재서 두 칸에 똑같이 준다
+   (--camcell, 화면 코드가 ResizeObserver 로 넣는다). 남는 1px 은 어느 칸도 갖지 않는다. */
+.camview--row .camview__stages {
+  display: grid;
+  grid-template-columns: var(--camcell, 1fr) var(--camcell, 1fr);
+  justify-content: center;
+}
+.camview--row .camview__stages .camstage {
+  flex: 0 0 auto; min-height: 0; min-width: 0; border-bottom: 1px solid var(--c-line);
+}
+/* 55차 보강7-2 — 칸 사이 선을 테두리로 그으면 그 1px 을 왼쪽 칸이 낸다.
+   두 칸의 크기가 달라지므로 자리를 차지하지 않는 가상 요소로 긋는다. */
+.camview--row .camview__stages .camstage:first-child { position: relative; }
+.camview--row .camview__stages .camstage:first-child::after {
+  content: ''; position: absolute; top: 0; bottom: 0; right: 0; width: 1px;
+  background: var(--c-line); pointer-events: none;
+}
+.camview--row .camstage__canvas { aspect-ratio: 4 / 3; height: auto; }
+/* 접이·상태 줄은 자기 높이만 쓴다. */
+.pane--board .camview .camstate,
+.pane--board .camview .camtune,
+.pane--board .camview .camsteer { flex: 0 0 auto; }
+
+/* 54차 파트L — 색 맞추기 접이. 접혀 있을 때 머리말 한 줄만 차지한다. */
+.camtune__head {
+  cursor: pointer; list-style: none; padding: 6px var(--sp-2);
+  font-size: var(--fs-xs); color: var(--c-text-dim); border-bottom: 1px solid var(--c-line);
+}
+.camtune__head::-webkit-details-marker { display: none; }
+.camtune__head::after { content: ' ▾'; color: var(--c-text-faint); }
+.camtune[open] > .camtune__head::after { content: ' ▴'; }
+.pane--board .camtune__head { color: var(--c-board-faint); border-bottom-color: var(--c-board-line); }
+
+
+/* ---- 54차 파트M — 클리어 현황판 ---- */
+.clear { list-style: none; margin: 0; padding: 0 var(--sp-3) var(--sp-2); }
+.clear__row {
+  display: grid; grid-template-columns: 18px 1fr auto; align-items: center; gap: 2px var(--sp-2);
+  padding: 5px 0; border-bottom: 1px solid var(--c-board-line); font-size: var(--fs-sm);
+}
+/* 55차 보강8 D — 지나간 지점에만 붙는 '요구 · 한 것'. 둘째 줄로 내려 이름을 밀지 않는다. */
+.clear__why {
+  grid-column: 2 / -1; font-size: var(--fs-xs); color: var(--c-board-faint);
+  font-variant-numeric: tabular-nums;
+}
+.clear__row.is-bad .clear__why { color: #FFB3B6; }
+.clear__row:last-child { border-bottom: 0; }
+.clear__n { color: var(--c-board-faint); font-size: var(--fs-xs); }
+.clear__t { color: var(--c-board-text); }
+.clear__s { color: var(--c-board-faint); font-size: var(--fs-xs); }
+.clear__row.is-ok .clear__s { color: var(--c-ok); font-weight: 700; }
+.clear__row.is-bad .clear__s { color: var(--c-danger); font-weight: 700; }
+.clear__row.is-now .clear__t { color: #FFFFFF; font-weight: 700; }
+.clear__sum {
+  padding: 6px var(--sp-3) var(--sp-3); font-size: var(--fs-xs); color: var(--c-board-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- 54차 파트M — 지금 보는 것 ---- */
+.simsee { width: 214px; }
+.simsee__bar {
+  display: grid; grid-template-columns: 34px 1fr 24px; align-items: center; gap: 6px; padding: 3px 0;
+  color: var(--c-board-faint);
+}
+.simsee__bar i { display: block; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, .08); }
+.simsee__bar i b { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--c-board-faint); }
+.simsee__bar em { font-style: normal; text-align: right; font-variant-numeric: tabular-nums; }
+.simsee__bar.is-on { color: #FFFFFF; }
+.simsee__bar.is-on i b { background: var(--c-accent); }
+.simsee__foot {
+  padding-top: 6px; margin-top: 6px; border-top: 1px solid rgba(255, 255, 255, .10);
+  color: var(--c-board-faint);
+}
+.simsee__foot b { color: #FFFFFF; font-variant-numeric: tabular-nums; }
+
+/* ---- 54차 파트M — 시뮬 옆 기록 시트 ---- */
+.simsheet {
+  position: absolute; right: 14px; bottom: 14px; z-index: 3; width: 250px;
+  padding: 10px 12px; border-radius: 10px;
+  background: rgba(24, 28, 35, .72);
+  border: 1px solid rgba(255, 255, 255, .10);
+  backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+  color: var(--c-board-text); font-size: var(--fs-xs);
+}
+.simsheet[hidden] { display: none; }
+.simsheet__big {
+  display: block; font-size: 26px; font-weight: 800; color: #FFFFFF;
+  font-variant-numeric: tabular-nums; line-height: 1.1;
+}
+.simsheet__cap {
+  display: flex; justify-content: space-between; gap: var(--sp-2);
+  margin-top: 2px; color: var(--c-board-faint);
+}
+.simsheet__line {
+  display: flex; justify-content: space-between; gap: 6px;
+  padding-top: 6px; margin-top: 8px; border-top: 1px solid rgba(255, 255, 255, .10);
+  color: var(--c-board-faint);
+}
+.simsheet__line b { color: var(--c-board-text); font-variant-numeric: tabular-nums; }
+
+
+/* 54차 묶음1 논의포인트5 — 스마트시티만 쓰는 칸들도 관제 한 벌 안으로.
+   한 화면에 흰 카드와 어두운 카드가 섞여 보였다. */
+.pane--board .evlog__row { color: var(--c-board-faint); border-bottom-color: var(--c-board-line); }
+.pane--board .evlog__row b,
+.pane--board .evlog__row em { color: var(--c-board-text); }
+.pane--board .pane__fold > summary { background: var(--c-board-bg); color: var(--c-board-faint); }
+.pane--board .pane__content { color: var(--c-board-text); }
+.pane--board .brief__key { color: var(--c-board-faint); }
+.pane--board .brief__val { color: var(--c-board-text); }
+.pane--board .best__none,
+.pane--board .log__meta { color: var(--c-board-faint); }
+.pane--board .btn { background: var(--c-board-card); border-color: var(--c-board-line); color: var(--c-board-text); }
+.pane--board .btn--go { background: var(--c-accent-strong); border-color: var(--c-accent-strong); color: var(--c-on-accent); }
+
+/* 54차 파트M — ?fps=1 에서만. 학생 화면에는 나오지 않는다. */
+/* 55차 마감 D' — 규칙을 어겨 서 있는 동안. 붉게 바꿔 '지금 벌을 받고 있다' 를 보인다. */
+.simsay--stop {
+  background: rgba(120, 22, 22, .82);
+  border-color: rgba(255, 138, 143, .45);
+  color: #ffd9db;
+}
+.simfps {
+  position: absolute; left: 14px; bottom: 14px; z-index: 3;
+  max-width: calc(100% - 28px);
+  padding: 3px 8px; border-radius: 6px;
+  background: rgba(24, 28, 35, .72); border: 1px solid rgba(255, 255, 255, .10);
+  color: var(--c-board-faint); font: 600 11px/1.2 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.simfps[hidden] { display: none; }
+
+
+/* ---- 54차 파트N — 제출 & 과제물 ---- */
+.subsec {
+  font-size: var(--fs-sm); font-weight: 700; color: var(--c-text);
+  margin: var(--sp-4) 0 var(--sp-2);
+}
+.subsec:first-child { margin-top: 0; }
+.modal__field--wide { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 4px; }
+.modal__field--wide textarea {
+  width: 100%; resize: vertical; font: inherit; font-size: var(--fs-sm);
+  padding: 6px 8px; border: var(--border); border-radius: var(--r-sm);
+  background: var(--c-surface); color: var(--c-text);
+}
+.modal__check {
+  display: flex; align-items: center; gap: 6px; align-self: end;
+  font-size: var(--fs-sm); color: var(--c-text-dim);
+}
+/* 네비 옆 칸을 채운다 — 네비가 남아 있으므로 폭을 직접 받아야 가운데가 맞는다. */
+.subdone { flex: 1 1 auto; min-width: 0; text-align: center; padding: var(--sp-5) 0 var(--sp-3); }
+.subdone__cap { font-size: var(--fs-xs); color: var(--c-text-faint); }
+.subdone__no {
+  display: block; margin: 4px 0 var(--sp-2);
+  font: 800 24px/1.2 var(--font-mono); color: var(--c-accent-strong);
+  font-variant-numeric: tabular-nums;
+}
+.subdone .modal__grid { max-width: 420px; margin: var(--sp-3) auto 0; }
+.subdone__no.is-none { color: var(--c-text-faint); font-size: 15px; font-weight: 600; }
+.subdone .btn[disabled] { opacity: .45; cursor: not-allowed; }
+.report__note { line-height: 1.6; white-space: pre-wrap; }
+
+
+/* ---- 54차 보강6-2 — 오른쪽 칸의 남는 자리 ----
+   세로 넘침을 0 으로 만들고 나니 이번엔 마지막 칸 아래가 비었다.
+   어느 칸이 그 자리를 가져갈지는 매니페스트가 고른다(ui.right_grow). */
+.pane--board [data-grow] { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.pane--board [data-grow] > .pane__title { flex: 0 0 auto; }
+
+/* 탑뷰는 정사각을 지키며 자란다. 상한 320px — 그보다 커지면 코스보다 창이 먼저 보인다. */
+.pane--board [data-grow="minimap"] .minimap {
+  flex: 0 1 auto; width: auto; height: clamp(260px, 100%, 320px);
+  aspect-ratio: 1 / 1; margin-inline: auto;
+}
+
+/* 기록 카드는 최근 시도 줄이 늘어날 자리를 갖는다(최대 5줄). */
+.pane--board [data-grow="record"] .record__recent { flex: 1 1 auto; min-height: 0; }
+
+/* 57-C 파트1 — 기본정보 세 칸(학교 · 교사명 · 클래스코드).
+   열 글자 상한이라 폭도 열 글자에 맞춰 고정한다. 값에 따라 칸이 늘었다 줄었다 하면
+   한 줄에 나란히 선 세 칸이 서로 밀린다. */
+.modal__fields--basic {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.modal__field--basic { flex: none; width: 11.5rem; }
+.modal__field--basic input { width: 100%; font-variant-numeric: tabular-nums; }
+
+
+/* ================================================================
+   57-C 파트4 — 제출 화면 2단계. 좌측 세로 스텝 200px 고정 · 본문 padding 20px 22px.
+   내려받기는 네비 맨 아래에 고정한다 — 단계를 오가도 자리가 바뀌지 않는다.
+   ================================================================ */
+.sub2 { display: flex; min-height: 0; flex: 1 1 auto; margin-top: var(--sp-3); }
+.sub2[hidden] { display: none; }
+
+/* 아래 패딩은 본문(.sub2__body)의 것과 같아야 한다 — 그래야 맨 아래 내려받기 버튼이
+   본문 마지막 줄과 같은 선에서 끝난다. 지금은 둘 다 0 이다. */
+.sub2__nav {
+  flex: 0 0 200px; width: 200px; display: flex; flex-direction: column;
+  gap: 4px; padding: 0 var(--sp-3) 0 0; border-right: 1px solid var(--c-line);
+}
+.sub2__step {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  padding: 9px 10px; border: 1px solid transparent; border-radius: var(--r-sm);
+  background: transparent; color: var(--c-text-dim); font: inherit;
+}
+.sub2__step b { display: block; font-size: var(--fs-sm); font-weight: 700; }
+.sub2__step span { display: block; margin-top: 2px; font-size: var(--fs-xs); color: var(--c-text-faint); }
+.sub2__step:hover { background: var(--c-surface-2); }
+.sub2__step.is-on {
+  background: var(--c-surface-2);
+  border-color: var(--c-line); color: var(--c-text);
+}
+.sub2__step.is-on b { color: var(--c-accent-strong); }
+.sub2__navgap { flex: 1 1 auto; min-height: var(--sp-3); }
+.sub2__dl { display: flex; flex-direction: column; gap: 6px; }
+.sub2__dl .btn { width: 100%; justify-content: flex-start; }
+
+/* 두 단계를 같은 칸에 겹쳐 둔다. 안 보이는 단계도 자리는 그대로 차지하므로
+   상자 높이가 늘 높은 쪽에 맞고, 단계를 오가도 창 크기가 튀지 않는다. */
+.sub2__body { flex: 1 1 auto; min-width: 0; overflow-y: auto; padding: 20px 22px 0; display: grid; align-items: start; }
+.sub2__pane { grid-area: 1 / 1; }
+/* hidden 속성을 쓰지 않는다 — 전역 [hidden] 이 display:none !important 라 자리까지 사라진다.
+   여기서는 자리는 남기고 보이지만 않게 해야 상자 높이가 늘 높은 쪽에 맞는다. */
+.sub2__pane.is-off { visibility: hidden; pointer-events: none; }
+
+.sub2__foot { justify-content: flex-end; }
+.sub2__count { font-size: var(--fs-xs); color: var(--c-text-faint); font-variant-numeric: tabular-nums; }
+
+/* 게시할 기록 고르기 — 저장된 좌표를 그때그때 다시 그린 그림이다(파트3). */
+.picks { display: flex; flex-wrap: wrap; gap: 10px; }
+.picks[hidden] { display: none; }
+.pick {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer;
+  padding: 6px; border: 1px solid var(--c-line); border-radius: var(--r-sm);
+  background: var(--c-surface);
+}
+.pick.is-on { border-color: var(--c-accent-strong); }
+.pick input { margin: 0; }
+.pick__thumb { display: block; width: 96px; height: 96px; border-radius: var(--r-sm); }
+.pick__cap { display: flex; flex-direction: column; align-items: center; line-height: 1.3; }
+.pick__cap b { font-size: var(--fs-xs); color: var(--c-text-dim); font-weight: 600; }
+.pick__cap i {
+  font-style: normal; font-size: var(--fs-sm); font-weight: 700; color: var(--c-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 자동으로 함께 저장되는 것 — 목록은 매니페스트 record.fields 가 소유한다. */
+/* 무엇이 저장되는지는 계속 밝히되, 바로 아래에 값이 보이므로 제목 옆 한 줄로 접는다. */
+.subsec__note { font-style: normal; font-weight: 400; color: var(--c-text-dim); font-size: var(--fs-xs); }
+
+/* 기록 표와 구간 표를 나란히 둔다. 세로로 쌓으면 둘을 합친 높이만큼 입력칸이 밀린다. */
+.myrec { display: grid; grid-template-columns: 1fr 2fr; gap: var(--sp-3); align-items: start; }
+/* 왼쪽 칸이 좁아 기본 여백으로는 '코스 벗어남 / 아직 없음' 줄이 넘친다. */
+.myrec .outcome__stats { padding: var(--sp-2); gap: 4px var(--sp-2); }
+
+
+/* ================================================================
+   57-C 파트5 — 코드 칸을 아두이노 IDE 결로. 툴바 · 파일 탭 · 상태 띠 · 시리얼 모니터.
+   실물 IDE 를 그대로 옮기되, 우리가 실제로 하지 않는 것은 화면에도 두지 않는다:
+   스케치 바이트·퍼센트 없음 · COM 포트 없음 · 컴파일 진행바 없음.
+   ================================================================ */
+.topline > .edtoolbar {
+  background: #eceff2; border-bottom: 1px solid #dce0e5;
+  padding: 7px 10px; height: auto; min-height: 0;
+}
+/* 회색 띠 위에서는 링크도 실물 IDE 처럼 진한 회색이다. */
+.topline > .edtoolbar .edlink { color: #5b6670; }
+.topline > .edtoolbar .edlink:hover { color: #22262e; }
+
+/* 컴파일 ✓ · 업로드 → — 32px 원형 둘. 이름은 툴팁으로만 남는다. */
+.edbtn {
+  width: 32px; height: 32px; flex: 0 0 32px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 50%; cursor: pointer;
+  font: inherit; font-size: 15px; line-height: 1; color: #FFFFFF;
+}
+.edbtn[hidden] { display: none; }
+.edbtn--verify { background: #7c8794; }
+.edbtn--upload { background: #00979c; }
+.edbtn:hover { filter: brightness(1.08); }
+.edbtn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* 파일 탭 한 개 — drive.ino. 밑줄 2px 로 지금 연 파일을 짚는다. */
+.edtabs { display: flex; align-items: flex-end; gap: 2px; padding: 0 10px; background: #eceff2; }
+.edtab {
+  padding: 6px 12px 5px; font-size: var(--fs-xs); color: #5b6670;
+  background: #FFFFFF; border-radius: 4px 4px 0 0;
+}
+.edtab.is-on { color: #22262e; font-weight: 700; box-shadow: inset 0 -2px 0 #00979c; }
+
+/* 상태 띠 — 결과만. 오른쪽 끝에 보드와 커서 자리. */
+.edstat {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: 4px 10px; background: #eceff2; border-top: 1px solid #dce0e5;
+  font-size: var(--fs-xs); color: #5b6670;
+}
+.edstat__spacer { flex: 1 1 auto; min-width: 6px; }
+.edstat__msg[data-kind="ok"] { color: #0f7b3f; }
+.edstat__msg[data-kind="bad"] { color: var(--c-danger); font-weight: 700; }
+.edstat__board, .edstat__pos { white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* 시리얼 모니터 — 오른쪽 조종 패널과 같은 다크. 높이 152px 고정. */
+.serialbox .serial {
+  min-height: 152px; max-height: 152px; height: 152px;
+  background: #22262e; border: 1px solid #39404c; color: #d7dde6;
+}
+.serialbox .serial .serial__t,
+.serialbox .serial .serial__k { color: #8b95a3; }
+.serialbox .serial .serial__line { color: #d7dde6; }
+.serial__sel {
+  font: inherit; font-size: var(--fs-xs); padding: 1px 4px;
+  border: var(--border); border-radius: var(--r-sm);
+  background: var(--c-surface); color: var(--c-text-dim);
+}
+.serial__baud { font-size: var(--fs-xs); color: var(--c-text-faint); font-variant-numeric: tabular-nums; }
+.serial__send { display: flex; gap: 6px; margin-top: 4px; }
+.serial__in {
+  flex: 1 1 auto; min-width: 0; font: inherit; font-size: var(--fs-xs);
+  font-family: var(--font-mono); padding: 4px 8px;
+  border: 1px solid #39404c; border-radius: var(--r-sm);
+  background: #22262e; color: #d7dde6;
+}
+.serial__in::placeholder { color: #6c7684; }
+.serial__line--보냄 .serial__k { color: #6fa8ff; }
+
+/* ---- RC카 스펙 툴팁 ---- */
+.car-tooltip {
+  position: absolute; z-index: 10;
+  background: white; color: #111;
+  border-radius: 8px;
+  padding: 12px 16px; font-size: 13px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translate(0, calc(-100% - 15px));
+  pointer-events: auto;
+}
+.car-tooltip::after {
+  content: ''; position: absolute;
+  bottom: -6px; left: 20px;
+  border-width: 6px 6px 0;
+  border-style: solid;
+  border-color: white transparent transparent transparent;
+}
+.car-tooltip__head { font-weight: 700; margin-bottom: 6px; font-size: 14px; }
+.car-tooltip ul { margin: 0; padding-left: 18px; color: #444; }
+.car-tooltip li { margin-bottom: 2px; }
+.car-tooltip[hidden] { display: none; }

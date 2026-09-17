@@ -1,0 +1,416 @@
+<title>디지털트윈 2차 결과보고</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground: #f2f4f7;
+    --paper: #ffffff;
+    --paper-2: #f7f9fb;
+    --ink: #12161d;
+    --ink-2: #444e5e;
+    --ink-3: #6b7688;
+    --rule: #dde2ea;
+    --rule-2: #c8d0dc;
+    --accent: #0f6fd1;
+    --accent-soft: #e4eefb;
+    --pass: #16794a;
+    --pass-soft: #e0f2e9;
+    --wait: #9a6408;
+    --wait-soft: #fbeeda;
+    --block: #b8323c;
+    --block-soft: #fbe6e8;
+    --shadow: 0 1px 2px rgba(18, 22, 29, .05), 0 8px 24px -12px rgba(18, 22, 29, .18);
+    --f-sans: "IBM Plex Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #080b11;
+      --paper: #111722;
+      --paper-2: #161e2b;
+      --ink: #e8eef8;
+      --ink-2: #a8b4c6;
+      --ink-3: #7b899d;
+      --rule: #232d3d;
+      --rule-2: #33405480;
+      --accent: #56a8f5;
+      --accent-soft: #14263a;
+      --pass: #5fd39b;
+      --pass-soft: #10281e;
+      --wait: #e0a33f;
+      --wait-soft: #2a2010;
+      --block: #ff7b85;
+      --block-soft: #2c1418;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 28px -14px rgba(0, 0, 0, .7);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #080b11;
+    --paper: #111722;
+    --paper-2: #161e2b;
+    --ink: #e8eef8;
+    --ink-2: #a8b4c6;
+    --ink-3: #7b899d;
+    --rule: #232d3d;
+    --rule-2: #33405480;
+    --accent: #56a8f5;
+    --accent-soft: #14263a;
+    --pass: #5fd39b;
+    --pass-soft: #10281e;
+    --wait: #e0a33f;
+    --wait-soft: #2a2010;
+    --block: #ff7b85;
+    --block-soft: #2c1418;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 28px -14px rgba(0, 0, 0, .7);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--f-sans);
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; display: flex; flex-direction: column; gap: 22px; }
+
+  /* ---- 머리말 ---- */
+  .masthead { display: flex; flex-direction: column; gap: 14px; }
+  .eyebrow {
+    font-family: var(--f-mono); font-size: 11px; font-weight: 500;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3);
+  }
+  h1 { margin: 0; font-size: clamp(26px, 4.4vw, 38px); font-weight: 700; letter-spacing: -.02em; line-height: 1.25; text-wrap: balance; }
+  .lede { margin: 0; max-width: 62ch; color: var(--ink-2); }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .tag {
+    font-family: var(--f-mono); font-size: 11.5px; padding: 3px 9px;
+    border: 1px solid var(--rule-2); border-radius: 3px; color: var(--ink-2); background: var(--paper);
+  }
+  .tag--pass { color: var(--pass); background: var(--pass-soft); border-color: transparent; }
+  .tag--wait { color: var(--wait); background: var(--wait-soft); border-color: transparent; }
+  .tag--block { color: var(--block); background: var(--block-soft); border-color: transparent; }
+
+  /* ---- 카드 ---- */
+  section { background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; box-shadow: var(--shadow); overflow: hidden; }
+  .head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 13px 18px; border-bottom: 1px solid var(--rule); background: var(--paper-2);
+  }
+  .head h2 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -.005em; }
+  .head .n { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); margin-right: 8px; }
+  .body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+
+  /* ---- 복사 버튼 ---- */
+  .copy {
+    display: inline-flex; align-items: center; gap: 6px; flex: none;
+    font-family: var(--f-sans); font-size: 12.5px; font-weight: 500;
+    padding: 5px 11px; border: 1px solid var(--rule-2); border-radius: 4px;
+    background: var(--paper); color: var(--ink-2); cursor: pointer;
+    transition: border-color .12s, color .12s, background .12s;
+  }
+  .copy:hover { border-color: var(--accent); color: var(--accent); }
+  .copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .copy[data-done="1"] { color: var(--pass); border-color: var(--pass); background: var(--pass-soft); }
+  .copy svg { width: 13px; height: 13px; }
+  .copy--all { font-size: 14px; padding: 9px 16px; background: var(--accent); color: #fff; border-color: var(--accent); }
+  .copy--all:hover { background: var(--accent); color: #fff; filter: brightness(1.08); }
+  .copy--all[data-done="1"] { background: var(--pass); border-color: var(--pass); color: #fff; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .toolbar .hint { font-size: 12.5px; color: var(--ink-3); }
+
+  /* ---- 본문 요소 ---- */
+  ul.clean { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  ul.clean li { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: baseline; }
+  .mark { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); padding-top: 2px; }
+  .done { color: var(--pass); font-weight: 600; }
+
+  .scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 460px; }
+  th, td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--rule); }
+  th:first-child, td:first-child { text-align: left; }
+  thead th { font-size: 11.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); background: var(--paper-2); }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+  td .was { color: var(--ink-3); text-decoration: line-through; margin-right: 6px; }
+  .delta { font-family: var(--f-mono); font-weight: 600; color: var(--pass); }
+
+  /* ---- 논의포인트 ---- */
+  .points { display: flex; flex-direction: column; gap: 0; }
+  .point { display: grid; grid-template-columns: 42px 1fr; gap: 14px; padding: 16px 18px; border-bottom: 1px solid var(--rule); }
+  .point:last-child { border-bottom: 0; }
+  .point__id {
+    font-family: var(--f-mono); font-size: 12px; font-weight: 600; color: var(--accent);
+    background: var(--accent-soft); border-radius: 4px; height: 26px;
+    display: grid; place-items: center;
+  }
+  .point__main { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+  .point__title { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-weight: 600; }
+  .point p { margin: 0; color: var(--ink-2); font-size: 14px; }
+  .point .rec { color: var(--ink); }
+  .point .rec b { color: var(--accent); font-weight: 600; }
+  code { font-family: var(--f-mono); font-size: .92em; background: var(--paper-2); border: 1px solid var(--rule); border-radius: 3px; padding: 1px 5px; }
+  .steps { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; display: flex; flex-direction: column; gap: 4px; }
+  footer { color: var(--ink-3); font-size: 13px; text-align: center; padding-top: 6px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow">챌린지 디지털트윈 · 결과보고 02</div>
+    <h1>재생 정상화 + 화면 가독성</h1>
+    <p class="lede">재생이 목표의 1/70로 느렸던 원인은 프레임당 tick 상한이었습니다. 경과시간 기준으로 바꿔 저사양 환경에서도 98%를 회복했고, 트랙·계기판 가독성과 코드 보존까지 마쳤습니다. 아래 <strong>논의포인트 7건</strong>에 결정을 주시면 다음 차수로 넘어갑니다.</p>
+    <div class="meta">
+      <span class="tag">2026-08-21</span>
+      <span class="tag">브랜치 main</span>
+      <span class="tag tag--pass">파트 1~5 완료</span>
+      <span class="tag tag--block">결정 대기 7건</span>
+    </div>
+    <div class="toolbar">
+      <button class="copy copy--all" data-copy="all">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="9" rx="1.5"/><path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h1"/></svg>
+        보고서 전체 복사
+      </button>
+      <span class="hint">각 섹션 오른쪽 버튼으로 부분만 복사할 수도 있습니다.</span>
+    </div>
+  </header>
+
+  <section>
+    <div class="head">
+      <h2><span class="n">01</span>이번 차수 요약</h2>
+      <button class="copy" data-copy="summary">복사</button>
+    </div>
+    <div class="body">
+      <ul class="clean">
+        <li><span class="mark done">완료</span><span><strong>재생 속도 [P0]</strong> — 실시간 1배속(초당 100 tick) 회복, 배속 1x/2x/4x 추가</span></li>
+        <li><span class="mark done">완료</span><span><strong>트랙 렌더링</strong> — 주행 대역만 밝게 반전, 중심선 점선, START/FINISH·CP 라벨</span></li>
+        <li><span class="mark done">완료</span><span><strong>계기판</strong> — 세그먼트처럼 보이던 대시 표기 제거, 판독 우선 대형 숫자</span></li>
+        <li><span class="mark done">완료</span><span><strong>좌측 컬럼</strong> — 에디터 자동 줄바꿈, 오류 0건 시 패널 접힘, 상태 배지 계기판으로 이동</span></li>
+        <li><span class="mark done">완료</span><span><strong>코드 보존</strong> — 코드·시도 이력 localStorage 저장, 새로고침 후 복원</span></li>
+      </ul>
+      <p style="margin:0;color:var(--ink-2);font-size:14px">원인은 <strong>(a) 구조적 문제가 근본</strong>이었습니다. 프레임 간 경과시간을 20ms로 잘라 누산해 <strong>프레임당 최대 2 tick</strong>이 상한이 되어 있었고, 저프레임일수록 정비례해 느려졌습니다. (b) 백그라운드 탭의 rAF 정지는 이를 극단으로 밀어붙인 증폭 요인입니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head">
+      <h2><span class="n">02</span>핵심 수치 — 실제 경과 10초 기준</h2>
+      <button class="copy" data-copy="metrics">복사</button>
+    </div>
+    <div class="body">
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr><th>환경</th><th>프레임</th><th>tick 진행</th><th>목표(100/s) 대비</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>활성 탭</td><td class="num">59.8fps</td><td class="num">99.7/s</td><td class="num delta">100%</td></tr>
+            <tr><td>저사양 (CPU 20x 스로틀)</td><td class="num">7.5fps</td><td class="num"><span class="was">15.3/s</span>97.9/s</td><td class="num delta">15% → 98%</td></tr>
+            <tr><td>백그라운드 탭</td><td class="num">0fps</td><td class="num">자동 일시정지</td><td class="num">설계대로</td></tr>
+            <tr><td>백그라운드 복귀 후</td><td class="num">59.9fps</td><td class="num">100.1/s</td><td class="num delta">100%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="clean">
+        <li><span class="mark">확인</span><span>배속 4x로 7초 재생 → 400 tick/s 진행, <strong>베스트 랩 18.000초로 1x와 동일</strong>. 배속은 결과를 바꾸지 않습니다.</span></li>
+        <li><span class="mark">확인</span><span>트랙 안쪽·바깥 픽셀값 <code>#070a10</code>으로 완전 동일 — 주행 대역만 밝은 띠로 읽힙니다.</span></li>
+        <li><span class="mark">확인</span><span>새로고침 후 코드·이력·시도번호 복원, 엔진 회귀 통과(랩 1800 tick), 콘솔 오류 없음.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="head">
+      <h2><span class="n">03</span>논의포인트 — 결정 주셔야 진행됩니다</h2>
+      <button class="copy" data-copy="points">복사</button>
+    </div>
+    <div class="points">
+      <div class="point">
+        <div class="point__id">D1</div>
+        <div class="point__main">
+          <div class="point__title">GitHub 기본 브랜치를 main으로 <span class="tag tag--block">미완료 · 직접 조작 필요</span></div>
+          <p>현재 default가 <code>claude/challenge-…</code>라 Vercel이 그 브랜치를 Production으로 잡고 있습니다. 변경 API가 제 도구에 없습니다.</p>
+          <ol class="steps">
+            <li>GitHub 리포 → Settings → General → Default branch의 ⇄ 아이콘 → <code>main</code> → Update</li>
+            <li>Code 탭 → Branches → <code>claude/challenge-…</code> 삭제 (내용 동일, 잃는 것 없음)</li>
+          </ol>
+        </div>
+      </div>
+      <div class="point">
+        <div class="point__id">D2</div>
+        <div class="point__main">
+          <div class="point__title">Vercel Production Branch를 main으로 <span class="tag tag--block">미완료 · 직접 조작 필요</span></div>
+          <p>프로젝트 → Settings → Git → Production Branch를 <code>main</code>으로 저장 후 최신 배포 Redeploy. D1과 함께 처리해야 합니다.</p>
+        </div>
+      </div>
+      <div class="point">
+        <div class="point__id">D3</div>
+        <div class="point__main">
+          <div class="point__title">이번 차수에 제가 판단한 6건 승인 <span class="tag tag--wait">승인 대기</span></div>
+          <p>A 밀린 시뮬 시간 상한 1000ms · B 빈 값 표기를 <code>0.000</code>/"기록 없음"으로(대시가 세그먼트처럼 보였음) · C 대역 안쪽·바깥 동일 톤 · D 저장 가능 여부 칩 표시 · E 줄번호 미러 측정 · F 체크포인트 명명 START/FINISH·CP1~3</p>
+          <p class="rec">권장: <b>전체 승인</b>. 되돌리는 비용은 모두 낮습니다.</p>
+        </div>
+      </div>
+      <div class="point">
+        <div class="point__id">D4</div>
+        <div class="point__main">
+          <div class="point__title">이탈 처리 최종 규칙 <span class="tag tag--wait">1차부터 미확정</span></div>
+          <p>현재는 지시대로 "이벤트 발생 + 카운터"만 있고 주행은 계속됩니다. 선택지: 현행 유지 / 랩타임 페널티 부여 / 일정 횟수 초과 시 시도 종료.</p>
+          <p class="rec">권장: <b>현행 유지</b>. 모드2·3의 난이도 곡선이 정해진 뒤 함께 결정하는 편이 안전합니다.</p>
+        </div>
+      </div>
+      <div class="point">
+        <div class="point__id">D5</div>
+        <div class="point__main">
+          <div class="point__title">실패 판정 · 시도 종료 규칙 <span class="tag tag--wait">1차부터 미확정</span></div>
+          <p>스키마에 자리조차 두지 않은 상태입니다. 확정되면 <code>challenge.schema.json</code> 확장이 필요하고, 확장 시점이 늦을수록 기존 기록과의 호환 처리가 늘어납니다.</p>
+        </div>
+      </div>
+      <div class="point">
+        <div class="point__id">D6</div>
+        <div class="point__main">
+          <div class="point__title">다음 차수 범위 <span class="tag tag--wait">지시 대기</span></div>
+          <p>후보: 챌린지 선택 UI · 모드2(색상인식) 착수 · 컨셉 이미지 적용 · 서브셋 문법 확장 · 학생 화면 온보딩(조작 안내).</p>
+          <p class="rec">권장: <b>컨셉 이미지 적용</b>을 먼저. 지금 UI가 임시 팔레트라 이후 작업이 모두 재작업 대상이 됩니다.</p>
+        </div>
+      </div>
+      <div class="point">
+        <div class="point__id">D7</div>
+        <div class="point__main">
+          <div class="point__title">컨셉 이미지 전달 시점 <span class="tag tag--wait">대기</span></div>
+          <p>도착하면 <code>tokens.css</code> 1개 파일과 에셋 슬롯 경로만 교체하면 됩니다. 코드 수정은 필요 없습니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head">
+      <h2><span class="n">04</span>범위 준수 확인</h2>
+      <button class="copy" data-copy="scope">복사</button>
+    </div>
+    <div class="body">
+      <p style="margin:0;color:var(--ink-2);font-size:14px"><strong>구현하지 않음</strong> — 서버·DB·AWS, 리더보드, 과제 제출, 실패 판정·페널티·시도 종료, 모드2·3, 카메라 미니창, 리플레이 녹화, 챌린지 선택 UI, 컨셉 이미지 적용, 서브셋 문법 확장.</p>
+      <p style="margin:0;color:var(--ink-2);font-size:14px"><strong>원칙 준수</strong> — 결정론 유지(배속·프레임레이트가 랩타임에 영향 없음) · 챌린지=데이터 · 하드삭제 없음(이력 삭제 경로 없음, [초기화]는 코드 덮어쓰기) · 수치는 엔진만 생성 · 비주얼은 에셋 슬롯.</p>
+    </div>
+  </section>
+
+  <footer>결정은 D1~D7 번호로 답해주시면 그대로 반영합니다.</footer>
+</div>
+
+<script type="text/plain" data-md="summary"># 1. 이번 차수 요약 (2차 — 재생 정상화 + 화면 가독성)
+
+- [완료] 재생 속도 [P0] — 실시간 1배속(초당 100 tick) 회복, 배속 1x/2x/4x 추가
+- [완료] 트랙 렌더링 — 주행 대역만 밝게 반전, 중심선 점선, START/FINISH·CP 라벨
+- [완료] 계기판 — 세그먼트처럼 보이던 대시 표기 제거, 판독 우선 대형 숫자
+- [완료] 좌측 컬럼 — 에디터 자동 줄바꿈, 오류 0건 시 패널 접힘, 상태 배지 계기판으로 이동
+- [완료] 코드 보존 — 코드·시도 이력 localStorage 저장, 새로고침 후 복원
+
+원인은 (a) 구조적 문제가 근본. 프레임 간 경과시간을 20ms로 잘라 누산해 프레임당 최대 2 tick이
+상한이 되어 있었고, 저프레임일수록 정비례해 느려졌음. (b) 백그라운드 탭의 rAF 정지는 증폭 요인.</script>
+
+<script type="text/plain" data-md="metrics"># 2. 핵심 수치 — 실제 경과 10초 기준
+
+| 환경 | 프레임 | tick 진행 | 목표(100/s) 대비 |
+| --- | --- | --- | --- |
+| 활성 탭 | 59.8fps | 99.7/s | 100% |
+| 저사양 (CPU 20x 스로틀) | 7.5fps | 97.9/s (수정 전 15.3/s) | 15% → 98% |
+| 백그라운드 탭 | 0fps | 자동 일시정지 | 설계대로 |
+| 백그라운드 복귀 후 | 59.9fps | 100.1/s | 100% |
+
+- 배속 4x로 7초 재생 → 400 tick/s 진행, 베스트 랩 18.000초로 1x와 동일. 배속은 결과를 바꾸지 않음.
+- 트랙 안쪽·바깥 픽셀값 #070a10으로 완전 동일 — 주행 대역만 밝은 띠로 읽힘.
+- 새로고침 후 코드·이력·시도번호 복원, 엔진 회귀 통과(랩 1800 tick), 콘솔 오류 없음.</script>
+
+<script type="text/plain" data-md="points"># 3. 논의포인트 — 결정 주셔야 진행됩니다
+
+D1. GitHub 기본 브랜치를 main으로 [미완료 · 직접 조작 필요]
+    현재 default가 claude/challenge-… 라 Vercel이 그 브랜치를 Production으로 잡고 있음. 변경 API 없음.
+    1) Settings → General → Default branch ⇄ → main → Update
+    2) Code → Branches → claude/challenge-… 삭제 (내용 동일)
+
+D2. Vercel Production Branch를 main으로 [미완료 · 직접 조작 필요]
+    Settings → Git → Production Branch → main 저장 후 최신 배포 Redeploy. D1과 함께 처리.
+
+D3. 이번 차수에 판단한 6건 승인 [승인 대기]
+    A 밀린 시뮬 시간 상한 1000ms / B 빈 값 표기를 0.000·"기록 없음"으로 / C 대역 안쪽·바깥 동일 톤 /
+    D 저장 가능 여부 칩 표시 / E 줄번호 미러 측정 / F 체크포인트 명명 START/FINISH·CP1~3
+    권장: 전체 승인. 되돌리는 비용 모두 낮음.
+
+D4. 이탈 처리 최종 규칙 [1차부터 미확정]
+    현행: 이벤트 + 카운터만, 주행 계속. 선택지: 현행 유지 / 랩타임 페널티 / 횟수 초과 시 시도 종료.
+    권장: 현행 유지. 모드2·3 난이도 곡선 확정 후 함께 결정.
+
+D5. 실패 판정 · 시도 종료 규칙 [1차부터 미확정]
+    스키마에 자리 없음. 확정 시 challenge.schema.json 확장 필요. 늦을수록 기존 기록 호환 처리 증가.
+
+D6. 다음 차수 범위 [지시 대기]
+    후보: 챌린지 선택 UI / 모드2 착수 / 컨셉 이미지 적용 / 서브셋 문법 확장 / 학생 온보딩.
+    권장: 컨셉 이미지 적용 우선. 지금 UI가 임시 팔레트라 이후 작업이 재작업 대상이 됨.
+
+D7. 컨셉 이미지 전달 시점 [대기]
+    도착 시 tokens.css 1개 + 에셋 슬롯 경로만 교체. 코드 수정 불필요.</script>
+
+<script type="text/plain" data-md="scope"># 4. 범위 준수 확인
+
+구현하지 않음 — 서버·DB·AWS, 리더보드, 과제 제출, 실패 판정·페널티·시도 종료, 모드2·3,
+카메라 미니창, 리플레이 녹화, 챌린지 선택 UI, 컨셉 이미지 적용, 서브셋 문법 확장.
+
+원칙 준수 — 결정론 유지(배속·프레임레이트가 랩타임에 영향 없음) / 챌린지=데이터 /
+하드삭제 없음(이력 삭제 경로 없음, [초기화]는 코드 덮어쓰기) / 수치는 엔진만 생성 / 비주얼은 에셋 슬롯.</script>
+
+<script>
+  (function () {
+    const blocks = new Map();
+    for (const el of document.querySelectorAll('script[type="text/plain"][data-md]')) {
+      blocks.set(el.dataset.md, el.textContent.trim());
+    }
+    const HEADER = '# 결과보고 02 — 재생 정상화 + 화면 가독성\n(챌린지 디지털트윈 · 2026-08-21 · 브랜치 main · 파트 1~5 완료 · 결정 대기 7건)';
+    const ORDER = ['summary', 'metrics', 'points', 'scope'];
+
+    function textFor(key) {
+      if (key === 'all') return [HEADER, ...ORDER.map((k) => blocks.get(k))].join('\n\n---\n\n');
+      return blocks.get(key) || '';
+    }
+
+    async function toClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (_) {
+        // 클립보드 API가 막힌 환경(iframe 권한 등) 대비
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.top = '-1000px';
+        document.body.appendChild(ta);
+        ta.select();
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch (__) { ok = false; }
+        document.body.removeChild(ta);
+        return ok;
+      }
+    }
+
+    for (const btn of document.querySelectorAll('.copy')) {
+      const label = btn.textContent.trim();
+      btn.addEventListener('click', async () => {
+        const ok = await toClipboard(textFor(btn.dataset.copy));
+        btn.dataset.done = ok ? '1' : '';
+        btn.textContent = ok ? '복사됨' : '복사 실패 — 직접 선택해 주세요';
+        setTimeout(() => {
+          btn.dataset.done = '';
+          if (btn.classList.contains('copy--all')) {
+            btn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="9" rx="1.5"></rect><path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h1"></path></svg> 보고서 전체 복사';
+          } else {
+            btn.textContent = label;
+          }
+        }, 1800);
+      });
+    }
+  })();
+</script>

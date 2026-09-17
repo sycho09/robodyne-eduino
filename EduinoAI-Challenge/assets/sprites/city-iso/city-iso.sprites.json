@@ -1,0 +1,488 @@
+{
+  "generated_by": "tools/render_iso_scene.py",
+  "frame_px": 256,
+  "ortho_width_mm": 1300,
+  "mm_per_px": 5.078125,
+  "pivot_px": [
+    128.0,
+    128.0
+  ],
+  "projection": {
+    "type": "isometric_ortho",
+    "azimuth_deg": 225.0,
+    "elevation_deg": 35.264389682754654
+  },
+  "sets": {
+    "pedestrian": {
+      "dirs": 8,
+      "steps": 2,
+      "frames": [
+        {
+          "dir": 0,
+          "angle_deg": 0.0,
+          "step": 0,
+          "file": "ped-000-0.png"
+        },
+        {
+          "dir": 1,
+          "angle_deg": 45.0,
+          "step": 0,
+          "file": "ped-045-0.png"
+        },
+        {
+          "dir": 2,
+          "angle_deg": 90.0,
+          "step": 0,
+          "file": "ped-090-0.png"
+        },
+        {
+          "dir": 3,
+          "angle_deg": 135.0,
+          "step": 0,
+          "file": "ped-135-0.png"
+        },
+        {
+          "dir": 4,
+          "angle_deg": 180.0,
+          "step": 0,
+          "file": "ped-180-0.png"
+        },
+        {
+          "dir": 5,
+          "angle_deg": 225.0,
+          "step": 0,
+          "file": "ped-225-0.png"
+        },
+        {
+          "dir": 6,
+          "angle_deg": 270.0,
+          "step": 0,
+          "file": "ped-270-0.png"
+        },
+        {
+          "dir": 7,
+          "angle_deg": 315.0,
+          "step": 0,
+          "file": "ped-315-0.png"
+        },
+        {
+          "dir": 0,
+          "angle_deg": 0.0,
+          "step": 1,
+          "file": "ped-000-1.png"
+        },
+        {
+          "dir": 1,
+          "angle_deg": 45.0,
+          "step": 1,
+          "file": "ped-045-1.png"
+        },
+        {
+          "dir": 2,
+          "angle_deg": 90.0,
+          "step": 1,
+          "file": "ped-090-1.png"
+        },
+        {
+          "dir": 3,
+          "angle_deg": 135.0,
+          "step": 1,
+          "file": "ped-135-1.png"
+        },
+        {
+          "dir": 4,
+          "angle_deg": 180.0,
+          "step": 1,
+          "file": "ped-180-1.png"
+        },
+        {
+          "dir": 5,
+          "angle_deg": 225.0,
+          "step": 1,
+          "file": "ped-225-1.png"
+        },
+        {
+          "dir": 6,
+          "angle_deg": 270.0,
+          "step": 1,
+          "file": "ped-270-1.png"
+        },
+        {
+          "dir": 7,
+          "angle_deg": 315.0,
+          "step": 1,
+          "file": "ped-315-1.png"
+        }
+      ]
+    },
+    "signal": {
+      "dirs": 4,
+      "colors": [
+        "green",
+        "yellow",
+        "red"
+      ],
+      "frames": [
+        {
+          "color": "green",
+          "dir": 0,
+          "angle_deg": 0.0,
+          "file": "signal-green-000.png"
+        },
+        {
+          "color": "green",
+          "dir": 1,
+          "angle_deg": 90.0,
+          "file": "signal-green-090.png"
+        },
+        {
+          "color": "green",
+          "dir": 2,
+          "angle_deg": 180.0,
+          "file": "signal-green-180.png"
+        },
+        {
+          "color": "green",
+          "dir": 3,
+          "angle_deg": 270.0,
+          "file": "signal-green-270.png"
+        },
+        {
+          "color": "yellow",
+          "dir": 0,
+          "angle_deg": 0.0,
+          "file": "signal-yellow-000.png"
+        },
+        {
+          "color": "yellow",
+          "dir": 1,
+          "angle_deg": 90.0,
+          "file": "signal-yellow-090.png"
+        },
+        {
+          "color": "yellow",
+          "dir": 2,
+          "angle_deg": 180.0,
+          "file": "signal-yellow-180.png"
+        },
+        {
+          "color": "yellow",
+          "dir": 3,
+          "angle_deg": 270.0,
+          "file": "signal-yellow-270.png"
+        },
+        {
+          "color": "red",
+          "dir": 0,
+          "angle_deg": 0.0,
+          "file": "signal-red-000.png"
+        },
+        {
+          "color": "red",
+          "dir": 1,
+          "angle_deg": 90.0,
+          "file": "signal-red-090.png"
+        },
+        {
+          "color": "red",
+          "dir": 2,
+          "angle_deg": 180.0,
+          "file": "signal-red-180.png"
+        },
+        {
+          "color": "red",
+          "dir": 3,
+          "angle_deg": 270.0,
+          "file": "signal-red-270.png"
+        }
+      ]
+    },
+    "crossing_gate": {
+      "steps": 5,
+      "dirs": 8,
+      "arm_mm": 470,
+      "frames": [
+        {
+          "dir": 0,
+          "angle_deg": 0.0,
+          "step": 0,
+          "drop": 0.0,
+          "file": "gate-000-0.png"
+        },
+        {
+          "dir": 0,
+          "angle_deg": 0.0,
+          "step": 1,
+          "drop": 0.25,
+          "file": "gate-000-1.png"
+        },
+        {
+          "dir": 0,
+          "angle_deg": 0.0,
+          "step": 2,
+          "drop": 0.5,
+          "file": "gate-000-2.png"
+        },
+        {
+          "dir": 0,
+          "angle_deg": 0.0,
+          "step": 3,
+          "drop": 0.75,
+          "file": "gate-000-3.png"
+        },
+        {
+          "dir": 0,
+          "angle_deg": 0.0,
+          "step": 4,
+          "drop": 1.0,
+          "file": "gate-000-4.png"
+        },
+        {
+          "dir": 1,
+          "angle_deg": 45.0,
+          "step": 0,
+          "drop": 0.0,
+          "file": "gate-045-0.png"
+        },
+        {
+          "dir": 1,
+          "angle_deg": 45.0,
+          "step": 1,
+          "drop": 0.25,
+          "file": "gate-045-1.png"
+        },
+        {
+          "dir": 1,
+          "angle_deg": 45.0,
+          "step": 2,
+          "drop": 0.5,
+          "file": "gate-045-2.png"
+        },
+        {
+          "dir": 1,
+          "angle_deg": 45.0,
+          "step": 3,
+          "drop": 0.75,
+          "file": "gate-045-3.png"
+        },
+        {
+          "dir": 1,
+          "angle_deg": 45.0,
+          "step": 4,
+          "drop": 1.0,
+          "file": "gate-045-4.png"
+        },
+        {
+          "dir": 2,
+          "angle_deg": 90.0,
+          "step": 0,
+          "drop": 0.0,
+          "file": "gate-090-0.png"
+        },
+        {
+          "dir": 2,
+          "angle_deg": 90.0,
+          "step": 1,
+          "drop": 0.25,
+          "file": "gate-090-1.png"
+        },
+        {
+          "dir": 2,
+          "angle_deg": 90.0,
+          "step": 2,
+          "drop": 0.5,
+          "file": "gate-090-2.png"
+        },
+        {
+          "dir": 2,
+          "angle_deg": 90.0,
+          "step": 3,
+          "drop": 0.75,
+          "file": "gate-090-3.png"
+        },
+        {
+          "dir": 2,
+          "angle_deg": 90.0,
+          "step": 4,
+          "drop": 1.0,
+          "file": "gate-090-4.png"
+        },
+        {
+          "dir": 3,
+          "angle_deg": 135.0,
+          "step": 0,
+          "drop": 0.0,
+          "file": "gate-135-0.png"
+        },
+        {
+          "dir": 3,
+          "angle_deg": 135.0,
+          "step": 1,
+          "drop": 0.25,
+          "file": "gate-135-1.png"
+        },
+        {
+          "dir": 3,
+          "angle_deg": 135.0,
+          "step": 2,
+          "drop": 0.5,
+          "file": "gate-135-2.png"
+        },
+        {
+          "dir": 3,
+          "angle_deg": 135.0,
+          "step": 3,
+          "drop": 0.75,
+          "file": "gate-135-3.png"
+        },
+        {
+          "dir": 3,
+          "angle_deg": 135.0,
+          "step": 4,
+          "drop": 1.0,
+          "file": "gate-135-4.png"
+        },
+        {
+          "dir": 4,
+          "angle_deg": 180.0,
+          "step": 0,
+          "drop": 0.0,
+          "file": "gate-180-0.png"
+        },
+        {
+          "dir": 4,
+          "angle_deg": 180.0,
+          "step": 1,
+          "drop": 0.25,
+          "file": "gate-180-1.png"
+        },
+        {
+          "dir": 4,
+          "angle_deg": 180.0,
+          "step": 2,
+          "drop": 0.5,
+          "file": "gate-180-2.png"
+        },
+        {
+          "dir": 4,
+          "angle_deg": 180.0,
+          "step": 3,
+          "drop": 0.75,
+          "file": "gate-180-3.png"
+        },
+        {
+          "dir": 4,
+          "angle_deg": 180.0,
+          "step": 4,
+          "drop": 1.0,
+          "file": "gate-180-4.png"
+        },
+        {
+          "dir": 5,
+          "angle_deg": 225.0,
+          "step": 0,
+          "drop": 0.0,
+          "file": "gate-225-0.png"
+        },
+        {
+          "dir": 5,
+          "angle_deg": 225.0,
+          "step": 1,
+          "drop": 0.25,
+          "file": "gate-225-1.png"
+        },
+        {
+          "dir": 5,
+          "angle_deg": 225.0,
+          "step": 2,
+          "drop": 0.5,
+          "file": "gate-225-2.png"
+        },
+        {
+          "dir": 5,
+          "angle_deg": 225.0,
+          "step": 3,
+          "drop": 0.75,
+          "file": "gate-225-3.png"
+        },
+        {
+          "dir": 5,
+          "angle_deg": 225.0,
+          "step": 4,
+          "drop": 1.0,
+          "file": "gate-225-4.png"
+        },
+        {
+          "dir": 6,
+          "angle_deg": 270.0,
+          "step": 0,
+          "drop": 0.0,
+          "file": "gate-270-0.png"
+        },
+        {
+          "dir": 6,
+          "angle_deg": 270.0,
+          "step": 1,
+          "drop": 0.25,
+          "file": "gate-270-1.png"
+        },
+        {
+          "dir": 6,
+          "angle_deg": 270.0,
+          "step": 2,
+          "drop": 0.5,
+          "file": "gate-270-2.png"
+        },
+        {
+          "dir": 6,
+          "angle_deg": 270.0,
+          "step": 3,
+          "drop": 0.75,
+          "file": "gate-270-3.png"
+        },
+        {
+          "dir": 6,
+          "angle_deg": 270.0,
+          "step": 4,
+          "drop": 1.0,
+          "file": "gate-270-4.png"
+        },
+        {
+          "dir": 7,
+          "angle_deg": 315.0,
+          "step": 0,
+          "drop": 0.0,
+          "file": "gate-315-0.png"
+        },
+        {
+          "dir": 7,
+          "angle_deg": 315.0,
+          "step": 1,
+          "drop": 0.25,
+          "file": "gate-315-1.png"
+        },
+        {
+          "dir": 7,
+          "angle_deg": 315.0,
+          "step": 2,
+          "drop": 0.5,
+          "file": "gate-315-2.png"
+        },
+        {
+          "dir": 7,
+          "angle_deg": 315.0,
+          "step": 3,
+          "drop": 0.75,
+          "file": "gate-315-3.png"
+        },
+        {
+          "dir": 7,
+          "angle_deg": 315.0,
+          "step": 4,
+          "drop": 1.0,
+          "file": "gate-315-4.png"
+        }
+      ]
+    }
+  }
+}

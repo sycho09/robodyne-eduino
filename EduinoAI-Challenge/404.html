@@ -1,0 +1,25 @@
+<!-- 이 파일은 index.html 과 같은 앱 셸이다. 다른 것은 meta[dtc-shell] 값 하나뿐이다.
+     vercel.json 의 rewrite 가 모든 경로를 index.html 로 보내므로 평소에는 쓰이지 않는다.
+     그래도 두는 이유는, rewrite 가 먹지 않는 환경에서 딥링크가 최소한 뜨기는 해야 하기 때문이다.
+     자산 목록이 index.html 과 어긋나면 그 화면만 CSS 없이 뜬다 — 57차에 실제로 그랬다(scout.css 누락).
+     그래서 콜드 캐시 검사가 두 파일의 자산 목록이 같은지 대조한다. 손으로 맞추지 말고 검사를 믿을 것. -->
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="dtc-shell" content="fallback-404" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- 파비콘도 나중에 에셋 슬롯으로 교체한다. 지금은 빈 값으로 404 만 막는다. -->
+  <link rel="icon" href="data:," />
+  <title>Challenge Digital Twin</title>
+  <link rel="stylesheet" href="/src/ui/styles/tokens.css" />
+  <link rel="stylesheet" href="/src/ui/styles/layout.css" />
+  <link rel="stylesheet" href="/src/ui/styles/components.css" />
+  <!-- 57차 — 탐사 화면 전용. 선택자가 전부 .scout 아래에 있어 다른 화면은 타지 않는다. -->
+  <link rel="stylesheet" href="/src/ui/styles/scout.css" />
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

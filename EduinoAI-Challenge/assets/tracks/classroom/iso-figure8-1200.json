@@ -1,0 +1,36 @@
+{
+  "generated_by": "tools/render_iso_scene.py",
+  "image": "iso-figure8-1200.jpg",
+  "image_px": [
+    4902,
+    3350
+  ],
+  "ground_z_mm": 3.0,
+  "track": {
+    "shape": "polyline",
+    "reach_mm": 600,
+    "width_mm": 360
+  },
+  "projection": {
+    "type": "isometric_ortho",
+    "azimuth_deg": 225.0,
+    "elevation_deg": 35.264389682754654,
+    "ortho_width_mm": 4767.596753472001,
+    "origin_px": [
+      2451.0,
+      1677.5179088115692
+    ],
+    "x_axis_px": [
+      0.7270410676002502,
+      -0.4197573632001877
+    ],
+    "y_axis_px": [
+      -0.7270406293272972,
+      -0.41975716352462766
+    ],
+    "z_axis_px": [
+      0.0,
+      -0.8395143270492553
+    ]
+  }
+}

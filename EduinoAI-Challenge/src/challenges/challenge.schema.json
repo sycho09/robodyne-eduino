@@ -1,0 +1,571 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://digital-twin-challenge/schema/challenge.schema.json",
+  "title": "Challenge Manifest",
+  "description": "챌린지는 코드가 아니라 데이터로 추가된다. 이 스키마를 만족하는 JSON 하나 + challenges/index.json 등록 한 줄이면 엔진 코드 수정 없이 챌린지가 늘어난다.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kit_id",
+    "challenge_id",
+    "version",
+    "mode",
+    "title",
+    "scene",
+    "mission",
+    "starter_code",
+    "allowed_api",
+    "limits",
+    "scoring",
+    "rules"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "kit_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "kits/<kit_id>.json 참조. 차량 물리 스펙(차폭·속도·회전율)은 킷이 소유한다."
+    },
+    "challenge_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "mode": {
+      "type": "integer",
+      "enum": [
+        1,
+        2
+      ],
+      "description": "1=주행, 2=색상인식. 이 스키마는 그 둘만 다룬다 — 트랙·랩·채점이 반드시 있어야 하기 때문이다. 3(스마트탐사)은 그 셋이 아예 없어 계약이 다르므로 scout.schema.json 이 따로 소유한다(57차)."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "deprecated": true,
+      "description": "쓰이지 않음(47차 확인) — 엔진도 화면도 읽지 않는다. 이미 있는 챌린지에서 지우지 않되, 새 챌린지에는 넣지 말 것. 설명은 index.json 의 summary 가 보여 준다."
+    },
+    "scene": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "units",
+        "track",
+        "spawn",
+        "checkpoints",
+        "lap"
+      ],
+      "properties": {
+        "units": {
+          "const": "mm",
+          "description": "엔진 좌표계 단위. mm 고정이며 다른 값을 쓸 수 없다. x=오른쪽(+), y=위(+), heading 0°=+x, 반시계(CCW)가 +."
+        },
+        "track": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "shape",
+            "width_mm"
+          ],
+          "properties": {
+            "shape": {
+              "enum": [
+                "square",
+                "polyline"
+              ]
+            },
+            "center_side_mm": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "중심선 정사각형 한 변의 길이. 정사각형의 중심은 원점."
+            },
+            "width_mm": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "노면 폭. 중심선에서 ±width/2 안쪽이 노면이다. 모드1 규칙상 차폭의 3배."
+            },
+            "points": {
+              "type": "array",
+              "minItems": 3,
+              "description": "폴리라인 중심선의 꼭짓점. 닫힌 고리이며 마지막 점은 첫 점과 이어진다. 모든 구간은 축에 평행해야 한다(곡선 금지).",
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        "spawn": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "x",
+            "y",
+            "heading_deg"
+          ],
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            },
+            "heading_deg": {
+              "type": "number",
+              "minimum": -360,
+              "maximum": 360
+            }
+          }
+        },
+        "checkpoints": {
+          "type": "array",
+          "minItems": 2,
+          "description": "진행 방향 판정선. 지정된 방향으로 통과할 때만 인정된다(역주행 통과 불인정).",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "x",
+              "y",
+              "normal_deg",
+              "span_mm"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9_]+$"
+              },
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "normal_deg": {
+                "type": "number",
+                "description": "통과로 인정할 진행 방향(=판정선의 법선). 90°는 +y 방향 통과."
+              },
+              "span_mm": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "판정선의 폭. 보통 트랙 폭과 같게 둔다."
+              }
+            }
+          }
+        },
+        "lap": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "direction",
+            "order",
+            "finish"
+          ],
+          "properties": {
+            "direction": {
+              "enum": [
+                "cw",
+                "ccw"
+              ],
+              "description": "표시·안내용. 실제 판정은 checkpoint 법선이 한다."
+            },
+            "order": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "type": "string"
+              },
+              "description": "통과해야 하는 체크포인트 순서. finish 가 첫 항목이어야 한다."
+            },
+            "finish": {
+              "type": "string",
+              "description": "출발/결승선. 이 선을 처음 통과할 때 랩 계측이 시작되고(아웃랩), 이후 통과할 때마다 1랩이 확정된다."
+            },
+            "require_all": {
+              "type": "boolean",
+              "default": true,
+              "description": "false 면 순서를 무시하고 결승선 통과만으로 랩을 센다(지름길 허용)."
+            }
+          }
+        },
+        "assets": {
+          "type": "object",
+          "description": "에셋 슬롯 참조만 둔다. 실제 이미지 경로는 assets/assets.manifest.json 이 소유한다.",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^slot:[a-z0-9_.-]+$"
+          }
+        },
+        "markers": {
+          "type": "array",
+          "minItems": 1,
+          "description": "모드2 색상 마커. 카메라가 찾는 대상이며, 배경 렌더에도 같은 좌표로 구워진다. 모드1 매니페스트에는 없다.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "x",
+              "y",
+              "color",
+              "size_mm"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "x": {
+                "type": "number",
+                "description": "트랙 좌표(mm)"
+              },
+              "y": {
+                "type": "number",
+                "description": "트랙 좌표(mm)"
+              },
+              "color": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255
+                },
+                "description": "실제 에셋 색. cameraSetTarget 의 목표색과 채널당 허용오차 안에서 일치하면 검출된다."
+              },
+              "size_mm": {
+                "type": "number",
+                "minimum": 1,
+                "description": "마커 지름(mm). cameraArea 의 기준이다."
+              },
+              "asset": {
+                "type": "string",
+                "pattern": "^slot:[a-z0-9_.-]+$"
+              }
+            }
+          }
+        }
+      }
+    },
+    "mission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "laps"
+      ],
+      "properties": {
+        "objective": {
+          "enum": [
+            "complete_lap"
+          ],
+          "deprecated": true,
+          "description": "쓰이지 않음(47차 확인) — 엔진도 화면도 읽지 않는다. 이미 있는 챌린지에서 지우지 않되, 새 챌린지에는 넣지 말 것."
+        },
+        "laps": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "목표 랩 수(안내용). 도달해도 시뮬을 강제 종료하지 않는다."
+        },
+        "metrics": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "source"
+            ],
+            "properties": {
+              "id": {
+                "enum": [
+                  "lap_time",
+                  "best_lap_time",
+                  "offtrack_count",
+                  "lap_count"
+                ]
+              },
+              "source": {
+                "enum": [
+                  "engine.lap.last",
+                  "engine.lap.best",
+                  "engine.lap.count",
+                  "engine.events.offtrack"
+                ],
+                "description": "값은 반드시 엔진이 만든다. 학생 코드나 LLM 이 수치를 생성하지 않는다."
+              },
+              "unit": {
+                "enum": [
+                  "ms",
+                  "count"
+                ]
+              },
+              "label": {
+                "type": "string"
+              }
+            }
+          },
+          "deprecated": true,
+          "description": "쓰이지 않음(47차 확인) — 엔진도 화면도 읽지 않는다. 이미 있는 챌린지에서 지우지 않되, 새 챌린지에는 넣지 말 것."
+        }
+      }
+    },
+    "starter_code": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "language",
+        "source"
+      ],
+      "properties": {
+        "language": {
+          "const": "ino-subset"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "allowed_api": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "이 목록 밖의 호출은 에디터에서 오류로 표시된다. 기본 계층(setMotor 등)과 심화 계층(pinMode/digitalWrite/analogWrite)을 챌린지별로 골라 연다. setup/loop 는 진입점이라 목록과 무관하게 필수다.",
+      "items": {
+        "enum": [
+          "setMotor",
+          "stop",
+          "delay",
+          "moveForward",
+          "moveBackward",
+          "turnLeft",
+          "turnRight",
+          "pinMode",
+          "digitalWrite",
+          "analogWrite",
+          "cameraSetTarget",
+          "cameraFound",
+          "cameraOffset",
+          "cameraArea"
+        ]
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_sim_ticks",
+        "max_catchup_ms",
+        "max_code_bytes",
+        "max_ops_per_tick"
+      ],
+      "properties": {
+        "max_sim_ticks": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "시뮬 시간 상한(tick). 1 tick = 10ms 고정."
+        },
+        "max_catchup_ms": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "한 렌더 프레임에서 시뮬 계산에 쓸 수 있는 실제 작업시간(ms). 이 예산 안에서 밀린 tick 을 몰아서 따라잡기 때문에 프레임레이트가 낮은 기기에서도 초당 100 tick 을 유지한다. 예산을 넘기면 남은 tick 은 다음 프레임으로 넘어갈 뿐이며, tick 수열 자체는 예산과 무관하게 항상 같다(결정론 유지)."
+        },
+        "max_code_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_ops_per_tick": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "한 tick 안에서 허용할 반복문 회전 수. 넘으면 무한 루프로 보고 중단한다."
+        }
+      }
+    },
+    "scoring": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primary"
+      ],
+      "description": "표시 규칙일 뿐 합불 판정이 아니다. 실패 판정·페널티·시도 종료 규칙은 미확정이라 스키마에 자리를 두지 않는다.",
+      "properties": {
+        "primary": {
+          "enum": [
+            "lap_time",
+            "best_lap_time"
+          ]
+        },
+        "order": {
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "deprecated": true,
+          "description": "쓰이지 않음(47차 확인) — 엔진도 화면도 읽지 않는다. 이미 있는 챌린지에서 지우지 않되, 새 챌린지에는 넣지 말 것. 기록은 언제나 작은 값이 좋다."
+        },
+        "display": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": [
+              "lap_time",
+              "best_lap_time",
+              "offtrack_count",
+              "lap_count"
+            ]
+          },
+          "deprecated": true,
+          "description": "쓰이지 않음(47차 확인) — 엔진도 화면도 읽지 않는다. 이미 있는 챌린지에서 지우지 않되, 새 챌린지에는 넣지 말 것. 기록 카드가 무엇을 보여 줄지는 scene.ui 가 정한다."
+        }
+      }
+    },
+    "rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "offtrack",
+        "timeout"
+      ],
+      "description": "시도 종료 규칙. 대상 연령이 낮아 관대하게 둔다. 페널티 가산은 하지 않는다.",
+      "properties": {
+        "offtrack": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "max_events"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "count_only",
+                "count_and_end"
+              ],
+              "description": "count_only 면 세기만 하고 끝내지 않는다."
+            },
+            "max_events": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "이 횟수에 도달하면 시도 종료."
+            },
+            "hint": {
+              "type": "string",
+              "description": "이탈 초과로 끝났을 때 종료 화면에 띄울 안내 한 줄. 없으면 기본 문구를 쓴다."
+            }
+          }
+        },
+        "timeout": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sim_ticks"
+          ],
+          "properties": {
+            "sim_ticks": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "시뮬 시간 상한(tick). 넘으면 시도 종료."
+            }
+          }
+        },
+        "penalty": {
+          "enum": [
+            "none"
+          ],
+          "description": "모드1은 페널티 가산 없음. 모드2·3에서 재검토. 쓰이지 않음(47차 확인) — 엔진도 화면도 읽지 않는다. 이미 있는 챌린지에서 지우지 않되, 새 챌린지에는 넣지 말 것.",
+          "deprecated": true
+        },
+        "respawn": {
+          "type": "boolean",
+          "description": "자동 복귀. 모드1은 false. 쓰이지 않음(47차 확인) — 엔진도 화면도 읽지 않는다. 이미 있는 챌린지에서 지우지 않되, 새 챌린지에는 넣지 말 것.",
+          "deprecated": true
+        },
+        "record_incomplete": {
+          "type": "boolean",
+          "description": "미완주 시도의 랩타임 기록 여부. 모드1은 false(이력에는 사유와 함께 남는다). 쓰이지 않음(47차 확인) — 엔진도 화면도 읽지 않는다. 이미 있는 챌린지에서 지우지 않되, 새 챌린지에는 넣지 말 것.",
+          "deprecated": true
+        },
+        "no_progress": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sim_ticks"
+          ],
+          "description": "정체 규칙(모드2). 이 블록이 없으면 판정 자체를 하지 않는다.",
+          "properties": {
+            "sim_ticks": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "이 tick 동안 min_move_mm 만큼도 못 움직이면 시도 종료."
+            },
+            "min_move_mm": {
+              "type": "number",
+              "minimum": 0,
+              "description": "\"움직였다\"로 볼 최소 이동 거리(mm). 기본 50."
+            },
+            "message": {
+              "type": "string",
+              "description": "종료 화면 제목."
+            },
+            "hint": {
+              "type": "string",
+              "description": "종료 화면에 띄울 조정 안내 한 줄."
+            }
+          }
+        }
+      }
+    },
+    "series": {
+      "type": "string",
+      "description": "같은 시리즈끼리 맵 전환 바에 묶인다. 쓰이지 않음(47차 확인) — 엔진도 화면도 읽지 않는다. 이미 있는 챌린지에서 지우지 않되, 새 챌린지에는 넣지 말 것. 전환 바는 index.json 의 series 를 읽는다.",
+      "deprecated": true
+    },
+    "track_label": {
+      "type": "string",
+      "description": "전환 바에 보이는 짧은 트랙 이름. 쓰이지 않음(47차 확인) — 엔진도 화면도 읽지 않는다. 이미 있는 챌린지에서 지우지 않되, 새 챌린지에는 넣지 말 것. 전환 바는 index.json 의 track_label 을 읽는다.",
+      "deprecated": true
+    },
+    "motor_trim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "left",
+        "right"
+      ],
+      "description": "좌·우 모터 개체차. 바퀴 속도에 곱해지는 고정 계수다. 난수가 아니므로 결정론이 유지된다.",
+      "properties": {
+        "left": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 2
+        },
+        "right": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 2
+        }
+      }
+    },
+    "camera_source": {
+      "enum": [
+        "sim",
+        "webcam"
+      ],
+      "description": "카메라 입력원. 'webcam' 이면 학생의 실제 웹캠을 쓰고 결정론이 성립하지 않는다. 없으면 시뮬 마커(sim)."
+    }
+  }
+}

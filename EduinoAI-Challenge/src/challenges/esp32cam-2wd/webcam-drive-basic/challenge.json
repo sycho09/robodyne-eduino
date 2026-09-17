@@ -1,0 +1,501 @@
+{
+  "$schema": "../challenge.schema.json",
+  "kit_id": "esp32cam-2wd",
+  "challenge_id": "webcam-drive-basic",
+  "version": "2.0.0",
+  "mode": 2,
+  "title": "RC카 색상제어 — 색으로 조종하기",
+  "description": "웹캠에 비친 색 물체가 조종기다. 물체를 좌우로 움직여 RC카를 몰아 코스를 한 바퀴 돈다. 조명이 바뀌면 인식이 흔들리므로 슬라이더로 목표색과 허용 오차를 다시 맞춰야 한다. 코스 벗어남 {{rules.offtrack.max_events}}회 또는 {{derived.timeout_s}}초를 넘기면 끝난다.",
+  "scene": {
+    "units": "mm",
+    "track": {
+      "shape": "square",
+      "center_side_mm": 1200,
+      "width_mm": 360
+    },
+    "theme": "warehouse",
+    "spawn": {
+      "x": -600,
+      "y": 600,
+      "heading_deg": 0
+    },
+    "checkpoints": [
+      {
+        "id": "cp0",
+        "x": 0,
+        "y": 600,
+        "normal_deg": 0,
+        "span_mm": 360
+      },
+      {
+        "id": "cp1",
+        "x": 600,
+        "y": 0,
+        "normal_deg": -90,
+        "span_mm": 360
+      },
+      {
+        "id": "cp2",
+        "x": 0,
+        "y": -600,
+        "normal_deg": 180,
+        "span_mm": 360
+      },
+      {
+        "id": "cp3",
+        "x": -600,
+        "y": 0,
+        "normal_deg": 90,
+        "span_mm": 360
+      }
+    ],
+    "lap": {
+      "direction": "cw",
+      "order": [
+        "cp0",
+        "cp1",
+        "cp2",
+        "cp3"
+      ],
+      "finish": "cp0",
+      "require_all": true
+    },
+    "assets": {
+      "track": "slot:track.square",
+      "car": "slot:car.2wd",
+      "background": "slot:track.iso.square-1200-webcam"
+    },
+    "markers": [
+      {
+        "id": "m0",
+        "x": 900,
+        "y": 480,
+        "color": [
+          187,
+          59,
+          66
+        ],
+        "size_mm": 180,
+        "asset": "slot:marker.red"
+      },
+      {
+        "id": "m1",
+        "x": 480,
+        "y": -900,
+        "color": [
+          187,
+          59,
+          66
+        ],
+        "size_mm": 180,
+        "asset": "slot:marker.red"
+      },
+      {
+        "id": "m2",
+        "x": -900,
+        "y": -480,
+        "color": [
+          187,
+          59,
+          66
+        ],
+        "size_mm": 180,
+        "asset": "slot:marker.red"
+      },
+      {
+        "id": "m3",
+        "x": -480,
+        "y": 900,
+        "color": [
+          187,
+          59,
+          66
+        ],
+        "size_mm": 180,
+        "asset": "slot:marker.red"
+      }
+    ],
+    "summary": "웹캠에 비친 색 물체가 조종기다. 색이 치우친 만큼 바퀴를 줄여 RC카를 몰아 보자",
+    "props": [
+      {
+        "kind": "rack",
+        "x": 1520,
+        "y": 0,
+        "w": 280,
+        "d": 800,
+        "h": 360,
+        "tone": "blue"
+      },
+      {
+        "kind": "rack",
+        "x": -1520,
+        "y": 0,
+        "w": 280,
+        "d": 800,
+        "h": 360,
+        "tone": "blue"
+      },
+      {
+        "kind": "rack",
+        "x": 0,
+        "y": 1520,
+        "w": 800,
+        "d": 280,
+        "h": 360,
+        "tone": "blue"
+      },
+      {
+        "kind": "rack",
+        "x": 0,
+        "y": -1520,
+        "w": 800,
+        "d": 280,
+        "h": 360,
+        "tone": "blue"
+      },
+      {
+        "kind": "paint",
+        "x": 0,
+        "y": 1300,
+        "w": 900,
+        "d": 70,
+        "h": 1,
+        "tone": "yellow"
+      },
+      {
+        "kind": "paint",
+        "x": 0,
+        "y": -1300,
+        "w": 900,
+        "d": 70,
+        "h": 1,
+        "tone": "yellow"
+      },
+      {
+        "kind": "paint",
+        "x": 1300,
+        "y": 0,
+        "w": 70,
+        "d": 900,
+        "h": 1,
+        "tone": "yellow"
+      },
+      {
+        "kind": "paint",
+        "x": -1300,
+        "y": 0,
+        "w": 70,
+        "d": 900,
+        "h": 1,
+        "tone": "yellow"
+      },
+      {
+        "kind": "paint",
+        "x": 1900,
+        "y": 0,
+        "w": 700,
+        "d": 700,
+        "h": 1,
+        "tone": "blue"
+      },
+      {
+        "kind": "paint",
+        "x": -1900,
+        "y": 0,
+        "w": 700,
+        "d": 700,
+        "h": 1,
+        "tone": "green"
+      },
+      {
+        "kind": "forklift",
+        "x": 0,
+        "y": -1900,
+        "w": 760,
+        "d": 520,
+        "h": 360,
+        "tone": "yellow"
+      },
+      {
+        "kind": "pallet",
+        "x": -1900,
+        "y": 0,
+        "w": 500,
+        "d": 420,
+        "h": 130,
+        "tone": "wood"
+      },
+      {
+        "kind": "crate",
+        "x": 1900,
+        "y": 0,
+        "w": 380,
+        "d": 380,
+        "h": 300,
+        "tone": "wood"
+      }
+    ],
+    "car_scale": 1.6,
+    "car_badge": "내 RC카",
+    "trail_points": 260,
+    "trail_arrow_mm": 250,
+    "ui": {
+      "code_panel": true,
+      "editor_theme": "ino",
+      "playback_speed": false,
+      "transport": "top",
+      "submit_label": "종료 & 제출하기",
+      "goal_banner": {
+        "goal": {
+          "label": "이번 챌린지",
+          "text": "16초 안에 완주"
+        },
+        "limit": {
+          "label": "제한 시간",
+          "text": "90초"
+        },
+        "fail": {
+          "label": "실패 조건",
+          "text": "코스 벗어남 3회"
+        },
+        "record": {
+          "label": "기록 인정",
+          "text": "코스 벗어남 0회 완주"
+        }
+      },
+      "advice": {
+        "slowest": "가장 오래 걸린 곳은 {segment} 구간({time}초)입니다. 그 구간의 delay 를 줄여 보세요.",
+        "drift": "이 킷은 좌우 모터 특성이 {gap}% 다릅니다. setMotor 로 한쪽 값을 올려 직진부터 맞춰 보세요.",
+        "offtrack": "{where} 에서 코스를 벗어났습니다. 그 앞 회전의 delay 를 다시 보세요.",
+        "stuck": "{where} 에서 멈춰 있었습니다. PWM 이 데드존({deadzone}) 아래인지 확인해 보세요.",
+        "violation": "{kind} 을(를) {count}번 어겼습니다. 그 구역에서 무엇을 보고 판단했는지 확인해 보세요."
+      },
+      "record_panel": "plain",
+      "hide_cards": [
+        "briefing",
+        "history"
+      ],
+      "columns": 300,
+      "code_columns": 380,
+      "columns_min": 280,
+      "motor_panel": false,
+      "segmentbar_label": "구간",
+      "api_title": "코드 설명",
+      "api_doc": {
+        "setMotor": "두 바퀴에 서로 다른 값을 줍니다. -255~255.",
+        "stop": "두 바퀴를 모두 멈춥니다.",
+        "delay": "지금 상태를 그만큼 유지합니다. 10ms 단위입니다.",
+        "moveForward": "양쪽 바퀴를 같은 값으로 앞으로 돌립니다.",
+        "moveBackward": "양쪽 바퀴를 같은 값으로 뒤로 돌립니다.",
+        "turnLeft": "제자리에서 왼쪽으로 돕니다.",
+        "turnRight": "제자리에서 오른쪽으로 돕니다.",
+        "cameraSetTarget": "찾을 색을 정합니다. 빨강·초록·파랑을 0~255 로 줍니다.",
+        "cameraFound": "그 색이 카메라에 보이면 참입니다.",
+        "cameraOffset": "보이는 색이 화면 어디에 있는지. -100(왼쪽)~+100(오른쪽).",
+        "cameraArea": "보이는 색이 얼마나 큰지. 0~100, 가까울수록 커집니다."
+      },
+      "howto_label": "📖 가이드라인",
+      "words": {
+        "laps": "돈 바퀴"
+      },
+      "compact_transport": true,
+      "submit_code": "WCD",
+      "camera_layout": "row",
+      "right_grow": "record"
+    },
+    "rules": {
+      "summary": "웹캠에 비친 색 물체로 RC카를 조종한다. 조명이 바뀌면 값을 다시 맞춰야 한다.",
+      "steps": [
+        {
+          "image": "slot:guide.webcam-drive-basic.1",
+          "text": "카메라 켜기 — 오른쪽 카메라 시점에서 [카메라 켜기] 를 누릅니다."
+        },
+        {
+          "image": "slot:guide.webcam-drive-basic.2",
+          "text": "색 맞추기 — 조종에 쓸 물체를 비추고 슬라이더로 색을 맞춥니다."
+        },
+        {
+          "image": "slot:guide.webcam-drive-basic.3",
+          "text": "코드에 넣기 — [이 값을 코드에 넣기] 로 setup 에 옮깁니다."
+        },
+        {
+          "image": "slot:guide.webcam-drive-basic.4",
+          "text": "몰아 보기 — [실행] 을 누르고 물체를 움직여 조종해 보세요."
+        }
+      ],
+      "tune": [
+        {
+          "name": "SPEED",
+          "effect": "직진할 때 두 바퀴에 주는 PWM."
+        },
+        {
+          "name": "GAIN",
+          "effect": "색이 치우친 만큼 바퀴를 줄이는 세기. 키우면 더 크게 꺾습니다."
+        },
+        {
+          "name": "DEAD",
+          "effect": "이만큼 작은 치우침은 무시합니다. 키우면 손 떨림에 덜 반응합니다."
+        }
+      ]
+    },
+    "markers_baked": false,
+    "minimap": false
+  },
+  "camera_source": "webcam",
+  "mission": {
+    "objective": "complete_lap",
+    "laps": 1,
+    "metrics": [
+      {
+        "id": "lap_time",
+        "source": "engine.lap.last",
+        "unit": "ms",
+        "label": "현재 랩"
+      },
+      {
+        "id": "best_lap_time",
+        "source": "engine.lap.best",
+        "unit": "ms",
+        "label": "베스트"
+      },
+      {
+        "id": "offtrack_count",
+        "source": "engine.events.offtrack",
+        "unit": "count",
+        "label": "이탈"
+      },
+      {
+        "id": "lap_count",
+        "source": "engine.lap.count",
+        "unit": "count",
+        "label": "완주 랩"
+      }
+    ]
+  },
+  "starter_code": {
+    "language": "ino-subset",
+    "version": 3,
+    "source": "#include \"kit.h\"\n\nint SPEED = {{kit.drive.default_pwm}};\nint GAIN  = {{derived.camera_gain}};\nint DEAD  = {{derived.camera_dead}};\n\nvoid setup() {\n  cameraSetTarget({{derived.camera_r}}, {{derived.camera_g}}, {{derived.camera_b}}, {{derived.camera_tol}});\n  stop();\n  delay(500);\n}\n\nvoid loop() {\n  int off = cameraOffset();\n  if (off > DEAD || off < -DEAD) {\n    int turn = off * GAIN / 100;\n    setMotor(SPEED, SPEED - turn);\n  } else {\n    moveForward(SPEED);\n  }\n  delay(30);\n}"
+  },
+  "allowed_api": [
+    "setMotor",
+    "stop",
+    "delay",
+    "moveForward",
+    "moveBackward",
+    "turnLeft",
+    "turnRight",
+    "cameraSetTarget",
+    "cameraFound",
+    "cameraOffset",
+    "cameraArea"
+  ],
+  "limits": {
+    "max_sim_ticks": 60000,
+    "max_catchup_ms": 20,
+    "max_code_bytes": 8192,
+    "max_ops_per_tick": 200000
+  },
+  "scoring": {
+    "primary": "best_lap_time",
+    "order": "asc",
+    "display": [
+      "lap_time",
+      "best_lap_time",
+      "offtrack_count",
+      "lap_count"
+    ],
+    "penalty": {
+      "offtrack_ticks": 200
+    },
+    "best_requires": {
+      "offtrack": 0,
+      "empty_text": "아직 없음 — 코스를 벗어나지 않고 완주해 보세요"
+    },
+    "goal_ticks": 1600
+  },
+  "rules": {
+    "offtrack": {
+      "mode": "count_and_end",
+      "max_events": 3,
+      "hint": "코너를 지나쳐 나갑니다. NEAR 값을 낮추면 마커를 더 멀리서부터 코너로 인식합니다."
+    },
+    "timeout": {
+      "sim_ticks": 9000
+    },
+    "no_progress": {
+      "sim_ticks": 1000,
+      "min_move_mm": 50,
+      "message": "카메라가 색을 못 찾는 중",
+      "hint": "NEAR 값을 낮추면 마커를 더 멀리서부터 코너로 인식합니다."
+    },
+    "penalty": "none",
+    "respawn": false,
+    "record_incomplete": false
+  },
+  "series": "RC카 색상제어",
+  "track_label": "색으로 조종하기",
+  "solution_code": {
+    "language": "ino-subset",
+    "source": "// [설정] 슬라이더로 찾은 색을 코드에 적고, 꺾는 크기를 맞춘 코드\nint SPEED = {{kit.drive.default_pwm}};\nint GAIN  = {{derived.camera_gain}};\nint DEAD  = {{derived.camera_dead}};\n\n// [준비] 아래 네 숫자는 반드시 슬라이더로 맞춘 값으로 바꿔 적는다\nvoid setup() {\n  cameraSetTarget({{derived.camera_r}}, {{derived.camera_g}}, {{derived.camera_b}}, {{derived.camera_tol}});\n  stop();\n  delay(500);\n}\n\n// [주행] 벗어난 만큼 반대쪽 바퀴를 줄여 꺾는다. 꺾을 때는 속도를 낮춰야 덜 튄다\nvoid loop() {\n  int off = cameraOffset();\n  if (off > DEAD || off < -DEAD) {\n    setMotor(SPEED * 3 / 4, SPEED * 3 / 4 - off * GAIN / 100);\n  } else {\n    moveForward(SPEED);\n  }\n  delay(30);\n}"
+  },
+  "guide": [
+    {
+      "text": "[1단계: 카메라 켜기]\n'카메라 켜기' 버튼을 눌러 카메라를 활성화해주세요.",
+      "target": {
+        "el": "cam-start"
+      }
+    },
+    {
+      "text": "[2단계: 화면 확인]\n활성화된 카메라 영역의 왼쪽은 실제 카메라 시점을, 오른쪽은 색상 인식 결과를 보여줍니다.",
+      "target": {
+        "el": "camview-stages"
+      }
+    },
+    {
+      "text": "[3단계: 색상 맞추기]\nRGB 슬라이더를 조절하여 RC카 조종기가 될 목표 색상을 정교하게 맞춰주세요.",
+      "target": {
+        "el": "camtune"
+      }
+    },
+    {
+      "text": "[4단계: 코드에 반영]\n원하는 색상을 찾았다면 '이 값을 코드에 넣기' 버튼을 눌러 코드에 반영하세요.",
+      "target": {
+        "el": "cam-apply"
+      }
+    },
+    {
+      "text": "[5단계: 코드 확인 및 수정]\n에디터에 색상 값이 잘 적용되었는지 확인하고, 자유롭게 코드를 수정해 보세요.",
+      "target": {
+        "el": "editor-mount"
+      }
+    },
+    {
+      "text": "[6단계: 파라미터 튜닝]\nGAIN 값 등 코드 내의 파라미터를 조절하여 RC카의 조향 민감도를 튜닝해 보세요.",
+      "target": {
+        "anchor": {
+          "find": "int GAIN",
+          "nth": 1
+        }
+      }
+    },
+    {
+      "text": "[7단계: 실행하기]\n모든 준비가 끝났다면 '실행' 버튼을 눌러 코드를 컴파일하고 주행을 시작하세요!",
+      "target": {
+        "el": "go"
+      }
+    },
+    {
+      "text": "[8단계: 기록 확인]\n주행이 완료되면 우측 하단의 기록 패널에서 완주 시간과 페널티 내역을 확인할 수 있습니다.",
+      "target": {
+        "el": "record-plain"
+      }
+    }
+  ],
+  "record": {
+    "fields": [
+      "lap_total",
+      "lap_splits"
+    ]
+  }
+}

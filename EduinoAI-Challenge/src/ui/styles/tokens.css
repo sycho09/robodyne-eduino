@@ -1,0 +1,155 @@
+/*
+ * ui/styles/tokens.css — 디자인 토큰.
+ *
+ * 색·폰트 값은 이 파일에만 둔다. 다른 CSS/JS 는 변수만 참조한다.
+ * 톤(22차): 밝은 플랫폼 대시보드 + 그 안에 박힌 어두운 무대(시뮬 캔버스).
+ *   - UI 토큰(--c-bg / --c-surface / --c-text …)은 밝은 톤이다.
+ *   - 캔버스 위에 얹히는 요소는 --c-stage-* 로 다시 묶어 어두운 톤을 유지한다.
+ *   - 트랙 렌더용 토큰(--c-view-* 아래)은 캔버스 안에서만 쓰이므로 그대로 어둡다.
+ */
+
+:root {
+  /* ---- 색: 표면 (밝은 플랫폼 톤) ---- */
+  --c-bg: #f6f7fb;
+  --c-surface: #ffffff;
+  --c-surface-2: #eff1f6;
+  --c-surface-3: #e7e9f0;
+  --c-line: #e7e9f0;
+  --c-line-strong: #d3d7e2;
+  --c-card-line: #cbd1e0;       /* 무대 블록 안에서도 그대로인 카드 테두리. 밝은 바탕에서 경계가 서야 한다 */
+
+  /* ---- 색: 글자 (대비 4.5:1 이상) ---- */
+  --c-text: #1f2536;
+  --c-text-dim: #5a6178;
+  --c-text-faint: #61687d;
+
+  /* ---- 색: 강조 (플랫폼 레드) ---- */
+  --c-accent: #e83a3a;          /* 면·테두리 */
+  --c-accent-strong: #c42a2a;   /* 밝은 배경 위의 글자 · 흰 글자를 얹는 면 */
+  --c-accent-hover: #a92222;
+  --c-accent-dim: #ffe9e9;      /* 연한 코랄 배경 */
+  --c-on-accent: #ffffff;
+  --c-gauge: #c42a2a;           /* 큰 숫자. 발광 없이 색만으로 읽힌다 */
+  --c-ok: #0f7048;
+  --c-ok-bg: #e2f6ec;
+  --c-warn: #8a5a06;
+  --c-warn-bg: #fbf0da;
+  --c-danger: #c42a2a;
+  --c-danger-bg: #fdeaea;
+
+  /* ---- 색: 어두운 무대 (시뮬 캔버스 위에 얹히는 것들) ---- */
+  --c-stage: #0b1320;
+  --c-stage-2: #131f30;
+  --c-stage-3: #1a2941;
+  --c-stage-line: #22344e;
+  --c-stage-line-strong: #33496a;
+  --c-stage-text: #eaf1fa;
+  --c-stage-text-dim: #a9bad2;
+  --c-stage-text-faint: #8a9cb6;
+  --c-gauge-stage: #ff8f7a;    /* 어두운 무대 위의 큰 숫자. 밝은 배경용 c-gauge 는 여기서 가라앉는다 */
+
+  /* ---- 색: 트랙 뷰 ---- */
+  --c-view-bg: #070a10;        /* 대역 밖(코스 바깥) */
+  --c-view-infield: #070a10;   /* 대역 안쪽. 바깥과 같은 톤이어야 '구멍'이 아니라 바닥으로 읽힌다 */
+  --c-track-surface: #cfd8e6;  /* 주행 대역 = 화면에서 가장 밝은 면 */
+  --c-track-edge: #7c8aa5;
+  --c-track-center: #97a4ba;
+  --c-checkpoint: #5b6c92;
+  --c-checkpoint-label: #aab7cd;
+  --c-tape: #16191d;
+  --c-scrim: rgba(6, 9, 14, 0.82);   /* 대역 밖을 덮는 어둠. 바닥 질감은 남기고 밝기만 낮춘다 */
+  --c-finish: #e5484d;
+  --c-trail: #0f6fd1;
+  --c-car: #16233b;
+  --c-car-front: #34e5ff;
+  --c-car-off: var(--c-danger);
+  --c-car-ring: #6fc0ff;   /* 검정 차체가 어두운 노면에서 묻히지 않게 얹는 얇은 발광 외곽선 */
+  --c-wheel-spin: #ffd66b;  /* 바퀴 회전 표시. 모터별 PWM 만큼 스포크가 돌아간다 */
+  --c-marker: #e0555c;      /* 모드2 색상 마커 (에셋 marker-red 와 같은 계열) */
+  /* 미니 탑뷰는 메인 캔버스와 같은 트랙이다. 바닥·대역·경계·중심선을 메인과 같은 계열로 맞춘다.
+     메인은 프리렌더 배경이라 색을 못 바꾸므로, 맞추는 쪽은 언제나 미니 탑뷰다. */
+  --c-minimap-bg: #73757a;     /* 메인 캔버스의 코스 밖 바닥과 같은 밝기 */
+  --c-minimap-band: var(--c-track-surface);
+  --c-minimap-edge: var(--c-track-edge);
+  --c-minimap-center: var(--c-track-center);
+  --c-minimap-car: var(--c-car);   /* 밝아진 대역 위에서는 어두운 차체가 읽힌다 */
+  --c-camview-bg: #0a0e16;
+  --c-camview-bg-on: #141a26;   /* 검출 중일 때는 화면을 한 단계 밝혀 미검출과 구분한다 */
+  --c-camview-guide: #4c5a72;
+
+  /* ---- 1인칭 뷰 (스마트시티) ---- */
+  /* 1인칭은 메인 화면과 같은 장면을 본다 — 하늘·조도도 같은 낮 톤이어야 한다 */
+  --c-fpv-sky-top: #8fa6c4;
+  --c-fpv-sky-bottom: #c3d0e0;
+  --c-fpv-far: #9aa6b6;
+  --c-fpv-ground: #6f757e;
+  --c-fpv-walk: #b9c0cb;
+  --c-fpv-road: #8e959f;
+  --c-fpv-road-2: #888f99;
+  --c-fpv-lane: #e8ecf2;
+  --c-fpv-hood: #3d434d;
+  --c-fpv-hood-edge: #545b66;
+
+  /* ---- 타이포 ---- */
+  --font-ui: "Pretendard", "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
+  /* 계기판 숫자 전용. 저연령·저숙련 사용자를 위해 판독성 우선(모노/세그먼트 아님) */
+  --font-gauge: "Pretendard", "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --fs-xs: 12px;
+  --fs-sm: 13.5px;
+  --fs-md: 15px;
+  --fs-lg: 17px;
+  --fs-code: 14px;            /* 에디터 전용. 저연령·프로젝터를 기준으로 한 단계 올렸다 */
+  --fs-gauge: 44px;
+  --fs-gauge-sm: 26px;
+  --lh: 1.55;
+
+  /* ---- 간격 · 형태 ---- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --r-sm: 4px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --border: 1px solid var(--c-line);
+  --shadow-card: 0 1px 2px rgba(31, 37, 54, .07), 0 6px 16px rgba(31, 37, 54, .09);
+  --shadow-stage: 0 2px 6px rgba(31, 37, 54, .16), 0 16px 36px rgba(31, 37, 54, .18);
+
+  /* ---- 효과 ---- */
+  --glow-accent: none;      /* 22차: 밝은 배경에서 발광은 쓰지 않는다 */
+  --glow-gauge: none;
+
+  /* ---- 관제 한 벌 (54차) ----
+     하이라이트 바 · 오른쪽 칸 · 시뮬 위 오버레이가 전부 이 여섯 값만 쓴다.
+     한 벌로 묶여 있어야 가운데부터 오른쪽 끝까지가 한 덩어리로 읽힌다. */
+  --c-board-bg: #22262E;      /* 바탕 */
+  --c-board-card: #2A2F38;    /* 카드 */
+  --c-board-line: #39404C;    /* 선 */
+  --c-board-text: #D7DDE6;    /* 글 */
+  --c-board-faint: #8D97A6;   /* 흐린 글 */
+  --c-board-goal: #FF8A8F;    /* 이번 챌린지 값 · 목표 */
+  /* 위에서 본 트랙도 같은 한 벌 안에 들어온다(54차 파트E). */
+  --c-mini-bg: #1B1F26;
+  --c-mini-track: #2B313A;
+  --c-mini-line: #3D444F;
+  /* 시뮬 위에 얹는 반투명 판. 뒤 트랙이 비쳐야 계기가 화면을 가리지 않는다. */
+  --c-glass-bg: rgba(24, 28, 35, .72);
+  --c-glass-line: rgba(255, 255, 255, .10);
+
+  /* ---- 레이아웃 ---- */
+  --pane-left: 470px;
+  --pane-right: 320px;
+  --header-h: 48px;
+}
+
+/* 42차 — 스마트시티 기록 패널(반전). 화면에서 어두운 면은 이 하나뿐이다.
+   다른 챌린지는 이 토큰을 쓰지 않는다. */
+:root {
+  --c-record-bg: #241416;
+  --c-record-line: #3d2529;
+  --c-record-text: #ffffff;
+  --c-record-dim: #d6b6bb;
+  --c-record-cap: #b98d94;
+}

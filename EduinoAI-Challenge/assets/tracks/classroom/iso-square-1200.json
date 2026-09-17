@@ -1,0 +1,36 @@
+{
+  "generated_by": "tools/render_iso_scene.py",
+  "image": "iso-square-1200.jpg",
+  "image_px": [
+    4462,
+    3050
+  ],
+  "ground_z_mm": 3.0,
+  "track": {
+    "shape": "square",
+    "reach_mm": 600.0,
+    "width_mm": 360
+  },
+  "projection": {
+    "type": "isometric_ortho",
+    "azimuth_deg": 225.0,
+    "elevation_deg": 35.264389682754654,
+    "ortho_width_mm": 4339.938572928001,
+    "origin_px": [
+      2231.0,
+      1527.5177583098412
+    ],
+    "x_axis_px": [
+      0.7269942443370819,
+      -0.41973046213388443
+    ],
+    "y_axis_px": [
+      -0.7269941113591194,
+      -0.4197302803397179
+    ],
+    "z_axis_px": [
+      0.0,
+      -0.8394606515765191
+    ]
+  }
+}

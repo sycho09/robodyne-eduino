@@ -1,0 +1,47 @@
+{
+  "kit_id": "esp32cam-2wd",
+  "name": "ESP32-CAM 2WD",
+  "units": "mm",
+  "body": {
+    "width_mm": 120,
+    "length_mm": 96,
+    "width_definition": "좌우 바퀴 바깥면 사이 거리 (프리렌더 스프라이트의 실측 폭과 일치)",
+    "wheel_base_mm": 96
+  },
+  "drive": {
+    "max_speed_mm_s": 450,
+    "deadzone_pwm": 60,
+    "default_pwm": 170,
+    "pwm_max": 255
+  },
+  "assets": {
+    "car": "slot:car.2wd",
+    "car_iso": "slot:car.2wd.iso"
+  },
+  "notes": [
+    "차동구동 모델. 좌·우 PWM 이 곧 바퀴 속도이고 주행·회전은 그 차이에서 나온다.",
+    "max_speed_mm_s 는 PWM 255 일 때의 바퀴 속도. deadzone_pwm 미만은 마찰을 못 이겨 움직이지 않는다.",
+    "wheel_base_mm 96 은 좌우 바퀴 중심 간 거리(프리렌더 실측 기준). 회전 각속도는 (vR-vL)/wheel_base 로 유도된다.",
+    "length_mm 96 은 렌더 전용이며 물리·판정에 관여하지 않는다. 트랙폭 = 차폭 x 3 규칙에 쓰이는 값은 width_mm 뿐이다.",
+    "pins 는 L298N 결선. 심화 계층(analogWrite/digitalWrite)이 이 값을 상수로 노출한다."
+  ],
+  "pins": {
+    "MOTOR_R_PIN_1": 14,
+    "MOTOR_R_PIN_2": 15,
+    "MOTOR_L_PIN_1": 13,
+    "MOTOR_L_PIN_2": 12
+  },
+  "wiring": {
+    "note": "핀 두 개의 조합으로 바퀴 하나의 방향과 세기가 정해진다. 둘 다 값이 있으면 브레이크.",
+    "right": {
+      "pin1": "MOTOR_R_PIN_1",
+      "pin2": "MOTOR_R_PIN_2",
+      "forward": "pin2"
+    },
+    "left": {
+      "pin1": "MOTOR_L_PIN_1",
+      "pin2": "MOTOR_L_PIN_2",
+      "forward": "pin1"
+    }
+  }
+}

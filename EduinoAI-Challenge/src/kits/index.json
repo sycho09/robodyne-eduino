@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "kits": [
+    {
+      "kit_id": "esp32cam-2wd",
+      "name": "ESP32-CAM 2WD",
+      "summary": "원형 아크릴 섀시에 L298N 과 ESP32-CAM 을 얹은 2륜 구동 교구",
+      "spec_path": "esp32cam-2wd.json",
+      "assets": {
+        "thumbnail": "slot:kit.esp32cam-2wd.thumb"
+      }
+    }
+  ]
+}

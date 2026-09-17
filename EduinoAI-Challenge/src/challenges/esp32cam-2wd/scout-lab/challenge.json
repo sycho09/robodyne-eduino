@@ -1,0 +1,370 @@
+{
+  "$schema": "../scout.schema.json",
+  "kit_id": "esp32cam-2wd",
+  "challenge_id": "scout-lab",
+  "version": "1.0.0",
+  "mode": 3,
+  "title": "RC카 스마트탐사 — 교실 탐사대",
+  "description": "실제 RC카를 사람이 몰고, 실제 카메라가 보는 것을 그대로 읽는다. 무대는 교실 바닥이고 대상은 학생이 직접 놓은 물체다. 기록도 순위도 없다 — 남는 것은 탐사 일지와 학습 지표, 그리고 어디까지 갔는지 세 단계뿐이다.",
+  "camera_source": "webcam",
+  "deterministic": false,
+  "deterministic_note": "이 챌린지만 결정론이 성립하지 않는다. 사람이 조종하고 실물 카메라가 입력이기 때문이며, 그것이 이 챌린지의 목적이다. 랩타임 기준값 대상이 아니고 순위도 만들지 않는다. 다른 챌린지의 결정론은 이 예외와 무관하다.",
+  "scene": {
+    "units": "mm",
+    "summary": "카메라로 보고, 배우고, 배운 것으로 알아본다",
+    "ui": {
+      "quad": {
+        "slots": [
+          "raw",
+          "ai",
+          "night",
+          "edge"
+        ],
+        "options": [
+          {
+            "id": "raw",
+            "label": "일반",
+            "sensor": "camera"
+          },
+          {
+            "id": "ai",
+            "label": "객체 인식",
+            "sensor": "camera"
+          },
+          {
+            "id": "thermal",
+            "label": "열화상",
+            "sensor": "mlx90640",
+            "grid": [
+              32,
+              24
+            ]
+          },
+          {
+            "id": "night",
+            "label": "야간 보정",
+            "sensor": "camera",
+            "note": "IR 조명이 아니라 어두운 그림의 밝기를 끌어올린 것입니다."
+          },
+          {
+            "id": "track",
+            "label": "관심점 추적",
+            "sensor": "camera"
+          },
+          {
+            "id": "depth",
+            "label": "깊이 (흐름)",
+            "sensor": "camera"
+          },
+          {
+            "id": "edge",
+            "label": "윤곽선",
+            "sensor": "camera"
+          },
+          {
+            "id": "motion",
+            "label": "움직임",
+            "sensor": "camera"
+          }
+        ],
+        "no_sensor_label": "센서 없음",
+        "no_sensor_note": "이 킷에는 아직 이 센서가 없습니다. 자리와 눈금만 잡아 두었습니다."
+      },
+      "hud": {
+        "crosshair": true,
+        "corners": true,
+        "heading_ticks": true,
+        "heading_note": "추정 방위"
+      },
+      "view_px": [
+        320,
+        240
+      ],
+      "process_px": [
+        160,
+        120
+      ],
+      "sample_px": [
+        30,
+        30
+      ]
+    }
+  },
+  "mission": {
+    "goal": "교실을 돌며 물체를 찾고, 카메라가 본 것으로 그 물체를 구별하는 눈을 만든다.",
+    "no_score": "채점 없음 — 남는 것은 일지 · 학습 지표 · 도달 단계 셋뿐입니다."
+  },
+  "scout": {
+    "classes": {
+      "max": 4,
+      "min_samples": 5
+    },
+    "sharpness_min": 26,
+    "confidence_min": 0.66,
+    "spread_factor": 2.0,
+    "knn_k": 3,
+    "grid": 3,
+    "feature_len": 35,
+    "hist_bins": 8,
+    "palette": [
+      "#3b82f6",
+      "#f59e0b",
+      "#10b981",
+      "#a855f7"
+    ],
+    "box_note": "네모는 아홉 칸 격자 단위로 어림한 자리입니다. 물체의 실제 윤곽이 아닙니다."
+  },
+  "drive": {
+    "forward_mm_s": 52,
+    "reverse_mm_s": 31,
+    "turn_rad_s": 1.9,
+    "path_note": "추정"
+  },
+  "_safety_note": "deadman_ms 는 운영체제의 키 되풀이 시작 지연보다 커야 한다. 윈도우는 그 값을 최대 1초까지 늘릴 수 있어, 그보다 짧게 잡으면 키를 계속 누르고 있는데도 차가 선다. 1200ms 는 그 위에서 가장 짧은 값이다.",
+  "safety": {
+    "deadman_ms": 1200,
+    "estop_key": "Escape",
+    "max_speed_pct": 100,
+    "link_loss_ms": 1500,
+    "labels": {
+      "deadman": "데드맨",
+      "estop": "비상정지",
+      "speed_cap": "속도 상한",
+      "link_loss": "통신 끊김"
+    }
+  },
+  "controls": {
+    "forward": [
+      "ArrowUp",
+      "KeyW"
+    ],
+    "back": [
+      "ArrowDown",
+      "KeyS"
+    ],
+    "left": [
+      "ArrowLeft",
+      "KeyA"
+    ],
+    "right": [
+      "ArrowRight",
+      "KeyD"
+    ],
+    "observe": [
+      "Space"
+    ],
+    "stop": [
+      "Escape"
+    ]
+  },
+  "stages": {
+    "order": [
+      "manual",
+      "table",
+      "code"
+    ],
+    "labels": {
+      "manual": "① 수동 탐사",
+      "table": "② 반응 표",
+      "code": "③ 코드"
+    },
+    "open": {
+      "table": {
+        "min_observations": 5,
+        "needs_model": true
+      },
+      "code": {
+        "table_filled": true
+      }
+    },
+    "locked_mark": "🔒",
+    "otherwise_row": "그 밖에",
+    "table": {
+      "columns": [
+        "무엇을 보면",
+        "무엇을 한다",
+        "속도",
+        "유지(초)"
+      ],
+      "defaults": {
+        "action": "stop",
+        "speed": 120,
+        "hold_s": 2.0
+      },
+      "note": "여기서 정한 것이 그대로 ③의 코드가 됩니다. 표가 원본입니다."
+    },
+    "actions": [
+      {
+        "id": "stop",
+        "label": "멈춘다",
+        "code": "stop();",
+        "uses_speed": false,
+        "hold": true
+      },
+      {
+        "id": "slow",
+        "label": "천천히 간다",
+        "code": "setMotor(60, 60);",
+        "uses_speed": false,
+        "hold": true
+      },
+      {
+        "id": "back",
+        "label": "뒤로 물러난다",
+        "code": "setMotor(-90, -90);",
+        "uses_speed": false,
+        "hold": true
+      },
+      {
+        "id": "left",
+        "label": "왼쪽으로 돈다",
+        "code": "setMotor(-%s, %s);",
+        "uses_speed": true,
+        "hold": true
+      },
+      {
+        "id": "right",
+        "label": "오른쪽으로 돈다",
+        "code": "setMotor(%s, -%s);",
+        "uses_speed": true,
+        "hold": true
+      },
+      {
+        "id": "go",
+        "label": "계속 간다",
+        "code": "setMotor(%s, %s);",
+        "uses_speed": false,
+        "hold": false
+      }
+    ],
+    "otherwise": {
+      "label": "그 밖에",
+      "action_label": "계속 간다",
+      "speed": 150,
+      "code": "setMotor(150, 150);",
+      "why": "배운 것이 하나도 안 보일 때입니다. 코드에서는 else 가 됩니다."
+    },
+    "code": {
+      "var": "seen",
+      "classify_call": "mlClassify()",
+      "begin_call": "mlBegin()",
+      "unknown_value": 0,
+      "note": "표에서 만든 코드입니다. 여기서 고친 것은 표로 돌아가지 않습니다 — 표가 원본입니다."
+    }
+  },
+  "allowed_api": [
+    "setMotor",
+    "stop",
+    "delay",
+    "mlBegin",
+    "mlClassify"
+  ],
+  "limits": {
+    "max_source_bytes": 8000,
+    "max_statements": 400,
+    "camera_hz": 20,
+    "detect_hz": 5
+  },
+  "log": {
+    "empty": "아직 관측이 없습니다. 스페이스바를 누르면 한 줄이 남습니다.",
+    "columns": [
+      "경과",
+      "알아본 것",
+      "확신도",
+      "아홉 칸 색",
+      "명령"
+    ],
+    "unknown": "모름",
+    "no_image": "일지에 사진은 남지 않습니다. 남는 것은 시각·이름·확신도·아홉 칸 평균색·명령뿐입니다."
+  },
+  "path": {
+    "title": "추정 경로",
+    "note": "추정",
+    "explain": "조종 명령을 적분해 그린 추정 경로입니다. 측정한 위치가 아니고 지도를 만든 것도 아닙니다.",
+    "start_label": "출발",
+    "mark_unknown_color": "#8d97a6"
+  },
+  "submit": {
+    "title": "탐사 보고서",
+    "engine_title": "엔진이 채우는 것",
+    "human_title": "직접 쓰는 것",
+    "engine_rows": [
+      "탐사 일지 표",
+      "학습 지표",
+      "도달 단계",
+      "반응 표",
+      "코드 전문"
+    ],
+    "nickname_default": "익명 탐사대",
+    "fields": [
+      {
+        "id": "nickname",
+        "label": "표시 이름",
+        "kind": "text",
+        "placeholder": "익명 탐사대"
+      },
+      {
+        "id": "comment",
+        "label": "한 줄 코멘트",
+        "kind": "text",
+        "placeholder": "무엇을 찾았는지 한 줄로"
+      },
+      {
+        "id": "school",
+        "label": "학교",
+        "kind": "text",
+        "placeholder": ""
+      },
+      {
+        "id": "teacher",
+        "label": "교사명",
+        "kind": "text",
+        "placeholder": ""
+      },
+      {
+        "id": "review",
+        "label": "회고",
+        "kind": "textarea",
+        "placeholder": "무엇이 잘 됐고 무엇이 안 됐는지"
+      },
+      {
+        "id": "share_code",
+        "label": "코드 공개",
+        "kind": "check"
+      }
+    ],
+    "badge": "관측 {{obs}}건 · 클래스 {{cls}}종 · 단계 {{stage}}",
+    "no_photo": "사진은 어디에도 넣지 않습니다. 보고서에 들어가는 것은 숫자와 글자뿐입니다.",
+    "name_note": "표시 이름만 받습니다. 실명을 적지 마세요. 이 브라우저에만 저장됩니다."
+  },
+  "camera_sources": [
+    "webcam",
+    "device"
+  ],
+  "source_labels": {
+    "webcam": "노트북 카메라",
+    "device": "RC카 연결",
+    "sim": "시뮬"
+  },
+  "device": {
+    "stream_port": 81,
+    "stream_path": "/stream",
+    "capture_path": "/capture",
+    "cmd_path": "/cmd",
+    "status_path": "/status",
+    "speed_pwm": 180,
+    "resend_ms": 100,
+    "connect_timeout_ms": 4000,
+    "frame_timeout_ms": 5000,
+    "host_label": "RC카 주소",
+    "host_placeholder": "192.168.4.1",
+    "connect_label": "연결",
+    "hint": "RC카가 켜 둔 와이파이에 붙은 뒤, 시리얼 모니터에 찍힌 주소를 그대로 적으세요.",
+    "errors": {
+      "mixed_content": "이 페이지는 https 인데 RC카는 http 라 브라우저가 막았습니다. 주소창의 자물쇠 → 안전하지 않은 콘텐츠 허용, 또는 http 로 열어 주세요.",
+      "network": "그 주소에 닿지 않습니다. 주소가 맞는지, 이 기기가 RC카와 같은 와이파이에 붙어 있는지 확인하세요.",
+      "cors": "RC카는 응답하는데 브라우저가 읽지 못하게 막았습니다. 펌웨어가 네 주소 모두에 CORS 를 열어야 합니다.",
+      "no_frame": "연결은 됐는데 영상이 오지 않습니다. 카메라 배선과 전원을 확인하세요 — 모터가 돌 때 전압이 떨어지면 카메라가 멎습니다."
+    }
+  }
+}

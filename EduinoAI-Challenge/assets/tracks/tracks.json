@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "tracks": {
+    "classroom": {
+      "id": "classroom",
+      "generated_by": "tools/make_track_textures.py",
+      "slots": {
+        "track.floor": {
+          "file": "floor.png",
+          "tiling": "both",
+          "tile_mm": 600.0,
+          "note": "교실 장판. 주행 대역 채우기에 사용한다."
+        },
+        "track.tape": {
+          "file": "tape-black.png",
+          "tiling": "length",
+          "length_mm": 200.0,
+          "width_mm": 25.0,
+          "tape_mm": 19.0,
+          "note": "검정 절연테이프. 주행 대역 경계선에 사용한다."
+        },
+        "marker.red": {
+          "file": "marker-red.png",
+          "tiling": "none",
+          "size_mm": 60.0,
+          "note": "모드2 색상 마커. 색을 늘릴 때 파일만 추가한다(marker-<색>.png)."
+        },
+        "overlay.light": {
+          "file": "light-overlay.png",
+          "tiling": "none",
+          "note": "상단광 + 비네팅. 씬 위에 별도 레이어로 얹는다."
+        }
+      }
+    }
+  }
+}

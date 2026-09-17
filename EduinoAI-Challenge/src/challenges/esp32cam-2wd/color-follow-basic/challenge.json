@@ -1,0 +1,487 @@
+{
+  "$schema": "../challenge.schema.json",
+  "kit_id": "esp32cam-2wd",
+  "challenge_id": "color-follow-basic",
+  "version": "1.0.0",
+  "mode": 2,
+  "title": "RC카 색상제어 — 색 추적 · 빨강",
+  "description": "변 길이가 1500mm 와 700mm 로 다른 코스다. delay 하나로는 돌 수 없고, 코너마다 선 빨간 마커가 얼마나 커졌는지(cameraArea)를 보고 돌 시점을 잡아야 한다. 이 킷은 좌우 모터 특성이 달라 마커 쪽으로 방향을 맞추며(cameraOffset) 가야 곧게 간다. 이탈 {{rules.offtrack.max_events}}회 · {{derived.timeout_s}}초를 넘기면 시도가 끝난다.",
+  "scene": {
+    "units": "mm",
+    "track": {
+      "shape": "polyline",
+      "points": [
+        [
+          -750,
+          -350
+        ],
+        [
+          750,
+          -350
+        ],
+        [
+          750,
+          350
+        ],
+        [
+          -750,
+          350
+        ]
+      ],
+      "width_mm": 360
+    },
+    "theme": "warehouse",
+    "spawn": {
+      "x": -750,
+      "y": -350,
+      "heading_deg": 0
+    },
+    "checkpoints": [
+      {
+        "id": "cp0",
+        "x": 0,
+        "y": -350,
+        "normal_deg": 0,
+        "span_mm": 360
+      },
+      {
+        "id": "cp1",
+        "x": 750,
+        "y": 0,
+        "normal_deg": 90,
+        "span_mm": 360
+      },
+      {
+        "id": "cp2",
+        "x": 0,
+        "y": 350,
+        "normal_deg": 180,
+        "span_mm": 360
+      },
+      {
+        "id": "cp3",
+        "x": -750,
+        "y": 0,
+        "normal_deg": -90,
+        "span_mm": 360
+      }
+    ],
+    "lap": {
+      "direction": "ccw",
+      "order": [
+        "cp0",
+        "cp1",
+        "cp2",
+        "cp3"
+      ],
+      "finish": "cp0",
+      "require_all": true
+    },
+    "assets": {
+      "track": "slot:track.square",
+      "car": "slot:car.2wd",
+      "background": "slot:track.iso.square-1200-marker"
+    },
+    "markers": [
+      {
+        "id": "m0",
+        "x": 1100,
+        "y": -350,
+        "color": [
+          187,
+          59,
+          66
+        ],
+        "size_mm": 200,
+        "asset": "slot:marker.red"
+      },
+      {
+        "id": "m1",
+        "x": 750,
+        "y": 700,
+        "color": [
+          187,
+          59,
+          66
+        ],
+        "size_mm": 200,
+        "asset": "slot:marker.red"
+      },
+      {
+        "id": "m2",
+        "x": -1100,
+        "y": 350,
+        "color": [
+          187,
+          59,
+          66
+        ],
+        "size_mm": 200,
+        "asset": "slot:marker.red"
+      },
+      {
+        "id": "m3",
+        "x": -750,
+        "y": -700,
+        "color": [
+          187,
+          59,
+          66
+        ],
+        "size_mm": 200,
+        "asset": "slot:marker.red"
+      }
+    ],
+    "camera_view": {
+      "fov_deg": 60,
+      "range_mm": 1200
+    },
+    "summary": "코너마다 빨간 마커가 있다. 카메라로 마커를 보고 돌아, 이탈 없이 한 바퀴를 완주하자",
+    "props": [
+      {
+        "kind": "rack",
+        "x": 1620,
+        "y": 0,
+        "w": 280,
+        "d": 900,
+        "h": 360,
+        "tone": "blue"
+      },
+      {
+        "kind": "rack",
+        "x": -1620,
+        "y": 0,
+        "w": 280,
+        "d": 900,
+        "h": 360,
+        "tone": "blue"
+      },
+      {
+        "kind": "rack",
+        "x": 0,
+        "y": 1500,
+        "w": 900,
+        "d": 280,
+        "h": 360,
+        "tone": "blue"
+      },
+      {
+        "kind": "rack",
+        "x": 0,
+        "y": -1500,
+        "w": 900,
+        "d": 280,
+        "h": 360,
+        "tone": "blue"
+      },
+      {
+        "kind": "paint",
+        "x": -560,
+        "y": 1050,
+        "w": 1000,
+        "d": 70,
+        "h": 1,
+        "tone": "yellow"
+      },
+      {
+        "kind": "paint",
+        "x": 560,
+        "y": 1050,
+        "w": 1000,
+        "d": 70,
+        "h": 1,
+        "tone": "yellow"
+      },
+      {
+        "kind": "paint",
+        "x": -560,
+        "y": -1050,
+        "w": 1000,
+        "d": 70,
+        "h": 1,
+        "tone": "yellow"
+      },
+      {
+        "kind": "paint",
+        "x": 560,
+        "y": -1050,
+        "w": 1000,
+        "d": 70,
+        "h": 1,
+        "tone": "yellow"
+      },
+      {
+        "kind": "paint",
+        "x": 1750,
+        "y": 0,
+        "w": 700,
+        "d": 700,
+        "h": 1,
+        "tone": "blue"
+      },
+      {
+        "kind": "paint",
+        "x": -1750,
+        "y": 0,
+        "w": 700,
+        "d": 700,
+        "h": 1,
+        "tone": "green"
+      },
+      {
+        "kind": "forklift",
+        "x": 0,
+        "y": -1750,
+        "w": 760,
+        "d": 520,
+        "h": 360,
+        "tone": "yellow"
+      },
+      {
+        "kind": "pallet",
+        "x": -1750,
+        "y": 0,
+        "w": 500,
+        "d": 420,
+        "h": 130,
+        "tone": "wood"
+      },
+      {
+        "kind": "crate",
+        "x": 1750,
+        "y": 0,
+        "w": 380,
+        "d": 380,
+        "h": 300,
+        "tone": "wood"
+      },
+      {
+        "kind": "crate",
+        "x": 0,
+        "y": 1750,
+        "w": 320,
+        "d": 300,
+        "h": 260,
+        "tone": "wood"
+      }
+    ],
+    "car_scale": 1.6,
+    "car_badge": "내 RC카",
+    "trail_points": 260,
+    "trail_arrow_mm": 250,
+    "ui": {
+      "code_panel": true,
+      "editor_theme": "ino",
+      "playback_speed": false,
+      "transport": "top",
+      "submit_label": "종료 & 제출하기",
+      "goal_banner": {
+        "goal": {
+          "label": "이번 챌린지",
+          "text": "16초 안에 완주"
+        },
+        "limit": {
+          "label": "제한 시간",
+          "text": "90초"
+        },
+        "fail": {
+          "label": "실패 조건",
+          "text": "코스 벗어남 3회"
+        },
+        "record": {
+          "label": "기록 인정",
+          "text": "코스 벗어남 0회 완주"
+        }
+      },
+      "advice": {
+        "slowest": "가장 오래 걸린 곳은 {segment} 구간({time}초)입니다. 그 구간의 delay 를 줄여 보세요.",
+        "drift": "이 킷은 좌우 모터 특성이 {gap}% 다릅니다. setMotor 로 한쪽 값을 올려 직진부터 맞춰 보세요.",
+        "offtrack": "{where} 에서 코스를 벗어났습니다. 그 앞 회전의 delay 를 다시 보세요.",
+        "stuck": "{where} 에서 멈춰 있었습니다. PWM 이 데드존({deadzone}) 아래인지 확인해 보세요.",
+        "violation": "{kind} 을(를) {count}번 어겼습니다. 그 구역에서 무엇을 보고 판단했는지 확인해 보세요."
+      },
+      "record_panel": "plain",
+      "hide_cards": [
+        "briefing",
+        "history"
+      ],
+      "columns": 300,
+      "code_columns": 380,
+      "columns_min": 280,
+      "motor_panel": false,
+      "segmentbar_label": "구간",
+      "api_title": "코드 설명",
+      "api_doc": {
+        "setMotor": "두 바퀴에 서로 다른 값을 줍니다. -255~255.",
+        "stop": "두 바퀴를 모두 멈춥니다.",
+        "delay": "지금 상태를 그만큼 유지합니다. 10ms 단위입니다.",
+        "moveForward": "양쪽 바퀴를 같은 값으로 앞으로 돌립니다.",
+        "moveBackward": "양쪽 바퀴를 같은 값으로 뒤로 돌립니다.",
+        "turnLeft": "제자리에서 왼쪽으로 돕니다.",
+        "turnRight": "제자리에서 오른쪽으로 돕니다.",
+        "cameraSetTarget": "찾을 색을 정합니다. 빨강·초록·파랑을 0~255 로 줍니다.",
+        "cameraFound": "그 색이 카메라에 보이면 참입니다.",
+        "cameraOffset": "보이는 색이 화면 어디에 있는지. -100(왼쪽)~+100(오른쪽).",
+        "cameraArea": "보이는 색이 얼마나 큰지. 0~100, 가까울수록 커집니다."
+      },
+      "howto_label": "📖 가이드라인",
+      "words": {
+        "laps": "돈 바퀴"
+      },
+      "compact_transport": true,
+      "submit_code": "CFR",
+      "right_grow": "minimap"
+    },
+    "rules": {
+      "summary": "코너마다 놓인 빨간 마커를 카메라로 보고 돈다. 변 길이가 서로 달라 delay 로는 못 맞추고, 마커 크기로 코너를 알아채야 한다.",
+      "steps": [
+        {
+          "image": "slot:guide.color-follow-basic.1",
+          "text": "색 정하기 — setup 의 cameraSetTarget 으로 찾을 색을 정합니다."
+        },
+        {
+          "image": "slot:guide.color-follow-basic.2",
+          "text": "마커 찾기 — cameraFound() 가 참이면 마커가 보이는 것입니다."
+        },
+        {
+          "image": "slot:guide.color-follow-basic.3",
+          "text": "돌 때 정하기 — cameraArea() 가 NEAR 를 넘으면 코너가 가까운 것입니다."
+        },
+        {
+          "image": "slot:guide.color-follow-basic.4",
+          "text": "줄이기 — NEAR 를 키우면 바짝 붙어 돌고, 줄이면 일찍 돕니다."
+        }
+      ],
+      "tune": [
+        {
+          "name": "SPEED",
+          "effect": "직진할 때 두 바퀴에 주는 PWM."
+        },
+        {
+          "name": "TURN",
+          "effect": "제자리에서 돌 때 주는 PWM."
+        },
+        {
+          "name": "TURN_MS",
+          "effect": "한 번 돌 때 도는 시간(ms)."
+        },
+        {
+          "name": "GAIN",
+          "effect": "마커 쪽으로 방향을 맞추는 세기. 키우면 더 크게 꺾습니다."
+        },
+        {
+          "name": "NEAR",
+          "effect": "마커가 이만큼 커지면 코너로 봅니다. 키우면 더 바짝 붙어서 돌고, 줄이면 더 일찍 돕니다."
+        }
+      ]
+    }
+  },
+  "mission": {
+    "objective": "complete_lap",
+    "laps": 1,
+    "metrics": [
+      {
+        "id": "lap_time",
+        "source": "engine.lap.last",
+        "unit": "ms",
+        "label": "현재 랩"
+      },
+      {
+        "id": "best_lap_time",
+        "source": "engine.lap.best",
+        "unit": "ms",
+        "label": "베스트"
+      },
+      {
+        "id": "offtrack_count",
+        "source": "engine.events.offtrack",
+        "unit": "count",
+        "label": "이탈"
+      },
+      {
+        "id": "lap_count",
+        "source": "engine.lap.count",
+        "unit": "count",
+        "label": "완주 랩"
+      }
+    ]
+  },
+  "starter_code": {
+    "language": "ino-subset",
+    "version": 3,
+    "source": "#include \"kit.h\"\n\nint SPEED = {{kit.drive.default_pwm}};\nint TURN  = {{derived.spin_pwm}};\nint TURN_MS = {{derived.spin90_ms}};\nint GAIN  = 60;\nint NEAR  = 25;\n\nvoid setup() {\n  cameraSetTarget(187, 59, 66);\n  stop();\n  delay(500);\n}\n\nvoid loop() {\n  int area = 0;\n  if (cameraFound()) area = cameraArea();\n  if (area >= NEAR) {\n    turnLeft(TURN);\n    delay(TURN_MS);\n  } else if (cameraFound()) {\n    int off = cameraOffset();\n    int turn = off * GAIN / 100;\n    setMotor(SPEED + turn, SPEED - turn);\n    delay(20);\n  } else {\n    moveForward(SPEED);\n    delay(20);\n  }\n}"
+  },
+  "allowed_api": [
+    "setMotor",
+    "stop",
+    "delay",
+    "moveForward",
+    "moveBackward",
+    "turnLeft",
+    "turnRight",
+    "cameraSetTarget",
+    "cameraFound",
+    "cameraOffset",
+    "cameraArea"
+  ],
+  "camera_source": "sim",
+  "limits": {
+    "max_sim_ticks": 60000,
+    "max_catchup_ms": 20,
+    "max_code_bytes": 8192,
+    "max_ops_per_tick": 200000
+  },
+  "scoring": {
+    "primary": "best_lap_time",
+    "order": "asc",
+    "display": [
+      "lap_time",
+      "best_lap_time",
+      "offtrack_count",
+      "lap_count"
+    ],
+    "penalty": {
+      "offtrack_ticks": 200
+    },
+    "best_requires": {
+      "offtrack": 0,
+      "empty_text": "아직 없음 — 코스를 벗어나지 않고 완주해 보세요"
+    },
+    "goal_ticks": 1600
+  },
+  "rules": {
+    "offtrack": {
+      "mode": "count_and_end",
+      "max_events": 3,
+      "hint": "NEAR 가 작으면 코너보다 한참 앞에서 돕니다. 마커가 코너에 닿을 때의 크기까지 올려 보세요."
+    },
+    "timeout": {
+      "sim_ticks": 9000
+    },
+    "no_progress": {
+      "sim_ticks": 1000,
+      "min_move_mm": 50,
+      "message": "마커를 놓치고 제자리를 맴돌고 있습니다",
+      "hint": "NEAR 가 너무 크면 코너를 지나쳐 마커를 잃습니다."
+    },
+    "penalty": "none",
+    "respawn": false,
+    "record_incomplete": false
+  },
+  "series": "RC카 색상제어",
+  "track_label": "색 추적 · 빨강",
+  "motor_trim": {
+    "left": 1.0,
+    "right": 0.977
+  },
+  "solution_code": {
+    "language": "ino-subset",
+    "source": "// [설정] NEAR 를 코너에 닿는 크기로 맞춘 코드\n//   마커는 코너를 지나 {{derived.marker_ahead_mm}}mm 앞에 서 있다.\n//   그 거리에서 마커가 화면에서 차지하는 크기가 {{derived.marker_near_area}} 이다.\nint SPEED = {{kit.drive.default_pwm}};\nint TURN  = {{derived.spin_pwm}};\nint TURN_MS = {{derived.spin90_ms}};\nint GAIN  = 60;\nint NEAR  = {{derived.marker_near_area}};   // 코너에 닿는 순간의 크기\n\n// [준비]\nvoid setup() {\n  cameraSetTarget(187, 59, 66);\n  stop();\n  delay(500);\n}\n\n// [주행] 이 킷은 좌우 모터 특성이 달라 그냥 두면 휜다.\n// 마커가 화면 가운데 오도록 좌우 바퀴를 조금씩 다르게 주는 것이 핵심이다.\nvoid loop() {\n  if (cameraFound() && cameraArea() >= NEAR) {\n    turnLeft(TURN);\n    delay(TURN_MS);\n  } else if (cameraFound()) {\n    int off = cameraOffset();\n    setMotor(SPEED + off * GAIN / 100, SPEED - off * GAIN / 100);\n    delay(20);\n  } else {\n    moveForward(SPEED);\n    delay(20);\n  }\n}"
+  },
+  "record": {
+    "fields": [
+      "lap_total",
+      "lap_splits"
+    ]
+  }
+}

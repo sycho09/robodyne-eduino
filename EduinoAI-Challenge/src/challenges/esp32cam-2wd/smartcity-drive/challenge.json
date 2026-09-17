@@ -1,0 +1,755 @@
+{
+  "$schema": "../challenge.schema.json",
+  "kit_id": "esp32cam-2wd",
+  "challenge_id": "smartcity-drive",
+  "version": "1.1.0",
+  "mode": 2,
+  "title": "RC카 테마학습제어 — 스마트시티",
+  "description": "도심 한 바퀴를 도는 동안 {{derived.decision_count}}곳의 상황을 만난다. 여섯 상황은 언제 달려도 같은 자리에서 같은 순서로 벌어진다 — 신호 초록, 곧 빨강, 사람 건넘, 차단기 내림, 사람 튀어나옴, 신호 초록. 운이 아니라 무엇을 배웠는지가 기록을 가른다. 거리센서는 없다. 보행자와 차단기도 카메라로 보고 알아봐야 하므로 학습 샘플에 그 장면을 담아 두지 않으면 지나쳐 버린다. 조향은 차가 알아서 한다 — 정할 것은 속도다. 서행 제한은 {{derived.slow_limit_mm_s}}mm/s, 정지는 {{derived.stop_hold_s}}초 이상 서 있어야 하고 보행자·차단기 앞에서는 길이 열릴 때까지 기다려야 한다. 코스를 벗어나면 한 번에 {{derived.offtrack_penalty_s}}초가 기록에 더해진다.",
+  "camera_source": "webcam",
+  "scene": {
+    "units": "mm",
+    "autopilot": true,
+    "track": {
+      "shape": "polyline",
+      "width_mm": 360,
+      "points": [
+        [
+          -1800,
+          1200
+        ],
+        [
+          1800,
+          1200
+        ],
+        [
+          1800,
+          -1200
+        ],
+        [
+          -1800,
+          -1200
+        ]
+      ]
+    },
+    "spawn": {
+      "x": -900,
+      "y": 1200,
+      "heading_deg": 0
+    },
+    "checkpoints": [
+      {
+        "id": "cp0",
+        "x": 0,
+        "y": 1200,
+        "normal_deg": 0,
+        "span_mm": 360
+      },
+      {
+        "id": "cp1",
+        "x": 1800,
+        "y": 0,
+        "normal_deg": -90,
+        "span_mm": 360
+      },
+      {
+        "id": "cp2",
+        "x": 0,
+        "y": -1200,
+        "normal_deg": 180,
+        "span_mm": 360
+      },
+      {
+        "id": "cp3",
+        "x": -1800,
+        "y": 0,
+        "normal_deg": 90,
+        "span_mm": 360
+      }
+    ],
+    "lap": {
+      "direction": "cw",
+      "order": [
+        "cp0",
+        "cp1",
+        "cp2",
+        "cp3"
+      ],
+      "finish": "cp0",
+      "require_all": true
+    },
+    "decisions": [
+      {
+        "id": "p1",
+        "label": "1구간 신호",
+        "x": 1000,
+        "y": 1200,
+        "expect": "signal",
+        "zone_mm": 600,
+        "marker": "signal",
+        "script": {
+          "trigger_mm": 1500,
+          "before": "green",
+          "signal": [
+            {
+              "color": "green"
+            }
+          ]
+        },
+        "chip": "앞 신호"
+      },
+      {
+        "id": "p2",
+        "label": "2구간 신호",
+        "x": 1800,
+        "y": 200,
+        "expect": "signal",
+        "zone_mm": 600,
+        "marker": "signal",
+        "script": {
+          "trigger_mm": 1500,
+          "before": "green",
+          "signal": [
+            {
+              "color": "yellow",
+              "ticks": 70
+            },
+            {
+              "color": "red",
+              "ticks": 580
+            },
+            {
+              "color": "green"
+            }
+          ]
+        },
+        "chip": "앞 신호"
+      },
+      {
+        "id": "p3",
+        "label": "3구간 횡단보도",
+        "x": 1400,
+        "y": -1200,
+        "expect": "situation",
+        "zone_mm": 600,
+        "marker": "crosswalk",
+        "watch": [
+          "w1"
+        ],
+        "chip": "횡단보도"
+      },
+      {
+        "id": "p4",
+        "label": "4구간 건널목",
+        "x": -400,
+        "y": -1200,
+        "expect": "situation",
+        "zone_mm": 600,
+        "marker": "crosswalk",
+        "watch": [
+          "g1"
+        ],
+        "chip": "건널목"
+      },
+      {
+        "id": "p5",
+        "label": "5구간 횡단보도",
+        "x": -1800,
+        "y": -800,
+        "expect": "situation",
+        "zone_mm": 600,
+        "marker": "crosswalk",
+        "watch": [
+          "w2"
+        ],
+        "chip": "횡단보도"
+      },
+      {
+        "id": "p6",
+        "label": "6구간 신호",
+        "x": -1800,
+        "y": 1000,
+        "expect": "signal",
+        "zone_mm": 600,
+        "marker": "signal",
+        "script": {
+          "trigger_mm": 1500,
+          "before": "green",
+          "signal": [
+            {
+              "color": "green"
+            }
+          ]
+        },
+        "chip": "앞 신호"
+      }
+    ],
+    "assets": {
+      "track": "slot:track.square",
+      "car": "slot:car.2wd",
+      "background": "slot:track.iso.smartcity"
+    },
+    "minimap": false,
+    "trail_arrow_mm": 250,
+    "layout": "dashboard",
+    "city": [
+      {
+        "sprite": "tree",
+        "x": -1500,
+        "y": 1610
+      },
+      {
+        "sprite": "tree",
+        "x": -600,
+        "y": 1610
+      },
+      {
+        "sprite": "building.b",
+        "x": -600,
+        "y": 2280
+      },
+      {
+        "sprite": "tree",
+        "x": 300,
+        "y": 1610
+      },
+      {
+        "sprite": "sign",
+        "x": 300,
+        "y": 820
+      },
+      {
+        "sprite": "tree",
+        "x": 1200,
+        "y": 1610
+      },
+      {
+        "sprite": "tree",
+        "x": 2210,
+        "y": 900
+      },
+      {
+        "sprite": "tree",
+        "x": 2210,
+        "y": 0
+      },
+      {
+        "sprite": "building.c",
+        "x": 2880,
+        "y": 0
+      },
+      {
+        "sprite": "tree",
+        "x": 2210,
+        "y": -900
+      },
+      {
+        "sprite": "sign",
+        "x": 1420,
+        "y": -900
+      },
+      {
+        "sprite": "tree",
+        "x": 1500,
+        "y": -1610
+      },
+      {
+        "sprite": "tree",
+        "x": 600,
+        "y": -1610
+      },
+      {
+        "sprite": "building.a",
+        "x": 600,
+        "y": -2280
+      },
+      {
+        "sprite": "tree",
+        "x": -300,
+        "y": -1610
+      },
+      {
+        "sprite": "sign",
+        "x": -300,
+        "y": -820
+      },
+      {
+        "sprite": "tree",
+        "x": -1200,
+        "y": -1610
+      },
+      {
+        "sprite": "tree",
+        "x": -2210,
+        "y": -900
+      },
+      {
+        "sprite": "tree",
+        "x": -2210,
+        "y": 0
+      },
+      {
+        "sprite": "building.b",
+        "x": -2880,
+        "y": 0
+      },
+      {
+        "sprite": "tree",
+        "x": -2210,
+        "y": 900
+      },
+      {
+        "sprite": "sign",
+        "x": -1420,
+        "y": 900
+      }
+    ],
+    "obstacles": [
+      {
+        "id": "w1",
+        "kind": "pedestrian",
+        "label": "3구간 횡단보도",
+        "sprite": "pedestrian",
+        "requires": "slow",
+        "hit_mm": 0,
+        "from": [
+          1400,
+          -1540
+        ],
+        "to": [
+          1400,
+          -860
+        ],
+        "period_ticks": 1700,
+        "phase_ticks": 0,
+        "zone_mm": 500,
+        "script": {
+          "trigger_mm": 1500
+        }
+      },
+      {
+        "id": "g1",
+        "kind": "crossing_gate",
+        "label": "4구간 건널목",
+        "sprite": "barrier",
+        "x": -400,
+        "y": -1200,
+        "down_ticks": 700,
+        "up_ticks": 4000,
+        "phase_ticks": 0,
+        "zone_mm": 500,
+        "script": {
+          "trigger_mm": 1500
+        }
+      },
+      {
+        "id": "w2",
+        "kind": "pedestrian",
+        "label": "5구간 횡단보도",
+        "sprite": "pedestrian",
+        "from": [
+          -2180,
+          -800
+        ],
+        "to": [
+          -1420,
+          -800
+        ],
+        "period_ticks": 1900,
+        "phase_ticks": 0,
+        "zone_mm": 500,
+        "script": {
+          "trigger_mm": 1500
+        }
+      }
+    ],
+    "camera_view": {
+      "fov_deg": 90,
+      "range_mm": 1500
+    },
+    "situation": {
+      "priority": [
+        "stop",
+        "slow",
+        "go"
+      ],
+      "base": "go",
+      "signal": {
+        "green": "go",
+        "yellow": "slow",
+        "red": "stop"
+      },
+      "obstacle": {
+        "pedestrian": "stop",
+        "crossing_gate": "stop"
+      }
+    },
+    "chase": {
+      "view_width_mm": 3400,
+      "ahead_mm": 380,
+      "aim_y": 0.58
+    },
+    "summary": "카메라로 신호·사람·차단기를 알아보고, 규칙을 어기지 않고 가장 빠르게 한 바퀴를 돌자",
+    "ui": {
+      "code_panel": false,
+      "playback_speed": false,
+      "transport": "top",
+      "submit_label": "종료 & 제출하기",
+      "goal_banner": {
+        "goal": {
+          "label": "이번 챌린지",
+          "text": "45초 안에 완주"
+        },
+        "limit": {
+          "label": "제한 시간",
+          "text": "90초"
+        },
+        "fail": {
+          "label": "실패 조건",
+          "text": "길 벗어남 3회"
+        },
+        "record": {
+          "label": "기록 인정",
+          "text": "규칙 위반 0으로 완주"
+        }
+      },
+      "advice": {
+        "slowest": "가장 오래 걸린 곳은 {segment} 구간({time}초)입니다. 그 구간의 delay 를 줄여 보세요.",
+        "drift": "이 킷은 좌우 모터 특성이 {gap}% 다릅니다. setMotor 로 한쪽 값을 올려 직진부터 맞춰 보세요.",
+        "offtrack": "{where} 에서 코스를 벗어났습니다. 그 앞 회전의 delay 를 다시 보세요.",
+        "stuck": "{where} 에서 멈춰 있었습니다. PWM 이 데드존({deadzone}) 아래인지 확인해 보세요.",
+        "violation": "{kind} 을(를) {count}번 어겼습니다. 그 구역에서 무엇을 보고 판단했는지 확인해 보세요."
+      },
+      "record_panel": "plain",
+      "reveal_expect": false,
+      "bg_layer": true,
+      "camera_hz": 20,
+      "columns": 296,
+      "columns_min": 260,
+      "hide_cards": [
+        "briefing",
+        "eventlog",
+        "history"
+      ],
+      "words": {
+        "offtrack": "길 벗어남",
+        "laps": "돈 바퀴",
+        "violations": "규칙 위반"
+      },
+      "chips": {
+        "max": 2,
+        "range_mm": 2600,
+        "ahead_only": true
+      },
+      "howto_label": "📖 가이드라인",
+      "coursebar_label": "이번 코스 상황",
+      "step_labels": [
+        "카메라",
+        "고르기",
+        "담기",
+        "학습"
+      ],
+      "submit_code": "SCT",
+      "right_grow": "camera"
+    },
+    "speed_control": {
+      "var": "SPEED",
+      "label": "RC카 속도",
+      "min": 190,
+      "max": 255,
+      "step": 5,
+      "default": 210,
+      "note": "속도를 올리면 기록이 줄지만, 신호를 늦게 알아채거나 길을 벗어나기 쉬워요"
+    },
+    "ambient": [
+      {
+        "id": "a1",
+        "from": [
+          -1500,
+          1620
+        ],
+        "to": [
+          -200,
+          1620
+        ],
+        "period_ticks": 2600,
+        "phase_ticks": 0
+      },
+      {
+        "id": "a2",
+        "from": [
+          900,
+          1620
+        ],
+        "to": [
+          1700,
+          1620
+        ],
+        "period_ticks": 1800,
+        "phase_ticks": 400
+      },
+      {
+        "id": "a3",
+        "from": [
+          2160,
+          700
+        ],
+        "to": [
+          2160,
+          -500
+        ],
+        "period_ticks": 2400,
+        "phase_ticks": 900
+      },
+      {
+        "id": "a4",
+        "from": [
+          600,
+          -1620
+        ],
+        "to": [
+          -1100,
+          -1620
+        ],
+        "period_ticks": 3000,
+        "phase_ticks": 1500
+      },
+      {
+        "id": "a5",
+        "from": [
+          -2160,
+          -300
+        ],
+        "to": [
+          -2160,
+          700
+        ],
+        "period_ticks": 2200,
+        "phase_ticks": 600
+      },
+      {
+        "id": "a6",
+        "from": [
+          1700,
+          840
+        ],
+        "to": [
+          1700,
+          -900
+        ],
+        "period_ticks": 3400,
+        "phase_ticks": 200
+      }
+    ],
+    "rules": {
+      "summary": "학습한 모델로 신호와 횡단보도를 읽는다. 위반 없이 빠르게 도는 것이 목표다.",
+      "steps": [
+        {
+          "image": "slot:guide.smartcity-drive.1",
+          "text": "카메라 켜기 — 왼쪽 위 [카메라 켜기] 를 누르고 브라우저가 묻는 카메라 사용을 허용해 주세요. 영상은 저장되지 않고, 화면 밖으로 나가지도 않아요."
+        },
+        {
+          "image": "slot:guide.smartcity-drive.2",
+          "text": "담을 칸 고르기 — 정지 · 서행 · 진행 세 칸 중 하나를 눌러 고릅니다. 고른 칸에 예시가 담깁니다."
+        },
+        {
+          "image": "slot:guide.smartcity-drive.3",
+          "text": "데이터 수집 — 그 칸에 해당하는 그림을 카메라에 비추고 [이 장면 담기] 를 여러 번 누릅니다. 한 칸에 5장 이상 필요해요."
+        },
+        {
+          "image": "slot:guide.smartcity-drive.4",
+          "text": "학습하기 — 세 칸이 모두 5장을 넘으면 [학습하기] 를 누릅니다. 학습이 끝나면 [주행 시작] 으로 한 바퀴를 돌려 보세요."
+        }
+      ],
+      "tune": [
+        {
+          "name": "SPEED",
+          "effect": "진행일 때 주는 PWM."
+        },
+        {
+          "name": "SLOW_SPEED",
+          "effect": "서행일 때 주는 PWM."
+        },
+        {
+          "name": "STOP_MS",
+          "effect": "정지 판단에서 멈춰 있는 시간(ms)."
+        },
+        {
+          "name": "SURE",
+          "effect": "이 확신도 아래면 모른다고 봅니다. 키우면 더 조심스러워집니다."
+        }
+      ]
+    }
+  },
+  "ml": {
+    "classes": [
+      "정지",
+      "서행",
+      "진행"
+    ],
+    "feedback": {
+      "none": "먼저 [학습] 탭에서 세 가지를 학습해 주세요.",
+      "weak": "아직 자주 틀려요. 각 칸에 샘플을 더 담아 보세요. 보행자와 차단기 장면도 [정지] 칸에 담았나요?",
+      "overfit": "학습 점수는 높은데 실제로는 자주 틀렸어요. 다른 각도·밝기로도 담아 보세요.",
+      "good": "학습한 대로 잘 맞혔어요."
+    }
+  },
+  "mission": {
+    "objective": "complete_lap",
+    "laps": 1,
+    "metrics": [
+      {
+        "id": "lap_time",
+        "source": "engine.lap.last",
+        "unit": "ms",
+        "label": "현재 랩"
+      },
+      {
+        "id": "best_lap_time",
+        "source": "engine.lap.best",
+        "unit": "ms",
+        "label": "베스트"
+      },
+      {
+        "id": "offtrack_count",
+        "source": "engine.events.offtrack",
+        "unit": "count",
+        "label": "이탈"
+      },
+      {
+        "id": "lap_count",
+        "source": "engine.lap.count",
+        "unit": "count",
+        "label": "완주 랩"
+      }
+    ]
+  },
+  "starter_code": {
+    "language": "ino-subset",
+    "version": 3,
+    "source": "#include \"kit.h\"\n\nint SPEED      = {{kit.drive.default_pwm}};\nint SLOW_SPEED = {{derived.slow_pwm}};\nint STOP_MS    = {{derived.stop_hold_ms}};\nint SURE       = 60;\nvoid setup() {\n  mlBegin();\n  stop();\n  delay(500);\n}\n\nvoid loop() {\n  int what = mlClassify();\n  int sure = mlConfidence();\n  if (sure < SURE) what = 0;\n  if (what == 1) {\n    stop();\n    delay(STOP_MS);\n  } else if (what == 2) {\n    moveForward(SLOW_SPEED);\n  } else {\n    moveForward(SPEED);\n  }\n  delay(30);\n}"
+  },
+  "allowed_api": [
+    "setMotor",
+    "stop",
+    "delay",
+    "moveForward",
+    "mlBegin",
+    "mlClassify",
+    "mlConfidence"
+  ],
+  "limits": {
+    "max_sim_ticks": 60000,
+    "max_catchup_ms": 20,
+    "max_code_bytes": 8192,
+    "max_ops_per_tick": 200000
+  },
+  "scoring": {
+    "primary": "best_lap_time",
+    "order": "asc",
+    "display": [
+      "lap_time",
+      "best_lap_time",
+      "offtrack_count",
+      "lap_count"
+    ],
+    "penalty": {
+      "offtrack_ticks": 200
+    },
+    "best_requires": {
+      "violations": 0,
+      "empty_text": "아직 없음 — 규칙 위반 0으로 완주해 보세요"
+    },
+    "goal_ticks": 4500
+  },
+  "rules": {
+    "offtrack": {
+      "mode": "count_and_end",
+      "max_events": 3,
+      "hint": "조향은 차가 맡습니다. 속도를 너무 올리면 코너에서 밀려납니다. SPEED 를 조금 낮춰 보세요."
+    },
+    "timeout": {
+      "sim_ticks": 9000
+    },
+    "decision": {
+      "stop_hold_ticks": 100,
+      "slow_limit_mm_s": 210,
+      "penalty_ticks": 0,
+      "react_ticks": 40
+    },
+    "penalty": "none",
+    "respawn": false,
+    "record_incomplete": false,
+    "no_progress": {
+      "sim_ticks": 900,
+      "message": "앞으로 나아가지 못하고 있습니다.",
+      "hint": "정지 표지를 너무 일찍 보여 주면 구역 앞에서 멈춰 버립니다. 화면 위 남은 거리를 보고 구역에 들어간 뒤에 보여 주세요."
+    },
+    "violation_stop_ms": {
+      "default": 8000
+    },
+    "violations": {
+      "signal_ignored": {
+        "label": "신호 무시",
+        "penalty_ticks": 0
+      },
+      "pedestrian_hit": {
+        "label": "보행자 충돌",
+        "penalty_ticks": 0,
+        "distance_mm": 150,
+        "see_ticks": 60
+      },
+      "gate_hit": {
+        "label": "차단기 충돌",
+        "penalty_ticks": 0,
+        "distance_mm": 180,
+        "see_ticks": 60
+      },
+      "slow_violation": {
+        "label": "서행 미준수",
+        "penalty_ticks": 0
+      },
+      "blocked_pass": {
+        "label": "막힌 채 지나감",
+        "penalty_ticks": 0
+      }
+    }
+  },
+  "series": "RC카 테마학습제어",
+  "track_label": "스마트시티",
+  "guide": [
+    {
+      "text": "먼저 [카메라 켜기] 를 눌러요.",
+      "target": {
+        "el": "cam-start"
+      },
+      "when": "camera_on"
+    },
+    {
+      "text": "정지·서행·진행 칸을 골라 장면을 담아요. 칸마다 다섯 장이면 돼요.",
+      "target": {
+        "el": "grab"
+      },
+      "when": "samples_ready"
+    },
+    {
+      "text": "다 담았으면 [학습하기] 를 눌러요.",
+      "target": {
+        "el": "learn"
+      },
+      "when": "model_ready"
+    },
+    {
+      "text": "이제 [→ 업로드] 하고 [▶ 실행] 으로 달려 봐요.",
+      "target": {
+        "el": "go"
+      },
+      "when": "running"
+    }
+  ],
+  "record": {
+    "fields": [
+      "lap_total"
+    ]
+  }
+}
