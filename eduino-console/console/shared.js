@@ -9,7 +9,7 @@
    ║  2안에 동시에 반영된다.                                          ║
    ║                                                                  ║
    ║  공용 CSS 클래스는 각 안의 스타일과 겹치지 않도록 v- 접두사 사용.  ║
-   ║  (.track 같은 흔한 이름은 각 안의 레이아웃 CSS와 충돌한다)         ║
+   ║  (.track 같은 흔한 이름은 각 안의 레이아웃 CSS와 충돌)         ║
    ╚══════════════════════════════════════════════════════════════════╝ */
 (function () {
   'use strict';
@@ -26,19 +26,19 @@
       items: [
         { key: 'detect', stars: 1, mins: 5, reward: '관찰자', ic: 'detect', emoji: '🎯', name: '객체 탐지', badge: 'COCO-SSD',
           desc: '카메라에 잡힌 90종의 사물을 실시간으로 찾아내고 이름표를 붙여요.',
-          c1: 'rgba(59,134,255,.5)', c2: '#15233f', href: '/stages/apps/detect.html' },
+          c1: 'rgba(59,134,255,.5)', c2: '#15233f', href: AppBase.resolve('stages/apps/detect.html') },
         { key: 'face', stars: 1, mins: 5, reward: '얼굴 탐색가', ic: 'face', emoji: '🙂', name: '얼굴 검출', badge: 'BlazeFace',
           desc: '사람 얼굴의 위치와 눈·코·입 지점을 실시간으로 잡아냅니다.',
-          c1: 'rgba(120,180,255,.45)', c2: '#172a44', href: '/stages/apps/face.html' },
+          c1: 'rgba(120,180,255,.45)', c2: '#172a44', href: AppBase.resolve('stages/apps/face.html') },
         { key: 'skeleton', stars: 2, mins: 8, reward: '동작 분석가', ic: 'skeleton', emoji: '🦴', name: '뼈대 검출', badge: 'MoveNet',
           desc: '몸의 관절 17곳을 이어 사람의 자세를 뼈대로 그려냅니다.',
-          c1: 'rgba(80,220,200,.4)', c2: '#123433', href: '/stages/apps/skeleton.html' },
+          c1: 'rgba(80,220,200,.4)', c2: '#123433', href: AppBase.resolve('stages/apps/skeleton.html') },
         { key: 'colortrack', stars: 2, mins: 8, reward: '색채 연구원', ic: 'color', emoji: '🎨', name: '색상 추적', badge: 'RGB 임계값',
           desc: '고른 색만 남기고 지워, 컴퓨터가 색을 숫자로 다루는 방식을 봅니다.',
-          c1: 'rgba(180,120,255,.45)', c2: '#241a3a', href: '/stages/apps/colortrack.html' },
+          c1: 'rgba(180,120,255,.45)', c2: '#241a3a', href: AppBase.resolve('stages/apps/colortrack.html') },
         { key: 'filter', stars: 1, mins: 6, reward: '영상 편집자', ic: 'filter', emoji: '🌗', name: '영상 효과', badge: 'Canvas 필터',
           desc: '흑백·반전·엣지 같은 필터와 움직임 감지를 직접 걸어봅니다.',
-          c1: 'rgba(255,140,90,.4)', c2: '#3a2516', href: '/stages/apps/filter.html' },
+          c1: 'rgba(255,140,90,.4)', c2: '#3a2516', href: AppBase.resolve('stages/apps/filter.html') },
       ],
     },
     create: {
@@ -49,25 +49,25 @@
       items: [
         { key: 'image', stars: 3, mins: 15, reward: 'AI 조련사', ic: 'image', emoji: '🖼️', name: '이미지 분류', badge: 'MobileNet',
           desc: '사진을 직접 모아 학습시키고, 새 사진을 알아맞히는 AI를 만듭니다.',
-          c1: 'rgba(255,87,71,.5)', c2: '#3a1620', href: '/index.html#image' },
+          c1: 'rgba(255,87,71,.5)', c2: '#3a1620', href: AppBase.resolve('index.html#image') },
         { key: 'audio', stars: 3, mins: 15, reward: '소리 조련사', ic: 'audio', emoji: '🎙️', name: '음성 분류', badge: 'Speech Commands',
           desc: '소리와 단어를 녹음해 학습시키고, 목소리로 반응하는 AI를 만듭니다.',
-          c1: 'rgba(255,150,90,.45)', c2: '#3a2516', href: '/index.html#audio' },
+          c1: 'rgba(255,150,90,.45)', c2: '#3a2516', href: AppBase.resolve('index.html#audio') },
         { key: 'pose', stars: 3, mins: 15, reward: '동작 조련사', ic: 'pose', emoji: '🤸', name: '동작 분류', badge: 'MoveNet',
           desc: '몸 동작을 직접 보여주며 가르치고, 자세를 구분하는 AI를 만듭니다.',
-          c1: 'rgba(255,110,150,.45)', c2: '#3a1626', href: '/index.html#pose' },
+          c1: 'rgba(255,110,150,.45)', c2: '#3a1626', href: AppBase.resolve('index.html#pose') },
       ],
     },
   };
   const TRACK_KEYS = ['explore', 'create'];
-  const HOME = '/platform/index.html';   /* 플랫폼 홈 — HUD 로고·홈 버튼·ESC 키가 함께 쓴다 */
+  const HOME = AppBase.resolve('platform/index.html');   /* 플랫폼 홈 — HUD 로고·홈 버튼·ESC 키가 함께 쓴다 */
 
   /* ══════════════════════════════════════════════════════════
      2. 화면 정의 — 상단바 뷰 토글이 이 목록으로 서로를 가리킨다
      ══════════════════════════════════════════════════════════ */
   const VARIANTS = [
-    { key: 'cards', label: '카드 캐러셀', url: '/console/cards.html' },
-    { key: 'map',   label: '스테이지 맵', url: '/console/map.html' },
+    { key: 'cards', label: '카드 캐러셀', url: AppBase.resolve('console/cards.html') },
+    { key: 'map',   label: '스테이지 맵', url: AppBase.resolve('console/map.html') },
   ];
   const VKEY = 'vision_ui_variant';
   const BOOT_KEY = 'vision_boot_seen';
@@ -76,7 +76,7 @@
   const VISIT_KEY = 'vision_visited';
   const PUI_KEY = 'vision_progress_ui';
 
-  /* 이 스크립트를 부르는 쪽이 인트로 정책을 정한다.
+  /* 이 스크립트를 부르는 쪽이 인트로 정책 설정.
        data-intro="always" → 그 화면에 들어올 때마다 재생 (콘솔 입구 entry.html)
        (기본)             → 세션당 1회만 재생 (허브 · 내부 이동에서는 대기 0) */
   const introMode = (document.currentScript && document.currentScript.dataset.intro) || 'once';
@@ -101,134 +101,10 @@
     return v.url + (hash ? '#' + hash : '');
   }
 
-  /* ══════════════════════════════════════════════════════════
-     3. 공용 셸 CSS — head 에 동기 주입 (깜빡임 방지)
-     ══════════════════════════════════════════════════════════ */
-  const SHELL_CSS = `
-  :root{
-    --bg:#0a0b12; --bg-2:#0f1120;
-    --ink:#f2f4fb; --ink-2:#aeb6cf; --ink-3:#737c9c;
-    --line:rgba(255,255,255,.10); --line-2:rgba(255,255,255,.16);
-    --panel:rgba(255,255,255,.045);
-    --blue:#3b86ff; --blue-2:#6aa6ff;
-    --red:#ff5747; --red-2:#ff8472;
-    --green:#42e29b;
-    --mono:'JetBrains Mono',ui-monospace,monospace;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;height:100%;}
-  body{font-family:'Pretendard',system-ui,sans-serif;background:var(--bg);color:var(--ink);
-    min-height:100%;overflow-x:hidden;word-break:keep-all;-webkit-font-smoothing:antialiased;
-    display:flex;flex-direction:column;}
-  a{color:inherit;text-decoration:none;} button{font-family:inherit;cursor:pointer;}
-
-  /* ── 부팅 인트로 (세션당 1회, 클릭 없이 자동) ── */
-  .v-boot{position:fixed;inset:0;z-index:120;background:#06070d;display:grid;place-items:center;
-    text-align:center;transition:opacity .4s ease;overflow:hidden;}
-  .v-boot.hide{opacity:0;pointer-events:none;}
-  .v-splash,.v-seq{grid-area:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;}
-  .v-splash{transition:opacity .4s ease,transform .5s ease;}
-  .v-splash.v-out{opacity:0;transform:scale(1.08);pointer-events:none;}
-  .v-splash img{height:108px;width:auto;filter:drop-shadow(0 0 34px rgba(255,87,71,.55));
-    animation:vSplash .8s cubic-bezier(.2,.85,.25,1.1) both;}
-  @keyframes vSplash{0%{opacity:0;transform:scale(.55) translateY(14px);}60%{opacity:1;}100%{opacity:1;transform:none;}}
-  .v-splash .w{font-size:44px;font-weight:800;letter-spacing:-.01em;color:#fff;animation:vUp .6s .18s both;}
-  .v-splash .w b{color:#f0473a;}
-  .v-splash .s{font-family:var(--mono);font-size:13px;letter-spacing:.26em;color:var(--ink-3);animation:vUp .6s .3s both;}
-  @keyframes vUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
-  .v-seq{opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .35s,transform .35s;}
-  .v-seq.v-in{opacity:1;transform:none;}
-  .v-seq .lg{display:flex;align-items:center;gap:13px;margin-bottom:4px;}
-  .v-seq .lg img{height:42px;filter:drop-shadow(0 0 18px rgba(255,87,71,.6));animation:vPulse 2.4s ease-in-out infinite;}
-  .v-seq .lgt{display:flex;flex-direction:column;align-items:flex-start;gap:1px;}
-  .v-seq .lgt .bw{font-size:30px;font-weight:800;letter-spacing:.04em;}
-  .v-seq .lgt .bw b{color:#f0473a;}
-  .v-seq .lgt .sub{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--ink-3);}
-  @keyframes vPulse{0%,100%{filter:drop-shadow(0 0 12px rgba(255,87,71,.45));}50%{filter:drop-shadow(0 0 26px rgba(106,166,255,.7));}}
-  .v-log{font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--ink-2);
-    min-height:108px;margin:6px 0 0;text-align:left;width:min(360px,86vw);}
-  .v-log .ok{color:var(--green);}
-  .v-bar{width:min(360px,86vw);height:6px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;}
-  .v-bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--red));transition:width .18s ease;}
-  .v-scan-in{position:absolute;inset:0;pointer-events:none;opacity:.5;
-    background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px);}
-  .v-scan-in::after{content:'';position:absolute;left:0;right:0;height:140px;
-    background:linear-gradient(180deg,transparent,rgba(106,166,255,.10),transparent);animation:vSweep 3.2s linear infinite;}
-  @keyframes vSweep{0%{top:-140px;}100%{top:100%;}}
-
-  /* ── 배경 ── */
-  .v-amb{position:fixed;inset:0;z-index:0;pointer-events:none;transition:background .5s ease;
-    background:radial-gradient(60% 55% at 28% 12%,rgba(59,134,255,.20),transparent 60%),
-      radial-gradient(55% 50% at 80% 80%,rgba(255,87,71,.12),transparent 62%),
-      linear-gradient(180deg,var(--bg-2),var(--bg));}
-  .v-amb::after{content:'';position:absolute;inset:0;
-    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
-    background-size:44px 44px;opacity:.25;
-    -webkit-mask-image:radial-gradient(circle at 50% 40%,#000 0%,transparent 75%);
-            mask-image:radial-gradient(circle at 50% 40%,#000 0%,transparent 75%);}
-  .v-scan{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:.35;
-    background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px);}
-
-  /* ── HUD ── */
-  .v-hud{position:relative;z-index:6;display:flex;align-items:center;justify-content:space-between;padding:16px 26px;gap:14px;flex:none;}
-  .v-brand{display:flex;align-items:center;gap:11px;}
-  .v-brand img{height:28px;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4));}
-  .v-brand .bt{font-size:14px;font-weight:800;letter-spacing:.02em;}
-  .v-brand .bt span{color:#f0473a;}
-  .v-brand .sep{width:1px;height:18px;background:var(--line-2);}
-  .v-brand .sys{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.18em;color:var(--ink-3);}
-  .v-hud-r{display:flex;align-items:center;gap:10px;}
-  .v-btn{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--ink-2);
-    background:rgba(255,255,255,.05);border:0;border-radius:10px;padding:8px 12px;transition:.15s;}
-  .v-btn:hover{color:var(--ink);background:rgba(255,255,255,.1);}
-  [data-ic]{display:inline-flex;align-items:center;justify-content:center;line-height:0;}
-  [data-ic] svg{width:1em;height:1em;display:block;}
-  .v-btn [data-ic]{font-size:15px;}
-
-  /* ── 트랙 탭 (2안 공용) ──
-        색은 TRACKS 의 accent/accent2/glowA 가 --tacc/--tacc2/--tglow 로 실려 온다.
-        크기·간격을 손보고 싶으면 각 안 HTML 에서 .v-tab 을 덮어쓴다. */
-  .v-tabs{display:inline-flex;gap:6px;padding:5px;border-radius:14px;
-    background:rgba(255,255,255,.045);box-shadow:inset 0 1px 0 rgba(255,255,255,.05);}
-  .v-tab{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:10px;padding:10px 18px;
-    font-size:13.5px;font-weight:700;color:var(--ink-3);background:none;transition:.18s;white-space:nowrap;}
-  .v-tab:hover{color:var(--ink-2);}
-  .v-tab .tno{font-family:var(--mono);font-size:11px;letter-spacing:.12em;opacity:.75;}
-  .v-tab .cnt{font-family:var(--mono);font-size:11px;font-weight:700;border-radius:99px;padding:2px 7px;
-    background:rgba(255,255,255,.07);color:var(--ink-3);}
-  .v-tab.on{color:#fff;background:linear-gradient(135deg,var(--tacc),var(--tacc2));
-    box-shadow:0 8px 22px var(--tglow);}
-  .v-tab.on .cnt{background:rgba(0,0,0,.24);color:#fff;}
-  /* 트랙 흐름 화살표 — 체험 → 제작 순서를 커리큘럼처럼 잇는다 (쓰는 안에서만 켠다) */
-
-  /* ── 진행 게이지 (토글 시 표시) ── */
-  .v-prog{display:inline-flex;align-items:center;gap:10px;font-size:12px;color:var(--ink-3);}
-  /* 클래스명은 각 안의 레이아웃 CSS와 겹치지 않도록 v- 계열로 유지할 것 (.track 등 흔한 이름 금지) */
-  .v-prog .pbar{width:104px;height:6px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden;}
-  .v-prog .pbar i{display:block;height:100%;width:0;border-radius:99px;transition:width .5s cubic-bezier(.2,.8,.3,1);}
-  .v-prog b{font-family:var(--mono);font-weight:700;color:var(--ink-2);}
-
-  @media (max-width:560px){
-    .v-tab .tno{display:none;}
-    .v-hud{padding:12px 14px;gap:8px;flex-wrap:wrap;}
-    .v-brand .bt{font-size:13px;white-space:nowrap;}
-    .v-brand .sys,.v-brand .sep{display:none;}
-    .v-hud-r{gap:6px;flex-wrap:wrap;justify-content:flex-end;}
-    .v-btn{padding:7px 9px;font-size:11.5px;white-space:nowrap;}
-  }
-  @media (prefers-reduced-motion:reduce){
-    .v-seq .lg img,.v-scan-in::after,.v-splash img,.v-splash .w,.v-splash .s{animation:none!important;}
-  }`;
-
-  const styleEl = document.createElement('style');
-  styleEl.id = 'v-shell';
-  styleEl.textContent = SHELL_CSS;
-  (document.head || document.documentElement).appendChild(styleEl);
-
-  /* ── 인트로를 재생할지 여기서 확정한다 ──
-     "비전 콘솔"로 들어올 때마다 브랜드 연출을 보여주되(entry = always),
-     콘솔 안에서의 이동(← 모드 선택 / 실습 ↔ 허브 / 새로고침)에는 대기가 없어야 한다.
-     결정을 head 시점에 끝내야 인트로 자리가 깜빡이지 않는다. */
+  /* ── 인트로 재생 여부 확정 ──
+     "비전 콘솔"로 들어올 때마다 브랜드 연출 표시(entry = always),
+     콘솔 안에서의 이동(← 모드 선택 / 실습 ↔ 허브 / 새로고침)에는 대기 없음.
+     결정을 head 시점에 끝내야 인트로 자리가 깜빡이지 않음. */
   const alreadyBooted = ss.get(BOOT_KEY, '') === '1';
   const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
   const internalMove = ss.get(SKIP_KEY, '') === '1';
@@ -291,7 +167,7 @@
     enabled() { return true; },   /* 진행 완료 표시는 기본기능 — 토글 없이 항상 켜짐 */
   };
 
-  /* ── 파생 지표 — 새로 수집하지 않고 위 방문 기록에서만 계산한다 ──
+  /* ── 파생 지표 — 새로 수집하지 않고 위 방문 기록에서만 계산 ──
      (기록 지점은 launch() 한 곳뿐이라 stages/ 파일은 계속 무수정) */
   const TIERS = [
     { min: 0, key: 'bronze',   name: 'BRONZE',   color: '#c8874a', ic: '🥉' },
@@ -353,12 +229,12 @@
     host.innerHTML =
       '<div class="v-scan-in"></div>' +
       '<div class="v-splash" id="vsplash">' +
-        '<img src="/platform/img/logo-mark.webp" alt="Eduino AI" />' +
+        '<img src="' + AppBase.resolve('platform/img/logo-mark.webp') + '" alt="Eduino AI" />' +
         '<div class="w">Eduino <b>AI</b></div>' +
         '<div class="s">VISION&nbsp;AI&nbsp;CONSOLE · v1.0</div>' +
       '</div>' +
       '<div class="v-seq" id="vseq">' +
-        '<div class="lg"><img src="/platform/img/logo-mark.webp" alt="" />' +
+        '<div class="lg"><img src="' + AppBase.resolve('platform/img/logo-mark.webp') + '" alt="" />' +
           '<div class="lgt"><span class="bw">Eduino <b>AI</b></span>' +
           '<span class="sub">AIoT 학습 플랫폼</span></div></div>' +
         '<pre class="v-log" id="vlog"></pre>' +
@@ -405,12 +281,15 @@
   /* ══════════════════════════════════════════════════════════
      8. HUD 주입
      ══════════════════════════════════════════════════════════ */
-  /* 카드 캐러셀 ↔ 스테이지 맵 전환. 두 화면에서 같은 자리(모드 선택 오른쪽)에 둔다 —
-     자리가 옮겨 다니면 토글로 읽히지 않는다. 지금 열린 화면은 주소로 판별한다
-     (claim() 이 hud() 보다 먼저 돌긴 하지만, 저장값보다 주소가 늘 옳다). */
+  /* 카드 캐러셀 ↔ 스테이지 맵 전환. 두 화면에서 같은 자리(모드 선택 오른쪽)에 둠 —
+     자리가 옮겨 다니면 토글로 읽히지 않음. 지금 열린 화면은 주소로 판별
+     (claim() 이 hud() 보다 먼저 돌긴 하지만, 저장값보다 주소가 늘 옳음). */
   function viewToggle() {
+    /* VARIANTS.url 은 AppBase 가 만든 절대 URL(프로토콜·호스트 포함) — pathname 로
+       환산해서 비교. 전체 URL 을 pathname 안에서 찾으면 항상 불일치 */
     const path = location.pathname;
-    const here = VARIANTS.find(v => path.indexOf(v.url) !== -1);
+    const urlPath = (u) => { try { return new URL(u, location.href).pathname; } catch (e) { return u; } };
+    const here = VARIANTS.find(v => path === urlPath(v.url));
     if (!here) return '';                       /* 스테이지 화면 등에서는 안 그린다 */
     const other = VARIANTS.find(v => v.key !== here.key);
     if (!other) return '';
@@ -425,12 +304,11 @@
     host.className = 'v-hud';
     host.innerHTML =
       '<a class="v-brand" href="' + HOME + '">' +
-        '<img src="/platform/img/logo-mark.webp" alt="Eduino AI" />' +
+        '<img src="' + AppBase.resolve('platform/img/logo-mark.webp') + '" alt="Eduino AI" />' +
         '<span class="bt">Eduino <span>AI</span></span>' +
         '<span class="sep"></span><span class="sys">VISION&nbsp;AI</span>' +
       '</a>' +
       '<div class="v-hud-r">' +
-        '<a class="v-btn" href="/entry.html" id="vback" title="모드 선택으로 돌아가기">← 모드 선택</a>' +
         viewToggle() +
         '<span class="v-btn" id="vmode" style="cursor:default">체험 모드</span>' +
         '<button class="v-btn" id="vsound" title="효과음 켜기/끄기">🔊</button>' +
@@ -438,10 +316,6 @@
         '<a class="v-btn" href="' + HOME + '"><i data-ic="home"></i> 홈</a>' +
       '</div>';
     if (window.paintIcons) window.paintIcons(host);
-
-    /* 콘솔 안에서 입구로 되돌아가는 이동 — 인트로를 다시 재생하지 않는다 */
-    const back = document.getElementById('vback');
-    if (back) back.addEventListener('click', () => ss.set(SKIP_KEY, '1'));
 
     /* 진입 모드 배너 */
     const m = (window.Session && Session.getMode && Session.getMode()) || { mode: 'free' };
@@ -462,7 +336,7 @@
     /* 사운드 토글 — 아이콘만 둔다. 옆 버튼들이 이미 글자라 하나는 기호로 쉬어 준다 */
     const sb = document.getElementById('vsound');
     if (sb) sb.addEventListener('click', () => { sb.textContent = sound.toggle() ? '🔊' : '🔇'; });
-    /* 뷰 전환 — 이동음만 얹는다. 목적지 쪽 claim() 이 선택된 안을 저장한다 */
+    /* 뷰 전환 — 이동음만 상향. 목적지 쪽 claim() 이 선택된 안 저장 */
     const vv = document.getElementById('vview');
     if (vv) vv.addEventListener('click', () => sound.tab());
   }
@@ -512,7 +386,7 @@
     if (!host) return;
     host.querySelectorAll('.v-tab').forEach(b => b.classList.toggle('on', b.dataset.track === key));
   }
-  /* 트랙 전환 키(↑↓[]) — 트랙이 늘어도 순환한다 */
+  /* 트랙 전환 키(↑↓[]) — 트랙이 늘어도 순환 */
   function nextTrackKey(key) {
     const i = TRACK_KEYS.indexOf(key);
     return TRACK_KEYS[(i + 1) % TRACK_KEYS.length];
@@ -567,7 +441,7 @@
       'radial-gradient(55% 50% at 80% 80%,' + track.glowB + ',transparent 62%),' +
       'linear-gradient(180deg,var(--bg-2),var(--bg))';
   }
-  /* 트랙 색을 문서 전체(--acc/--acc2/--accGlow)와 배경에 한 번에 반영한다 */
+  /* 트랙 색을 문서 전체(--acc/--acc2/--accGlow)와 배경에 한 번에 반영 */
   function paintTrack(track, ambEl) {
     const s = document.documentElement.style;
     s.setProperty('--acc', track.accent);
@@ -590,9 +464,9 @@
     document.body.style.opacity = '1';
   });
 
-  /* 지금 열린 안을 '선택된 안'으로 저장한다.
-     실습 화면의 콘솔 링크는 /studio.html 로 고정돼 있는데, 그 스텁이 이 값을 보고 되돌려 보낸다.
-     (변형끼리 서로 리다이렉트하지 않으므로 루프가 생길 수 없다) */
+  /* 지금 열린 안을 '선택된 안'으로 저장.
+     실습 화면의 콘솔 링크는 /studio.html 로 고정돼 있는데, 그 스텁이 이 값을 보고 되돌려 보냄.
+     (변형끼리 서로 리다이렉트하지 않으므로 루프가 생길 수 없음) */
   function claim(thisKey) {
     if (VARIANTS.some(v => v.key === thisKey)) ls.set(VKEY, thisKey);
   }

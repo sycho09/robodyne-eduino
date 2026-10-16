@@ -3,7 +3,7 @@
   const missionKey = (...args) => window.SubmitStore.missionKey(...args);
   /* dialog.js · studio-common.js 에도 같은 구현이 있다.
      세 파일의 로더(index.html · stages/apps/*.html)가 전부 수정 금지라
-     공용 스크립트를 끼워 넣을 수 없어 부득이하게 복제한다. */
+     공용 스크립트를 끼워 넣을 수 없어 부득이하게 복제. */
   const esc = (s) =>
     String(s == null ? "" : s).replace(
       /[<>&"]/g,

@@ -1,7 +1,7 @@
 (function () {
   const APPS = {
-    idea: { url: "/stages/apps/idea-board.html", title: "AI 상상 보드" },
-    character: { url: "/stages/apps/character-card.html", title: "내 AI 캐릭터" },
+    idea: { url: AppBase.resolve("stages/apps/idea-board.html"), title: "AI 상상 보드" },
+    character: { url: AppBase.resolve("stages/apps/character-card.html"), title: "내 AI 캐릭터" },
   };
 
   /* 부모 화면의 활성 탭을 트랙 키로 옮긴다.
@@ -25,19 +25,11 @@
     return q;
   };
 
-  const css = `
-  .st-ov{position:fixed;inset:0;z-index:97;display:none;background:rgba(6,7,12,.92);}
-  .st-ov.on{display:block;}
-  .st-ov iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#0a0b12;}`;
-
   let backdrop = null,
     iframe = null;
 
   function build() {
     if (backdrop) return;
-    const st = document.createElement("style");
-    st.textContent = css;
-    document.head.appendChild(st);
     backdrop = document.createElement("div");
     backdrop.className = "st-ov";
     backdrop.setAttribute("role", "dialog");

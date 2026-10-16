@@ -130,38 +130,6 @@
     },
   ];
 
-  const css = `
-  #lab-scenarios{display:flex;gap:9px;flex-wrap:wrap;margin:4px 0 6px;}
-  .lab-sc{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--border);border-radius:12px;
-    padding:9px 13px;cursor:pointer;transition:.15s;color:var(--ink-2);font-weight:700;font-size:13px;}
-  .lab-sc:hover{border-color:var(--accent);color:var(--ink);transform:translateY(-1px);}
-  /* 현재 미션 활성화 스타일 (테두리 두께 변경으로 인한 UI 흔들림 방지 위해 inset 그림자 사용) */
-  .lab-sc.on{color:var(--ink);border-color:var(--accent);background:var(--accent-soft);
-    box-shadow:inset 0 0 0 1px var(--accent), 0 4px 14px rgba(255,87,71,.18);}
-  .lab-sc.on:hover{transform:none;}
-  .lab-sc.on small{color:var(--accent-ink);}
-  .lab-sc .e{font-size:17px;}
-  .lab-sc small{display:block;font-weight:500;font-size:11px;color:var(--ink-3);}
-  .lab-sctip{font-size:12px;color:var(--accent-ink);background:var(--accent-soft);border-radius:10px;padding:8px 12px;margin-bottom:8px;display:none;}
-  .lab-sctip.on{display:block;}
-  .lab-coach{margin-top:12px;border-top:1px solid var(--border);padding-top:11px;}
-  .lab-coach h4{margin:0 0 8px;font-size:11px;font-family:var(--mono);letter-spacing:.05em;color:var(--ink-3);text-transform:uppercase;}
-  .lab-ck{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);margin-bottom:6px;}
-  .lab-ck .b{width:17px;height:17px;border-radius:6px;display:grid;place-items:center;font-size:11px;flex:none;
-    background:rgba(255,255,255,.07);color:var(--ink-3);}
-  .lab-ck.ok .b{background:var(--green);color:#04140c;}
-  .lab-ck.ok{color:var(--ink);}
-  .lab-tipline{font-size:11.5px;color:var(--ink-3);margin-top:8px;line-height:1.55;}
-  #lab-badges{display:inline-flex;gap:5px;vertical-align:middle;}
-  .lab-badge{font-size:14px;filter:grayscale(1) opacity(.35);transition:.2s;}
-  .lab-badge.on{filter:none;transform:scale(1.05);}
-  .lab-toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(18px);z-index:140;font-size:13.5px;font-weight:700;
-    color:#1a0a08;background:var(--amber);border-radius:12px;padding:11px 17px;box-shadow:0 14px 40px rgba(0,0,0,.5);opacity:0;transition:.25s;pointer-events:none;}
-  .lab-toast.on{opacity:1;transform:translateX(-50%) translateY(0);}`;
-  const st = document.createElement("style");
-  st.textContent = css;
-  document.head.appendChild(st);
-
   let toastEl = null,
     toastT = null;
   function toast(m) {
@@ -292,18 +260,6 @@
       }),
     );
 
-    /* 유료 프리셋은 숨기지 않는다 — 라벨·클래스 설명을 선명하게 둔 채 잠금 표시만 붙이고,
-       눌러도 프리셋이 적용되지 않고 잠금 화면이 뜬다 (기준서 2-5).
-       "자유 주제" 는 값 문구가 달라 잠금 화면을 따로 쓴다. */
-    if (window.Access) {
-      box.querySelectorAll(".lab-sc").forEach((b) => {
-        const s = SCEN.find((x) => x.key === b.dataset.k);
-        if (!s || !s.paid) return;
-        const key = s.key.indexOf("custom") !== -1 ? "preset-custom" : "preset";
-        window.Access.setLocked(b, key, !window.Access.isPaid());
-      });
-    }
-
     /* 미션 키는 세 트랙이 함께 쓴다 — studio.js·submit.store.js 가 결과물에 붙일 이름을
        이 키 하나에서 읽기 때문이다. 그래서 지금 트랙의 미션일 때만 표시한다. */
     const key = curScen();
@@ -402,29 +358,6 @@
 
   // 정확도 챌린지
   const ROUNDS = 6;
-  const ccss = `
-  .lc-ov{position:fixed;inset:0;z-index:99;display:none;background:rgba(6,7,12,.95);backdrop-filter:blur(9px);color:#f2f4fb;font-family:'Pretendard',system-ui,sans-serif;}
-  .lc-ov.on{display:flex;align-items:center;justify-content:center;padding:22px;}
-  .lc-card{width:min(560px,100%);background:rgba(255,255,255,.04);border-radius:20px;padding:26px;text-align:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 30px 70px rgba(0,0,0,.55);}
-  .lc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-  .lc-top h3{margin:0;font-size:18px;font-weight:800;}
-  .lc-x{width:34px;height:34px;border-radius:10px;border:0;background:rgba(255,255,255,.06);color:#aeb6cf;font-size:14px;cursor:pointer;}
-  .lc-prog{font-family:'JetBrains Mono',monospace;font-size:12px;color:#737c9c;}
-  .lc-prompt{font-size:14px;color:#aeb6cf;margin:18px 0 6px;}
-  .lc-big{font-size:42px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px;}
-  .lc-count{font-family:'JetBrains Mono',monospace;font-size:60px;font-weight:800;color:var(--accent-ink,#ff8472);margin:6px 0;line-height:1;}
-  .lc-live{font-size:13px;color:#737c9c;min-height:20px;}
-  .lc-flash{font-size:54px;margin:8px 0;}
-  .lc-result .acc{font-size:64px;font-weight:800;letter-spacing:-.02em;}
-  .lc-result .lbl{font-size:13px;color:#aeb6cf;margin-bottom:14px;}
-  .lc-btn{font-size:15px;font-weight:800;color:#fff;border:0;border-radius:12px;padding:13px 18px;cursor:pointer;
-    background:linear-gradient(135deg,#ff8472,#e8392b);}
-  .lc-btn.ghost{color:#aeb6cf;background:rgba(255,255,255,.06);}
-  .lc-row{display:flex;gap:9px;justify-content:center;margin-top:8px;}
-  .lc-hint{font-size:12px;color:#737c9c;margin-top:12px;line-height:1.5;}`;
-  const cst = document.createElement("style");
-  cst.textContent = ccss;
-  document.head.appendChild(cst);
   const cOv = document.createElement("div");
   cOv.className = "lc-ov";
   cOv.innerHTML = `<div class="lc-card">
@@ -567,9 +500,6 @@
         cb._wired = true;
         cb.addEventListener("click", openChallenge);
       }
-    }
-    if (window.Access && window.Access.applyVisionGate) {
-      window.Access.applyVisionGate();
     }
   }
 

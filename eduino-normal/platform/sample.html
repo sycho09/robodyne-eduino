@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="../favicon.png" />
+<link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+<meta name="theme-color" content="#f6f7fb" />
+<title>무료 샘플 · 미니 이미지 학습 — Eduino AI</title>
+<meta name="description" content="카메라로 두 가지를 가르치면 AI가 맞히는 무료 미니 체험. 설치 없이 브라우저에서 바로." />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="stylesheet" href="./css/sample.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="back" href="./index.html">← 플랫폼</a>
+    <a class="back" href="./index.html" style="border:none;box-shadow:none;padding-left:0"><span class="logo-mark">E</span></a>
+    <div class="logo-title">Eduino <span>AI</span></div>
+    <span class="free">무료 샘플</span>
+  </div>
+</header>
+
+<main>
+  <div class="banner" id="banner"></div>
+  <div class="intro">
+    <span class="eyebrow">⚡ 무료 체험 · 미니 이미지 학습</span>
+    <h1>1분 만에 <span class="g">나만의 AI를 가르쳐</span> 보기</h1>
+    <p>카메라로 두 가지를 보여주면 AI가 둘을 구분해요. <b>설치도 코딩도 없이</b> — 지금 바로 “AI 학습”의 가장 작은 한 조각을 직접 만들어 보세요.</p>
+    <div class="trust">
+      <span>🌐 설치 없이 브라우저에서</span>
+      <span>🔒 데이터는 기기 안에서만 · 개인정보 안전</span>
+      <span>🎓 현장 교사가 설계</span>
+      <span>📷 카메라만 있으면 OK</span>
+    </div>
+    <div class="steps3"><span><b>①</b> 데이터 모으기</span><span><b>②</b> 학습</span><span><b>③</b> 미리보기·맞히기</span></div>
+  </div>
+
+  <!-- 좌: 데이터셋 · 가운데: 학습 · 우: 미리보기 -->
+  <div class="tm">
+    <!-- 좌 -->
+    <div class="card">
+      <h2><span class="hb">1</span>데이터셋</h2>
+      <p class="sub">이름을 눌러 바꾸고, 우측 카메라에 비추며 [데이터 수집]. <b>탭=1장 · 길게=연속</b></p>
+      <div class="cls" id="cls"></div>
+    </div>
+
+    <!-- 가운데 -->
+    <div class="card center-col">
+      <h2><span class="hb">2</span>학습</h2>
+      <p class="sub">모은 데이터로 AI가 패턴을 배워요.</p>
+      <button class="btn primary block lg" id="train" disabled>학습하기</button>
+      <div class="train-status" id="train-status">왼쪽에서 두 가지를 각각 3장 이상 모아주세요</div>
+      <div class="tcurve" id="tcurve" hidden>
+        <div class="tlabel">📈 데이터가 늘수록 정확도 ↑</div>
+        <svg class="tg" id="tg" viewBox="0 0 240 96" preserveAspectRatio="none">
+          <line class="grid" x1="10" y1="48" x2="230" y2="48"/>
+          <polyline id="tg-line" fill="none" stroke="#11a06f" stroke-width="2.4" stroke-linejoin="round"/>
+        </svg>
+        <div class="tg-acc">학습 정확도 <b id="tg-accv">—</b></div>
+        <div class="tconf" id="tconf"></div>
+      </div>
+      <div class="learnbox">AI는 모은 예시의 <b>공통된 특징</b>을 찾아 둘을 구분하는 기준을 만들어요. 데이터가 <b>많고 다양</b>할수록 똑똑해집니다.</div>
+    </div>
+
+    <!-- 우 -->
+    <div class="card">
+      <h2><span class="hb">3</span>미리보기 <span class="cam-state" id="cam-state">대기</span></h2>
+      <div class="stage">
+        <video id="v" playsinline muted></video>
+        <div class="rec-dot" id="rec"><i></i> 수집 중</div>
+        <div class="ph" id="ph">📷 [카메라 켜기]를 누르고<br>물체나 손을 비춰주세요</div>
+      </div>
+      <div class="cam-ctrl">
+        <button class="btn primary lg" id="cam">카메라 켜기</button>
+        <button class="btn lg" id="stop" disabled>중지</button>
+      </div>
+      <div class="fx" id="fx"><span class="fx-lab">영상효과</span><button data-fx="none" class="on">원본</button><button data-fx="gray">흑백</button><button data-fx="invert">색반전</button></div>
+      <div class="result">
+        <div class="rdonut"><svg width="76" height="76" viewBox="0 0 76 76"><circle class="rbg" cx="38" cy="38" r="32"/><circle class="rfg" id="r-arc" cx="38" cy="38" r="32" stroke-dasharray="0 201"/></svg><i id="r-pct">0%</i></div>
+        <div class="rlab"><div class="big" id="r-name">아직 학습 전</div><div class="conf" id="r-sub">데이터를 모아 학습해 보세요</div></div>
+      </div>
+      <div class="bars" id="bars"></div>
+      <button class="btn block lg" id="guess" disabled style="margin-top:12px">맞혀보기 시작</button>
+      <div class="hint">※ 가벼운 맛보기 — 색·밝기 변화에 민감할 수 있어요. 효과는 보기용(AI는 원본 학습).</div>
+    </div>
+  </div>
+
+  <div class="upsell">
+    <h3>여기까지가 “맛보기”예요 🎯</h3>
+    <p>전체 코스에서는 이미지뿐 아니라 <b>동작·음성·데이터·언어·생활 인식</b>까지, 더 정교하게 만들고 평가하며 배웁니다.</p>
+    <div class="row">
+      <a class="btn primary lg" href="../modules/index.html">전체 코스 둘러보기 →</a>
+      <a class="btn lg" href="mailto:hello@eduino.kr?subject=Eduino%20AI%20%EB%8F%84%EC%9E%85%20%EB%AC%B8%EC%9D%98">도입·구매 문의</a>
+    </div>
+  </div>
+</main>
+
+<!-- ── 가이드 퀘스트 온보딩 ── -->
+<div id="quest-hole" class="quest-hole" hidden></div>
+<div id="quest-card" class="quest-card" hidden>
+  <div class="q-top"><span class="qk" id="q-k"></span><span class="q-badge" id="q-badge">직접 해보세요</span></div>
+  <h4 id="q-h"></h4>
+  <p id="q-p"></p>
+  <div class="q-pbar" id="q-pbar"><i id="q-fill"></i></div>
+  <div class="qf">
+    <button class="quest-skip" id="q-skip">건너뛰기</button>
+    <span class="qprog" id="q-pinfo"></span>
+  </div>
+</div>
+<div class="quest-confetti" id="quest-confetti"></div>
+<div class="quest-modal" id="quest-modal">
+  <div class="quest-dialog">
+    <div class="qicon" id="q-icon">🤖</div>
+    <h3 id="q-title"></h3>
+    <p id="q-desc"></p>
+    <div class="qbtns" id="q-mbtns"></div>
+  </div>
+</div>
+<button class="quest-replay" id="quest-replay">❔ 가이드 다시보기</button>
+
+<script src="./js/sample.js"></script>
+</body>
+</html>

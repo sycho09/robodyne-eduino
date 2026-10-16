@@ -76,8 +76,8 @@ function setSelectedItem(container, id) {
 function selectClass(id) { state.selectedId = id; setSelectedItem(els.classList, id); updateCapTarget(); }
 
 /* 클래스 목록 렌더 공통 로직 — 이미지/동작 탭이 콜백·상수·갤러리 연동만 다르고
-   DOM 구조가 동일하므로 cfg 로 주입받아 재사용한다. onThumbs 가 없으면(동작 탭)
-   썸네일 클릭 갤러리를 달지 않는다. */
+   DOM 구조가 동일하므로 cfg 로 주입받아 재사용. onThumbs 가 없으면(동작 탭)
+   썸네일 클릭 갤러리 미적용. */
 function renderClassList(cfg) {
   cfg.container.innerHTML = '';
   cfg.classes.forEach(c => {
@@ -139,11 +139,6 @@ function renderClassList(cfg) {
   });
   cfg.countMeta.textContent = cfg.classes.length + ' / ' + cfg.max;
   cfg.addBtn.disabled = cfg.classes.length >= cfg.max;
-  /* 무료 구간의 클래스 수·데이터 상한을 덮어씌운다 (기준서 2장). 세 트랙이 같은 함수를 부른다. */
-  if (window.Access) window.Access.capClasses({
-    container: cfg.container, addBtn: cfg.addBtn, countMeta: cfg.countMeta,
-    count: cfg.classes.length, max: cfg.max, kind: cfg.kind || 'shots'
-  });
 }
 
 function renderClasses() {
@@ -191,8 +186,6 @@ async function toggleCam() {
 function captureSample() {
   const sel = state.classes.find(c => c.id === state.selectedId);
   if (!sel || !state.mobilenet || !state.stream) return;
-  /* 버튼은 비활성이지만 길게 누르기는 컨테이너 위임이라 여기서 한 번 더 막는다. */
-  if (window.Access && sel.embeddings.length >= window.Access.limit('shots')) return;
   const emb = tf.tidy(() => state.mobilenet.infer(els.video, true).flatten());
   sel.embeddings.push(Array.from(emb.dataSync()));
   emb.dispose();
@@ -335,7 +328,7 @@ function pushChartPoint(ep, totalEp, loss, acc) {
 
 /* ── 혼동 행렬 (학습 데이터 self-prediction) ──────────── */
 /* 공통 로직 — head 와 대상 엘리먼트만 탭별로 다르다. xs/ys 가 dispose 되기 전에
-   호출부에서 반드시 await 해야 한다(예측·정답 텐서를 비동기로 읽으므로). */
+   호출부에서 반드시 await 필수(예측·정답 텐서를 비동기로 읽음). */
 async function buildConfusion(head, xs, ys, usable, wrapEl, boxEl) {
   const n = usable.length;
   const mat = Array.from({ length: n }, () => new Array(n).fill(0));

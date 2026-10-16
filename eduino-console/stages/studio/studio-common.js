@@ -81,7 +81,7 @@ window.StudioCommon = {
       pred: "#p-top-pred .tp-name",
       pct: "p-top-donut-pct",
       conf: "#p-top-pred .tp-conf",
-      /* 오버레이 캔버스 사용 (trainer.labs.js 참조) */
+      /* 오버레이 캔버스 사용 (trainer/labs/pose-train.js 참조) */
       cam: "p-webcam",
       overlay: "p-pose-overlay",
       wave: null,
